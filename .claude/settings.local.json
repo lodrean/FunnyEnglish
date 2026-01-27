@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(git clone:*)",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__list_directory_with_sizes",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__list_directory",
+      "mcp__context7__resolve-library-id",
+      "WebSearch",
+      "Bash(../gradlew bootRun)",
+      "Bash(gradle wrapper:*)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(docker compose:*)"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+# Gradle
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# VS Code
+.vscode/
+
+# Kotlin
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Android
+*.apk
+*.ap_
+*.dex
+local.properties
+.cxx/
+
+# iOS
+*.xcworkspace
+*.xcuserstate
+Pods/
+DerivedData/
+
+# Node.js (admin-web)
+admin-web/node_modules/
+admin-web/dist/
+admin-web/.env
+admin-web/.env.local
+admin-web/*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Secrets
+*.jks
+*.keystore
+credentials.json
+secrets/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Docker
+docker/data/
+
+# Test outputs
+test-results/
+coverage/

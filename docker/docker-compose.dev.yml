@@ -1,0 +1,48 @@
+version: '3.8'
+
+# Development compose - only infrastructure services
+# Backend and admin-web run locally for hot-reload
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: funnyenglish-postgres-dev
+    environment:
+      POSTGRES_DB: funnyenglish
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: funnyenglish-minio-dev
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_dev_data:/data
+
+  # Create default bucket on startup
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/funnyenglish --ignore-existing;
+      mc anonymous set public myminio/funnyenglish;
+      exit 0;
+      "
+
+volumes:
+  postgres_dev_data:
+  minio_dev_data:

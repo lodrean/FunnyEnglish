@@ -5,6 +5,7 @@
     <application
         android:name=".FunnyEnglishApplication"
         android:allowBackup="true"
+        android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:label="FunnyEnglish"
         android:supportsRtl="true"
         android:theme="@style/Theme.FunnyEnglish">

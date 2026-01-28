@@ -2,7 +2,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
@@ -75,11 +75,12 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.funnyenglish.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     packaging {
@@ -88,8 +89,19 @@ android {
         }
     }
 
+    val apiBaseUrl = providers.gradleProperty("FUNNYENGLISH_API_BASE_URL")
+        .orElse("http://10.0.2.2:8080/")
+
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
+            buildConfigField("boolean", "ENABLE_NETWORK_LOGS", "true")
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
+        }
         getByName("release") {
+            buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
+            buildConfigField("boolean", "ENABLE_NETWORK_LOGS", "false")
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

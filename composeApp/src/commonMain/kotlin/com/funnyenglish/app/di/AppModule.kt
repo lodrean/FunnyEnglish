@@ -7,14 +7,17 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
+    val appConfig = provideAppConfig()
+
     // Token provider
     single<TokenProvider> { InMemoryTokenProvider() }
 
     // API
     single {
         FunnyEnglishApi(
-            baseUrl = "http://localhost:8080/",
-            tokenProvider = get()
+            baseUrl = appConfig.baseUrl,
+            tokenProvider = get(),
+            enableNetworkLogs = appConfig.enableNetworkLogs
         )
     }
 

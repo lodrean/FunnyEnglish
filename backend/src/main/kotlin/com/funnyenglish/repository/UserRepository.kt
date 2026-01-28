@@ -12,6 +12,7 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun findByEmail(email: String): User?
     fun findByAuthProviderAndProviderId(provider: AuthProvider, providerId: String): User?
     fun existsByEmail(email: String): Boolean
+    fun findAllByOrderByCreatedAtDesc(): List<User>
 
     @Query("SELECT u FROM User u ORDER BY u.totalPoints DESC LIMIT :limit")
     fun findTopByTotalPoints(limit: Int): List<User>

@@ -34,27 +34,33 @@ class UserService(
             .orElseThrow { NoSuchElementException("User not found") }
     }
 
+    fun getAllUsers(): List<User> {
+        return userRepository.findAllByOrderByCreatedAtDesc()
+    }
+
+    fun getUserStats(user: User): UserStats {
+        val testsCompleted = progressRepository.countByUserId(user.id)
+        val totalStars = progressRepository.sumStarsByUserId(user.id) ?: 0
+        val perfectScores = progressRepository.countPerfectScoresByUserId(user.id)
+        val (currentLevel, pointsToNext) = calculateLevelInfo(user.totalPoints)
+
+        return UserStats(
+            testsCompleted = testsCompleted,
+            totalStars = totalStars,
+            perfectScores = perfectScores,
+            currentLevel = currentLevel,
+            pointsToNextLevel = pointsToNext
+        )
+    }
+
     fun getUserProfile(userId: String): UserProfileResponse {
         val user = getUserById(userId)
-        val userUUID = UUID.fromString(userId)
-
-        val testsCompleted = progressRepository.countByUserId(userUUID)
-        val totalStars = progressRepository.sumStarsByUserId(userUUID) ?: 0
-        val perfectScores = progressRepository.countPerfectScoresByUserId(userUUID)
-
-        val (currentLevel, pointsToNext) = calculateLevelInfo(user.totalPoints)
 
         val achievements = user.achievements.map { it.toResponse(earned = true) }
 
         return UserProfileResponse(
             user = user.toResponse(),
-            stats = UserStats(
-                testsCompleted = testsCompleted,
-                totalStars = totalStars,
-                perfectScores = perfectScores,
-                currentLevel = currentLevel,
-                pointsToNextLevel = pointsToNext
-            ),
+            stats = getUserStats(user),
             achievements = achievements
         )
     }

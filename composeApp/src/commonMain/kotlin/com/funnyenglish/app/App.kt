@@ -78,7 +78,8 @@ private fun MainAppContent(
                 onLoadData = { homeViewModel.loadHomeData() },
                 onCategoryClick = { id -> onNavigate(AppScreen.CategoryTests(id)) },
                 onTestClick = { id -> onNavigate(AppScreen.TestPlay(id)) },
-                onViewAllCategories = { onNavigate(AppScreen.Categories) }
+                onViewAllCategories = { onNavigate(AppScreen.Categories) },
+                onProfileClick = { onNavigate(AppScreen.Profile) }
             )
         }
         is AppScreen.Categories -> {
@@ -139,6 +140,14 @@ private fun MainAppContent(
                 onAchievementsClick = { onNavigate(AppScreen.Achievements) }
             )
         }
+        is AppScreen.Achievements -> {
+            val state by profileViewModel.achievementsState.collectAsState()
+            AchievementsScreen(
+                state = state,
+                onLoad = { profileViewModel.loadAchievements() },
+                onBack = { onNavigate(AppScreen.Profile) }
+            )
+        }
         else -> {
             // Default to home
             onNavigate(AppScreen.Home)
@@ -156,23 +165,6 @@ sealed class AppScreen {
     data object Leaderboard : AppScreen()
     data object Profile : AppScreen()
     data object Achievements : AppScreen()
-}
-
-// Placeholder screens
-@Composable
-fun RegisterScreen(
-    state: AuthState,
-    onRegister: (String, String, String) -> Unit,
-    onNavigateToLogin: () -> Unit,
-    onClearError: () -> Unit
-) {
-    // Similar to LoginScreen but for registration
-    LoginScreen(
-        state = state,
-        onLogin = { email, password -> onRegister(email, password, "User") },
-        onNavigateToRegister = onNavigateToLogin,
-        onClearError = onClearError
-    )
 }
 
 @Composable
@@ -203,17 +195,6 @@ fun LeaderboardScreen(
     state: com.funnyenglish.app.viewmodel.LeaderboardState,
     onLoad: () -> Unit,
     onBack: () -> Unit
-) {
-    LaunchedEffect(Unit) { onLoad() }
-    com.funnyenglish.app.components.LoadingIndicator()
-}
-
-@Composable
-fun ProfileScreen(
-    state: com.funnyenglish.app.viewmodel.ProfileState,
-    onLoad: () -> Unit,
-    onBack: () -> Unit,
-    onAchievementsClick: () -> Unit
 ) {
     LaunchedEffect(Unit) { onLoad() }
     com.funnyenglish.app.components.LoadingIndicator()

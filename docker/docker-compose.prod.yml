@@ -56,6 +56,9 @@ services:
       S3_BUCKET: ${S3_BUCKET:-funnyenglish}
       JWT_SECRET: ${JWT_SECRET:?JWT secret required}
       CORS_ORIGINS: ${CORS_ORIGINS:-https://admin.funnyenglish.app}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@funnyenglish.app}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-Admin}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       VK_CLIENT_ID: ${VK_CLIENT_ID:-}

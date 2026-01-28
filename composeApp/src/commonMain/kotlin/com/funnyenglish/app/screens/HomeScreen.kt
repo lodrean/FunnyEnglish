@@ -33,7 +33,8 @@ fun HomeScreen(
     onLoadData: () -> Unit,
     onCategoryClick: (String) -> Unit,
     onTestClick: (String) -> Unit,
-    onViewAllCategories: () -> Unit
+    onViewAllCategories: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         onLoadData()
@@ -62,7 +63,8 @@ fun HomeScreen(
                 displayName = state.userProfile?.user?.displayName ?: "Друг",
                 level = state.userProfile?.user?.level ?: 1,
                 totalPoints = state.userProfile?.user?.totalPoints ?: 0,
-                currentStreak = state.userProfile?.user?.currentStreak ?: 0
+                currentStreak = state.userProfile?.user?.currentStreak ?: 0,
+                onClick = onProfileClick
             )
         }
 
@@ -124,12 +126,14 @@ private fun UserGreetingCard(
     displayName: String,
     level: Int,
     totalPoints: Int,
-    currentStreak: Int
+    currentStreak: Int,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {

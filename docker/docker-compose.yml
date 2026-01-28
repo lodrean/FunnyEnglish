@@ -54,6 +54,9 @@ services:
       S3_BUCKET: funnyenglish
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@funnyenglish.app}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-Admin}
     ports:
       - "8080:8080"
     depends_on:

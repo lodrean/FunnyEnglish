@@ -12,6 +12,7 @@ interface TestRepository : JpaRepository<Test, UUID> {
     fun findByCategoryIdAndIsPublishedTrueOrderByDisplayOrder(categoryId: UUID): List<Test>
     fun findByIsPublishedTrueOrderByDisplayOrder(): List<Test>
     fun findByDifficultyAndIsPublishedTrueOrderByDisplayOrder(difficulty: Difficulty): List<Test>
+    fun countByIsPublishedTrue(): Long
 
     @Query("""
         SELECT t FROM Test t

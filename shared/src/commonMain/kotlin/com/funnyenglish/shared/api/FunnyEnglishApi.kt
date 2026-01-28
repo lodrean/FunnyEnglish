@@ -1,12 +1,16 @@
 package com.funnyenglish.shared.api
 
 import com.funnyenglish.shared.model.*
+import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -15,7 +19,8 @@ import kotlinx.serialization.json.Json
 
 class FunnyEnglishApi(
     private val baseUrl: String,
-    private val tokenProvider: TokenProvider
+    private val tokenProvider: TokenProvider,
+    private val enableNetworkLogs: Boolean = false
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -42,6 +47,19 @@ class FunnyEnglishApi(
         install(HttpTimeout) {
             requestTimeoutMillis = 30000
             connectTimeoutMillis = 10000
+            socketTimeoutMillis = 30000
+        }
+
+        if (enableNetworkLogs) {
+            install(Logging) {
+                logger = object : Logger {
+                    override fun log(message: String) {
+                        Napier.d(message = message, tag = "HttpClient")
+                    }
+                }
+                level = LogLevel.ALL
+                sanitizeHeader { header -> header == HttpHeaders.Authorization }
+            }
         }
 
         defaultRequest {
@@ -138,6 +156,9 @@ class FunnyEnglishApi(
                 Result.failure(ApiException(e.response.status.value, errorBody))
             }
         } catch (e: Exception) {
+            if (enableNetworkLogs) {
+                Napier.e(message = "HTTP call failed", throwable = e)
+            }
             Result.failure(ApiException(0, e.message ?: "Unknown error"))
         }
     }

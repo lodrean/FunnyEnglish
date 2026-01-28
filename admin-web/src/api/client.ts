@@ -4,7 +4,11 @@ import type {
   LoginRequest,
   Test,
   Category,
-  CreateTestRequest
+  CreateTestRequest,
+  AdminUserSummary,
+  AdminUserDetail,
+  AdminAnalytics,
+  AdminSettings
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -72,6 +76,37 @@ export const updateTest = async (id: string, data: Partial<CreateTestRequest>): 
 
 export const deleteTest = async (id: string): Promise<void> => {
   await api.delete(`/admin/tests/${id}`);
+};
+
+// Users - Admin
+export const getAdminUsers = async (options: {
+  query?: string;
+  role?: string;
+} = {}): Promise<AdminUserSummary[]> => {
+  const response = await api.get<AdminUserSummary[]>('/admin/users', {
+    params: {
+      q: options.query,
+      role: options.role,
+    },
+  });
+  return response.data;
+};
+
+export const getAdminUser = async (id: string): Promise<AdminUserDetail> => {
+  const response = await api.get<AdminUserDetail>(`/admin/users/${id}`);
+  return response.data;
+};
+
+// Analytics - Admin
+export const getAdminAnalytics = async (): Promise<AdminAnalytics> => {
+  const response = await api.get<AdminAnalytics>('/admin/analytics');
+  return response.data;
+};
+
+// Settings - Admin
+export const getAdminSettings = async (): Promise<AdminSettings> => {
+  const response = await api.get<AdminSettings>('/admin/settings');
+  return response.data;
 };
 
 // Media upload

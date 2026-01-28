@@ -1,6 +1,8 @@
 package com.funnyenglish.controller
 
 import com.funnyenglish.dto.*
+import com.funnyenglish.service.AdminService
+import com.funnyenglish.service.AdminSettingsService
 import com.funnyenglish.service.StorageService
 import com.funnyenglish.service.TestService
 import jakarta.validation.Valid
@@ -12,7 +14,9 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/admin")
 class AdminController(
     private val testService: TestService,
-    private val storageService: StorageService
+    private val storageService: StorageService,
+    private val adminService: AdminService,
+    private val adminSettingsService: AdminSettingsService
 ) {
     // Tests management
     @GetMapping("/tests")
@@ -44,6 +48,27 @@ class AdminController(
     fun deleteTest(@PathVariable testId: String): ResponseEntity<Unit> {
         testService.deleteTest(testId)
         return ResponseEntity.noContent().build()
+    }
+
+    // Users management
+    @GetMapping("/users")
+    fun getUsers(
+        @RequestParam("q", required = false) query: String?,
+        @RequestParam("role", required = false) role: String?
+    ): ResponseEntity<List<UserResponse>> {
+        return ResponseEntity.ok(adminService.getUsers(query, role))
+    }
+
+    // Analytics
+    @GetMapping("/analytics")
+    fun getAnalytics(): ResponseEntity<AdminAnalyticsResponse> {
+        return ResponseEntity.ok(adminService.getAnalytics())
+    }
+
+    // Settings
+    @GetMapping("/settings")
+    fun getSettings(): ResponseEntity<AdminSettingsResponse> {
+        return ResponseEntity.ok(adminSettingsService.getSettings())
     }
 
     // Media upload

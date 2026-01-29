@@ -8,7 +8,11 @@ import type {
   AdminUserSummary,
   AdminUserDetail,
   AdminAnalytics,
-  AdminSettings
+  AdminSettings,
+  DailyActivity,
+  LevelDistribution,
+  PopularTest,
+  RecentActivityItem
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -100,6 +104,32 @@ export const getAdminUser = async (id: string): Promise<AdminUserDetail> => {
 // Analytics - Admin
 export const getAdminAnalytics = async (): Promise<AdminAnalytics> => {
   const response = await api.get<AdminAnalytics>('/admin/analytics');
+  return response.data;
+};
+
+export const getAdminDailyActivity = async (days: number = 7): Promise<DailyActivity[]> => {
+  const response = await api.get<DailyActivity[]>('/admin/analytics/daily-activity', {
+    params: { days },
+  });
+  return response.data;
+};
+
+export const getAdminLevelDistribution = async (): Promise<LevelDistribution[]> => {
+  const response = await api.get<LevelDistribution[]>('/admin/analytics/levels');
+  return response.data;
+};
+
+export const getPopularTests = async (limit: number = 5): Promise<PopularTest[]> => {
+  const response = await api.get<PopularTest[]>('/admin/analytics/popular-tests', {
+    params: { limit },
+  });
+  return response.data;
+};
+
+export const getRecentActivity = async (limit: number = 10): Promise<RecentActivityItem[]> => {
+  const response = await api.get<RecentActivityItem[]>('/admin/analytics/recent-activity', {
+    params: { limit },
+  });
   return response.data;
 };
 

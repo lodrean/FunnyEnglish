@@ -4,6 +4,7 @@ import com.funnyenglish.entity.Achievement
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.Instant
 import java.util.UUID
 
 @Repository
@@ -19,4 +20,16 @@ interface AchievementRepository : JpaRepository<Achievement, UUID> {
         WHERE ua.user_id = :userId
     """, nativeQuery = true)
     fun findByUserId(userId: UUID): List<Achievement>
+
+    @Query(
+        value = """
+            SELECT DATE(earned_at) as date, COUNT(*) as count
+            FROM user_achievements
+            WHERE earned_at >= :startDate
+            GROUP BY DATE(earned_at)
+            ORDER BY DATE(earned_at)
+        """,
+        nativeQuery = true
+    )
+    fun countAchievementsEarnedByDay(startDate: Instant): List<DateCountProjection>
 }

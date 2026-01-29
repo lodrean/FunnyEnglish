@@ -1,21 +1,24 @@
 package com.funnyenglish.app.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -34,7 +37,8 @@ fun HomeScreen(
     onCategoryClick: (String) -> Unit,
     onTestClick: (String) -> Unit,
     onViewAllCategories: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onContinueLearning: () -> Unit = {}
 ) {
     LaunchedEffect(Unit) {
         onLoadData()
@@ -54,29 +58,30 @@ fun HomeScreen(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(FunnyColors.Background),
+        contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        // User greeting card
+        // Top Navigation Bar
         item {
-            UserGreetingCard(
+            TopNavBar(
                 displayName = state.userProfile?.user?.displayName ?: "Друг",
                 level = state.userProfile?.user?.level ?: 1,
-                totalPoints = state.userProfile?.user?.totalPoints ?: 0,
-                currentStreak = state.userProfile?.user?.currentStreak ?: 0,
-                onClick = onProfileClick
+                streak = state.userProfile?.user?.currentStreak ?: 0,
+                points = state.userProfile?.user?.totalPoints ?: 0,
+                onProfileClick = onProfileClick
             )
         }
 
-        // Progress summary
-        state.userProfile?.let { profile ->
-            item {
-                ProgressSummaryCard(
-                    testsCompleted = profile.stats.testsCompleted.toInt(),
-                    totalStars = profile.stats.totalStars,
-                    pointsToNextLevel = profile.stats.pointsToNextLevel
-                )
-            }
+        // Level Progress Hero Card
+        item {
+            LevelProgressCard(
+                level = state.userProfile?.user?.level ?: 1,
+                currentPoints = state.userProfile?.user?.totalPoints ?: 0,
+                pointsToNextLevel = state.userProfile?.stats?.pointsToNextLevel ?: 100,
+                onContinueLearning = onContinueLearning
+            )
         }
 
         // Categories section
@@ -88,31 +93,24 @@ fun HomeScreen(
         }
 
         item {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(state.categories) { category ->
-                    CategoryCard(
-                        category = category,
-                        onClick = { onCategoryClick(category.id) }
-                    )
-                }
-            }
+            CategoriesRow(
+                categories = state.categories,
+                onCategoryClick = onCategoryClick
+            )
         }
 
         // Recent tests section
         if (state.recentTests.isNotEmpty()) {
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 SectionHeader(
-                    title = "Продолжить обучение",
+                    title = "Недавние тесты",
                     onViewAll = null
                 )
             }
 
-            items(state.recentTests) { test ->
-                TestListItemCard(
+            items(state.recentTests.take(3)) { test ->
+                RecentTestCard(
                     test = test,
                     onClick = { onTestClick(test.id) }
                 )
@@ -122,142 +120,218 @@ fun HomeScreen(
 }
 
 @Composable
-private fun UserGreetingCard(
+private fun TopNavBar(
     displayName: String,
     level: Int,
-    totalPoints: Int,
-    currentStreak: Int,
-    onClick: () -> Unit
+    streak: Int,
+    points: Int,
+    onProfileClick: () -> Unit
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(FunnyColors.Primary, FunnyColors.Cyan)
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .padding(20.dp)
+        // Avatar and greeting
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(onClick = onProfileClick)
         ) {
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+            Box {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(FunnyColors.Primary.copy(alpha = 0.2f))
+                        .border(2.dp, FunnyColors.Primary, CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Привет, $displayName!",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Готов к новым знаниям?",
-                            fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
-                    }
-
-                    LevelBadge(level = level)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    StatBadge(
-                        icon = Icons.Filled.Star,
-                        value = "$currentStreak дней",
-                        label = "Серия"
+                    Text(
+                        text = displayName.firstOrNull()?.toString() ?: "?",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = FunnyColors.Primary
                     )
-                    PointsBadge(points = totalPoints)
                 }
+                // Level badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 4.dp, y = 4.dp)
+                        .background(FunnyColors.Secondary, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        text = "LVL $level",
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = "Привет!",
+                    fontSize = 12.sp,
+                    color = FunnyColors.TextSecondary
+                )
+                Text(
+                    text = "$displayName!",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = FunnyColors.OnBackground
+                )
+            }
+        }
+
+        // Stats badges
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White,
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Streak
+                Text(
+                    text = "🔥",
+                    fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = streak.toString(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(16.dp)
+                        .background(FunnyColors.Border)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Points
+                Icon(
+                    Icons.Default.Star,
+                    contentDescription = null,
+                    tint = FunnyColors.StarFilled,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = points.toString(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
 @Composable
-private fun StatBadge(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    value: String,
-    label: String
+private fun LevelProgressCard(
+    level: Int,
+    currentPoints: Int,
+    pointsToNextLevel: Int,
+    onContinueLearning: () -> Unit
 ) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.2f)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = FunnyColors.Secondary,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = value,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
-        }
-    }
-}
+    val totalForLevel = currentPoints + pointsToNextLevel
+    val progress = if (totalForLevel > 0) currentPoints.toFloat() / totalForLevel else 0f
 
-@Composable
-private fun ProgressSummaryCard(
-    testsCompleted: Int,
-    totalStars: Int,
-    pointsToNextLevel: Int
-) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            // Circular progress
+            Box(
+                modifier = Modifier.size(120.dp),
+                contentAlignment = Alignment.Center
             ) {
-                StatItem(value = testsCompleted.toString(), label = "Тестов")
-                StatItem(value = totalStars.toString(), label = "Звёзд")
-                StatItem(value = pointsToNextLevel.toString(), label = "До уровня")
+                CircularProgressIndicator(
+                    progress = { 1f },
+                    modifier = Modifier.fillMaxSize(),
+                    color = FunnyColors.SurfaceVariant,
+                    strokeWidth = 8.dp
+                )
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxSize(),
+                    color = FunnyColors.Primary,
+                    strokeWidth = 8.dp
+                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = FunnyColors.Primary
+                    )
+                    Text(
+                        text = "ПРОГРЕСС",
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = FunnyColors.TextMuted,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Прогресс уровня $level",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Ещё $pointsToNextLevel XP до уровня ${level + 1}",
+                fontSize = 14.sp,
+                color = FunnyColors.TextSecondary
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onContinueLearning,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FunnyColors.Primary
+                )
+            ) {
+                Text(
+                    text = "Продолжить обучение",
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun StatItem(value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = FunnyColors.Primary
-        )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = FunnyColors.TextSecondary
-        )
     }
 }
 
@@ -269,23 +343,23 @@ private fun SectionHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 18.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = FunnyColors.OnBackground
         )
 
         if (onViewAll != null) {
             TextButton(onClick = onViewAll) {
-                Text("Все")
-                Icon(
-                    Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                Text(
+                    text = "Все",
+                    fontWeight = FontWeight.Bold,
+                    color = FunnyColors.Primary
                 )
             }
         }
@@ -293,61 +367,213 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun CategoryCard(
+private fun CategoriesRow(
+    categories: List<Category>,
+    onCategoryClick: (String) -> Unit
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(categories) { category ->
+            CategoryChip(
+                category = category,
+                onClick = { onCategoryClick(category.id) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryChip(
     category: Category,
     onClick: () -> Unit
 ) {
-    val colors = listOf(
-        listOf(FunnyColors.Pink, FunnyColors.Purple),
-        listOf(FunnyColors.Green, FunnyColors.Cyan),
-        listOf(FunnyColors.Secondary, FunnyColors.Yellow),
-        listOf(FunnyColors.Primary, FunnyColors.PrimaryDark)
-    )
-    val colorPair = colors[category.id.hashCode().mod(colors.size)]
+    val (bgColor, iconColor, emoji) = when {
+        category.name.contains("Животные", ignoreCase = true) -> Triple(
+            FunnyColors.Purple.copy(alpha = 0.1f),
+            FunnyColors.Purple,
+            "🐾"
+        )
+        category.name.contains("Цвета", ignoreCase = true) -> Triple(
+            FunnyColors.Secondary.copy(alpha = 0.1f),
+            FunnyColors.Secondary,
+            "🎨"
+        )
+        category.name.contains("Числа", ignoreCase = true) -> Triple(
+            FunnyColors.Primary.copy(alpha = 0.1f),
+            FunnyColors.Primary,
+            "🔢"
+        )
+        category.name.contains("Еда", ignoreCase = true) -> Triple(
+            FunnyColors.Orange.copy(alpha = 0.1f),
+            FunnyColors.Orange,
+            "🍎"
+        )
+        category.name.contains("Семья", ignoreCase = true) -> Triple(
+            FunnyColors.Pink.copy(alpha = 0.1f),
+            FunnyColors.Pink,
+            "👨‍👩‍👧"
+        )
+        category.name.contains("Одежда", ignoreCase = true) -> Triple(
+            FunnyColors.Indigo.copy(alpha = 0.1f),
+            FunnyColors.Indigo,
+            "👕"
+        )
+        else -> Triple(
+            FunnyColors.Primary.copy(alpha = 0.1f),
+            FunnyColors.Primary,
+            "📚"
+        )
+    }
+
+    val progress = if (category.testsCount > 0) {
+        category.completedCount.toFloat() / category.testsCount
+    } else 0f
 
     Card(
         modifier = Modifier
             .width(140.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = Brush.linearGradient(listOf(iconColor.copy(alpha = 0.2f), iconColor.copy(alpha = 0.2f)))
+        )
     ) {
-        Box(
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(iconColor, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = emoji,
+                    fontSize = 24.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = category.name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Progress bar
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = iconColor,
+                trackColor = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "${(progress * 100).toInt()}% пройдено",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = iconColor,
+                letterSpacing = 0.5.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecentTestCard(
+    test: TestListItem,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(colorPair),
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(FunnyColors.SurfaceVariant, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
-                    text = category.name,
-                    fontSize = 16.sp,
+                    text = test.title.firstOrNull()?.toString() ?: "?",
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = FunnyColors.Primary
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = test.title,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${category.testsCount} тестов",
-                    fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                if (category.completedCount > 0) {
-                    ProgressBar(
-                        progress = category.completedCount.toFloat() / category.testsCount,
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color.White,
-                        trackColor = Color.White.copy(alpha = 0.3f)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DifficultyBadge(difficulty = test.difficulty)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${test.questionsCount} вопросов",
+                        fontSize = 12.sp,
+                        color = FunnyColors.TextSecondary
                     )
+                }
+            }
+
+            // Stars or Play button
+            test.userProgress?.let { progress ->
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    StarsDisplay(stars = progress.stars, size = 16)
                     Spacer(modifier = Modifier.height(4.dp))
-                    StarsDisplay(
-                        stars = category.totalStars,
-                        maxStars = category.testsCount * 3,
-                        size = 12
+                    Text(
+                        text = "${progress.percentage}%",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = FunnyColors.Success
+                    )
+                }
+            } ?: run {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = FunnyColors.Primary
+                ) {
+                    Text(
+                        text = "Играть",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
             }
@@ -360,59 +586,5 @@ fun TestListItemCard(
     test: TestListItem,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Thumbnail placeholder
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(FunnyColors.SurfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = test.title.firstOrNull()?.toString() ?: "?",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = FunnyColors.Primary
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = test.title,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    DifficultyBadge(difficulty = test.difficulty)
-                    Text(
-                        text = "${test.questionsCount} вопросов",
-                        fontSize = 12.sp,
-                        color = FunnyColors.TextSecondary
-                    )
-                }
-            }
-
-            test.userProgress?.let { progress ->
-                StarsDisplay(stars = progress.stars, size = 20)
-            }
-        }
-    }
+    RecentTestCard(test = test, onClick = onClick)
 }

@@ -15,6 +15,16 @@ kotlin {
         }
     }
 
+    jvm("desktop") {
+        compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+                }
+            }
+        }
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -27,6 +37,8 @@ kotlin {
     }
 
     sourceSets {
+        val desktopMain by getting
+
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
@@ -42,6 +54,10 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.android)
+        }
+
+        desktopMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
         }
 
         iosMain.dependencies {

@@ -43,11 +43,8 @@ actual class AudioPlayer {
 }
 
 actual class Settings actual constructor(name: String) {
-    private lateinit var prefs: SharedPreferences
-
-    fun init(context: Context, name: String) {
-        prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
-    }
+    private val prefs: SharedPreferences = AndroidContextHolder.requireContext()
+        .getSharedPreferences(name, Context.MODE_PRIVATE)
 
     actual fun getString(key: String, defaultValue: String?): String? =
         prefs.getString(key, defaultValue)

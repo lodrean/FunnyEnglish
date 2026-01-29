@@ -32,7 +32,10 @@ data class TestProgressSummary(
     val bestScore: Int,
     val maxScore: Int,
     val stars: Int
-)
+) {
+    val percentage: Int
+        get() = if (maxScore > 0) (bestScore * 100 / maxScore) else 0
+}
 
 @Serializable
 data class TestDetail(

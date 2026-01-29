@@ -378,6 +378,13 @@ function QuestionEditor({
   canRemove: boolean;
 }) {
   const questionType = watch(`questions.${index}.type`);
+  const showQuestionImage = questionType === 'IMAGE_SELECT' || questionType === 'DRAG_DROP_IMAGE';
+  const showQuestionAudio = questionType === 'AUDIO_SELECT';
+  const showAnswerImage = questionType === 'IMAGE_SELECT' || questionType === 'DRAG_DROP_IMAGE';
+  const answerTextLabel =
+    questionType === 'IMAGE_SELECT' || questionType === 'DRAG_DROP_IMAGE'
+      ? 'Подпись (необязательно)'
+      : 'Текст ответа';
 
   const {
     fields: answerFields,
@@ -445,6 +452,47 @@ function QuestionEditor({
               {...register(`questions.${index}.text`)}
             />
           </Grid>
+          {(showQuestionImage || showQuestionAudio) && (
+            <>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Медиа вопроса
+                </Typography>
+              </Grid>
+              {showQuestionImage && (
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name={`questions.${index}.imageUrl`}
+                    control={control}
+                    render={({ field }) => (
+                      <MediaUploader
+                        value={field.value}
+                        onChange={field.onChange}
+                        folder="questions/images"
+                        accept="image/*"
+                      />
+                    )}
+                  />
+                </Grid>
+              )}
+              {showQuestionAudio && (
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name={`questions.${index}.audioUrl`}
+                    control={control}
+                    render={({ field }) => (
+                      <MediaUploader
+                        value={field.value}
+                        onChange={field.onChange}
+                        folder="questions/audio"
+                        accept="audio/*"
+                      />
+                    )}
+                  />
+                </Grid>
+              )}
+            </>
+          )}
 
           {/* Answers */}
           <Grid item xs={12}>
@@ -463,43 +511,62 @@ function QuestionEditor({
               <Box
                 key={answerField.id}
                 sx={{
-                  display: 'flex',
-                  gap: 1,
-                  mb: 1,
-                  alignItems: 'center',
+                  mb: 2,
+                  p: 1.5,
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
                 }}
               >
-                <TextField
-                  size="small"
-                  label="Текст ответа"
-                  {...register(`questions.${index}.answers.${aIndex}.text`)}
-                  sx={{ flex: 1 }}
-                />
-                {questionType === 'DRAG_DROP_IMAGE' && (
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                   <TextField
                     size="small"
-                    label="Цель"
-                    {...register(`questions.${index}.answers.${aIndex}.matchTarget`)}
-                    sx={{ width: 120 }}
+                    label={answerTextLabel}
+                    {...register(`questions.${index}.answers.${aIndex}.text`)}
+                    sx={{ flex: 1, minWidth: 220 }}
                   />
-                )}
-                <Controller
-                  name={`questions.${index}.answers.${aIndex}.isCorrect`}
-                  control={control}
-                  render={({ field }) => (
-                    <FormControlLabel
-                      control={<Switch {...field} checked={field.value} size="small" />}
-                      label="Верный"
+                  {questionType === 'DRAG_DROP_IMAGE' && (
+                    <TextField
+                      size="small"
+                      label="Цель"
+                      {...register(`questions.${index}.answers.${aIndex}.matchTarget`)}
+                      sx={{ width: 140 }}
                     />
                   )}
-                />
-                <IconButton
-                  size="small"
-                  onClick={() => removeAnswer(aIndex)}
-                  disabled={answerFields.length <= 1}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
+                  <Controller
+                    name={`questions.${index}.answers.${aIndex}.isCorrect`}
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Switch {...field} checked={field.value} size="small" />}
+                        label="Верный"
+                      />
+                    )}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => removeAnswer(aIndex)}
+                    disabled={answerFields.length <= 1}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </Box>
+                {showAnswerImage && (
+                  <Box sx={{ mt: 1 }}>
+                    <Controller
+                      name={`questions.${index}.answers.${aIndex}.imageUrl`}
+                      control={control}
+                      render={({ field }) => (
+                        <MediaUploader
+                          value={field.value}
+                          onChange={field.onChange}
+                          folder="answers/images"
+                          accept="image/*"
+                        />
+                      )}
+                    />
+                  </Box>
+                )}
               </Box>
             ))}
           </Grid>

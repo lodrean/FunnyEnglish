@@ -19,6 +19,37 @@ export interface AdminAnalytics {
   totalCompletions: number;
   totalCategories: number;
   totalAchievements: number;
+  topCategories: CategoryCompletion[];
+}
+
+export interface CategoryCompletion {
+  categoryId: string;
+  categoryName: string;
+  completions: number;
+}
+
+export interface DailyActivity {
+  date: string;
+  newUsers: number;
+  testsCompleted: number;
+  achievementsEarned: number;
+}
+
+export interface LevelDistribution {
+  level: number;
+  users: number;
+}
+
+export interface PopularTest {
+  id: string;
+  name: string;
+  completions: number;
+}
+
+export interface RecentActivityItem {
+  userName: string;
+  type: string;
+  timestamp: string;
 }
 
 export interface AdminSettings {

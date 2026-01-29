@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -35,6 +38,7 @@ import com.funnyenglish.app.components.LoadingIndicator
 import com.funnyenglish.app.components.ProgressBar
 import com.funnyenglish.app.components.StarsDisplay
 import com.funnyenglish.app.theme.FunnyColors
+import com.funnyenglish.app.theme.FunnyTheme
 import com.funnyenglish.app.viewmodel.ProfileState
 import com.funnyenglish.shared.model.CategoryProgress
 
@@ -44,8 +48,11 @@ fun ProfileScreen(
     state: ProfileState,
     onLoad: () -> Unit,
     onBack: () -> Unit,
+    onSettingsClick: () -> Unit,
     onAchievementsClick: () -> Unit
 ) {
+    val colors = FunnyTheme.colors
+
     LaunchedEffect(Unit) { onLoad() }
 
     if (state.isLoading && state.userProfile == null) {
@@ -64,14 +71,23 @@ fun ProfileScreen(
     val profile = state.userProfile ?: return
 
     Scaffold(
+        containerColor = colors.background,
         topBar = {
             TopAppBar(
-                title = { Text("Профиль") },
+                title = {
+                    Text(
+                        text = "Profile",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colors.background
+                )
             )
         }
     ) { padding ->
@@ -212,6 +228,37 @@ fun ProfileScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            item {
+                Card(
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSettingsClick() }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = null,
+                            tint = FunnyColors.Primary
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Настройки",
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = FunnyColors.TextSecondary
+                        )
                     }
                 }
             }

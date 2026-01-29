@@ -5,6 +5,7 @@ import com.funnyenglish.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.Instant
 import java.util.UUID
 
 @Repository
@@ -32,4 +33,64 @@ interface UserRepository : JpaRepository<User, UUID> {
         LIMIT 1
     """)
     fun findUserBelow(userId: UUID): User?
+
+    @Query(
+        value = """
+            SELECT DATE(created_at) as date, COUNT(*) as count
+            FROM users
+            WHERE created_at >= :startDate
+            GROUP BY DATE(created_at)
+            ORDER BY DATE(created_at)
+        """,
+        nativeQuery = true
+    )
+    fun countNewUsersByDay(startDate: Instant): List<DateCountProjection>
+
+    @Query("""
+        SELECT u.level as level, COUNT(u) as count
+        FROM User u
+        GROUP BY u.level
+        ORDER BY u.level
+    """)
+    fun countUsersByLevel(): List<LevelCountProjection>
+
+    @Query(
+        value = """
+            SELECT
+                activity.type as type,
+                activity."userName" as "userName",
+                activity.details as details,
+                activity."timestamp" as "timestamp"
+            FROM (
+                SELECT
+                    'NEW_USER' AS type,
+                    u.display_name AS "userName",
+                    CAST(NULL AS text) AS details,
+                    u.created_at AS "timestamp"
+                FROM users u
+                UNION ALL
+                SELECT
+                    'TEST_COMPLETED' AS type,
+                    u.display_name AS "userName",
+                    t.title AS details,
+                    p.last_attempt_at AS "timestamp"
+                FROM progress p
+                JOIN users u ON u.id = p.user_id
+                JOIN tests t ON t.id = p.test_id
+                UNION ALL
+                SELECT
+                    'ACHIEVEMENT' AS type,
+                    u.display_name AS "userName",
+                    a.name AS details,
+                    ua.earned_at AS "timestamp"
+                FROM user_achievements ua
+                JOIN users u ON u.id = ua.user_id
+                JOIN achievements a ON a.id = ua.achievement_id
+            ) AS activity
+            ORDER BY activity."timestamp" DESC
+            LIMIT :limit
+        """,
+        nativeQuery = true
+    )
+    fun findRecentActivity(limit: Int): List<RecentActivityProjection>
 }

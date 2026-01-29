@@ -13,6 +13,8 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 @rem
+@rem SPDX-License-Identifier: Apache-2.0
+@rem
 
 @if "%DEBUG%"=="" @echo off
 @rem ##########################################################################
@@ -21,8 +23,8 @@
 @rem
 @rem ##########################################################################
 
-@rem Set local scope for the variables with windows://gradle.org/issues/24://gradle.org/issues/24://gradle.org/issues/24
-setlocal
+@rem Set local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" setlocal
 
 set DIRNAME=%~dp0
 if "%DIRNAME%"=="" set DIRNAME=.
@@ -75,18 +77,18 @@ set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
 
 :end
-@rem End local scope for the variables with windows://gradle.org/issues/24://gradle.org/issues/24://gradle.org/issues/24
-endlocal
-
-:omega
-exit /b %EXIT_CODE%
+@rem End local scope for the variables with windows NT shell
+if %ERRORLEVEL% equ 0 goto mainEnd
 
 :fail
-rem Set variable EXIT_CODE if not defined
-if not defined EXIT_CODE set EXIT_CODE=1
-rem Set variable GRADLE_EXIT_CONSOLE if not defined and this is a ctrl+c event
-if not defined GRADLE_EXIT_CONSOLE if "%EXIT_CODE%"=="130" set GRADLE_EXIT_CONSOLE=true
-rem Only stop the build on ctrl+c event and if GRADLE_EXIT_CONSOLE is true
-if defined GRADLE_EXIT_CONSOLE if "%GRADLE_EXIT_CONSOLE%"=="true" exit %EXIT_CODE%
-rem Otherwise just return the exit code
-goto omega
+rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+rem the _cmd.exe /c_ return code!
+set EXIT_CODE=%ERRORLEVEL%
+if %EXIT_CODE% equ 0 set EXIT_CODE=1
+if not ""=="%GRADLE_EXIT_CONSOLE%" exit %EXIT_CODE%
+exit /b %EXIT_CODE%
+
+:mainEnd
+if "%OS%"=="Windows_NT" endlocal
+
+:omega

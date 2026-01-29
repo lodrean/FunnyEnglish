@@ -96,18 +96,21 @@ class AchievementService(
             }
         }
 
-        // Award new achievements
+        // Award new achievements and bonus points in a single save to avoid race condition
         if (newAchievements.isNotEmpty()) {
             user.achievements.addAll(newAchievements)
-            userRepository.save(user)
 
-            // Add bonus points for achievements
+            // Calculate bonus points for achievements
             val bonusPoints = newAchievements.sumOf { it.pointsReward }
-            if (bonusPoints > 0) {
-                userRepository.save(
-                    user.copy(totalPoints = user.totalPoints + bonusPoints)
-                )
+
+            // Update user with achievements and bonus points in one atomic operation
+            val updatedUser = if (bonusPoints > 0) {
+                user.copy(totalPoints = user.totalPoints + bonusPoints)
+            } else {
+                user
             }
+
+            userRepository.save(updatedUser)
         }
 
         return newAchievements.map { it.toResponse(earned = true) }

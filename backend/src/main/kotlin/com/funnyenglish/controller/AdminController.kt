@@ -65,6 +65,28 @@ class AdminController(
         return ResponseEntity.ok(adminService.getAnalytics())
     }
 
+    @GetMapping("/analytics/daily-activity", "/analytics/activity")
+    fun getDailyActivity(
+        @RequestParam(defaultValue = "7") days: Int
+    ): ResponseEntity<List<DailyActivityResponse>> {
+        return ResponseEntity.ok(adminService.getDailyActivity(days))
+    }
+
+    @GetMapping("/analytics/levels")
+    fun getLevelDistribution(): ResponseEntity<List<LevelDistributionResponse>> {
+        return ResponseEntity.ok(adminService.getLevelDistribution())
+    }
+
+    @GetMapping("/analytics/popular-tests")
+    fun getPopularTests(): ResponseEntity<List<PopularTestResponse>> {
+        return ResponseEntity.ok(adminService.getPopularTests())
+    }
+
+    @GetMapping("/analytics/recent-activity")
+    fun getRecentActivity(): ResponseEntity<List<RecentActivityResponse>> {
+        return ResponseEntity.ok(adminService.getRecentActivity())
+    }
+
     // Settings
     @GetMapping("/settings")
     fun getSettings(): ResponseEntity<AdminSettingsResponse> {

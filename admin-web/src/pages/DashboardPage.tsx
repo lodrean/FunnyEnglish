@@ -4,7 +4,7 @@ import {
   CardContent,
   Grid,
   Typography,
-  LinearProgress,
+  CircularProgress,
 } from '@mui/material';
 import {
   Quiz,
@@ -12,6 +12,12 @@ import {
   TrendingUp,
   EmojiEvents,
 } from '@mui/icons-material';
+import { useQuery } from '@tanstack/react-query';
+import {
+  getAdminAnalytics,
+  getPopularTests,
+  getRecentActivity,
+} from '../api/client';
 
 interface StatCardProps {
   title: string;
@@ -55,7 +61,85 @@ function StatCard({ title, value, icon, color, change }: StatCardProps) {
   );
 }
 
+function formatTimeAgo(value?: string) {
+  if (!value) {
+    return '—';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs < 0) {
+    return date.toLocaleString('ru-RU');
+  }
+
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) {
+    return 'только что';
+  }
+  if (minutes < 60) {
+    return `${minutes} мин назад`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours} ч назад`;
+  }
+
+  const days = Math.floor(hours / 24);
+  if (days < 30) {
+    return `${days} дн назад`;
+  }
+
+  return date.toLocaleString('ru-RU');
+}
+
 export default function DashboardPage() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: getAdminAnalytics,
+  });
+
+  const {
+    data: popularTests,
+    isLoading: isPopularLoading,
+    error: popularError,
+  } = useQuery({
+    queryKey: ['popular-tests'],
+    queryFn: () => getPopularTests(5),
+  });
+
+  const {
+    data: recentActivity,
+    isLoading: isActivityLoading,
+    error: activityError,
+  } = useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: () => getRecentActivity(10),
+  });
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <Box>
+        <Typography variant="h5" fontWeight="bold" mb={3}>
+          Дашборд
+        </Typography>
+        <Typography color="text.secondary">Не удалось загрузить данные</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Typography variant="h5" fontWeight="bold" mb={3}>
@@ -66,34 +150,31 @@ export default function DashboardPage() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Всего тестов"
-            value={24}
+            value={data.totalTests}
             icon={<Quiz />}
             color="#4FC3F7"
-            change="+3 за неделю"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Пользователей"
-            value={1250}
+            value={data.totalUsers}
             icon={<People />}
             color="#FF9800"
-            change="+120 за неделю"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Прохождений"
-            value={8450}
+            value={data.totalCompletions}
             icon={<TrendingUp />}
             color="#4CAF50"
-            change="+15% к прошлой неделе"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Достижений выдано"
-            value={3200}
+            value={data.totalAchievements}
             icon={<EmojiEvents />}
             color="#9C27B0"
           />
@@ -107,27 +188,44 @@ export default function DashboardPage() {
               <Typography variant="h6" mb={2}>
                 Популярные тесты
               </Typography>
-              {[
-                { name: 'Животные - уровень 1', completions: 450, progress: 90 },
-                { name: 'Цвета для начинающих', completions: 380, progress: 76 },
-                { name: 'Числа от 1 до 10', completions: 320, progress: 64 },
-                { name: 'Моя семья', completions: 250, progress: 50 },
-                { name: 'Еда и напитки', completions: 200, progress: 40 },
-              ].map((test, index) => (
-                <Box key={index} mb={2}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2">{test.name}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {test.completions} прохождений
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={test.progress}
-                    sx={{ height: 8, borderRadius: 4 }}
-                  />
+              {isPopularLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress size={24} />
                 </Box>
-              ))}
+              ) : popularError ? (
+                <Typography variant="body2" color="text.secondary">
+                  Не удалось загрузить популярные тесты
+                </Typography>
+              ) : popularTests && popularTests.length > 0 ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  {popularTests.map((test) => (
+                    <Box
+                      key={test.id}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        py: 1,
+                        '&:not(:last-of-type)': {
+                          borderBottom: '1px solid',
+                          borderColor: 'divider',
+                        },
+                      }}
+                    >
+                      <Typography fontWeight="medium">
+                        {test.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {test.completions} прохождений
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Нет данных
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -138,32 +236,44 @@ export default function DashboardPage() {
               <Typography variant="h6" mb={2}>
                 Последняя активность
               </Typography>
-              {[
-                { action: 'Новый пользователь', user: 'Маша К.', time: '5 мин назад' },
-                { action: 'Тест пройден', user: 'Петя С.', time: '12 мин назад' },
-                { action: 'Достижение получено', user: 'Аня В.', time: '25 мин назад' },
-                { action: 'Новый пользователь', user: 'Дима Л.', time: '1 час назад' },
-                { action: 'Тест пройден', user: 'Катя М.', time: '2 часа назад' },
-              ].map((item, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    py: 1.5,
-                    borderBottom: index < 4 ? '1px solid' : 'none',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Typography variant="body2">{item.action}</Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="caption" color="primary">
-                      {item.user}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.time}
-                    </Typography>
-                  </Box>
+              {isActivityLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress size={24} />
                 </Box>
-              ))}
+              ) : activityError ? (
+                <Typography variant="body2" color="text.secondary">
+                  Не удалось загрузить активность
+                </Typography>
+              ) : recentActivity && recentActivity.length > 0 ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  {recentActivity.map((item, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        py: 1,
+                        '&:not(:last-of-type)': {
+                          borderBottom: '1px solid',
+                          borderColor: 'divider',
+                        },
+                      }}
+                    >
+                      <Typography fontWeight="medium">
+                        {item.userName}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {item.type}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatTimeAgo(item.timestamp)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Нет данных
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>

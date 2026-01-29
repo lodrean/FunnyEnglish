@@ -2,9 +2,12 @@ package com.funnyenglish.app.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
@@ -16,7 +19,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funnyenglish.app.theme.FunnyColors
@@ -244,5 +250,222 @@ fun ProgressBar(
                     )
                 )
         )
+    }
+}
+
+/**
+ * Reusable gradient button component matching Stitch design
+ */
+@Composable
+fun GradientButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    height: Dp = 56.dp,
+    colors: List<Color> = listOf(FunnyColors.Primary, FunnyColors.AccentPurple)
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.height(height),
+        shape = RoundedCornerShape(height / 2),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent
+        ),
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = if (enabled) {
+                        Brush.horizontalGradient(colors)
+                    } else {
+                        Brush.horizontalGradient(
+                            colors.map { it.copy(alpha = 0.5f) }
+                        )
+                    },
+                    shape = RoundedCornerShape(height / 2)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+    }
+}
+
+/**
+ * Reusable text field component with rounded corners matching Stitch design
+ */
+@Composable
+fun FunnyTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    leadingIcon: ImageVector? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    isError: Boolean = false,
+    enabled: Boolean = true,
+    singleLine: Boolean = true
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = leadingIcon?.let {
+            {
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = FunnyColors.TextSecondary
+                )
+            }
+        },
+        trailingIcon = trailingIcon,
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        singleLine = singleLine,
+        enabled = enabled,
+        isError = isError,
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = FunnyColors.Primary,
+            unfocusedBorderColor = FunnyColors.Border,
+            focusedLabelColor = FunnyColors.Primary,
+            unfocusedLabelColor = FunnyColors.TextSecondary,
+            cursorColor = FunnyColors.Primary,
+            errorBorderColor = FunnyColors.Error,
+            errorLabelColor = FunnyColors.Error,
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent
+        ),
+        modifier = modifier
+    )
+}
+
+/**
+ * Circular avatar component with initial letter
+ */
+@Composable
+fun AvatarCircle(
+    name: String,
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp,
+    backgroundColor: Color = FunnyColors.Primary.copy(alpha = 0.2f),
+    borderColor: Color = FunnyColors.Primary,
+    textColor: Color = FunnyColors.Primary,
+    fontSize: Int = 20
+) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .border(2.dp, borderColor, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = name.firstOrNull()?.uppercase() ?: "?",
+            fontSize = fontSize.sp,
+            fontWeight = FontWeight.Bold,
+            color = textColor
+        )
+    }
+}
+
+/**
+ * Section header with optional "View All" action
+ */
+@Composable
+fun SectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    onViewAll: (() -> Unit)? = null
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = FunnyColors.OnBackground
+        )
+
+        if (onViewAll != null) {
+            TextButton(onClick = onViewAll) {
+                Text(
+                    text = "View All",
+                    fontWeight = FontWeight.Bold,
+                    color = FunnyColors.Primary
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Stat item for profile screens
+ */
+@Composable
+fun StatItem(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    valueColor: Color = FunnyColors.Primary
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = valueColor
+        )
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = FunnyColors.TextSecondary
+        )
+    }
+}
+
+/**
+ * Badge component for categories/achievements
+ */
+@Composable
+fun CategoryEmoji(name: String): String {
+    return when {
+        name.contains("Animals", ignoreCase = true) ||
+        name.contains("Животные", ignoreCase = true) -> "🐾"
+        name.contains("Colors", ignoreCase = true) ||
+        name.contains("Цвета", ignoreCase = true) -> "🎨"
+        name.contains("Numbers", ignoreCase = true) ||
+        name.contains("Числа", ignoreCase = true) -> "🔢"
+        name.contains("Food", ignoreCase = true) ||
+        name.contains("Еда", ignoreCase = true) -> "🍎"
+        name.contains("Family", ignoreCase = true) ||
+        name.contains("Семья", ignoreCase = true) -> "👨‍👩‍👧"
+        name.contains("Clothes", ignoreCase = true) ||
+        name.contains("Одежда", ignoreCase = true) -> "👕"
+        else -> "📚"
     }
 }

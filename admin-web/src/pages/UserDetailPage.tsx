@@ -46,7 +46,7 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-user', id],
     queryFn: () => getAdminUser(id!),
     enabled: !!id,
@@ -60,8 +60,26 @@ export default function UserDetailPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <Box>
+        <Typography variant="h5" fontWeight="bold" mb={3}>
+          Пользователь
+        </Typography>
+        <Typography color="text.secondary">Не удалось загрузить данные</Typography>
+      </Box>
+    );
+  }
+
   if (!data) {
-    return null;
+    return (
+      <Box>
+        <Typography variant="h5" fontWeight="bold" mb={3}>
+          Пользователь
+        </Typography>
+        <Typography color="text.secondary">Нет данных для отображения</Typography>
+      </Box>
+    );
   }
 
   const { user, stats, progressSummary, progress, achievements } = data;
@@ -74,7 +92,7 @@ export default function UserDetailPage() {
         </IconButton>
         <Box>
           <Typography variant="h5" fontWeight="bold">
-            {user.displayName}
+            {user.displayName || user.email}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {user.email}

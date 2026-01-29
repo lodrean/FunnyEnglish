@@ -30,17 +30,20 @@ class JwtAuthenticationFilter(
 
         if (jwtService.validateToken(token)) {
             val userId = jwtService.extractUserId(token)
-            val role = jwtService.extractRole(token) ?: "USER"
 
-            val authorities = listOf(SimpleGrantedAuthority("ROLE_$role"))
+            // Skip authentication if userId cannot be extracted
+            if (userId != null) {
+                val role = jwtService.extractRole(token) ?: "USER"
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_$role"))
 
-            val authentication = UsernamePasswordAuthenticationToken(
-                UserPrincipal(userId!!, role),
-                null,
-                authorities
-            )
+                val authentication = UsernamePasswordAuthenticationToken(
+                    UserPrincipal(userId, role),
+                    null,
+                    authorities
+                )
 
-            SecurityContextHolder.getContext().authentication = authentication
+                SecurityContextHolder.getContext().authentication = authentication
+            }
         }
 
         filterChain.doFilter(request, response)

@@ -50,15 +50,6 @@ class AdminController(
         return ResponseEntity.noContent().build()
     }
 
-    // Users management
-    @GetMapping("/users")
-    fun getUsers(
-        @RequestParam("q", required = false) query: String?,
-        @RequestParam("role", required = false) role: String?
-    ): ResponseEntity<List<UserResponse>> {
-        return ResponseEntity.ok(adminService.getUsers(query, role))
-    }
-
     // Analytics
     @GetMapping("/analytics")
     fun getAnalytics(): ResponseEntity<AdminAnalyticsResponse> {

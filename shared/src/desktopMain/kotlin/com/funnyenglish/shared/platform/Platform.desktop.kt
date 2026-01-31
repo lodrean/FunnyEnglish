@@ -1,65 +1,78 @@
 package com.funnyenglish.shared.platform
 
+import javazoom.jl.player.advanced.AdvancedPlayer
+import javazoom.jl.player.advanced.PlaybackEvent
+import javazoom.jl.player.advanced.PlaybackListener
 import java.net.URL
 import java.util.prefs.Preferences
-import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.Clip
-import javax.sound.sampled.LineEvent
+import kotlin.concurrent.thread
 
 actual class AudioPlayer {
-    private var clip: Clip? = null
+    private var player: AdvancedPlayer? = null
+    private var playbackThread: Thread? = null
     private var onCompletionListener: (() -> Unit)? = null
-    private var isPlaying: Boolean = false
+    @Volatile
+    private var isCurrentlyPlaying = false
+    @Volatile
+    private var isPaused = false
+    private var currentUrl: String? = null
 
     actual fun play(url: String) {
         stop()
-        val audioStream = try {
-            AudioSystem.getAudioInputStream(URL(url))
-        } catch (_: Exception) {
-            isPlaying = false
-            return
-        }
+        currentUrl = url
 
-        try {
-            val newClip = AudioSystem.getClip()
-            newClip.open(audioStream)
-            newClip.addLineListener { event ->
-                if (event.type == LineEvent.Type.STOP) {
-                    val finished = newClip.frameLength > 0 && newClip.framePosition >= newClip.frameLength
-                    if (finished) {
-                        isPlaying = false
-                        onCompletionListener?.invoke()
+        playbackThread = thread(start = true, isDaemon = true) {
+            try {
+                val connection = URL(url).openConnection()
+                connection.connectTimeout = 10000
+                connection.readTimeout = 30000
+                val inputStream = connection.getInputStream().buffered()
+
+                val newPlayer = AdvancedPlayer(inputStream)
+                newPlayer.setPlayBackListener(object : PlaybackListener() {
+                    override fun playbackFinished(evt: PlaybackEvent?) {
+                        isCurrentlyPlaying = false
+                        if (!isPaused) {
+                            onCompletionListener?.invoke()
+                        }
                     }
-                }
+                })
+
+                player = newPlayer
+                isCurrentlyPlaying = true
+                isPaused = false
+                newPlayer.play()
+            } catch (e: Exception) {
+                isCurrentlyPlaying = false
+                println("Failed to play audio: ${e.message}")
             }
-            clip = newClip
-            isPlaying = true
-            newClip.start()
-        } catch (_: Exception) {
-            isPlaying = false
-            clip = null
-        } finally {
-            runCatching { audioStream.close() }
         }
     }
 
     actual fun pause() {
-        clip?.stop()
-        isPlaying = false
+        isPaused = true
+        isCurrentlyPlaying = false
+        player?.close()
+        player = null
+        playbackThread?.interrupt()
+        playbackThread = null
     }
 
     actual fun stop() {
-        clip?.stop()
-        clip?.close()
-        clip = null
-        isPlaying = false
+        isPaused = false
+        isCurrentlyPlaying = false
+        player?.close()
+        player = null
+        playbackThread?.interrupt()
+        playbackThread = null
+        currentUrl = null
     }
 
     actual fun release() {
         stop()
     }
 
-    actual fun isPlaying(): Boolean = isPlaying
+    actual fun isPlaying(): Boolean = isCurrentlyPlaying
 
     actual fun setOnCompletionListener(listener: () -> Unit) {
         onCompletionListener = listener

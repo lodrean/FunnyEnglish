@@ -2,6 +2,7 @@ package com.funnyenglish.repository
 
 import com.funnyenglish.entity.Difficulty
 import com.funnyenglish.entity.Test
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -24,4 +25,8 @@ interface TestRepository : JpaRepository<Test, UUID> {
 
     @Query("SELECT t FROM Test t LEFT JOIN FETCH t.questions WHERE t.id = :id")
     fun findByIdWithQuestions(id: UUID): Test?
+
+    @EntityGraph(attributePaths = ["questions", "questions.answers"])
+    @Query("SELECT t FROM Test t")
+    fun findAllWithQuestionsAndAnswers(): List<Test>
 }

@@ -83,6 +83,23 @@ Authorization: Bearer <token>
 
 ---
 
+### POST /auth/refresh
+Обновить access-токен по refresh-токену.
+
+**Request:**
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response:** `200 OK` - аналогично `/auth/login`
+
+**Errors:**
+- `400` - Невалидный или истёкший refresh токен
+
+---
+
 ### POST /auth/oauth/{provider}
 OAuth авторизация (Google, VK, Telegram).
 
@@ -216,6 +233,30 @@ OAuth авторизация (Google, VK, Telegram).
     "pointsReward": 50,
     "earned": true,
     "earnedAt": "2024-01-18T12:00:00Z"
+  }
+]
+```
+
+---
+
+## Achievements Endpoints
+
+### GET /achievements
+Получить список всех достижений. Если передан токен, поле `earned` будет отражать прогресс пользователя.
+
+**Headers:** `Authorization: Bearer <token>` (опционально)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "uuid",
+    "code": "FIRST_TEST",
+    "name": "Первые шаги",
+    "description": "Пройдите первый тест",
+    "iconUrl": "https://...",
+    "pointsReward": 50,
+    "earned": true
   }
 ]
 ```
@@ -517,6 +558,40 @@ OAuth авторизация (Google, VK, Telegram).
 }
 ```
 
+### GET /admin/analytics/daily-activity
+Получить дневную активность пользователей.
+
+**Query Parameters:**
+- `days` (default: 7) - количество дней
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "date": "2024-01-20",
+    "newUsers": 12,
+    "testsCompleted": 45,
+    "achievementsEarned": 8
+  }
+]
+```
+
+### GET /admin/analytics/activity
+Алиас для `/admin/analytics/daily-activity`.
+
+---
+
+### GET /admin/analytics/levels
+Распределение пользователей по уровням.
+
+**Response:** `200 OK`
+```json
+[
+  { "level": 1, "users": 120 },
+  { "level": 2, "users": 85 }
+]
+```
+
 ### GET /admin/analytics/popular-tests
 Получить популярные тесты.
 
@@ -528,6 +603,23 @@ OAuth авторизация (Google, VK, Telegram).
 
 **Query Parameters:**
 - `limit` (default: 10)
+
+---
+
+### GET /admin/settings
+Получить настройки для admin панели.
+
+**Response:** `200 OK`
+```json
+{
+  "s3Endpoint": "https://s3.amazonaws.com",
+  "s3Bucket": "funnyenglish",
+  "s3Region": "eu-central-1",
+  "maxFileSize": "10MB",
+  "maxRequestSize": "10MB",
+  "corsAllowedOrigins": ["https://admin.funnyenglish.app"]
+}
+```
 
 ---
 

@@ -94,10 +94,7 @@ class TestService(
     }
 
     fun getAllTestsForAdmin(): List<AdminTestDetailResponse> {
-        return testRepository.findAll().map { test ->
-            test.questions.forEach { q -> q.answers.size }
-            test.toAdminResponse()
-        }
+        return testRepository.findAllWithQuestionsAndAnswers().map { it.toAdminResponse() }
     }
 
     @Transactional

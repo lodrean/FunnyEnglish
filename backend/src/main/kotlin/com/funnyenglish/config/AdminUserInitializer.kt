@@ -25,8 +25,20 @@ class AdminUserInitializer(
             return
         }
 
-        if (userRepository.existsByEmail(adminEmail)) {
-            logger.info("Admin user already exists: {}", adminEmail)
+        val existingAdmin = userRepository.findByEmail(adminEmail)
+
+        if (existingAdmin != null) {
+            // Update password if changed
+            if (!passwordEncoder.matches(adminPassword, existingAdmin.passwordHash)) {
+                val updatedAdmin = existingAdmin.copy(
+                    passwordHash = passwordEncoder.encode(adminPassword),
+                    role = "ADMIN"
+                )
+                userRepository.save(updatedAdmin)
+                logger.info("Admin user password updated: {}", adminEmail)
+            } else {
+                logger.info("Admin user already exists: {}", adminEmail)
+            }
             return
         }
 

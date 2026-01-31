@@ -8,6 +8,7 @@ import com.funnyenglish.security.JwtService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class AuthService(
@@ -93,6 +94,23 @@ class AuthService(
             )
             user = userRepository.save(user)
         }
+
+        val token = jwtService.generateToken(user.id.toString(), user.email, user.role)
+
+        return AuthResponse(
+            token = token,
+            user = user.toResponse()
+        )
+    }
+
+    fun refreshToken(request: RefreshTokenRequest): AuthResponse {
+        val claims = jwtService.extractClaimsAllowExpired(request.refreshToken)
+            ?: throw IllegalArgumentException("Invalid refresh token")
+        val userId = claims.subject ?: throw IllegalArgumentException("Invalid refresh token")
+        val userUuid = runCatching { UUID.fromString(userId) }
+            .getOrElse { throw IllegalArgumentException("Invalid refresh token") }
+        val user = userRepository.findById(userUuid)
+            .orElseThrow { IllegalArgumentException("Invalid refresh token") }
 
         val token = jwtService.generateToken(user.id.toString(), user.email, user.role)
 

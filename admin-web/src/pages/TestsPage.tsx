@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -48,7 +49,7 @@ export default function TestsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState<Test | null>(null);
 
-  const { data: tests, isLoading } = useQuery({
+  const { data: tests, isLoading, isError, error } = useQuery({
     queryKey: ['admin-tests'],
     queryFn: getAdminTests,
   });
@@ -92,6 +93,20 @@ export default function TestsPage() {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    const errorMessage = error instanceof Error ? error.message : 'Не удалось загрузить тесты';
+    return (
+      <Box>
+        <Typography variant="h5" fontWeight="bold" mb={3}>
+          Тесты
+        </Typography>
+        <Alert severity="error">
+          {errorMessage}. Проверьте, что бэкенд запущен и у вас есть права администратора.
+        </Alert>
       </Box>
     );
   }

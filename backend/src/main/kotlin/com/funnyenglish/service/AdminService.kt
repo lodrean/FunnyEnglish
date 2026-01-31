@@ -6,8 +6,6 @@ import com.funnyenglish.dto.DailyActivityResponse
 import com.funnyenglish.dto.LevelDistributionResponse
 import com.funnyenglish.dto.PopularTestResponse
 import com.funnyenglish.dto.RecentActivityResponse
-import com.funnyenglish.dto.UserResponse
-import com.funnyenglish.dto.toResponse
 import com.funnyenglish.repository.AnswerRepository
 import com.funnyenglish.repository.AchievementRepository
 import com.funnyenglish.repository.CategoryRepository
@@ -16,7 +14,6 @@ import com.funnyenglish.repository.QuestionRepository
 import com.funnyenglish.repository.TestRepository
 import com.funnyenglish.repository.UserRepository
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.ZoneId
@@ -34,25 +31,6 @@ class AdminService(
     companion object {
         private const val TOP_CATEGORIES_LIMIT = 5
         private const val RECENT_ACTIVITY_LIMIT = 10
-    }
-
-    fun getUsers(query: String?, role: String?): List<UserResponse> {
-        val normalizedQuery = query?.trim()?.takeIf { it.isNotEmpty() }
-        val normalizedRole = role?.trim()?.uppercase()?.takeIf { it.isNotEmpty() }
-
-        val users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
-
-        return users.asSequence()
-            .filter { user ->
-                normalizedRole == null || user.role.equals(normalizedRole, ignoreCase = true)
-            }
-            .filter { user ->
-                normalizedQuery == null ||
-                    user.displayName.contains(normalizedQuery, ignoreCase = true) ||
-                    user.email.contains(normalizedQuery, ignoreCase = true)
-            }
-            .map { it.toResponse() }
-            .toList()
     }
 
     fun getAnalytics(): AdminAnalyticsResponse {

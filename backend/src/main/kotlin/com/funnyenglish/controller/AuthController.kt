@@ -28,4 +28,9 @@ class AuthController(
     ): ResponseEntity<AuthResponse> {
         return ResponseEntity.ok(authService.oauthLogin(provider, request))
     }
+
+    @PostMapping("/refresh")
+    fun refresh(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
+        return ResponseEntity.ok(authService.refreshToken(request))
+    }
 }

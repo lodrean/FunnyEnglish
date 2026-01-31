@@ -36,10 +36,20 @@ class FunnyEnglishApi(
         install(Auth) {
             bearer {
                 loadTokens {
-                    tokenProvider.getToken()?.let { BearerTokens(it, "") }
+                    tokenProvider.getToken()?.let { BearerTokens(it, it) }
                 }
                 refreshTokens {
-                    null // Token refresh not implemented yet
+                    val refreshToken = tokenProvider.getToken() ?: return@refreshTokens null
+                    val response = try {
+                        client.post("auth/refresh") {
+                            markAsRefreshTokenRequest()
+                            setBody(RefreshTokenRequest(refreshToken))
+                        }.body<AuthResponse>()
+                    } catch (_: Exception) {
+                        return@refreshTokens null
+                    }
+                    tokenProvider.setToken(response.token)
+                    BearerTokens(response.token, response.token)
                 }
             }
         }

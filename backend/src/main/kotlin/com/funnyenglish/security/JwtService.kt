@@ -1,6 +1,7 @@
 package com.funnyenglish.security
 
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
@@ -62,6 +63,16 @@ class JwtService {
     fun extractRole(token: String): String? {
         return try {
             extractAllClaims(token)["role"] as? String
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun extractClaimsAllowExpired(token: String): Claims? {
+        return try {
+            extractAllClaims(token)
+        } catch (e: ExpiredJwtException) {
+            e.claims
         } catch (e: Exception) {
             null
         }

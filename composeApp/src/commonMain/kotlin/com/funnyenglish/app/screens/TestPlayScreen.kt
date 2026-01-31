@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.funnyenglish.app.components.*
 import com.funnyenglish.app.theme.FunnyColors
 import com.funnyenglish.app.viewmodel.TestPlayState
@@ -388,6 +392,19 @@ private fun QuestionContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Question image (for IMAGE_SELECT type)
+        if (question.type == QuestionType.IMAGE_SELECT && question.imageUrl != null) {
+            AsyncImage(
+                model = question.imageUrl,
+                contentDescription = "Вопрос",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 200.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
         // Answers based on question type
         when (question.type) {
             QuestionType.DRAG_DROP_IMAGE -> {
@@ -397,7 +414,14 @@ private fun QuestionContent(
                     onMatch = onSetDragDropMatch
                 )
             }
-            QuestionType.AUDIO_SELECT, QuestionType.IMAGE_SELECT, QuestionType.TEXT_SELECT, QuestionType.FILL_BLANK -> {
+            QuestionType.IMAGE_SELECT -> {
+                ImageAnswerOptions(
+                    answers = question.answers,
+                    selectedIds = selectedAnswerIds,
+                    onSelect = onSelectAnswer
+                )
+            }
+            QuestionType.AUDIO_SELECT, QuestionType.TEXT_SELECT, QuestionType.FILL_BLANK -> {
                 AnswerOptions(
                     answers = question.answers,
                     selectedIds = selectedAnswerIds,
@@ -506,6 +530,74 @@ private fun AnswerOptions(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (isSelected) FunnyColors.AccentPurple else FunnyColors.OnBackground
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageAnswerOptions(
+    answers: List<Answer>,
+    selectedIds: List<String>,
+    onSelect: (String) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.heightIn(max = 400.dp)
+    ) {
+        items(answers.size) { index ->
+            val answer = answers[index]
+            val isSelected = answer.id in selectedIds
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .clickable { onSelect(answer.id) },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                border = if (isSelected)
+                    CardDefaults.outlinedCardBorder().copy(
+                        width = 3.dp,
+                        brush = Brush.linearGradient(listOf(FunnyColors.AccentPurple, FunnyColors.AccentPurple))
+                    )
+                else
+                    CardDefaults.outlinedCardBorder().copy(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(listOf(FunnyColors.Border, FunnyColors.Border))
+                    ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = if (isSelected) 4.dp else 1.dp
+                )
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    answer.imageUrl?.let { imageUrl ->
+                        AsyncImage(
+                            model = imageUrl,
+                            contentDescription = answer.text,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+                    } ?: answer.text?.let { text ->
+                        Text(
+                            text = text,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = if (isSelected) FunnyColors.AccentPurple else FunnyColors.OnBackground,
+                            modifier = Modifier.padding(16.dp)
                         )
                     }
                 }

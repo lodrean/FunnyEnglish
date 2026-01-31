@@ -30,6 +30,11 @@ data class AuthResponse(
 )
 
 @Serializable
+data class RefreshTokenRequest(
+    val refreshToken: String
+)
+
+@Serializable
 data class ErrorResponse(
     val error: String,
     val message: String,

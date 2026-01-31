@@ -62,18 +62,31 @@ docker run -d \
 ### 2. Backend
 
 ```bash
-cd backend
-
-# Переменные окружения
-export DATABASE_URL=jdbc:postgresql://localhost:5432/funnyenglish
-export DATABASE_USERNAME=postgres
-export DATABASE_PASSWORD=postgres
+# Из корня проекта (bash)
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=funnyenglish
+export DB_USERNAME=postgres
+export DB_PASSWORD=postgres
 export JWT_SECRET=your-secret-key-minimum-32-characters
 export ADMIN_EMAIL=admin@funnyenglish.app
 export ADMIN_PASSWORD=admin123
 
-# Запуск
-./gradlew bootRun
+./gradlew -p backend bootRun
+```
+
+```powershell
+# Из корня проекта (PowerShell)
+$env:DB_HOST = "localhost"
+$env:DB_PORT = "5432"
+$env:DB_NAME = "funnyenglish"
+$env:DB_USERNAME = "postgres"
+$env:DB_PASSWORD = "postgres"
+$env:JWT_SECRET = "your-secret-key-minimum-32-characters"
+$env:ADMIN_EMAIL = "admin@funnyenglish.app"
+$env:ADMIN_PASSWORD = "admin123"
+
+./gradlew -p backend bootRun
 ```
 
 Backend: `http://localhost:8080`
@@ -161,10 +174,10 @@ FUNNYENGLISH_API_BASE_URL=http://10.0.2.2:8080
 
 ```bash
 # Backend
-cd backend && ./gradlew test
+./gradlew -p backend test
 
 # Admin Web
-cd admin-web && npm test
+npm --prefix admin-web test
 
 # Mobile
 ./gradlew :shared:allTests
@@ -174,10 +187,10 @@ cd admin-web && npm test
 
 ```bash
 # Backend JAR
-cd backend && ./gradlew bootJar
+./gradlew -p backend bootJar
 
 # Admin Web
-cd admin-web && npm run build
+npm --prefix admin-web run build
 
 # Android APK
 ./gradlew :composeApp:assembleDebug

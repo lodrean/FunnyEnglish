@@ -6,20 +6,36 @@ import platform.Foundation.*
 actual class AudioPlayer {
     private var player: AVPlayer? = null
     private var onCompletionListener: (() -> Unit)? = null
+    private var endObserver: NSObjectProtocol? = null
+    private var errorObserver: NSObjectProtocol? = null
 
     actual fun play(url: String) {
+        val sanitizedUrl = url.trim()
+        if (sanitizedUrl.isEmpty()) {
+            stop()
+            return
+        }
         stop()
-        val nsUrl = NSURL.URLWithString(url) ?: return
-        player = AVPlayer(uRL = nsUrl)
-        player?.play()
+        val nsUrl = NSURL.URLWithString(sanitizedUrl) ?: return
+        val newPlayer = AVPlayer(uRL = nsUrl)
+        player = newPlayer
+        newPlayer.play()
 
         // Setup completion observer
-        NSNotificationCenter.defaultCenter.addObserverForName(
+        val currentItem = newPlayer.currentItem
+        endObserver = NSNotificationCenter.defaultCenter.addObserverForName(
             name = AVPlayerItemDidPlayToEndTimeNotification,
-            `object` = player?.currentItem,
+            `object` = currentItem,
             queue = NSOperationQueue.mainQueue
         ) { _ ->
-            onCompletionListener?.invoke()
+            handleCompletion(newPlayer)
+        }
+        errorObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+            name = AVPlayerItemFailedToPlayToEndTimeNotification,
+            `object` = currentItem,
+            queue = NSOperationQueue.mainQueue
+        ) { _ ->
+            handleError(newPlayer)
         }
     }
 
@@ -28,8 +44,7 @@ actual class AudioPlayer {
     }
 
     actual fun stop() {
-        player?.pause()
-        player = null
+        stopInternal()
     }
 
     actual fun release() {
@@ -37,11 +52,45 @@ actual class AudioPlayer {
     }
 
     actual fun isPlaying(): Boolean {
-        return player?.rate?.let { it > 0 } ?: false
+        val currentPlayer = player ?: return false
+        return currentPlayer.timeControlStatus == AVPlayerTimeControlStatusPlaying
     }
 
     actual fun setOnCompletionListener(listener: () -> Unit) {
         onCompletionListener = listener
+    }
+
+    private fun handleCompletion(currentPlayer: AVPlayer) {
+        val listener = if (player === currentPlayer) {
+            stopInternal()
+            onCompletionListener
+        } else {
+            null
+        }
+        listener?.invoke()
+    }
+
+    private fun handleError(currentPlayer: AVPlayer) {
+        val listener = if (player === currentPlayer) {
+            stopInternal()
+            onCompletionListener
+        } else {
+            null
+        }
+        listener?.invoke()
+    }
+
+    private fun stopInternal() {
+        player?.pause()
+        player = null
+        clearObservers()
+    }
+
+    private fun clearObservers() {
+        endObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        endObserver = null
+        errorObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        errorObserver = null
     }
 }
 

@@ -103,8 +103,40 @@ fun TestPlayScreen(
         return
     }
 
-    val currentQuestion = test.questions.getOrNull(state.currentQuestionIndex)
-    val isLastQuestion = state.currentQuestionIndex == test.questions.size - 1
+    val totalQuestions = test.questions.size
+    if (totalQuestions == 0) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(FunnyColors.Background),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Тест пока пуст",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = FunnyColors.OnBackground
+                )
+                Text(
+                    text = "В этом тесте еще нет вопросов.",
+                    textAlign = TextAlign.Center,
+                    color = FunnyColors.TextSecondary
+                )
+                Button(onClick = onBack) {
+                    Text("Вернуться")
+                }
+            }
+        }
+        return
+    }
+
+    val safeQuestionIndex = state.currentQuestionIndex.coerceIn(0, totalQuestions - 1)
+    val currentQuestion = test.questions.getOrNull(safeQuestionIndex)
+    val isLastQuestion = safeQuestionIndex == totalQuestions - 1
     val currentAnswer = currentQuestion?.let { state.answers[it.id] }
 
     Box(
@@ -117,16 +149,16 @@ fun TestPlayScreen(
         ) {
             // Top Bar
             TestTopBar(
-                title = "Вопрос ${state.currentQuestionIndex + 1} из ${test.questions.size}",
-                progress = (state.currentQuestionIndex + 1).toFloat() / test.questions.size,
+                title = "Вопрос ${safeQuestionIndex + 1} из $totalQuestions",
+                progress = (safeQuestionIndex + 1).toFloat() / totalQuestions,
                 timeElapsed = state.timeElapsed,
                 onClose = onBack
             )
 
             // Question Progress Dots
             QuestionProgressDots(
-                currentIndex = state.currentQuestionIndex,
-                totalQuestions = test.questions.size,
+                currentIndex = safeQuestionIndex,
+                totalQuestions = totalQuestions,
                 answeredQuestions = state.answers.keys,
                 questions = test.questions,
                 onQuestionClick = onGoToQuestion
@@ -144,7 +176,7 @@ fun TestPlayScreen(
                 // Question content
                 currentQuestion?.let { question ->
                     AnimatedContent(
-                        targetState = state.currentQuestionIndex,
+                        targetState = safeQuestionIndex,
                         transitionSpec = {
                             if (targetState > initialState) {
                                 slideInHorizontally { it } + fadeIn() togetherWith
@@ -469,11 +501,11 @@ private fun AudioPlayerButton(url: String) {
     if (sanitizedUrl.isEmpty()) {
         return
     }
-    var isPlaying by remember { mutableStateOf(false) }
-    val audioPlayer = remember { AudioPlayer() }
+    var isPlaying by remember(sanitizedUrl) { mutableStateOf(false) }
+    val audioPlayer = remember(sanitizedUrl) { AudioPlayer() }
     val scope = rememberCoroutineScope()
 
-    DisposableEffect(audioPlayer) {
+    DisposableEffect(audioPlayer, sanitizedUrl) {
         audioPlayer.setOnCompletionListener {
             scope.launch {
                 isPlaying = false
@@ -486,12 +518,13 @@ private fun AudioPlayerButton(url: String) {
 
     Button(
         onClick = {
-            if (isPlaying) {
-                audioPlayer.pause()
-            } else {
+            val shouldPlay = !isPlaying
+            if (shouldPlay) {
                 audioPlayer.play(sanitizedUrl)
+            } else {
+                audioPlayer.pause()
             }
-            isPlaying = !isPlaying
+            isPlaying = shouldPlay
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -521,11 +554,23 @@ private fun AnswerOptions(
     selectedIds: List<String>,
     onSelect: (String) -> Unit
 ) {
+    if (answers.isEmpty()) {
+        Text(
+            text = "Нет вариантов ответа",
+            color = FunnyColors.TextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        return
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         answers.forEachIndexed { index, answer ->
             val isSelected = answer.id in selectedIds
+            val displayText = answer.text?.trim()?.takeIf { it.isNotEmpty() }
+                ?: "Вариант ${index + 1}"
 
             Card(
                 modifier = Modifier
@@ -551,22 +596,20 @@ private fun AnswerOptions(
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = if (isSelected) 4.dp else 1.dp
                 )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    answer.text?.let { text ->
-                        Text(
-                            text = text,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isSelected) FunnyColors.AccentPurple else FunnyColors.OnBackground
-                        )
-                    }
+                    Text(
+                        text = displayText,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) FunnyColors.AccentPurple else FunnyColors.OnBackground
+                    )
                 }
             }
         }
@@ -579,6 +622,16 @@ private fun ImageAnswerOptions(
     selectedIds: List<String>,
     onSelect: (String) -> Unit
 ) {
+    if (answers.isEmpty()) {
+        Text(
+            text = "Нет вариантов ответа",
+            color = FunnyColors.TextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        return
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -588,6 +641,8 @@ private fun ImageAnswerOptions(
         items(answers.size) { index ->
             val answer = answers[index]
             val isSelected = answer.id in selectedIds
+            val displayText = answer.text?.trim()?.takeIf { it.isNotEmpty() }
+                ?: "Вариант ${index + 1}"
 
             Card(
                 modifier = Modifier
@@ -625,9 +680,9 @@ private fun ImageAnswerOptions(
                                 .padding(8.dp)
                                 .clip(RoundedCornerShape(12.dp))
                         )
-                    } ?: answer.text?.let { text ->
+                    } ?: run {
                         Text(
-                            text = text,
+                            text = displayText,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
@@ -647,7 +702,30 @@ private fun DragDropQuestion(
     matches: Map<String, String>,
     onMatch: (String, String) -> Unit
 ) {
-    val targets = answers.mapNotNull { it.matchTarget }.distinct()
+    if (answers.isEmpty()) {
+        Text(
+            text = "Нет элементов для сопоставления",
+            color = FunnyColors.TextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        return
+    }
+
+    val targets = answers
+        .mapNotNull { it.matchTarget?.trim() }
+        .filter { it.isNotEmpty() }
+        .distinct()
+
+    if (targets.isEmpty()) {
+        Text(
+            text = "Нет доступных вариантов для сопоставления",
+            color = FunnyColors.TextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        return
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)

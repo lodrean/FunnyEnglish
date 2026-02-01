@@ -3,69 +3,115 @@ package com.funnyenglish.shared.platform
 import javazoom.jl.player.advanced.AdvancedPlayer
 import javazoom.jl.player.advanced.PlaybackEvent
 import javazoom.jl.player.advanced.PlaybackListener
+import java.io.InputStream
 import java.net.URL
 import java.util.prefs.Preferences
 import kotlin.concurrent.thread
 
 actual class AudioPlayer {
+    private val lock = Any()
     private var player: AdvancedPlayer? = null
     private var playbackThread: Thread? = null
+    private var currentStream: InputStream? = null
     private var onCompletionListener: (() -> Unit)? = null
     @Volatile
     private var isCurrentlyPlaying = false
     @Volatile
     private var isPaused = false
-    private var currentUrl: String? = null
+    @Volatile
+    private var playSessionId = 0L
 
     actual fun play(url: String) {
-        stop()
-        currentUrl = url
+        val sanitizedUrl = url.trim()
+        if (sanitizedUrl.isEmpty()) {
+            stop()
+            return
+        }
+
+        val parsedUrl = runCatching { URL(sanitizedUrl) }.getOrNull()
+        if (parsedUrl == null) {
+            stop()
+            onCompletionListener?.invoke()
+            return
+        }
+
+        val sessionId = synchronized(lock) {
+            isPaused = false
+            playSessionId += 1
+            stopLocked(interruptThread = true)
+            playSessionId
+        }
 
         playbackThread = thread(start = true, isDaemon = true) {
             try {
-                val connection = URL(url).openConnection()
+                val connection = parsedUrl.openConnection()
                 connection.connectTimeout = 10000
                 connection.readTimeout = 30000
                 val inputStream = connection.getInputStream().buffered()
+                synchronized(lock) {
+                    if (playSessionId != sessionId) {
+                        inputStream.close()
+                        return@thread
+                    }
+                    currentStream = inputStream
+                }
 
                 val newPlayer = AdvancedPlayer(inputStream)
                 newPlayer.setPlayBackListener(object : PlaybackListener() {
                     override fun playbackFinished(evt: PlaybackEvent?) {
-                        isCurrentlyPlaying = false
-                        if (!isPaused) {
+                        val shouldNotify = synchronized(lock) {
+                            if (playSessionId != sessionId) {
+                                return@synchronized false
+                            }
+                            val notify = !isPaused
+                            stopLocked(interruptThread = false)
+                            notify
+                        }
+                        if (shouldNotify) {
                             onCompletionListener?.invoke()
                         }
                     }
                 })
 
-                player = newPlayer
-                isCurrentlyPlaying = true
-                isPaused = false
+                synchronized(lock) {
+                    if (playSessionId != sessionId) {
+                        newPlayer.close()
+                        return@thread
+                    }
+                    player = newPlayer
+                    isCurrentlyPlaying = true
+                }
                 newPlayer.play()
             } catch (e: Exception) {
-                isCurrentlyPlaying = false
-                println("Failed to play audio: ${e.message}")
+                val shouldNotify = synchronized(lock) {
+                    if (playSessionId != sessionId) {
+                        return@synchronized false
+                    }
+                    stopLocked(interruptThread = false)
+                    true
+                }
+                if (shouldNotify) {
+                    println("Failed to play audio: ${e.message}")
+                    onCompletionListener?.invoke()
+                }
             }
         }
     }
 
     actual fun pause() {
-        isPaused = true
-        isCurrentlyPlaying = false
-        player?.close()
-        player = null
-        playbackThread?.interrupt()
-        playbackThread = null
+        synchronized(lock) {
+            isPaused = true
+            playSessionId += 1
+            stopLocked(interruptThread = true)
+        }
     }
 
     actual fun stop() {
-        isPaused = false
-        isCurrentlyPlaying = false
-        player?.close()
-        player = null
-        playbackThread?.interrupt()
-        playbackThread = null
-        currentUrl = null
+        synchronized(lock) {
+            isPaused = false
+            playSessionId += 1
+            stopLocked(interruptThread = true)
+        }
     }
 
     actual fun release() {
@@ -76,6 +122,18 @@ actual class AudioPlayer {
 
     actual fun setOnCompletionListener(listener: () -> Unit) {
         onCompletionListener = listener
+    }
+
+    private fun stopLocked(interruptThread: Boolean) {
+        isCurrentlyPlaying = false
+        runCatching { player?.close() }
+        player = null
+        runCatching { currentStream?.close() }
+        currentStream = null
+        if (interruptThread) {
+            playbackThread?.interrupt()
+        }
+        playbackThread = null
     }
 }
 

@@ -5,7 +5,10 @@ import android.content.SharedPreferences
 import android.media.MediaPlayer
 
 actual class AudioPlayer {
+    private val lock = Any()
+    @Volatile
     private var mediaPlayer: MediaPlayer? = null
+    @Volatile
     private var onCompletionListener: (() -> Unit)? = null
 
     actual fun play(url: String) {
@@ -14,36 +17,87 @@ actual class AudioPlayer {
             stop()
             return
         }
-        stop()
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(sanitizedUrl)
-            setOnPreparedListener { start() }
-            setOnCompletionListener { onCompletionListener?.invoke() }
-            prepareAsync()
+        val newPlayer = MediaPlayer()
+        synchronized(lock) {
+            stopLocked()
+            mediaPlayer = newPlayer
+        }
+        try {
+            newPlayer.setDataSource(sanitizedUrl)
+            newPlayer.setOnPreparedListener {
+                synchronized(lock) {
+                    if (mediaPlayer !== newPlayer) {
+                        return@setOnPreparedListener
+                    }
+                }
+                newPlayer.start()
+            }
+            newPlayer.setOnCompletionListener {
+                handleCompletion(newPlayer)
+            }
+            newPlayer.setOnErrorListener { _, _, _ ->
+                handleError(newPlayer)
+                true
+            }
+            newPlayer.prepareAsync()
+        } catch (e: Exception) {
+            handleError(newPlayer)
         }
     }
 
     actual fun pause() {
-        mediaPlayer?.pause()
+        synchronized(lock) {
+            runCatching { mediaPlayer?.pause() }
+        }
     }
 
     actual fun stop() {
-        mediaPlayer?.apply {
-            if (isPlaying) stop()
-            reset()
-            release()
+        synchronized(lock) {
+            stopLocked()
         }
-        mediaPlayer = null
     }
 
     actual fun release() {
         stop()
     }
 
-    actual fun isPlaying(): Boolean = mediaPlayer?.isPlaying ?: false
+    actual fun isPlaying(): Boolean = synchronized(lock) { mediaPlayer?.isPlaying ?: false }
 
     actual fun setOnCompletionListener(listener: () -> Unit) {
         onCompletionListener = listener
+    }
+
+    private fun handleCompletion(player: MediaPlayer) {
+        val listener = synchronized(lock) {
+            if (mediaPlayer !== player) {
+                null
+            } else {
+                stopLocked()
+                onCompletionListener
+            }
+        }
+        listener?.invoke()
+    }
+
+    private fun handleError(player: MediaPlayer) {
+        val listener = synchronized(lock) {
+            if (mediaPlayer !== player) {
+                null
+            } else {
+                stopLocked()
+                onCompletionListener
+            }
+        }
+        listener?.invoke()
+    }
+
+    private fun stopLocked() {
+        mediaPlayer?.let { player ->
+            runCatching { if (player.isPlaying) player.stop() }
+            runCatching { player.reset() }
+            runCatching { player.release() }
+        }
+        mediaPlayer = null
     }
 }
 

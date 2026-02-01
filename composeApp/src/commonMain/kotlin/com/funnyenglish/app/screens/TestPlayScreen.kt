@@ -61,6 +61,37 @@ fun TestPlayScreen(
         return
     }
 
+    if (state.error != null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Ошибка",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = FunnyColors.Error
+                )
+                Text(
+                    text = state.error ?: "Неизвестная ошибка",
+                    textAlign = TextAlign.Center,
+                    color = FunnyColors.TextSecondary
+                )
+                Button(onClick = onSubmit) {
+                    Text("Повторить")
+                }
+                TextButton(onClick = onBack) {
+                    Text("Вернуться")
+                }
+            }
+        }
+        return
+    }
+
     // Show result if available
     if (state.result != null) {
         TestResultScreen(
@@ -159,7 +190,7 @@ fun TestPlayScreen(
             if (isLastQuestion) {
                 Button(
                     onClick = onSubmit,
-                    enabled = !state.isSubmitting && currentAnswer != null,
+                    enabled = !state.isSubmitting,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -197,7 +228,7 @@ fun TestPlayScreen(
                     )
                 ) {
                     Text(
-                        text = "Проверить ответ",
+                        text = "Далее",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -434,6 +465,10 @@ private fun QuestionContent(
 
 @Composable
 private fun AudioPlayerButton(url: String) {
+    val sanitizedUrl = url.trim()
+    if (sanitizedUrl.isEmpty()) {
+        return
+    }
     var isPlaying by remember { mutableStateOf(false) }
     val audioPlayer = remember { AudioPlayer() }
     val scope = rememberCoroutineScope()
@@ -454,7 +489,7 @@ private fun AudioPlayerButton(url: String) {
             if (isPlaying) {
                 audioPlayer.pause()
             } else {
-                audioPlayer.play(url)
+                audioPlayer.play(sanitizedUrl)
             }
             isPlaying = !isPlaying
         },
@@ -505,8 +540,8 @@ private fun AnswerOptions(
                 ),
                 border = if (isSelected)
                     CardDefaults.outlinedCardBorder().copy(
-                        width = 3.dp,
-                        brush = Brush.linearGradient(listOf(FunnyColors.AccentPurple, FunnyColors.AccentPurple))
+                        width = 2.dp,
+                        brush = Brush.linearGradient(listOf(FunnyColors.Primary, FunnyColors.Primary))
                     )
                 else
                     CardDefaults.outlinedCardBorder().copy(

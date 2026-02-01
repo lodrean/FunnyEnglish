@@ -16,7 +16,8 @@ import java.util.UUID
 class StorageService(
     private val s3Client: S3Client,
     @Value("\${app.s3.bucket}") private val bucket: String,
-    @Value("\${app.s3.endpoint}") private val endpoint: String
+    @Value("\${app.s3.endpoint}") private val endpoint: String,
+    @Value("\${app.s3.public-url}") private val publicUrl: String
 ) {
     fun uploadFile(file: MultipartFile, folder: String): String {
         val normalizedFolder = folder.trim().trim('/').ifEmpty { "media" }
@@ -57,7 +58,7 @@ class StorageService(
     }
 
     private fun buildObjectUrl(key: String): String {
-        return "${endpoint.trimEnd('/')}/$bucket/$key"
+        return "${publicUrl.trimEnd('/')}/$bucket/$key"
     }
 
     private fun extractKey(url: String): String? {

@@ -9,9 +9,14 @@ actual class AudioPlayer {
     private var onCompletionListener: (() -> Unit)? = null
 
     actual fun play(url: String) {
+        val sanitizedUrl = url.trim()
+        if (sanitizedUrl.isEmpty()) {
+            stop()
+            return
+        }
         stop()
         mediaPlayer = MediaPlayer().apply {
-            setDataSource(url)
+            setDataSource(sanitizedUrl)
             setOnPreparedListener { start() }
             setOnCompletionListener { onCompletionListener?.invoke() }
             prepareAsync()

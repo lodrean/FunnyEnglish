@@ -186,9 +186,10 @@ fun TestPlayScreen(
                                         slideOutHorizontally { it } + fadeOut()
                             }
                         }
-                    ) { _ ->
+                    ) { questionIndex ->
                         QuestionContent(
                             question = question,
+                            questionIndex = questionIndex + 1,
                             selectedAnswerIds = currentAnswer?.selectedAnswerIds ?: emptyList(),
                             dragDropMatches = currentAnswer?.dragDropMatches ?: emptyMap(),
                             onSelectAnswer = { answerId -> onSelectAnswer(question.id, answerId) },
@@ -430,23 +431,24 @@ private fun QuestionProgressDots(
 @Composable
 private fun QuestionContent(
     question: Question,
+    questionIndex: Int,
     selectedAnswerIds: List<String>,
     dragDropMatches: Map<String, String>,
     onSelectAnswer: (String) -> Unit,
     onSetDragDropMatch: (String, String) -> Unit
 ) {
     Column {
-        // Question text
-        question.text?.let { text ->
-            Text(
-                text = text,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                lineHeight = 30.sp
-            )
-        }
+        // Question text with fallback
+        val questionText = question.text?.takeIf { it.isNotBlank() }
+            ?: "Вопрос $questionIndex"
+        Text(
+            text = questionText,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            lineHeight = 30.sp
+        )
 
         question.audioUrl?.let {
             Spacer(modifier = Modifier.height(16.dp))
@@ -656,7 +658,7 @@ private fun ImageAnswerOptions(
                 border = if (isSelected)
                     CardDefaults.outlinedCardBorder().copy(
                         width = 3.dp,
-                        brush = Brush.linearGradient(listOf(FunnyColors.AccentPurple, FunnyColors.AccentPurple))
+                        brush = Brush.linearGradient(listOf(FunnyColors.Primary, FunnyColors.Primary))
                     )
                 else
                     CardDefaults.outlinedCardBorder().copy(
@@ -686,7 +688,7 @@ private fun ImageAnswerOptions(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            color = if (isSelected) FunnyColors.AccentPurple else FunnyColors.OnBackground,
+                            color = FunnyColors.OnBackground,
                             modifier = Modifier.padding(16.dp)
                         )
                     }

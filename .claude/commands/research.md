@@ -1,52 +1,53 @@
 ---
 name: research
-description: Start research phase for a new feature or bug fix
+description: Research codebase for a ticket and create research document
 ---
 
 # /research Command
 
-Start the research phase for a new ticket.
+Research the codebase to understand implementation requirements for a ticket.
 
 ## Usage
 ```
-/research <ticket-name> <description>
+/research <ticket-name>
 ```
+
+## Prerequisites
+- Ticket ID is defined
+- Initial idea/request is documented
 
 ## Process
 
-1. Create research document at `docs/research/<ticket-name>.md`
-2. Analyze the codebase for affected areas
-3. Identify existing patterns to follow
-4. Assess complexity and risks
-5. Document open questions
+1. Read any existing context about the ticket
+2. Search codebase for relevant files
+3. Identify affected areas
+4. Find existing patterns
+5. Assess complexity
+6. Create `docs/research/<ticket-name>.md`
 
-## Template
+## Output
 
-```markdown
-# Research: <Ticket Name>
+Research document containing:
+- Objective and scope
+- Affected files and areas
+- Existing implementation patterns
+- Complexity assessment (Low/Medium/High)
+- Open questions to resolve
+- Recommendations
 
-## Ticket
-<ticket-name>
+## Example
 
-## Status
-IN_PROGRESS
+```
+User: /research push-notifications
 
-## Objective
-<description from user>
+Claude:
+I'll research the codebase for implementing push notifications.
 
-## Affected Areas
-- File: reason
+Research findings:
+- Backend: Need FCM integration in NotificationService
+- Mobile: WorkManager already configured, need to add FCM
+- Shared: Add notification models
+- Complexity: HIGH (requires Firebase setup, APNs for iOS)
 
-## Existing Patterns
-<how similar things are done>
-
-## Complexity Assessment
-- Scope: Low/Medium/High
-- Risks: <list>
-
-## Open Questions
-- [ ] Question (Status: OPEN)
-
-## Recommendation
-<proposed approach>
+Created: docs/research/push-notifications.md
 ```

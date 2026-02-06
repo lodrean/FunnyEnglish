@@ -1,11 +1,11 @@
 ---
 name: implement
-description: Start or continue implementation of a planned ticket
+description: Implement tasks from a tasklist for a ticket
 ---
 
 # /implement Command
 
-Start or continue implementing a ticket with approved plan.
+Implement remaining tasks from a ticket's tasklist.
 
 ## Usage
 ```
@@ -13,40 +13,46 @@ Start or continue implementing a ticket with approved plan.
 ```
 
 ## Prerequisites
-- Plan approved at `docs/plan/<ticket-name>.md`
 - Tasklist exists at `docs/tasklist/<ticket-name>.md`
+- PRD exists and is READY
+- Plan exists and is APPROVED
 
 ## Process
 
-1. Read tasklist to find next incomplete task
-2. Review acceptance criteria
+1. Read the tasklist
+2. Find next incomplete task
 3. Implement the task
-4. Verify criteria are met
+4. Verify acceptance criteria
 5. Mark task complete
-6. Commit changes
-7. Move to next task or finish
+6. Repeat until all tasks done
 
-## Workflow
+## Guidelines
+
+- Work on one task at a time
+- Follow existing code patterns
+- Run tests after each task
+- Update documentation if needed
+- Use conventional commits
+
+## Example
 
 ```
-1. Read docs/tasklist/<ticket>.md
-2. Find first unchecked task
-3. Implement changes
-4. Run: ./gradlew build (or npm run build)
-5. Mark task [x] in tasklist
-6. Commit: git commit -m "feat(<scope>): <task>"
-7. Repeat until all tasks done
+User: /implement auth-refresh
+
+Claude:
+Implementing auth-refresh feature...
+
+Tasklist status:
+- [x] Add refresh token entity
+- [x] Create refresh token repository
+- [ ] Implement refresh endpoint ← Working on this
+- [ ] Add token rotation logic
+- [ ] Update tests
+
+Implementing refresh endpoint...
+[code changes]
+
+✅ Task complete. Verification passed.
+
+Updated docs/tasklist/auth-refresh.md
 ```
-
-## Completion Criteria
-
-Task is done when:
-- [ ] Code compiles without errors
-- [ ] All acceptance criteria verified
-- [ ] Tasklist updated with [x]
-- [ ] Changes committed
-
-All tasks done when:
-- [ ] All tasks marked complete
-- [ ] All tests pass
-- [ ] Ready for review

@@ -437,3 +437,290 @@ describe('UserList', () => {
 - Never commit secrets to git
 - Use environment variables
 - Add `.env` to `.gitignore`
+
+## AI-Driven Development (AIDD) Conventions
+
+### Overview
+
+This project follows the AIDD methodology where LLM acts as a team of specialized roles rather than a single "magic brain". Each role has specific responsibilities and outputs.
+
+### Quality Gates
+
+Every feature must pass through 9 quality gates:
+
+| Gate | Name | Artifact | Validator |
+|------|------|----------|-----------|
+| 1 | IDEA_CAPTURED | Problem statement | Product Manager |
+| 2 | RESEARCH_COMPLETE | `docs/research/<ticket>.md` | Analyst |
+| 3 | PLAN_APPROVED | `docs/plan/<ticket>.md` | Architect |
+| 4 | PRD_READY | `docs/prd/<ticket>.prd.md` | Analyst |
+| 5 | TASKLIST_READY | `docs/tasklist/<ticket>.md` | Developer |
+| 6 | IMPLEMENT_COMPLETE | Code changes | Developer |
+| 7 | REVIEW_OK | Review approval | Reviewer |
+| 8 | QA_PASS | `reports/qa/<ticket>.md` | QA |
+| 9 | DOCS_UPDATED | Updated docs | Tech Writer |
+
+### Document Standards
+
+#### Research Document
+Location: `docs/research/<ticket>.md`
+
+```markdown
+# Research: <Title>
+
+## Ticket
+<ticket-id>
+
+## Objective
+What we're investigating
+
+## Affected Areas
+- File 1: reason
+- File 2: reason
+
+## Existing Patterns
+How similar features are implemented
+
+## Complexity Assessment
+- Scope: Low/Medium/High
+- Risk areas: list
+
+## Open Questions
+- [ ] Question 1 (Status: OPEN/RESOLVED)
+
+## Recommendation
+Proposed approach
+```
+
+#### Plan Document
+Location: `docs/plan/<ticket>.md`
+
+```markdown
+# Plan: <Title>
+
+## Ticket
+<ticket-id>
+
+## Status
+DRAFT | REVIEW | APPROVED
+
+## Approach
+High-level description
+
+## Architecture Decisions
+### Decision 1
+- Context: situation
+- Decision: what we decided
+- Consequences: tradeoffs
+
+## Implementation Steps
+1. Step 1
+2. Step 2
+
+## Risks
+| Risk | Mitigation |
+|------|------------|
+| Risk 1 | How to handle |
+
+## Dependencies
+- External dependency
+```
+
+#### PRD Document
+Location: `docs/prd/<ticket>.prd.md`
+
+```markdown
+# PRD: <Feature Name>
+
+## Ticket
+<ticket-id>
+
+## Status
+DRAFT | REVIEW | READY
+
+## Context
+Why this feature is needed
+
+## Goals
+1. Goal 1
+2. Goal 2
+
+## Success Metrics
+- Metric 1: target value
+
+## User Stories
+### Story 1
+As a <user>, I want <action> so that <benefit>
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+## Out of Scope
+- Feature X
+
+## Open Questions
+- [ ] Question 1 (Status: OPEN)
+```
+
+#### Tasklist Document
+Location: `docs/tasklist/<ticket>.md`
+
+```markdown
+# Tasklist: <Title>
+
+## Ticket
+<ticket-id>
+
+## Status
+IN_PROGRESS | BLOCKED | COMPLETE
+
+## Tasks
+
+### Backend
+- [ ] Task 1
+  - AC: Test passes
+  - AC: Endpoint returns 200
+
+### Mobile
+- [ ] Task 3
+  - AC: Screen renders correctly
+
+## Blockers
+Any blocking issues
+
+## Notes
+Additional context
+```
+
+#### QA Report
+Location: `reports/qa/<ticket>.md`
+
+```markdown
+# QA Report: <Title>
+
+## Ticket
+<ticket-id>
+
+## Test Date
+YYYY-MM-DD
+
+## Summary
+PASS | FAIL | PARTIAL
+
+## Automated Tests
+- Backend: X/Y passed
+- Mobile: X/Y passed
+
+## Acceptance Criteria Verification
+- [ ] Criterion 1: PASS/FAIL
+
+## Edge Cases Tested
+- [ ] Edge case 1: PASS/FAIL
+
+## Issues Found
+1. Issue description (Severity: Low/Medium/High)
+
+## Sign-off
+- [ ] All criteria verified
+- [ ] No critical issues
+- [ ] Ready for release
+```
+
+### Working with Subagents
+
+Use subagents for specific tasks to keep main context clean:
+
+```python
+# Research and analysis
+Task(subagent_name="analyst",
+     description="Analyze requirements",
+     prompt="Analyze the requirements for...")
+
+# Architecture design
+Task(subagent_name="architect",
+     description="Design architecture",
+     prompt="Design the architecture for...")
+
+# Implementation
+Task(subagent_name="developer",
+     description="Implement feature",
+     prompt="Implement the feature following...")
+
+# Code review
+Task(subagent_name="reviewer",
+     description="Review code",
+     prompt="Review this code for...")
+
+# Testing
+Task(subagent_name="qa",
+     description="Test implementation",
+     prompt="Test this feature and...")
+```
+
+### Commit Message Convention
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+Types:
+- `feat` - New feature
+- `fix` - Bug fix
+- `refactor` - Code restructuring
+- `docs` - Documentation only
+- `test` - Adding tests
+- `chore` - Maintenance tasks
+
+Scopes:
+- `backend` - Spring Boot backend
+- `mobile` - Compose Multiplatform app
+- `admin` - React admin panel
+- `shared` - KMP shared module
+- `docs` - Documentation
+
+Examples:
+```
+feat(backend): add JWT refresh token endpoint
+fix(mobile): resolve crash on empty category list
+refactor(admin): extract user form component
+docs: update API documentation for v2 endpoints
+```
+
+### Before Starting Work
+
+1. Check active tasklist: `docs/tasklist/<ticket>.md`
+2. Review PRD: `docs/prd/<ticket>.prd.md`
+3. Review Plan: `docs/plan/<ticket>.md`
+4. Understand conventions: `conventions.md`
+
+### After Completing Work
+
+1. Verify code compiles
+2. Run tests
+3. Update tasklist (mark tasks complete)
+4. Update documentation if API changed
+5. Commit with conventional message
+6. Request review if needed
+
+### Prohibited Practices
+
+- ❌ "Vibe coding" - generating code without following AIDD process
+- ❌ Skipping quality gates
+- ❌ Large commits (>1 day of work)
+- ❌ TODOs left in committed code
+- ❌ Hardcoded secrets
+- ❌ Breaking changes without documentation
+
+### Required Practices
+
+- ✅ One task at a time
+- ✅ Clear acceptance criteria for each task
+- ✅ Incremental commits
+- ✅ Documentation as source of truth
+- ✅ Code review before merge
+- ✅ QA verification before release

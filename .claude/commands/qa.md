@@ -1,11 +1,11 @@
 ---
 name: qa
-description: Run QA verification for implemented ticket
+description: Run QA testing and generate QA report
 ---
 
 # /qa Command
 
-Run quality assurance tests and create QA report.
+Run quality assurance testing and generate QA report.
 
 ## Usage
 ```
@@ -13,63 +13,73 @@ Run quality assurance tests and create QA report.
 ```
 
 ## Prerequisites
-- Implementation complete
-- Review approved
+- Code implementation is complete
+- Code review is done
 
 ## Process
 
-1. Read PRD and tasklist for acceptance criteria
-2. Run all automated tests
-3. Verify each acceptance criterion
+1. Read PRD and tasklist
+2. Run automated tests
+3. Verify acceptance criteria
 4. Test edge cases
 5. Create QA report
-6. Sign off or request fixes
 
-## Commands
+## QA Activities
 
-```bash
-# Run all tests
-./gradlew test
-./gradlew :shared:allTests
-cd admin-web && npm test
+### Automated Tests
+- Run backend unit tests
+- Run shared module tests
+- Run admin web tests
+- Verify build passes
 
-# Build verification
-./gradlew build
-cd admin-web && npm run build
+### Manual Verification
+- Test each user story
+- Verify acceptance criteria
+- Check UI/UX if applicable
+
+### Edge Cases
+- Empty data scenarios
+- Invalid input handling
+- Network errors
+- Authentication failures
+
+## QA Report
+
+Created at: `reports/qa/<ticket-name>.md`
+
+Contains:
+- Test date and summary
+- Automated test results
+- Acceptance criteria verification
+- Edge cases tested
+- Issues found with severity
+- Sign-off checklist
+
+## Example
+
 ```
+User: /qa user-profile
 
-## QA Report Location
-`reports/qa/<ticket-name>.md`
+Claude:
+Running QA for user-profile feature...
 
-## Report Template
+Automated Tests:
+✅ Backend: 45/45 passed
+✅ Mobile: 12/12 passed
+✅ Build: SUCCESS
 
-```markdown
-# QA Report: <Ticket>
+Acceptance Criteria:
+✅ User can view profile
+✅ User can edit profile
+✅ Changes are persisted
 
-## Date
-YYYY-MM-DD
+Edge Cases:
+✅ Empty display name handled
+✅ Long text truncated properly
+✅ Network error shows message
 
-## Summary
-PASS | FAIL
+Issues Found: None
 
-## Automated Tests
-- Backend: PASS/FAIL
-- Shared: PASS/FAIL
-- Admin: PASS/FAIL
-
-## Acceptance Criteria
-- [ ] Criterion 1: PASS/FAIL
-- [ ] Criterion 2: PASS/FAIL
-
-## Edge Cases
-- [ ] Empty data
-- [ ] Invalid input
-- [ ] Error scenarios
-
-## Issues
-1. Issue (Severity)
-
-## Sign-off
-- [ ] All criteria verified
-- [ ] Ready for release
+Report: reports/qa/user-profile.md
+Status: READY FOR RELEASE
 ```

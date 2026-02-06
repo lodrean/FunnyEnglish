@@ -1,25 +1,56 @@
 # CLAUDE.md - FunnyEnglish Project Instructions
 
-## Shared Pipeline
+## AI-Driven Development (AIDD) Process
 
-This project uses the shared AIDD pipeline from `../.claude-shared/`
+This project follows the AIDD methodology where LLM acts as a team of specialized roles, not a single "magic brain".
 
-**Key resources:**
-- `../.claude-shared/workflow.md` - Development pipeline stages
-- `../.claude-shared/templates/` - Document templates (research, plan, PRD, tasklist, QA)
-- `../.claude-shared/agents/` - Agent definitions (analyst, developer, reviewer, QA)
-- `../.claude-shared/commands/` - Slash commands (/research, /plan, /implement, /review, /qa)
+### Quality Gates Pipeline
 
-**Project artifacts:**
-- `docs/research/` - Research documents
-- `docs/plan/` - Implementation plans
-- `docs/prd/` - Product requirements
-- `docs/tasklist/` - Task lists with acceptance criteria
-- `reports/qa/` - QA test reports
+```
+┌─────────┐    ┌──────────┐    ┌─────────┐    ┌──────────┐    ┌─────────┐
+│  IDEA   │───►│ RESEARCH │───►│  PLAN   │───►│   PRD    │───►│ TASKLIST│
+└────┬────┘    └────┬─────┘    └────┬────┘    └────┬─────┘    └────┬────┘
+     │              │               │              │               │
+   GATE 1        GATE 2          GATE 3         GATE 4          GATE 5
+ IDEA_        RESEARCH_       PLAN_          PRD_           TASKLIST_
+ CAPTURED     COMPLETE        APPROVED       READY          READY
+     │              │               │              │               │
+     └──────────────┴───────────────┴──────────────┴───────────────┘
+                                     │
+                                     ▼
+┌─────────┐    ┌──────────┐    ┌─────────┐    ┌──────────┐    ┌─────────┐
+│  DOCS   │◄───│    QA    │◄───│ REVIEW  │◄───│IMPLEMENT │◄───│  DEV    │
+└────┬────┘    └────┬─────┘    └────┬────┘    └────┬─────┘    └────┬────┘
+     │              │               │              │               │
+   GATE 9        GATE 8          GATE 7         GATE 6          WORK
+ DOCS_          QA_            REVIEW_        IMPLEMENT_
+ UPDATED        PASS           OK             STEP_OK
+```
+
+### Team Roles (Subagents)
+
+| Role | Responsibility | Output |
+|------|---------------|--------|
+| **Analyst** | Requirements gathering, Q&A | `docs/research/<ticket>.md` |
+| **Researcher** | Codebase analysis | Research findings |
+| **Architect** | System design, ADRs | `docs/plan/<ticket>.md`, `docs/adr/*.md` |
+| **Developer** | Implementation | Code + tests |
+| **Reviewer** | Code review | Review comments |
+| **QA** | Testing | `reports/qa/<ticket>.md` |
+| **Tech Writer** | Documentation | Updated docs, CHANGELOG |
+| **Validator** | Quality gate verification | Validation report |
 
 ## Project Overview
 
-FunnyEnglish is a cross-platform English learning application with gamification. The project consists of:
+FunnyEnglish is a cross-platform English learning application with gamification.
+
+### Current Status
+- **Status:** MVP Complete ✅ | Ready for Next Phase
+- **E2E Tests:** 15/15 passing (100%) - [Details](docs/testing/TESTING_STATUS.md)
+- **Integration Tests:** 6/7 passing (85.7%)
+- **Full Report:** [PROJECT_STATUS_REPORT.md](docs/PROJECT_STATUS_REPORT.md)
+
+### Tech Stack
 - **Backend**: Spring Boot 3 + Kotlin + PostgreSQL
 - **Mobile/Desktop**: Kotlin Multiplatform + Compose Multiplatform
 - **Admin Panel**: React 18 + TypeScript + Material UI
@@ -42,229 +73,247 @@ cd admin-web && npm install && npm run dev
 ```
 FunnyEnglish/
 ├── backend/                 # Spring Boot API
-│   └── src/main/kotlin/com/funnyenglish/
-│       ├── controller/      # REST controllers
-│       ├── service/         # Business logic
-│       ├── repository/      # JPA repositories
-│       ├── entity/          # JPA entities
-│       ├── dto/             # Data Transfer Objects
-│       └── security/        # JWT authentication
 ├── admin-web/               # React Admin Panel
-│   └── src/
-│       ├── pages/           # Page components
-│       ├── components/      # Reusable UI components
-│       ├── api/             # Axios client
-│       └── store/           # Zustand stores
 ├── composeApp/              # Compose Multiplatform UI
-│   └── src/commonMain/kotlin/com/funnyenglish/app/
-│       ├── screens/         # UI screens
-│       ├── viewmodel/       # ViewModels (StateFlow)
-│       ├── theme/           # Material 3 themes
-│       ├── di/              # Koin DI modules
-│       └── components/      # Shared components
 ├── shared/                  # KMP Shared Module
-│   └── src/commonMain/kotlin/com/funnyenglish/shared/
-│       ├── api/             # Ktor HTTP client
-│       ├── model/           # Data models
-│       └── platform/        # Platform-specific code
-└── docs/                    # Documentation
-    ├── API.md               # REST API docs
-    └── ARCHITECTURE.md      # System architecture
+├── docs/                    # Documentation
+│   ├── prd/                 # Product Requirements
+│   ├── plan/                # Implementation Plans
+│   ├── tasklist/            # Task Lists
+│   ├── research/            # Research Documents
+│   ├── adr/                 # Architecture Decision Records
+│   └── API.md               # REST API docs
+├── reports/                 # QA Reports
+│   └── qa/                  # QA test reports
+├── .claude/                 # Claude Code configuration
+│   ├── agents/              # Subagent definitions
+│   ├── commands/            # Slash commands
+│   └── hooks/               # CI hooks
+└── .claude-shared/          # Shared AIDD pipeline (optional)
 ```
 
-## Coding Conventions
+## Development Workflow
 
-### Kotlin (Backend & Mobile)
-- Follow [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html)
-- Use `camelCase` for functions/variables, `PascalCase` for classes
-- Composable functions start with uppercase: `@Composable fun MyScreen()`
-- Use state hoisting pattern in Compose
-- Use `StateFlow` for ViewModel state management
+### Starting a New Feature
 
-### TypeScript/React (Admin Web)
-- Use functional components with hooks
-- TypeScript strict mode enabled
-- Use TanStack Query for data fetching
-- Use Zustand for global state
+```
+1. User: "Add feature X"
+2. Analyst: Create docs/research/feature-x.md
+3. Architect: Create docs/plan/feature-x.md (with ADRs if needed)
+4. Wait for approval
+5. Analyst: Create docs/prd/feature-x.prd.md
+6. Developer: Create docs/tasklist/feature-x.md
+7. Developer: Implement tasks one by one
+8. Reviewer: Code review
+9. QA: Create reports/qa/feature-x.md
+10. Validator: Verify all gates passed
+```
 
-### Error Handling
-- Backend: Use proper HTTP status codes and error DTOs
-- Mobile: Catch exceptions in ViewModel, expose via StateFlow
-- Admin: Use TanStack Query error handling
+### Continuing Work
 
-### Tests
-- Backend: JUnit 5 + MockK
-- Mobile: commonTest with Kotlin test framework
-- Admin: Jest + React Testing Library
+```
+User: "Continue on feature X"
+↓
+Check docs/tasklist/feature-x.md
+↓
+Find next uncompleted task
+↓
+Implement and verify
+↓
+Update tasklist status
+```
+
+## Quality Gates Details
+
+### Gate 1: IDEA_CAPTURED ✅
+- Clear problem statement
+- Ticket ID assigned
+- Initial context documented
+
+### Gate 2: RESEARCH_COMPLETE ✅
+- `docs/research/<ticket>.md` exists
+- Affected areas identified
+- Existing patterns documented
+- Complexity assessed
+
+### Gate 3: PLAN_APPROVED ✅
+- `docs/plan/<ticket>.md` exists
+- Status: APPROVED
+- Architecture decisions documented
+- Risks identified with mitigations
+
+### Gate 4: PRD_READY ✅
+- `docs/prd/<ticket>.prd.md` exists
+- Status: READY
+- User stories defined
+- Acceptance criteria clear
+- Success metrics defined
+
+### Gate 5: TASKLIST_READY ✅
+- `docs/tasklist/<ticket>.md` exists
+- Tasks are small and incremental
+- Each task has acceptance criteria
+- No task > 1 day of work
+
+### Gate 6: IMPLEMENT_STEP_OK ✅ (per task)
+- Code compiles
+- Tests pass
+- Task acceptance criteria met
+- No TODOs left
+
+### Gate 7: REVIEW_OK ✅
+- Code review completed
+- No BLOCKER/CRITICAL issues
+- Conventions followed
+- Reviewer sign-off
+
+### Gate 8: QA_PASS ✅
+- `reports/qa/<ticket>.md` exists
+- All acceptance criteria verified
+- Automated tests passing
+- Edge cases tested
+- No critical issues
+
+### Gate 9: DOCS_UPDATED ✅
+- API docs updated (if changed)
+- Architecture docs updated
+- CHANGELOG updated
+- README updated (if needed)
 
 ## Before Modifying Code
 
-1. **Check existing patterns**: Read similar files to understand conventions
-2. **Review documentation**: Check `docs/API.md` for API contracts
-3. **Understand dependencies**: Check `build.gradle.kts` or `package.json`
-4. **Check PRD/Plan**: If working on a ticket, review `docs/prd/<ticket>.prd.md`
+1. **Check active tasklist**: `docs/tasklist/<ticket>.md`
+2. **Review PRD**: `docs/prd/<ticket>.prd.md`
+3. **Review Plan**: `docs/plan/<ticket>.md`
+4. **Check conventions**: `conventions.md`
+5. **Understand patterns**: Read similar existing code
 
 ## After Modifying Code
 
 1. **Verify compilation**:
-   - Backend: `cd backend && ./gradlew build`
-   - Mobile: `./gradlew :composeApp:build`
-   - Admin: `cd admin-web && npm run build`
+   ```bash
+   # Backend
+   cd backend && ./gradlew build
+   
+   # Mobile
+   ./gradlew :composeApp:build
+   
+   # Admin
+   cd admin-web && npm run build
+   ```
 
 2. **Run tests**:
-   - Backend: `./gradlew :backend:test`
-   - Mobile: `./gradlew :shared:allTests`
+   ```bash
+   ./gradlew :backend:test
+   ./gradlew :shared:allTests
+   ```
 
 3. **Update documentation** if API changed:
    - Update `docs/API.md`
    - Update DTOs in `shared/model/`
    - Update `admin-web/src/api/client.ts`
 
-## Git Workflow
+4. **Update tasklist**: Mark completed tasks
 
-### Branches
-- `main` - production-ready code
-- `develop` - current development
-- `feature/*` - new features
-- `fix/*` - bug fixes
+5. **Commit with conventional message**:
+   ```
+   feat(scope): description
+   
+   Types: feat, fix, refactor, docs, test, chore
+   Scopes: backend, mobile, admin, shared, docs
+   ```
 
-### Commit Format
+## Coding Conventions
+
+See full conventions in `conventions.md`.
+
+### Key Points
+- **Kotlin**: camelCase for functions/variables, PascalCase for classes
+- **Compose**: Composables start with uppercase
+- **TypeScript**: Strict mode, functional components with hooks
+- **Git**: Conventional commits, feature branches
+
+## Available Commands
+
+### Slash Commands
+- `/plan <ticket>` - Create implementation plan
+- `/research <ticket>` - Research codebase
+- `/implement <ticket>` - Implement from tasklist
+- `/review <ticket>` - Code review
+- `/qa <ticket>` - Run QA checks
+- `/techdebt` - Find technical debt
+- `/prove` - Verify changes work
+- `/elegant` - Refactor elegantly
+- `/quiz` - Test understanding
+- `/explain-visual` - Visual explanation
+
+### Using Subagents
+
+Spawn subagents for specific tasks to keep main context clean:
+
 ```
-type(scope): description
-
-Types: feat, fix, refactor, docs, test, chore
-Scopes: backend, mobile, admin, shared, docs
+Task(subagent_name="analyst", description="Analyze requirements", prompt="...")
+Task(subagent_name="architect", description="Design architecture", prompt="...")
+Task(subagent_name="developer", description="Implement feature", prompt="...")
+Task(subagent_name="reviewer", description="Review code", prompt="...")
+Task(subagent_name="qa", description="Test implementation", prompt="...")
 ```
 
-### Feature Development
+## Testing
+
+### E2E Backend Tests (Primary)
+```powershell
+.\api-tests\e2e-backend-tests.ps1
+# Results: 15/15 tests passing (100%)
+```
+
+### Unit Tests
 ```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/my-feature
-# ... work ...
-git commit -m "feat(scope): description"
-git checkout develop
-git merge feature/my-feature
+./gradlew :backend:test
+./gradlew :shared:allTests
 ```
 
-## Key Files Reference
-
-### Backend
-- `SecurityConfig.kt` - CORS and auth configuration
-- `JwtAuthenticationFilter.kt` - JWT token validation
-- `AdminController.kt` - Admin-only endpoints
-
-### Mobile
-- `App.kt` - Navigation and main app structure
-- `AppModule.kt` - Koin DI setup
-- `Theme.kt` - Material 3 theme configuration
-- `FunnyEnglishApi.kt` - API client in shared module
-
-### Admin Web
-- `client.ts` - Axios API client with interceptors
-- `authStore.ts` - Authentication state
-- `Layout.tsx` - Main layout with navigation
-
-## Environment Variables
-
-### Backend (required)
+### Maestro E2E
+```bash
+maestro test .maestro/
 ```
-DATABASE_URL=jdbc:postgresql://localhost:5432/funnyenglish
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=postgres
-JWT_SECRET=your-secret-key-minimum-32-characters
-ADMIN_EMAIL=admin@funnyenglish.app
-ADMIN_PASSWORD=admin123
-```
-
-### Mobile
-```
-# gradle.properties
-FUNNYENGLISH_API_BASE_URL=http://10.0.2.2:8080
-```
-
-## Common Tasks
-
-### Add New Screen (Mobile)
-1. Create `NewScreen.kt` in `screens/`
-2. Create `NewViewModel.kt` in `viewmodel/` if needed
-3. Register ViewModel in `di/AppModule.kt`
-4. Add route in `App.kt` (sealed class AppScreen)
-5. Add navigation in `MainAppContent`
-
-### Add New Endpoint (Backend)
-1. Create/update DTO in `dto/`
-2. Add method in Service
-3. Add endpoint in Controller
-4. Update `SecurityConfig` if special permissions needed
-5. Update `docs/API.md`
-
-### Add New Admin Page
-1. Create page component in `pages/`
-2. Add route in `App.tsx`
-3. Add navigation item in `Layout.tsx`
-4. Create API functions in `api/client.ts`
 
 ## Troubleshooting
 
 ### Backend won't start
-- Check PostgreSQL is running: `docker ps` or `pg_isready`
-- Check environment variables are set
+- Check PostgreSQL: `docker ps` or `pg_isready`
+- Check environment variables
 - Check port 8080 is free
 
 ### Mobile app can't connect
-- Check backend is running on correct port
-- For emulator: use `10.0.2.2` instead of `localhost`
-- For physical device: use computer's local IP
+- Backend running on correct port?
+- Emulator: use `10.0.2.2` instead of `localhost`
+- Physical device: use computer's local IP
 
 ### Admin build fails
-- Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
-- Check Node.js version: requires 18+
+- Delete `node_modules` and reinstall
+- Check Node.js version (requires 18+)
 
-## Claude Code Workflow (Best Practices)
+## Session Notes
+
+Folder `docs/notes/` contains task-specific notes.
+- Update after each PR
+- Reference in context: "see docs/notes/<task>.md"
+
+## Claude Code Best Practices
 
 ### Plan Mode Strategy
-- Используй plan mode для любых нетривиальных задач
-- После написания плана - запусти второй CC для ревью как Staff-инженер
-- Если что-то идёт не так - сразу возвращайся в plan mode
+- Use plan mode for non-trivial tasks
+- After writing plan, spawn reviewer for feedback
+- Return to plan mode if issues arise
 
-### Субагенты
-- Передавай отдельные задачи субагентам чтобы контекст основного агента оставался чистым
-- Используй `Task` tool с соответствующим `subagent_type`:
-  - `Explore` - исследование кодовой базы
-  - `Plan` - планирование реализации
-  - `Developer` - имплементация
-  - `Reviewer` - ревью кода
-  - `QA` - тестирование
+### Useful Prompts
+- "Докажи мне, что это работает" - Compare main vs feature
+- "Погоняй меня по этим изменениям" - Understanding check
+- "Зная всё что знаешь, переделай элегантно" - Refactor
+- "Обнови CLAUDE.md чтобы не повторять эту ошибку" - Learn
 
-### Полезные промпты
-- "Докажи мне, что это работает" - сравнение main vs feature branch
-- "Погоняй меня по этим изменениям" - проверка понимания перед PR
-- "Зная всё что знаешь, переделай элегантно" - рефакторинг после первой версии
-- "Обнови CLAUDE.md чтобы не повторять эту ошибку" - накопление знаний
-
-### Session Notes
-Папка `docs/notes/` содержит заметки по задачам и проектам.
-- После каждого PR обновляй заметку по задаче
-- Ссылайся на заметки в контексте: "см. docs/notes/<task>.md"
-
-### Отладка
-- Используй Docker логи для поиска проблем: `docker compose logs -f`
-- Для CI ошибок: "иди исправь упавшие тесты CI"
-- Вставляй Slack треды с багами и говори "fix"
-
-### Визуализация
-- Проси ASCII-диаграммы для понимания архитектуры
-- Создавай HTML-презентации для объяснения сложного кода
-- Используй `/explain-visual` для автоматической генерации
-
-## Custom Commands
-
-### Productivity
-- `/techdebt` - поиск и приоритизация технического долга
-- `/prove` - доказательство работоспособности изменений
-- `/elegant` - элегантная переработка решения
-
-### Learning & Review
-- `/quiz` - проверка понимания кода перед PR
-- `/explain-visual` - визуальное объяснение архитектуры
+### Visualization
+- Request ASCII diagrams for architecture
+- Create HTML presentations for complex code
+- Use `/explain-visual` for auto-generation

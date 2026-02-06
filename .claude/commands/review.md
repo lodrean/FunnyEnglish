@@ -1,81 +1,63 @@
 ---
 name: review
-description: Perform code review on implemented changes
+description: Review code changes for a ticket
 ---
 
 # /review Command
 
-Review code changes for a completed implementation.
+Perform code review for a ticket's implementation.
 
 ## Usage
 ```
 /review <ticket-name>
-# or
-/review  # reviews current branch changes
 ```
+
+## Prerequisites
+- Implementation is complete
+- Code is committed or in PR
 
 ## Process
 
-1. Get list of changed files
-2. Review each file against checklist
-3. Check for security issues
+1. Read PRD and plan
+2. Review git diff
+3. Check each changed file
 4. Verify conventions compliance
-5. Run tests
-6. Provide feedback or approve
+5. Run verification commands
+6. Provide review feedback
 
-## Checklist
+## Review Checklist
 
 ### Code Quality
-- [ ] Clear naming
-- [ ] Single responsibility
-- [ ] No dead code
+- [ ] Clear, descriptive naming
+- [ ] Single responsibility principle
 - [ ] Proper error handling
+- [ ] No dead code or TODOs
+
+### Conventions
+- [ ] Follows conventions.md
+- [ ] Consistent with existing code
+- [ ] Proper file structure
 
 ### Security
 - [ ] No hardcoded secrets
-- [ ] Input validation
-- [ ] Auth checks present
-
-### Conventions
-- [ ] Follows project standards
-- [ ] Consistent patterns
+- [ ] Input validation present
+- [ ] Proper auth checks
 
 ### Tests
-- [ ] Tests present
+- [ ] Unit tests for business logic
 - [ ] Edge cases covered
+- [ ] Tests are deterministic
 
-## Commands
-
-```bash
-# View changes
-git diff develop...HEAD
-
-# Run tests
-./gradlew test
-cd admin-web && npm test
-
-# Check build
-./gradlew build
-```
-
-## Output Format
+## Review Comment Format
 
 ```
-## Review: <ticket-name>
-
-### Summary
-APPROVED | CHANGES_REQUESTED
-
-### Files Reviewed
-- file1.kt: OK
-- file2.tsx: Issues found
-
-### Issues
 [SEVERITY] Category: Description
-Location: file:line
 
-### Approval
-- [ ] Code quality OK
-- [ ] Security OK
-- [ ] Tests OK
+SEVERITY levels:
+- [BLOCKER] - Must fix before merge
+- [CRITICAL] - Security/data issue
+- [MAJOR] - Significant issue
+- [MINOR] - Style/convention issue
+- [SUGGESTION] - Improvement idea
+- [QUESTION] - Need clarification
 ```

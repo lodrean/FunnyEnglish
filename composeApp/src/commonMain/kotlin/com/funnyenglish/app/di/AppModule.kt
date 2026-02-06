@@ -33,6 +33,10 @@ val appModule = module {
     viewModel { LeaderboardViewModel(get()) }
     viewModel { ProfileViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
+    viewModel { AdaptiveLessonViewModel(get()) }
+    viewModel { StreakViewModel(get()) }
+    viewModel { QuestsViewModel(get()) }
+    viewModel { AchievementsViewModel(get()) }
 }
 
 class PersistentTokenProvider(private val settings: Settings) : TokenProvider {

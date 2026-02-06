@@ -164,7 +164,11 @@ fun HomeScreen(
                 )
             }
 
-            items(state.recentTests.take(3)) { test ->
+            items(
+                items = state.recentTests.take(3),
+                key = { it.id },
+                contentType = { "recentTest" }
+            ) { test ->
                 RecentTestCard(
                     test = test,
                     onClick = { onTestClick(test.id) }
@@ -547,7 +551,11 @@ private fun CategoriesRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(categories) { category ->
+        items(
+            items = categories,
+            key = { it.id },
+            contentType = { "category" }
+        ) { category ->
             CategoryChip(
                 category = category,
                 onClick = { onCategoryClick(category.id) }

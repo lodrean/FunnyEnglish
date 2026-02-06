@@ -16,9 +16,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.funnyenglish.app.components.*
 import com.funnyenglish.app.theme.FunnyColors
 import com.funnyenglish.app.theme.FunnyTheme
@@ -99,7 +102,11 @@ fun CategoryTestsScreenContent(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(state.tests) { test ->
+                    items(
+                        items = state.tests,
+                        key = { it.id },
+                        contentType = { "test" }
+                    ) { test ->
                         TestCard(
                             test = test,
                             onClick = { onTestClick(test.id) }
@@ -137,7 +144,7 @@ private fun TestCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Test icon/thumbnail
+            // Test thumbnail with fallback
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -151,24 +158,41 @@ private fun TestCard(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (isCompleted && stars == 3) {
-                    // Perfect score indicator
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = null,
-                        tint = FunnyColors.Success,
-                        modifier = Modifier.size(32.dp)
+                if (!test.thumbnailUrl.isNullOrBlank()) {
+                    // Show thumbnail image with fallback
+                    SubcomposeAsyncImage(
+                        model = test.thumbnailUrl,
+                        contentDescription = test.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                        loading = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                        },
+                        error = {
+                            // Fallback to text/icon on error
+                            ThumbnailFallback(
+                                title = test.title,
+                                difficulty = test.difficulty,
+                                isCompleted = isCompleted,
+                                stars = stars
+                            )
+                        }
                     )
                 } else {
-                    Text(
-                        text = test.title.firstOrNull()?.toString() ?: "?",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = when (test.difficulty) {
-                            Difficulty.EASY -> FunnyColors.Success
-                            Difficulty.MEDIUM -> FunnyColors.Secondary
-                            Difficulty.HARD -> FunnyColors.Error
-                        }
+                    // No thumbnail - show fallback
+                    ThumbnailFallback(
+                        title = test.title,
+                        difficulty = test.difficulty,
+                        isCompleted = isCompleted,
+                        stars = stars
                     )
                 }
             }
@@ -250,5 +274,36 @@ private fun TestCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * Fallback composable when thumbnail fails to load or is not available
+ */
+@Composable
+private fun ThumbnailFallback(
+    title: String,
+    difficulty: Difficulty,
+    isCompleted: Boolean,
+    stars: Int
+) {
+    if (isCompleted && stars == 3) {
+        Icon(
+            Icons.Default.Check,
+            contentDescription = null,
+            tint = FunnyColors.Success,
+            modifier = Modifier.size(32.dp)
+        )
+    } else {
+        Text(
+            text = title.firstOrNull()?.toString() ?: "?",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = when (difficulty) {
+                Difficulty.EASY -> FunnyColors.Success
+                Difficulty.MEDIUM -> FunnyColors.Secondary
+                Difficulty.HARD -> FunnyColors.Error
+            }
+        )
     }
 }

@@ -15,12 +15,31 @@ class CacheConfig {
     @Bean
     fun cacheManager(): CacheManager {
         return CaffeineCacheManager().apply {
-            setCaffeine(
-                Caffeine.newBuilder()
-                    .maximumSize(10000)
-                    .expireAfterWrite(1, TimeUnit.HOURS)
-                    .recordStats()
-            )
+            // Configure individual caches
+            registerCache("categories", buildCache(100, 1, TimeUnit.HOURS))
+            registerCache("tests", buildCache(200, 30, TimeUnit.MINUTES))
+            registerCache("userProfiles", buildCache(1000, 5, TimeUnit.MINUTES))
+            registerCache("leaderboard", buildCache(10, 1, TimeUnit.MINUTES))
+            registerCache("testDetails", buildCache(500, 15, TimeUnit.MINUTES))
         }
+    }
+
+    private fun buildCache(
+        maxSize: Long,
+        duration: Long,
+        unit: TimeUnit
+    ): com.github.benmanes.caffeine.cache.Cache<Any, Any> {
+        return Caffeine.newBuilder()
+            .maximumSize(maxSize)
+            .expireAfterWrite(duration, unit)
+            .recordStats()
+            .build()
+    }
+
+    private fun CaffeineCacheManager.registerCache(
+        name: String,
+        cache: com.github.benmanes.caffeine.cache.Cache<Any, Any>
+    ) {
+        registerCustomCache(name, cache)
     }
 }

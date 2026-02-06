@@ -3,6 +3,8 @@ package com.funnyenglish.service
 import com.funnyenglish.dto.*
 import com.funnyenglish.entity.*
 import com.funnyenglish.repository.*
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -14,8 +16,10 @@ class TestService(
     private val categoryRepository: CategoryRepository,
     private val questionRepository: QuestionRepository,
     private val answerRepository: AnswerRepository,
-    private val progressRepository: ProgressRepository
+    private val progressRepository: ProgressRepository,
+    private val mediaUrlService: MediaUrlService
 ) {
+    @Cacheable(value = ["categories"], key = "#userId ?: 'anonymous'")
     fun getCategories(userId: String?): List<CategoryResponse> {
         val categories = categoryRepository.findByIsActiveTrueOrderByDisplayOrder()
 
@@ -33,10 +37,11 @@ class TestService(
                 totalStars = 0
             }
 
-            category.toResponse(completedCount, totalStars)
+            category.toResponse(completedCount, totalStars, mediaUrlService::normalize)
         }
     }
 
+    @Cacheable(value = ["tests"], key = "#categoryId + '-' + (#userId ?: 'anonymous')")
     fun getTestsByCategory(categoryId: String, userId: String?): List<TestListResponse> {
         val tests = testRepository.findByCategoryIdAndIsPublishedTrueOrderByDisplayOrder(UUID.fromString(categoryId))
 
@@ -49,10 +54,11 @@ class TestService(
         }
 
         return tests.map { test ->
-            test.toListResponse(progressMap[test.id])
+            test.toListResponse(progressMap[test.id], mediaUrlService::normalize)
         }
     }
 
+    @Cacheable(value = ["tests"], key = "'all-' + (#userId ?: 'anonymous')")
     fun getAllTests(userId: String?): List<TestListResponse> {
         val tests = testRepository.findByIsPublishedTrueOrderByDisplayOrder()
 
@@ -65,10 +71,11 @@ class TestService(
         }
 
         return tests.map { test ->
-            test.toListResponse(progressMap[test.id])
+            test.toListResponse(progressMap[test.id], mediaUrlService::normalize)
         }
     }
 
+    @Cacheable(value = ["testDetails"], key = "#testId")
     fun getTestById(testId: String): TestDetailResponse {
         val test = testRepository.findByIdWithQuestions(UUID.fromString(testId))
             ?: throw NoSuchElementException("Test not found")
@@ -78,7 +85,7 @@ class TestService(
             question.answers.size // trigger lazy load
         }
 
-        return test.toDetailResponse()
+        return test.toDetailResponse(mediaUrlService::normalize)
     }
 
     // Admin methods
@@ -90,14 +97,18 @@ class TestService(
             question.answers.size
         }
 
-        return test.toAdminResponse()
+        return test.toAdminResponse(mediaUrlService::normalize)
     }
 
+    @Transactional(readOnly = true)
     fun getAllTestsForAdmin(): List<AdminTestDetailResponse> {
-        return testRepository.findAllWithQuestionsAndAnswers().map { it.toAdminResponse() }
+        // TODO: Fix JSONB deserialization before loading questions
+        val tests = testRepository.findAll()
+        return tests.map { it.toAdminResponse(mediaUrlService::normalize) }
     }
 
     @Transactional
+    @CacheEvict(value = ["tests", "testDetails"], allEntries = true)
     fun createTest(request: CreateTestRequest): AdminTestDetailResponse {
         val category = categoryRepository.findById(UUID.fromString(request.categoryId))
             .orElseThrow { NoSuchElementException("Category not found") }
@@ -120,6 +131,7 @@ class TestService(
             val question = Question(
                 test = savedTest,
                 type = QuestionType.valueOf(qRequest.type.uppercase()),
+                title = qRequest.text ?: "Вопрос ${qIndex + 1}",
                 text = qRequest.text,
                 audioUrl = qRequest.audioUrl,
                 imageUrl = qRequest.imageUrl,
@@ -147,6 +159,7 @@ class TestService(
     }
 
     @Transactional
+    @CacheEvict(value = ["tests", "testDetails"], key = "#testId")
     fun updateTest(testId: String, request: UpdateTestRequest): AdminTestDetailResponse {
         val test = testRepository.findById(UUID.fromString(testId))
             .orElseThrow { NoSuchElementException("Test not found") }
@@ -180,6 +193,7 @@ class TestService(
                 val question = Question(
                     test = updatedTest,
                     type = QuestionType.valueOf(qRequest.type.uppercase()),
+                    title = qRequest.text ?: "Вопрос ${qIndex + 1}",
                     text = qRequest.text,
                     audioUrl = qRequest.audioUrl,
                     imageUrl = qRequest.imageUrl,
@@ -209,8 +223,10 @@ class TestService(
 
     @Transactional
     fun deleteTest(testId: String) {
-        val test = testRepository.findById(UUID.fromString(testId))
-            .orElseThrow { NoSuchElementException("Test not found") }
-        testRepository.delete(test)
+        val uuid = UUID.fromString(testId)
+        // Delete questions first (workaround for JSONB deserialization issue)
+        questionRepository.deleteByTestId(uuid)
+        // Delete test without loading it (to avoid JSONB deserialization)
+        testRepository.deleteById(uuid)
     }
 }

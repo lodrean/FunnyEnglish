@@ -5,6 +5,8 @@ import com.funnyenglish.entity.User
 import com.funnyenglish.repository.AchievementRepository
 import com.funnyenglish.repository.ProgressRepository
 import com.funnyenglish.repository.UserRepository
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -14,7 +16,8 @@ import java.util.UUID
 class UserService(
     private val userRepository: UserRepository,
     private val progressRepository: ProgressRepository,
-    private val achievementRepository: AchievementRepository
+    private val achievementRepository: AchievementRepository,
+    private val achievementService: AchievementService
 ) {
     companion object {
         val LEVEL_THRESHOLDS = listOf(
@@ -53,10 +56,11 @@ class UserService(
         )
     }
 
+    @Cacheable(value = ["userProfiles"], key = "#userId")
     fun getUserProfile(userId: String): UserProfileResponse {
         val user = getUserById(userId)
 
-        val achievements = user.achievements.map { it.toResponse(earned = true) }
+        val achievements = achievementService.getUserAchievements(userId)
 
         return UserProfileResponse(
             user = user.toResponse(),
@@ -66,6 +70,7 @@ class UserService(
     }
 
     @Transactional
+    @CacheEvict(value = ["userProfiles"], key = "#userId")
     fun addPoints(userId: String, points: Int): Pair<User, LevelUpInfo?> {
         val user = getUserById(userId)
         val oldLevel = calculateLevel(user.totalPoints)
@@ -96,6 +101,7 @@ class UserService(
     }
 
     @Transactional
+    @CacheEvict(value = ["userProfiles"], key = "#userId")
     fun updateStreak(userId: String): User {
         val user = getUserById(userId)
         val today = Instant.now()
@@ -121,6 +127,7 @@ class UserService(
         )
     }
 
+    @Cacheable(value = ["leaderboard"], key = "(#currentUserId ?: 'anonymous') + '-' + #limit")
     fun getLeaderboard(currentUserId: String?, limit: Int = 10): LeaderboardResponse {
         val topUsers = userRepository.findTopByTotalPoints(limit)
 

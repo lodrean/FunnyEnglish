@@ -21,13 +21,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.funnyenglish.app.accessibility.AccessibilityDescriptions
+import com.funnyenglish.app.accessibility.AccessibilityUtils
 import com.funnyenglish.app.components.*
 import com.funnyenglish.app.theme.FunnyColors
 import com.funnyenglish.app.viewmodel.HomeState
 import com.funnyenglish.shared.model.Category
+import com.funnyenglish.shared.model.StreakDayStatus
 import com.funnyenglish.shared.model.TestListItem
 
 @Composable
@@ -38,7 +42,12 @@ fun HomeScreen(
     onTestClick: (String) -> Unit,
     onViewAllCategories: () -> Unit,
     onProfileClick: () -> Unit,
-    onContinueLearning: () -> Unit = {}
+    onContinueLearning: () -> Unit = {},
+    onAdaptiveLessonClick: () -> Unit = {},
+    onStreakClick: () -> Unit = {},
+    onQuestsClick: () -> Unit = {},
+    streakState: com.funnyenglish.app.viewmodel.StreakUiState? = null,
+    questsState: com.funnyenglish.app.viewmodel.QuestsUiState? = null
 ) {
     LaunchedEffect(Unit) {
         onLoadData()
@@ -60,7 +69,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(FunnyColors.Background),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
         // Top Navigation Bar
@@ -80,8 +89,54 @@ fun HomeScreen(
                 level = state.userProfile?.user?.level ?: 1,
                 currentPoints = state.userProfile?.user?.totalPoints ?: 0,
                 pointsToNextLevel = state.userProfile?.stats?.pointsToNextLevel ?: 100,
+                onContinueLearning = onContinueLearning,
+                onAdaptiveLessonClick = onAdaptiveLessonClick
+            )
+        }
+        
+        // Quick Actions Row
+        item {
+            QuickActionsRow(
+                onAdaptiveLessonClick = onAdaptiveLessonClick,
                 onContinueLearning = onContinueLearning
             )
+        }
+        
+        // Gamification widgets row
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Streak Widget
+                streakState?.let { streak ->
+                    val weeklyProgress = streak.streakData?.weeklyCalendar?.map { 
+                        it.status == StreakDayStatus.COMPLETED || it.status == StreakDayStatus.TODAY_COMPLETED
+                    } ?: emptyList()
+                    StreakWidget(
+                        streak = streak.streakData?.currentStreak 
+                            ?: state.userProfile?.user?.currentStreak ?: 0,
+                        longestStreak = streak.streakData?.longestStreak ?: 0,
+                        isAtRisk = streak.isStreakAtRisk,
+                        weeklyProgress = weeklyProgress,
+                        onClick = onStreakClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
+                // Daily Quests Widget
+                questsState?.let { quests ->
+                    DailyQuestsWidget(
+                        quests = quests.dailyQuests.take(2),
+                        onQuestClick = { /* TODO */ },
+                        onClaimReward = { /* TODO */ },
+                        onViewAll = onQuestsClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
         }
 
         // Categories section
@@ -137,9 +192,20 @@ private fun TopNavBar(
         // Avatar and greeting
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable(onClick = onProfileClick)
+            modifier = Modifier
+                .clickable(
+                    onClick = onProfileClick,
+                    onClickLabel = AccessibilityDescriptions.NAVIGATE_TO_PROFILE
+                )
+                .semantics {
+                    contentDescription = "Profile of $displayName, Level $level"
+                }
         ) {
             Box {
+                // Make avatar accessible
+                Modifier.semantics {
+                    contentDescription = AccessibilityDescriptions.USER_AVATAR
+                }
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -167,7 +233,7 @@ private fun TopNavBar(
                         text = "LVL $level",
                         fontSize = 8.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
+                        color = Color.White  // Keep white for level badge on colored background
                     )
                 }
             }
@@ -178,13 +244,13 @@ private fun TopNavBar(
                 Text(
                     text = "Привет!",
                     fontSize = 12.sp,
-                    color = FunnyColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "$displayName!",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = FunnyColors.OnBackground
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -192,7 +258,7 @@ private fun TopNavBar(
         // Stats badges
         Surface(
             shape = RoundedCornerShape(24.dp),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 2.dp
         ) {
             Row(
@@ -216,7 +282,7 @@ private fun TopNavBar(
                     modifier = Modifier
                         .width(1.dp)
                         .height(16.dp)
-                        .background(FunnyColors.Border)
+                        .background(MaterialTheme.colorScheme.outline)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
 
@@ -243,7 +309,8 @@ private fun LevelProgressCard(
     level: Int,
     currentPoints: Int,
     pointsToNextLevel: Int,
-    onContinueLearning: () -> Unit
+    onContinueLearning: () -> Unit,
+    onAdaptiveLessonClick: () -> Unit
 ) {
     val totalForLevel = currentPoints + pointsToNextLevel
     val progress = if (totalForLevel > 0) currentPoints.toFloat() / totalForLevel else 0f
@@ -253,7 +320,7 @@ private fun LevelProgressCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -270,7 +337,7 @@ private fun LevelProgressCard(
                 CircularProgressIndicator(
                     progress = { 1f },
                     modifier = Modifier.fillMaxSize(),
-                    color = FunnyColors.SurfaceVariant,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     strokeWidth = 8.dp
                 )
                 CircularProgressIndicator(
@@ -311,11 +378,12 @@ private fun LevelProgressCard(
             Text(
                 text = "Ещё $pointsToNextLevel XP до уровня ${level + 1}",
                 fontSize = 14.sp,
-                color = FunnyColors.TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Primary action - Continue Learning
             Button(
                 onClick = onContinueLearning,
                 modifier = Modifier
@@ -329,6 +397,110 @@ private fun LevelProgressCard(
                 Text(
                     text = "Продолжить обучение",
                     fontWeight = FontWeight.Bold
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Secondary action - Quick Adaptive Lesson
+            OutlinedButton(
+                onClick = onAdaptiveLessonClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = FunnyColors.Secondary
+                )
+            ) {
+                Text(
+                    text = "⚡ Быстрый урок (5 мин)",
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickActionsRow(
+    onAdaptiveLessonClick: () -> Unit,
+    onContinueLearning: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Quick Lesson Card
+        Card(
+            modifier = Modifier
+                .weight(1f)
+                .height(80.dp)
+                .clickable(onClick = onAdaptiveLessonClick),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = FunnyColors.Secondary.copy(alpha = 0.1f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "⚡",
+                    fontSize = 24.sp
+                )
+                Text(
+                    text = "Быстрый урок",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = FunnyColors.Secondary
+                )
+                Text(
+                    text = "5 минут",
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        // Continue Learning Card
+        Card(
+            modifier = Modifier
+                .weight(1f)
+                .height(80.dp)
+                .clickable(onClick = onContinueLearning),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = FunnyColors.Primary.copy(alpha = 0.1f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "📚",
+                    fontSize = 24.sp
+                )
+                Text(
+                    text = "Продолжить",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = FunnyColors.Primary
+                )
+                Text(
+                    text = "С последнего теста",
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -351,7 +523,7 @@ private fun SectionHeader(
             text = title,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = FunnyColors.OnBackground
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         if (onViewAll != null) {
@@ -476,7 +648,7 @@ private fun CategoryChip(
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
                 color = iconColor,
-                trackColor = Color.White
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -503,7 +675,7 @@ private fun RecentTestCard(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
@@ -516,7 +688,7 @@ private fun RecentTestCard(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .background(FunnyColors.SurfaceVariant, RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -544,7 +716,7 @@ private fun RecentTestCard(
                     Text(
                         text = "${test.questionsCount} вопросов",
                         fontSize = 12.sp,
-                        color = FunnyColors.TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -573,7 +745,7 @@ private fun RecentTestCard(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }

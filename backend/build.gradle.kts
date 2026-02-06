@@ -14,6 +14,9 @@ java {
 }
 
 dependencies {
+    // Shared module
+    implementation(project(":shared"))
+    
     // Spring Boot
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.security)
@@ -25,6 +28,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
 
     // Database
     implementation(libs.postgresql)
@@ -39,10 +43,15 @@ dependencies {
     // AWS S3
     implementation(libs.aws.s3)
 
+    // Caching (Caffeine)
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+
     // Testing
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockk)
+    runtimeOnly(libs.h2)
 }
 
 tasks.withType<Test> {

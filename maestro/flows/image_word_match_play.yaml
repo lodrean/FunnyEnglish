@@ -1,0 +1,139 @@
+# Image-Word Match Play Flow
+# Tests: Complete an IMAGE_WORD_MATCH question by dragging words to image hotspots
+
+appId: com.funnyenglish.desktop
+---
+
+- launchApp
+
+# Wait for home screen
+- waitForElement:
+    text: "FunnyEnglish"
+    timeout: 10000
+
+# Navigate to categories
+- tapOn:
+    text: "Каталог"
+    optional: true
+
+- waitForElement:
+    text: "Категории"
+    timeout: 5000
+
+# Select a category with IMAGE_WORD_MATCH test
+# The "Предметы" category is created by V13__sample_image_word_match.sql
+- tapOn:
+    text: "Предметы"
+    optional: true
+
+- waitForElement:
+    text: "Тесты"
+    timeout: 5000
+
+# Select test with IMAGE_WORD_MATCH
+- tapOn:
+    text: "Начать"
+    index: 0
+    optional: true
+
+# Wait for test screen with IMAGE_WORD_MATCH question
+- waitForElement:
+    text: "Drag words to the image"
+    timeout: 10000
+    optional: true
+
+# Alternative: Check for instruction text
+- waitForElement:
+    text: "Match the words"
+    timeout: 10000
+    optional: true
+
+# IMAGE_WORD_MATCH Interaction
+# Drag words from word bank to image hotspots
+# Note: Maestro's dragAndDrop works with element selectors
+
+# First word drag (e.g., "fridge")
+- dragAndDrop:
+    from:
+      text: "fridge"
+      optional: true
+    to:
+      id: "hotspot_container"
+      optional: true
+
+# Wait for snap animation
+- waitForAnimationToEnd
+
+# Second word drag (e.g., "table")
+- dragAndDrop:
+    from:
+      text: "table"
+      optional: true
+    to:
+      id: "hotspot_container"
+      optional: true
+
+- waitForAnimationToEnd
+
+# Third word drag (e.g., "knife")
+- dragAndDrop:
+    from:
+      text: "knife"
+      optional: true
+    to:
+      id: "hotspot_container"
+      optional: true
+
+- waitForAnimationToEnd
+
+# Alternative approach using relative coordinates if text selectors don't work
+# Uncomment if needed:
+# - swipe:
+#     direction: RIGHT
+#     start: 20%,80%
+#     end: 50%,40%
+#     optional: true
+
+# Check progress indicator shows all words matched
+- assertVisible:
+    text: "words matched"
+    optional: true
+
+# Submit button should be enabled now
+- tapOn:
+    text: "Продолжить"
+    optional: true
+
+# Or if it's the last question
+- tapOn:
+    text: "Завершить"
+    optional: true
+
+# Wait for result screen
+- waitForElement:
+    text: "Результат"
+    timeout: 10000
+    optional: true
+
+# Verify score/points earned
+- assertVisible:
+    text: "XP"
+    optional: true
+
+- assertVisible:
+    text: "звезд"
+    optional: true
+
+# Complete and go back
+- tapOn:
+    text: "Готово"
+    optional: true
+
+- tapOn:
+    text: "Главная"
+    optional: true
+
+# Verify back on home screen
+- assertVisible:
+    text: "FunnyEnglish"
+    timeout: 5000

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -28,9 +30,14 @@ import com.funnyenglish.app.screens.SettingsScreen
 import com.funnyenglish.app.screens.SplashScreen
 import com.funnyenglish.app.screens.TestPlayScreen
 import com.funnyenglish.app.screens.ProfileScreen
-import com.funnyenglish.app.screens.AchievementsScreen
-import com.funnyenglish.app.theme.FunnyEnglishTheme
+import com.funnyenglish.app.screens.AchievementScreen
+import com.funnyenglish.app.screens.AdaptiveLessonScreen
+import com.funnyenglish.screens.GroupsScreen
+import com.funnyenglish.screens.GroupDetailScreen
+import com.funnyenglish.designsystem.theme.FunnyTheme
 import com.funnyenglish.app.viewmodel.*
+import com.funnyenglish.app.components.StreakWidget
+import com.funnyenglish.app.components.DailyQuestsWidget
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -47,7 +54,7 @@ fun App() {
             AppThemeMode.LIGHT -> false
         }
 
-        FunnyEnglishTheme(darkTheme = useDarkTheme) {
+        FunnyTheme(darkTheme = useDarkTheme) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 AppContent(settingsViewModel)
             }
@@ -124,6 +131,7 @@ private fun MainAppContent(
 
     val showBottomNav = currentScreen is AppScreen.Home ||
         currentScreen is AppScreen.Categories ||
+        currentScreen is AppScreen.Groups ||
         currentScreen is AppScreen.Leaderboard ||
         currentScreen is AppScreen.Profile
 
@@ -141,6 +149,11 @@ private fun MainAppContent(
             when (currentScreen) {
                 is AppScreen.Home -> {
                     val state by homeViewModel.state.collectAsState()
+                    val streakViewModel: StreakViewModel = koinViewModel()
+                    val questsViewModel: QuestsViewModel = koinViewModel()
+                    val streakState by streakViewModel.uiState.collectAsState()
+                    val questsState by questsViewModel.uiState.collectAsState()
+                    
                     HomeScreen(
                         state = state,
                         onLoadData = { homeViewModel.loadHomeData() },
@@ -149,14 +162,20 @@ private fun MainAppContent(
                         onViewAllCategories = { onNavigate(AppScreen.Categories) },
                         onProfileClick = { onNavigate(AppScreen.Profile) },
                         onContinueLearning = {
-                            // Navigate to first incomplete test or categories
                             val incompleteTest = state.recentTests.firstOrNull { it.userProgress == null }
                             if (incompleteTest != null) {
                                 onNavigate(AppScreen.TestPlay(incompleteTest.id))
                             } else {
                                 onNavigate(AppScreen.Categories)
                             }
-                        }
+                        },
+                        onAdaptiveLessonClick = {
+                            onNavigate(AppScreen.AdaptiveLesson(categoryId = null, durationMinutes = 5))
+                        },
+                        onStreakClick = { /* TODO: Navigate to streak detail */ },
+                        onQuestsClick = { /* TODO: Navigate to quests screen */ },
+                        streakState = streakState,
+                        questsState = questsState
                     )
                 }
                 is AppScreen.Categories -> {
@@ -190,6 +209,7 @@ private fun MainAppContent(
                         },
                         onSelectAnswer = testViewModel::selectAnswer,
                         onSetDragDropMatch = testViewModel::setDragDropMatch,
+                        onSetImageWordMatch = testViewModel::setImageWordMatch,
                         onNextQuestion = testViewModel::goToNextQuestion,
                         onPreviousQuestion = testViewModel::goToPreviousQuestion,
                         onGoToQuestion = testViewModel::goToQuestion,
@@ -220,7 +240,7 @@ private fun MainAppContent(
                 }
                 is AppScreen.Achievements -> {
                     val state by profileViewModel.achievementsState.collectAsState()
-                    AchievementsScreen(
+                    AchievementScreen(
                         state = state,
                         onLoad = { profileViewModel.loadAchievements() },
                         onBack = { onNavigate(AppScreen.Profile) }
@@ -238,6 +258,34 @@ private fun MainAppContent(
                         onLanguageSelected = settingsViewModel::setLanguage,
                         onThemeSelected = settingsViewModel::setThemeMode,
                         onLogout = onLogout
+                    )
+                }
+                is AppScreen.AdaptiveLesson -> {
+                    AdaptiveLessonScreen(
+                        categoryId = currentScreen.categoryId,
+                        targetDurationMinutes = currentScreen.durationMinutes,
+                        onLessonComplete = { xpEarned ->
+                            // Show completion and navigate back
+                            onNavigate(AppScreen.Home)
+                        },
+                        onLessonExit = {
+                            onNavigate(AppScreen.Home)
+                        }
+                    )
+                }
+                is AppScreen.Groups -> {
+                    GroupsScreen(
+                        onNavigate = onNavigate,
+                        onNavigateToGroupDetail = { groupId ->
+                            onNavigate(AppScreen.GroupDetail(groupId))
+                        },
+                        onNavigateBack = { onNavigate(AppScreen.Home) }
+                    )
+                }
+                is AppScreen.GroupDetail -> {
+                    GroupDetailScreen(
+                        groupId = currentScreen.groupId,
+                        onNavigateBack = { onNavigate(AppScreen.Groups) }
                     )
                 }
                 else -> {
@@ -263,6 +311,7 @@ private fun BottomNavigationBar(
     val items = listOf(
         BottomNavItem(AppScreen.Home, "Главная", Icons.Default.Home),
         BottomNavItem(AppScreen.Categories, "Категории", Icons.Default.Category),
+        BottomNavItem(AppScreen.Groups, "Группы", Icons.Default.Groups),
         BottomNavItem(AppScreen.Leaderboard, "Рейтинг", Icons.Default.EmojiEvents),
         BottomNavItem(AppScreen.Profile, "Профиль", Icons.Default.Person)
     )
@@ -291,6 +340,9 @@ sealed class AppScreen {
     data object Profile : AppScreen()
     data object Achievements : AppScreen()
     data object Settings : AppScreen()
+    data class AdaptiveLesson(val categoryId: String? = null, val durationMinutes: Int = 5) : AppScreen()
+    data object Groups : AppScreen()
+    data class GroupDetail(val groupId: String) : AppScreen()
 }
 
 @Composable

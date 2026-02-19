@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,8 +35,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.funnyenglish.app.components.*
-import com.funnyenglish.app.theme.FunnyColors
+import coil3.compose.SubcomposeAsyncImage
+import com.funnyenglish.app.components.LoadingIndicator
+import com.funnyenglish.app.components.questions.ImageWordMatchQuestion
+import com.funnyenglish.designsystem.tokens.*
+import com.funnyenglish.designsystem.components.buttons.FunnyButton
+import com.funnyenglish.designsystem.components.buttons.FunnyButtonSize
+import com.funnyenglish.designsystem.components.buttons.FunnyButtonType
+import com.funnyenglish.designsystem.components.cards.FunnyCard
 import com.funnyenglish.app.viewmodel.TestPlayState
 import com.funnyenglish.shared.model.*
 import com.funnyenglish.shared.platform.AudioPlayer
@@ -48,6 +55,7 @@ fun TestPlayScreen(
     onBack: () -> Unit,
     onSelectAnswer: (String, String) -> Unit,
     onSetDragDropMatch: (String, String, String) -> Unit,
+    onSetImageWordMatch: (String, String, String) -> Unit,  // questionId, wordId, hotspotId
     onNextQuestion: () -> Unit,
     onPreviousQuestion: () -> Unit,
     onGoToQuestion: (Int) -> Unit,
@@ -74,12 +82,12 @@ fun TestPlayScreen(
                     text = "Ошибка",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = FunnyColors.Error
+                    color = ErrorLight
                 )
                 Text(
                     text = state.error ?: "Неизвестная ошибка",
                     textAlign = TextAlign.Center,
-                    color = FunnyColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Button(onClick = onSubmit) {
                     Text("Повторить")
@@ -108,7 +116,7 @@ fun TestPlayScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(FunnyColors.Background),
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -119,12 +127,12 @@ fun TestPlayScreen(
                     text = "Тест пока пуст",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = FunnyColors.OnBackground
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "В этом тесте еще нет вопросов.",
                     textAlign = TextAlign.Center,
-                    color = FunnyColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Button(onClick = onBack) {
                     Text("Вернуться")
@@ -142,7 +150,7 @@ fun TestPlayScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(FunnyColors.Background)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -192,9 +200,13 @@ fun TestPlayScreen(
                             questionIndex = questionIndex + 1,
                             selectedAnswerIds = currentAnswer?.selectedAnswerIds ?: emptyList(),
                             dragDropMatches = currentAnswer?.dragDropMatches ?: emptyMap(),
+                            imageWordMatches = currentAnswer?.imageWordMatches ?: emptyMap(),
                             onSelectAnswer = { answerId -> onSelectAnswer(question.id, answerId) },
                             onSetDragDropMatch = { answerId, target ->
                                 onSetDragDropMatch(question.id, answerId, target)
+                            },
+                            onSetImageWordMatch = { wordId, hotspotId ->
+                                onSetImageWordMatch(question.id, wordId, hotspotId)
                             }
                         )
                     }
@@ -213,8 +225,8 @@ fun TestPlayScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            FunnyColors.Background,
-                            FunnyColors.Background
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.background
                         )
                     )
                 )
@@ -229,12 +241,12 @@ fun TestPlayScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = FunnyColors.AccentPurple
+                        containerColor = AchievementPurple
                     )
                 ) {
                     if (state.isSubmitting) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp),
                             strokeWidth = 2.dp
                         )
@@ -257,7 +269,7 @@ fun TestPlayScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = FunnyColors.Primary
+                        containerColor = PrimaryLight
                     )
                 ) {
                     Text(
@@ -283,7 +295,7 @@ private fun TestTopBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FunnyColors.Background)
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         Row(
@@ -295,12 +307,12 @@ private fun TestTopBar(
                 onClick = onClose,
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color.White, CircleShape)
+                    .background(MaterialTheme.colorScheme.surface, CircleShape)
             ) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = "Закрыть",
-                    tint = FunnyColors.OnBackground
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -313,7 +325,7 @@ private fun TestTopBar(
             // Timer
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = FunnyColors.Primary.copy(alpha = 0.1f)
+                color = PrimaryLight.copy(alpha = 0.1f)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -330,7 +342,7 @@ private fun TestTopBar(
                         text = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = FunnyColors.Primary
+                        color = PrimaryLight
                     )
                 }
             }
@@ -348,7 +360,7 @@ private fun TestTopBar(
                 text = "${(progress * 100).toInt()}% завершено",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = FunnyColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 letterSpacing = 1.sp
             )
         }
@@ -361,8 +373,8 @@ private fun TestTopBar(
                 .fillMaxWidth()
                 .height(10.dp)
                 .clip(RoundedCornerShape(5.dp)),
-            color = FunnyColors.Primary,
-            trackColor = FunnyColors.SurfaceVariant
+            color = PrimaryLight,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -391,17 +403,17 @@ private fun QuestionProgressDots(
                     .clip(CircleShape)
                     .background(
                         when {
-                            isCurrent -> FunnyColors.Primary
-                            isAnswered -> FunnyColors.Success.copy(alpha = 0.2f)
-                            else -> Color.White
+                            isCurrent -> PrimaryLight
+                            isAnswered -> SuccessLight.copy(alpha = 0.2f)
+                            else -> MaterialTheme.colorScheme.surface
                         }
                     )
                     .border(
                         width = if (isCurrent) 0.dp else 1.dp,
                         color = when {
                             isCurrent -> Color.Transparent
-                            isAnswered -> FunnyColors.Success
-                            else -> FunnyColors.Border
+                            isAnswered -> SuccessLight
+                            else -> MaterialTheme.colorScheme.outline
                         },
                         shape = CircleShape
                     )
@@ -413,14 +425,14 @@ private fun QuestionProgressDots(
                         Icons.Default.Check,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = FunnyColors.Success
+                        tint = SuccessLight
                     )
                 } else {
                     Text(
                         text = (index + 1).toString(),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isCurrent) Color.White else FunnyColors.OnSurface
+                        color = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -434,19 +446,29 @@ private fun QuestionContent(
     questionIndex: Int,
     selectedAnswerIds: List<String>,
     dragDropMatches: Map<String, String>,
+    imageWordMatches: Map<String, String>,
     onSelectAnswer: (String) -> Unit,
-    onSetDragDropMatch: (String, String) -> Unit
+    onSetDragDropMatch: (String, String) -> Unit,
+    onSetImageWordMatch: (String, String) -> Unit  // wordId, hotspotId
 ) {
-    Column {
-        // Question text with fallback
-        val questionText = question.text?.takeIf { it.isNotBlank() }
-            ?: "Вопрос $questionIndex"
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        // Question text with fallback - use dark color for guaranteed visibility
+        val questionText = question.text?.takeIf { it.isNotBlank() } 
+            ?: question.title?.takeIf { it.isNotBlank() }
+            ?: "Вопрос ${questionIndex}"
         Text(
             text = questionText,
-            fontSize = 22.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             lineHeight = 30.sp
         )
 
@@ -459,13 +481,35 @@ private fun QuestionContent(
 
         // Question image (for IMAGE_SELECT type)
         if (question.type == QuestionType.IMAGE_SELECT && question.imageUrl != null) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = question.imageUrl,
                 contentDescription = "Вопрос",
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 200.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp)),
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                },
+                error = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .background(MaterialTheme.colorScheme.errorContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "⚠️ Ошибка загрузки изображения",
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -486,6 +530,20 @@ private fun QuestionContent(
                     onSelect = onSelectAnswer
                 )
             }
+            QuestionType.IMAGE_WORD_MATCH -> {
+                val content = question.imageWordMatchContent
+                if (content != null) {
+                    ImageWordMatchQuestion(
+                        content = content,
+                        currentMatches = imageWordMatches,
+                        onMatch = { wordId, hotspotId ->
+                            onSetImageWordMatch(wordId, hotspotId)
+                        }
+                    )
+                } else {
+                    ImageWordMatchPlaceholder()
+                }
+            }
             QuestionType.AUDIO_SELECT, QuestionType.TEXT_SELECT, QuestionType.FILL_BLANK -> {
                 AnswerOptions(
                     answers = question.answers,
@@ -493,6 +551,45 @@ private fun QuestionContent(
                     onSelect = onSelectAnswer
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ImageWordMatchPlaceholder() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                RoundedCornerShape(16.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "🖼️",
+                fontSize = 48.sp
+            )
+            Text(
+                text = "Image-Word Match",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Drag words to image areas",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "(Implementation in progress)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         }
     }
 }
@@ -533,18 +630,18 @@ private fun AudioPlayerButton(url: String) {
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = FunnyColors.Primary.copy(alpha = 0.1f)
+            containerColor = PrimaryLight.copy(alpha = 0.1f)
         )
     ) {
         Icon(
             imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
             contentDescription = if (isPlaying) "Пауза" else "Воспроизвести",
-            tint = FunnyColors.Primary
+            tint = PrimaryLight
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = if (isPlaying) "Пауза" else "Послушать",
-            color = FunnyColors.Primary,
+            color = PrimaryLight,
             fontWeight = FontWeight.Bold
         )
     }
@@ -559,7 +656,7 @@ private fun AnswerOptions(
     if (answers.isEmpty()) {
         Text(
             text = "Нет вариантов ответа",
-            color = FunnyColors.TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -580,15 +677,12 @@ private fun AnswerOptions(
                     .clickable { onSelect(answer.id) },
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected)
-                        Color.White
-                    else
-                        Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 border = if (isSelected)
                     CardDefaults.outlinedCardBorder().copy(
                         width = 2.dp,
-                        brush = Brush.linearGradient(listOf(FunnyColors.Primary, FunnyColors.Primary))
+                        brush = Brush.linearGradient(listOf(PrimaryLight, PrimaryLight))
                     )
                 else
                     CardDefaults.outlinedCardBorder().copy(
@@ -610,7 +704,7 @@ private fun AnswerOptions(
                         text = displayText,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) FunnyColors.AccentPurple else FunnyColors.OnBackground
+                        color = if (isSelected) PrimaryLight else MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -627,7 +721,7 @@ private fun ImageAnswerOptions(
     if (answers.isEmpty()) {
         Text(
             text = "Нет вариантов ответа",
-            color = FunnyColors.TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -653,17 +747,17 @@ private fun ImageAnswerOptions(
                     .clickable { onSelect(answer.id) },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 border = if (isSelected)
                     CardDefaults.outlinedCardBorder().copy(
                         width = 3.dp,
-                        brush = Brush.linearGradient(listOf(FunnyColors.Primary, FunnyColors.Primary))
+                        brush = Brush.linearGradient(listOf(PrimaryLight, PrimaryLight))
                     )
                 else
                     CardDefaults.outlinedCardBorder().copy(
                         width = 1.dp,
-                        brush = Brush.linearGradient(listOf(FunnyColors.Border, FunnyColors.Border))
+                        brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline))
                     ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = if (isSelected) 4.dp else 1.dp
@@ -674,13 +768,37 @@ private fun ImageAnswerOptions(
                     contentAlignment = Alignment.Center
                 ) {
                     answer.imageUrl?.let { imageUrl ->
-                        AsyncImage(
+                        SubcomposeAsyncImage(
                             model = imageUrl,
                             contentDescription = answer.text,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(8.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(12.dp)),
+                            loading = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                            },
+                            error = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = displayText,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         )
                     } ?: run {
                         Text(
@@ -688,7 +806,7 @@ private fun ImageAnswerOptions(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            color = FunnyColors.OnBackground,
+                            color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(16.dp)
                         )
                     }
@@ -707,7 +825,7 @@ private fun DragDropQuestion(
     if (answers.isEmpty()) {
         Text(
             text = "Нет элементов для сопоставления",
-            color = FunnyColors.TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -722,7 +840,7 @@ private fun DragDropQuestion(
     if (targets.isEmpty()) {
         Text(
             text = "Нет доступных вариантов для сопоставления",
-            color = FunnyColors.TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -735,7 +853,7 @@ private fun DragDropQuestion(
         Text(
             text = "Соедините картинки со словами:",
             fontSize = 14.sp,
-            color = FunnyColors.TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         answers.forEach { answer ->
@@ -748,7 +866,7 @@ private fun DragDropQuestion(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(FunnyColors.SurfaceVariant),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("📷", fontSize = 32.sp)
@@ -757,7 +875,7 @@ private fun DragDropQuestion(
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = FunnyColors.TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 var expanded by remember { mutableStateOf(false) }
@@ -769,12 +887,12 @@ private fun DragDropQuestion(
                         .clickable { expanded = true },
                     shape = RoundedCornerShape(12.dp),
                     color = if (selectedTarget != null)
-                        FunnyColors.Success.copy(alpha = 0.1f)
+                        SuccessLight.copy(alpha = 0.1f)
                     else
-                        Color.White,
+                        MaterialTheme.colorScheme.surface,
                     border = if (selectedTarget != null)
                         CardDefaults.outlinedCardBorder().copy(
-                            brush = Brush.linearGradient(listOf(FunnyColors.Success, FunnyColors.Success))
+                            brush = Brush.linearGradient(listOf(SuccessLight, SuccessLight))
                         )
                     else null
                 ) {
@@ -815,7 +933,7 @@ private fun TestResultScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FunnyColors.Background)
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -828,13 +946,13 @@ private fun TestResultScreen(
             Icon(
                 Icons.Default.Star,
                 contentDescription = null,
-                tint = if (result.stars >= 1) FunnyColors.StarFilled else FunnyColors.StarEmpty,
+                tint = if (result.stars >= 1) XPGold else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(56.dp)
             )
             Icon(
                 Icons.Default.Star,
                 contentDescription = null,
-                tint = if (result.stars >= 2) FunnyColors.StarFilled else FunnyColors.StarEmpty,
+                tint = if (result.stars >= 2) XPGold else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier
                     .size(72.dp)
                     .offset(y = (-8).dp)
@@ -842,7 +960,7 @@ private fun TestResultScreen(
             Icon(
                 Icons.Default.Star,
                 contentDescription = null,
-                tint = if (result.stars >= 3) FunnyColors.StarFilled else FunnyColors.StarEmpty,
+                tint = if (result.stars >= 3) XPGold else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(56.dp)
             )
         }
@@ -859,16 +977,16 @@ private fun TestResultScreen(
             fontSize = 32.sp,
             fontWeight = FontWeight.ExtraBold,
             color = when {
-                result.percentage >= 80 -> FunnyColors.Success
-                result.percentage >= 60 -> FunnyColors.Secondary
-                else -> FunnyColors.Error
+                result.percentage >= 80 -> SuccessLight
+                result.percentage >= 60 -> SecondaryLight
+                else -> ErrorLight
             }
         )
 
         Text(
             text = testTitle,
             fontSize = 14.sp,
-            color = FunnyColors.TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -876,7 +994,7 @@ private fun TestResultScreen(
         // Score Card
         Card(
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(32.dp),
@@ -885,19 +1003,19 @@ private fun TestResultScreen(
                 Text(
                     text = "Ваш результат",
                     fontSize = 14.sp,
-                    color = FunnyColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "${result.percentage}%",
                     fontSize = 56.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = FunnyColors.Primary
+                    color = PrimaryLight
                 )
 
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = FunnyColors.SurfaceVariant
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -906,7 +1024,7 @@ private fun TestResultScreen(
                         Icon(
                             Icons.Default.Check,
                             contentDescription = null,
-                            tint = FunnyColors.Success,
+                            tint = SuccessLight,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -925,7 +1043,7 @@ private fun TestResultScreen(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = FunnyColors.Primary.copy(alpha = 0.1f)
+                        color = PrimaryLight.copy(alpha = 0.1f)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -934,14 +1052,14 @@ private fun TestResultScreen(
                             Icon(
                                 Icons.Default.Star,
                                 contentDescription = null,
-                                tint = FunnyColors.StarFilled,
+                                tint = XPGold,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "+${result.pointsEarned} XP",
                                 fontWeight = FontWeight.Bold,
-                                color = FunnyColors.Primary
+                                color = PrimaryLight
                             )
                         }
                     }
@@ -949,13 +1067,13 @@ private fun TestResultScreen(
                     if (result.isNewBestScore) {
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = FunnyColors.Secondary.copy(alpha = 0.1f)
+                            color = SecondaryLight.copy(alpha = 0.1f)
                         ) {
                             Text(
                                 text = "🏆 Рекорд!",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 fontWeight = FontWeight.Bold,
-                                color = FunnyColors.Secondary
+                                color = SecondaryLight
                             )
                         }
                     }
@@ -969,7 +1087,7 @@ private fun TestResultScreen(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = FunnyColors.Secondary.copy(alpha = 0.1f)
+                    containerColor = SecondaryLight.copy(alpha = 0.1f)
                 )
             ) {
                 Row(
@@ -985,7 +1103,7 @@ private fun TestResultScreen(
                         )
                         Text(
                             text = levelUp.newTitle,
-                            color = FunnyColors.TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
@@ -1020,7 +1138,7 @@ private fun TestResultScreen(
                             Text(
                                 text = achievement.description,
                                 fontSize = 12.sp,
-                                color = FunnyColors.TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -1038,7 +1156,7 @@ private fun TestResultScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = FunnyColors.Primary
+                containerColor = PrimaryLight
             )
         ) {
             Text(
@@ -1057,7 +1175,7 @@ private fun TestResultScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = FunnyColors.Primary
+                contentColor = PrimaryLight
             )
         ) {
             Text(

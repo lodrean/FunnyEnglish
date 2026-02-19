@@ -18,7 +18,8 @@ data class SubmitTestRequest(
 data class SubmitAnswerRequest(
     val questionId: String,
     val selectedAnswerIds: List<String> = emptyList(),
-    val dragDropMatches: Map<String, String>? = null  // answerId -> matchTarget
+    val dragDropMatches: Map<String, String>? = null,  // answerId -> matchTarget
+    val imageWordMatches: Map<String, String>? = null  // wordId -> hotspotId for IMAGE_WORD_MATCH
 )
 
 data class SubmitTestResponse(

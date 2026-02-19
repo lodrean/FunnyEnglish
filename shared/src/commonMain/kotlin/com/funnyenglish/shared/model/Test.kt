@@ -54,11 +54,13 @@ data class TestDetail(
 data class Question(
     val id: String,
     val type: QuestionType,
+    val title: String? = null,
     val text: String? = null,
     val audioUrl: String? = null,
     val imageUrl: String? = null,
     val points: Int,
-    val answers: List<Answer>
+    val answers: List<Answer>,
+    val imageWordMatchContent: ImageWordMatchContent? = null  // For IMAGE_WORD_MATCH type
 )
 
 @Serializable
@@ -81,5 +83,53 @@ enum class QuestionType {
     AUDIO_SELECT,
     IMAGE_SELECT,
     TEXT_SELECT,
-    FILL_BLANK
+    FILL_BLANK,
+    IMAGE_WORD_MATCH  // NEW: Перетаскивание слов к областям на изображении
 }
+
+// ============ IMAGE_WORD_MATCH Models ============
+
+@Serializable
+data class ImageWordMatchContent(
+    val imageUrl: String,
+    val instruction: String,
+    val hotspots: List<HotspotData>,
+    val words: List<WordData>
+)
+
+@Serializable
+data class HotspotData(
+    val id: String,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float,
+    val shape: HotspotShape = HotspotShape.RECTANGLE,
+    val wordId: String
+) {
+    fun contains(rx: Float, ry: Float): Boolean = when (shape) {
+        HotspotShape.RECTANGLE -> rx >= x && rx <= x + width && ry >= y && ry <= y + height
+        HotspotShape.CIRCLE -> {
+            val centerX = x + width / 2
+            val centerY = y + height / 2
+            val radius = kotlin.math.min(width, height) / 2
+            val dx = rx - centerX
+            val dy = ry - centerY
+            (dx * dx + dy * dy) <= (radius * radius)
+        }
+    }
+}
+
+@Serializable
+enum class HotspotShape {
+    RECTANGLE,
+    CIRCLE
+}
+
+@Serializable
+data class WordData(
+    val id: String,
+    val text: String,
+    val translation: String? = null,
+    val audioUrl: String? = null
+)

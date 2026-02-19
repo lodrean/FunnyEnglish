@@ -17,7 +17,10 @@ class TestService(
     private val questionRepository: QuestionRepository,
     private val answerRepository: AnswerRepository,
     private val progressRepository: ProgressRepository,
-    private val mediaUrlService: MediaUrlService
+    private val mediaUrlService: MediaUrlService,
+    private val iwQuestionRepository: ImageWordMatchQuestionRepository,
+    private val iwWordRepository: ImageWordMatchWordRepository,
+    private val iwHotspotRepository: ImageWordMatchHotspotRepository
 ) {
     @Cacheable(value = ["categories"], key = "#userId ?: 'anonymous'")
     fun getCategories(userId: String?): List<CategoryResponse> {
@@ -85,7 +88,44 @@ class TestService(
             question.answers.size // trigger lazy load
         }
 
-        return test.toDetailResponse(mediaUrlService::normalize)
+        // Load IMAGE_WORD_MATCH content for relevant questions
+        val imageWordMatchContents = test.questions
+            .filter { it.type == QuestionType.IMAGE_WORD_MATCH }
+            .mapNotNull { question ->
+                val iwData = iwQuestionRepository.findByQuestionId(question.id!!)
+                if (iwData != null) {
+                    val words = iwWordRepository.findByQuestionId(question.id)
+                        .sortedBy { it.displayOrder }
+                        .map { WordResponse(it.wordId, it.text, it.translation, it.audioUrl) }
+                    val hotspots = iwHotspotRepository.findByQuestionId(question.id)
+                        .map { HotspotWithoutWordResponse(it.hotspotId, it.x, it.y, it.width, it.height, it.shape) }
+                    question.id to ImageWordMatchPublicResponse(
+                        id = question.id.toString(),
+                        type = QuestionType.IMAGE_WORD_MATCH,
+                        instruction = iwData.instruction,
+                        points = iwData.points,
+                        imageUrl = mediaUrlService.normalize(iwData.imageUrl) ?: iwData.imageUrl,
+                        words = words,
+                        hotspots = hotspots
+                    )
+                } else null
+            }
+            .toMap()
+
+        return TestDetailResponse(
+            id = test.id.toString(),
+            categoryId = test.category.id.toString(),
+            title = test.title,
+            description = test.description,
+            thumbnailUrl = mediaUrlService.normalize(test.thumbnailUrl),
+            difficulty = test.difficulty.name,
+            pointsReward = test.pointsReward,
+            timeLimitSeconds = test.timeLimitSeconds,
+            questions = test.questions.map { question ->
+                val iwContent = imageWordMatchContents[question.id]
+                question.toResponse(mediaUrlService::normalize, iwContent)
+            }
+        )
     }
 
     // Admin methods

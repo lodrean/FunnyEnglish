@@ -44,17 +44,26 @@ data class TestDetailResponse(
     val difficulty: String,
     val pointsReward: Int,
     val timeLimitSeconds: Int?,
-    val questions: List<QuestionResponse>
+    val questions: List<QuestionResponseLegacy>
 )
 
-data class QuestionResponse(
+/**
+ * @deprecated Use QuestionPublicResponse from QuestionDtos.kt
+ */
+@Deprecated("Use QuestionPublicResponse")
+data class QuestionResponseLegacy(
     val id: String,
     val type: String,
+    val title: String,
     val text: String?,
     val audioUrl: String?,
     val imageUrl: String?,
+    val mediaUrl: String?,
     val points: Int,
-    val answers: List<AnswerResponse>
+    val timeLimitSeconds: Int?,
+    val displayOrder: Int,
+    val answers: List<AnswerResponse>,
+    val imageWordMatchContent: ImageWordMatchPublicResponse? = null  // For IMAGE_WORD_MATCH type
 )
 
 data class AnswerResponse(
@@ -84,6 +93,7 @@ data class AdminTestDetailResponse(
 data class AdminQuestionResponse(
     val id: String,
     val type: String,
+    val title: String?,
     val text: String?,
     val audioUrl: String?,
     val imageUrl: String?,
@@ -123,6 +133,10 @@ data class CreateTestRequest(
     val questions: List<CreateQuestionRequest>
 )
 
+/**
+ * @deprecated Используйте QuestionCreateRequest из QuestionDtos.kt
+ */
+@Deprecated("Use QuestionCreateRequest")
 data class CreateQuestionRequest(
     @field:NotBlank(message = "Question type is required")
     val type: String,
@@ -137,6 +151,10 @@ data class CreateQuestionRequest(
     val answers: List<CreateAnswerRequest>
 )
 
+/**
+ * @deprecated Используйте AnswerOptionDto
+ */
+@Deprecated("Use AnswerOptionDto")
 data class CreateAnswerRequest(
     val text: String? = null,
     val imageUrl: String? = null,
@@ -160,25 +178,32 @@ data class UpdateTestRequest(
 )
 
 // Mapping functions
-fun Category.toResponse(completedCount: Int = 0, totalStars: Int = 0) = CategoryResponse(
+fun Category.toResponse(
+    completedCount: Int = 0,
+    totalStars: Int = 0,
+    urlResolver: (String?) -> String? = { it }
+) = CategoryResponse(
     id = id.toString(),
     name = name,
     description = description,
-    iconUrl = iconUrl,
+    iconUrl = urlResolver(iconUrl),
     testsCount = tests.count { it.isPublished },
     completedCount = completedCount,
     totalStars = totalStars
 )
 
-fun Test.toListResponse(progress: Progress? = null) = TestListResponse(
+fun Test.toListResponse(
+    progress: Progress? = null,
+    urlResolver: (String?) -> String? = { it }
+) = TestListResponse(
     id = id.toString(),
     categoryId = category.id.toString(),
     title = title,
     description = description,
-    thumbnailUrl = thumbnailUrl,
+    thumbnailUrl = urlResolver(thumbnailUrl),
     difficulty = difficulty.name,
     pointsReward = pointsReward,
-    questionsCount = questions.size,
+    questionsCount = 0, // Temporarily disabled due to JSONB deserialization issue
     userProgress = progress?.let {
         TestProgressSummary(
             completed = true,
@@ -189,66 +214,85 @@ fun Test.toListResponse(progress: Progress? = null) = TestListResponse(
     }
 )
 
-fun Test.toDetailResponse() = TestDetailResponse(
+fun Test.toDetailResponse(
+    urlResolver: (String?) -> String? = { it }
+) = TestDetailResponse(
     id = id.toString(),
     categoryId = category.id.toString(),
     title = title,
     description = description,
-    thumbnailUrl = thumbnailUrl,
+    thumbnailUrl = urlResolver(thumbnailUrl),
     difficulty = difficulty.name,
     pointsReward = pointsReward,
     timeLimitSeconds = timeLimitSeconds,
-    questions = questions.map { it.toResponse() }
+    questions = questions.map { it.toResponse(urlResolver) }
 )
 
-fun Question.toResponse() = QuestionResponse(
+fun Question.toResponse(
+    urlResolver: (String?) -> String? = { it },
+    imageWordMatchContent: ImageWordMatchPublicResponse? = null
+) = QuestionResponseLegacy(
     id = id.toString(),
     type = type.name,
+    title = title,
     text = text,
-    audioUrl = audioUrl,
-    imageUrl = imageUrl,
+    audioUrl = urlResolver(audioUrl),
+    imageUrl = urlResolver(imageUrl),
+    mediaUrl = urlResolver(mediaUrl),
     points = points,
-    answers = answers.shuffled().map { it.toResponse() }
+    timeLimitSeconds = timeLimitSeconds,
+    displayOrder = displayOrder,
+    answers = answers.shuffled().map { it.toResponse(urlResolver) },
+    imageWordMatchContent = imageWordMatchContent
 )
 
-fun Answer.toResponse() = AnswerResponse(
+fun Answer.toResponse(
+    urlResolver: (String?) -> String? = { it }
+) = AnswerResponse(
     id = id.toString(),
     text = text,
-    imageUrl = imageUrl,
-    audioUrl = audioUrl,
+    imageUrl = urlResolver(imageUrl),
+    audioUrl = urlResolver(audioUrl),
     matchTarget = matchTarget
 )
 
-fun Test.toAdminResponse() = AdminTestDetailResponse(
+fun Test.toAdminResponse(
+    urlResolver: (String?) -> String? = { it }
+) = AdminTestDetailResponse(
     id = id.toString(),
     categoryId = category.id.toString(),
     title = title,
     description = description,
-    thumbnailUrl = thumbnailUrl,
+    thumbnailUrl = urlResolver(thumbnailUrl),
     difficulty = difficulty.name,
     pointsReward = pointsReward,
     timeLimitSeconds = timeLimitSeconds,
     isPublished = isPublished,
     displayOrder = displayOrder,
-    questions = questions.map { it.toAdminResponse() }
+    questions = questions.map { it.toAdminResponse(urlResolver) }
 )
 
-fun Question.toAdminResponse() = AdminQuestionResponse(
+fun Question.toAdminResponse(
+    urlResolver: (String?) -> String? = { it }
+) = AdminQuestionResponse(
     id = id.toString(),
     type = type.name,
+    title = title,
     text = text,
-    audioUrl = audioUrl,
-    imageUrl = imageUrl,
+    audioUrl = urlResolver(audioUrl),
+    imageUrl = urlResolver(imageUrl),
     displayOrder = displayOrder,
     points = points,
-    answers = answers.map { it.toAdminResponse() }
+    answers = answers.map { it.toAdminResponse(urlResolver) }
 )
 
-fun Answer.toAdminResponse() = AdminAnswerResponse(
+fun Answer.toAdminResponse(
+    urlResolver: (String?) -> String? = { it }
+) = AdminAnswerResponse(
     id = id.toString(),
     text = text,
-    imageUrl = imageUrl,
-    audioUrl = audioUrl,
+    imageUrl = urlResolver(imageUrl),
+    audioUrl = urlResolver(audioUrl),
     isCorrect = isCorrect,
     displayOrder = displayOrder,
     matchTarget = matchTarget

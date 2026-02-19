@@ -4,6 +4,7 @@ import com.funnyenglish.dto.*
 import com.funnyenglish.entity.Progress
 import com.funnyenglish.entity.QuestionType
 import com.funnyenglish.repository.*
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -16,12 +17,22 @@ class ProgressService(
     private val questionRepository: QuestionRepository,
     private val answerRepository: AnswerRepository,
     private val userService: UserService,
-    private val achievementService: AchievementService
+    private val achievementService: AchievementService,
+    private val iwQuestionRepository: ImageWordMatchQuestionRepository,
+    private val iwWordRepository: ImageWordMatchWordRepository,
+    private val iwHotspotRepository: ImageWordMatchHotspotRepository
 ) {
+    private val logger = LoggerFactory.getLogger(ProgressService::class.java)
+    
     @Transactional
     fun submitTest(userId: String, request: SubmitTestRequest): SubmitTestResponse {
         val userUUID = UUID.fromString(userId)
         val testUUID = UUID.fromString(request.testId)
+
+        logger.info("Submit test: testId=$testUUID, userId=$userUUID, answersCount=${request.answers.size}")
+        request.answers.forEach { answer ->
+            logger.info("Answer: questionId=${answer.questionId}, selectedIds=${answer.selectedAnswerIds}")
+        }
 
         val test = testRepository.findByIdWithQuestions(testUUID)
             ?: throw NoSuchElementException("Test not found")
@@ -36,8 +47,16 @@ class ProgressService(
         for (question in questions) {
             maxScore += question.points
             val submittedAnswer = request.answers.find { it.questionId == question.id.toString() }
+            
+            logger.debug("Question ${question.id}: type=${question.type}, submittedAnswer=${submittedAnswer != null}")
 
             if (submittedAnswer != null) {
+                val correctAnswerIds = question.answers
+                    .filter { it.isCorrect }
+                    .map { it.id.toString() }
+                    .toSet()
+                logger.debug("Correct answer IDs: $correctAnswerIds, Submitted: ${submittedAnswer.selectedAnswerIds}")
+                
                 val isCorrect = when (question.type) {
                     QuestionType.DRAG_DROP_IMAGE -> {
                         // Check drag-drop matches
@@ -45,6 +64,18 @@ class ProgressService(
                         val correctAnswers = question.answers.filter { it.isCorrect }
                         correctAnswers.all { answer ->
                             matches[answer.id.toString()] == answer.matchTarget
+                        }
+                    }
+                    QuestionType.IMAGE_WORD_MATCH -> {
+                        // Check IMAGE_WORD_MATCH matches
+                        val submittedMatches = submittedAnswer.imageWordMatches ?: emptyMap()
+                        val hotspots = iwHotspotRepository.findByQuestionId(question.id!!)
+                        val correctMapping = hotspots.associate { it.wordId to it.hotspotId }
+                        
+                        // All words must be matched correctly
+                        val words = iwWordRepository.findByQuestionId(question.id)
+                        words.all { word ->
+                            submittedMatches[word.wordId] == correctMapping[word.wordId]
                         }
                     }
                     else -> {
@@ -57,11 +88,17 @@ class ProgressService(
                     }
                 }
 
+                logger.debug("Question ${question.id}: isCorrect=$isCorrect")
+                
                 if (isCorrect) {
                     score += question.points
                 }
+            } else {
+                logger.debug("Question ${question.id}: no submitted answer")
             }
         }
+
+        logger.info("Test result: score=$score, maxScore=$maxScore")
 
         // Calculate stars
         val percentage = if (maxScore > 0) (score * 100) / maxScore else 0

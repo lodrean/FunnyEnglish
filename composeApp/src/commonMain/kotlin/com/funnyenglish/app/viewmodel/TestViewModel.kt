@@ -107,6 +107,16 @@ class TestViewModel(
         )
     }
 
+    fun setImageWordMatch(questionId: String, wordId: String, hotspotId: String) {
+        val currentAnswer = _state.value.answers[questionId] ?: SubmitAnswer(questionId)
+        val newMatches = (currentAnswer.imageWordMatches ?: emptyMap()) + (wordId to hotspotId)
+
+        val newAnswer = currentAnswer.copy(imageWordMatches = newMatches)
+        _state.value = _state.value.copy(
+            answers = _state.value.answers + (questionId to newAnswer)
+        )
+    }
+
     fun goToNextQuestion() {
         val currentIndex = _state.value.currentQuestionIndex
         val questionsCount = _state.value.test?.questions?.size ?: 0

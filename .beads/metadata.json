@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "FunnyEnglish",
+  "project_id": "52bb8270-3b7f-4299-9265-b3645b7de3d4"
+}

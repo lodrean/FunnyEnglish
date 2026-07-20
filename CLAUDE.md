@@ -45,10 +45,13 @@ This project follows the AIDD methodology where LLM acts as a team of specialize
 FunnyEnglish is a cross-platform English learning application with gamification.
 
 ### Current Status
-- **Status:** MVP Complete ✅ | Ready for Next Phase
+- **Status:** MVP Complete ✅ | UX Modernization Complete ✅
 - **E2E Tests:** 15/15 passing (100%) - [Details](docs/testing/TESTING_STATUS.md)
 - **Integration Tests:** 6/7 passing (85.7%)
+- **Module Architecture:** 7 feature modules migrated ✅
+- **Docker Stack:** All services healthy ✅
 - **Full Report:** [PROJECT_STATUS_REPORT.md](docs/PROJECT_STATUS_REPORT.md)
+- **UX Report:** [UX_AUDIT_REPORT.md](docs/UX_AUDIT_REPORT.md)
 
 ### Tech Stack
 - **Backend**: Spring Boot 3 + Kotlin + PostgreSQL
@@ -70,26 +73,123 @@ cd admin-web && npm install && npm run dev
 
 ## Project Structure
 
+### Legacy Structure (Monolithic)
 ```
 FunnyEnglish/
 ├── backend/                 # Spring Boot API
 ├── admin-web/               # React Admin Panel
-├── composeApp/              # Compose Multiplatform UI
-├── shared/                  # KMP Shared Module
+├── composeApp/              # Compose Multiplatform UI (legacy)
+├── shared/                  # KMP Shared Module (legacy, migrating to core/)
+├── docs/                    # Documentation
+└── reports/                 # QA Reports
+```
+
+### New Modular Architecture (Recommended)
+```
+FunnyEnglish/
+├── backend/                 # Spring Boot API
+├── admin-web/               # React Admin Panel
+│
+├── core/                    # Core infrastructure (KMP)
+│   ├── toggle/              # Feature toggle system
+│   ├── network/             # HTTP clients
+│   ├── settings/            # App settings
+│   └── di/                  # Core DI module
+│
+├── feature-api/             # API for feature modules (KMP)
+│   ├── navigation/          # Inter-feature navigation
+│   └── api/                 # FeatureEntry interfaces
+│
+├── feature-home/            # Feature: Home screen
+├── feature-auth/            # Feature: Authentication
+├── feature-tests/           # Feature: Tests/Quizzes
+├── feature-groups/          # Feature: Student Groups
+├── feature-gamification/    # Feature: Streaks/Achievements
+├── feature-profile/         # Feature: User Profile
+│   └── Can be toggled on/off via Feature Toggle system
+│
+├── app/                     # Application assembly module
+│   └── Registers features, initializes app
+│
 ├── docs/                    # Documentation
 │   ├── prd/                 # Product Requirements
 │   ├── plan/                # Implementation Plans
 │   ├── tasklist/            # Task Lists
-│   ├── research/            # Research Documents
 │   ├── adr/                 # Architecture Decision Records
-│   └── API.md               # REST API docs
-├── reports/                 # QA Reports
-│   └── qa/                  # QA test reports
-├── .claude/                 # Claude Code configuration
-│   ├── agents/              # Subagent definitions
-│   ├── commands/            # Slash commands
-│   └── hooks/               # CI hooks
-└── .claude-shared/          # Shared AIDD pipeline (optional)
+│   ├── API.md               # REST API docs
+│   └── MODULAR_ARCHITECTURE.md  # Modular architecture guide
+│
+└── reports/                 # QA Reports
+```
+
+## Feature Toggle System
+
+FunnyEnglish uses a comprehensive **Feature Toggle** system for dynamic feature management.
+
+### Quick Usage
+
+```kotlin
+// Check if feature is enabled
+val toggleManager: FeatureToggleManager = get()
+
+if (toggleManager.isEnabled(Feature.GROUPS)) {
+    // Show groups UI
+}
+
+// Conditional Composable
+@Composable
+fun HomeScreen() {
+    if (LocalFeatureToggle.current.isEnabled(Feature.STREAKS)) {
+        StreakWidget()
+    }
+}
+```
+
+### Available Features
+
+See `core/src/.../toggle/Feature.kt` for full list:
+- `GROUPS` - Student groups/classes
+- `ADAPTIVE_LESSONS` - ML-based adaptive learning
+- `DAILY_QUESTS` - Daily quest system
+- `FRIENDS` - Social friends system
+- And more...
+
+### Full Documentation
+
+See [docs/MODULAR_ARCHITECTURE.md](docs/MODULAR_ARCHITECTURE.md) for:
+- Creating new feature modules
+- Feature toggle best practices
+- A/B testing with toggles
+- Migration guide from monolith
+
+### Workflow: Adding New Feature (Modular)
+
+```
+1. Add Feature to enum in core/.../toggle/Feature.kt
+   - Set defaultValue = false (for new features)
+   - Set requiresRestart = true (if applicable)
+
+2. Create feature-[name] module
+   - Copy feature-home/build.gradle.kts as template
+   - Add to settings.gradle.kts
+
+3. Implement FeatureEntry interface
+   - Create [Name]FeatureEntry class
+   - Implement Content() composable
+
+4. Register in app/ module
+   - Add to feature registry
+   - Add navigation routes
+
+5. Add conditional UI in other modules
+   - Use toggleManager.isEnabled(Feature.NAME)
+
+6. Update backend toggle endpoint (if needed)
+   - Add to FeatureToggleController
+
+7. QA: Test with feature on/off
+   - Test both states
+   - Verify graceful degradation
 ```
 
 ## Development Workflow
@@ -223,6 +323,41 @@ Update tasklist status
    Scopes: backend, mobile, admin, shared, docs
    ```
 
+## UX Guidelines
+
+See full guidelines in `docs/UX_GUIDELINES.md`.
+
+### Key Patterns
+
+**Dialogs:**
+- Всегда добавлять кнопку отмены/закрытия
+- Показывать состояние загрузки
+- Обрабатывать клавиатуру (Done → submit)
+- Иерархия кнопок: Primary (Filled) + Secondary (Text)
+
+**Navigation:**
+- TopAppBar с кнопкой "Назад" для вложенных экранов
+- BottomNavigation: 3-5 иконок, активная подсвечена
+- Скелетоны вместо спиннеров для загрузки
+
+**Buttons:**
+```kotlin
+// Primary (main action)
+Button(onClick = { }) { Text("Подтвердить") }
+
+// Secondary (alternative)
+OutlinedButton(onClick = { }) { Text("Отмена") }
+
+// Tertiary (dismiss)
+TextButton(onClick = { }) { Text("Пропустить") }
+
+// With loading
+Button(enabled = !isLoading) {
+    if (isLoading) CircularProgressIndicator(...) 
+    else Text("Отправить")
+}
+```
+
 ## Coding Conventions
 
 See full conventions in `conventions.md`.
@@ -317,3 +452,59 @@ Folder `docs/notes/` contains task-specific notes.
 - Request ASCII diagrams for architecture
 - Create HTML presentations for complex code
 - Use `/explain-visual` for auto-generation
+
+
+<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
+## Beads Issue Tracker
+
+This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+
+### Quick Reference
+
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --claim  # Claim work
+bd close <id>         # Complete work
+```
+
+### Rules
+
+- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- Run `bd prime` for detailed command reference and session close protocol
+- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+
+**Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
+
+## Agent Context Profiles
+
+The managed Beads block is task-tracking guidance, not permission to override repository, user, or orchestrator instructions.
+
+- **Conservative (default)**: Use `bd` for task tracking. Do not run git commits, git pushes, or Dolt remote sync unless explicitly asked. At handoff, report changed files, validation, and suggested next commands.
+- **Minimal**: Keep tool instruction files as pointers to `bd prime`; use the same conservative git policy unless active instructions say otherwise.
+- **Team-maintainer**: Only when the repository explicitly opts in, agents may close beads, run quality gates, commit, and push as part of session close. A current "do not commit" or "do not push" instruction still wins.
+
+## Session Completion
+
+This protocol applies when ending a Beads implementation workflow. It is subordinate to explicit user, repository, and orchestrator instructions.
+
+1. **File issues for remaining work** - Create beads for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **Handle git/sync by active profile**:
+   ```bash
+   # Conservative/minimal/default: report status and proposed commands; wait for approval.
+   git status
+
+   # Team-maintainer opt-in only, unless current instructions forbid it:
+   git pull --rebase
+   git push
+   git status
+   ```
+5. **Hand off** - Summarize changes, validation, issue status, and any blocked sync/commit/push step
+
+**Critical rules:**
+- Explicit user or orchestrator instructions override this Beads block.
+- Do not commit or push without clear authority from the active profile or the current user request.
+- If a required sync or push is blocked, stop and report the exact command and error.
+<!-- END BEADS INTEGRATION -->

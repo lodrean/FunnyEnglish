@@ -56,7 +56,9 @@ actual class VoiceRecorder {
         }
 
         releaseRecorder()
-        val file = File(storage.recordingsDir(), "$outputFileName.m4a")
+        // minor-фикс (review): fileNameFor уже возвращает имя с .m4a — не дублируем расширение
+        val name = if (outputFileName.endsWith(".m4a")) outputFileName else "$outputFileName.m4a"
+        val file = File(storage.recordingsDir(), name)
 
         val newRecorder = createRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)

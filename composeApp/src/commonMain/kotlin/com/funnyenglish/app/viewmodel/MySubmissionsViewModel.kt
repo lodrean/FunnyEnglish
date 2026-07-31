@@ -96,41 +96,53 @@ class MySubmissionsViewModel(
         }
     }
 
+    private val inFlightUploads = mutableSetOf<String>()
+
     private fun retryPending(filePath: String) {
-        val meta = recordingStore.list().firstOrNull { it.filePath == filePath } ?: return
+        // M3-фикс (review): без in-flight guard быстрые повторные вызовы (OnRefresh +
+        // ручной retry) создавали дубли submissions на backend
+        if (!inFlightUploads.add(filePath)) return
+        val meta = recordingStore.list().firstOrNull { it.filePath == filePath } ?: run {
+            inFlightUploads.remove(filePath)
+            return
+        }
         viewModelScope.launch {
-            val bytes = try {
-                fileStorage.readBytes(filePath)
-            } catch (e: Exception) {
-                _events.trySend(MySubmissionsEvent.ShowMessage("Файл записи не найден"))
-                recordingStore.remove(filePath)   // файла нет — чистим мету
-                return@launch
-            }
-            api.submitSpeakingPractice(
-                topicId = meta.topicId,
-                durationSec = (meta.durationMs / 1000).toInt().coerceAtLeast(1),
-                audioBytes = bytes,
-                fileName = filePath.substringAfterLast('/')
-            )
-                .onSuccess {
-                    recordingStore.markUploaded(filePath)
-                    recordingStore.remove(filePath)   // уже в MinIO — освобождаем место
-                    _state.value = _state.value.copy(
-                        pendingUploads = recordingStore.pendingPractice()
-                    )
-                    _events.trySend(MySubmissionsEvent.ShowMessage("Запись отправлена учителю"))
-                    // Обновим список — новая отправка должна появиться
-                    api.getMySpeakingSubmissions().onSuccess { submissions ->
+            try {
+                val bytes = try {
+                    fileStorage.readBytes(filePath)
+                } catch (e: Exception) {
+                    _events.trySend(MySubmissionsEvent.ShowMessage("Файл записи не найден"))
+                    recordingStore.remove(filePath)   // файла нет — чистим мету
+                    return@launch
+                }
+                api.submitSpeakingPractice(
+                    topicId = meta.topicId,
+                    durationSec = (meta.durationMs / 1000).toInt().coerceAtLeast(1),
+                    audioBytes = bytes,
+                    fileName = filePath.substringAfterLast('/')
+                )
+                    .onSuccess {
+                        recordingStore.markUploaded(filePath)
+                        recordingStore.remove(filePath)   // уже в MinIO — освобождаем место
                         _state.value = _state.value.copy(
-                            submissions = submissions.sortedByDescending { it.createdAt }
+                            pendingUploads = recordingStore.pendingPractice()
+                        )
+                        _events.trySend(MySubmissionsEvent.ShowMessage("Запись отправлена учителю"))
+                        // Обновим список — новая отправка должна появиться
+                        api.getMySpeakingSubmissions().onSuccess { submissions ->
+                            _state.value = _state.value.copy(
+                                submissions = submissions.sortedByDescending { it.createdAt }
+                            )
+                        }
+                    }
+                    .onFailure {
+                        _state.value = _state.value.copy(
+                            pendingUploads = recordingStore.pendingPractice()
                         )
                     }
-                }
-                .onFailure {
-                    _state.value = _state.value.copy(
-                        pendingUploads = recordingStore.pendingPractice()
-                    )
-                }
+            } finally {
+                inFlightUploads.remove(filePath)
+            }
         }
     }
 

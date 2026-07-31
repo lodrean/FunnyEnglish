@@ -48,10 +48,14 @@ class RecordingStore(
         fileStorage.delete(filePath)
     }
 
-    /** Удаляет все записи топика (Training «Начать заново с попытки 1»). */
+    /**
+     * Удаляет TRAINING-записи топика (Training «Начать заново с попытки 1»).
+     * M2-фикс (review): pending PRACTICE-записи того же топика не трогаем —
+     * они ждут offline-retry отправки учителю.
+     */
     fun removeAllForTopic(topicId: String) {
-        val toRemove = loadAll().filter { it.topicId == topicId }
-        saveAll(loadAll().filterNot { it.topicId == topicId })
+        val toRemove = loadAll().filter { it.topicId == topicId && it.kind == RecordingKind.TRAINING }
+        saveAll(loadAll().filterNot { it.topicId == topicId && it.kind == RecordingKind.TRAINING })
         toRemove.forEach { fileStorage.delete(it.filePath) }
     }
 

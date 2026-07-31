@@ -25,6 +25,7 @@ data class VideoState(
     val subtitlesEnabled: Boolean = false,
     val subtitleCues: List<SubtitleCue> = emptyList(),
     val videoError: Boolean = false,          // «видео не загружается» — retry + «К вопросам»
+    val reloadNonce: Int = 0,                 // M1-фикс (review): ключ перезапуска плеера при retry
     val error: String? = null
 )
 
@@ -72,7 +73,10 @@ class VideoViewModel(
                 }
             }
             is VideoAction.OnRetryVideo -> {
-                _state.value = _state.value.copy(videoError = false)
+                _state.value = _state.value.copy(
+                    videoError = false,
+                    reloadNonce = _state.value.reloadNonce + 1
+                )
                 currentTopicId?.let { load(it) }
             }
             is VideoAction.OnVideoStarted -> markWatched(action.topicId)

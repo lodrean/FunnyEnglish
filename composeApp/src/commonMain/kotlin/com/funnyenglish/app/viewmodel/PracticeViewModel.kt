@@ -157,7 +157,14 @@ class PracticeViewModel(
 
     private fun load(topicId: String) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, error = null)
+            stopTimer()
+            // B2-фикс (review): повторный вход на Practice — полный сброс фазовой машины,
+            // иначе после Sent экран навсегда показывал SentPhase; а после ухода во время
+            // записи (B1: VoiceRecorder уже release'нут экраном) — кирпич «Recording».
+            _state.value = PracticeState(
+                isLoading = true,
+                micPermission = _state.value.micPermission
+            )
             api.getSpeakingTopicDetail(topicId)
                 .onSuccess { detail ->
                     _state.value = _state.value.copy(
@@ -195,9 +202,14 @@ class PracticeViewModel(
     }
 
     /** Автоотправка сразу после остановки записи (дизайн v1.0 — без Review). */
+    private var uploadInFlight = false
+
     private fun upload(filePath: String, durationSec: Int) {
-        val topicId = currentTopicId ?: return
+        if (uploadInFlight) return   // M3-фикс (review): дубли при повторных тапах retry
+        uploadInFlight = true
+        val topicId = currentTopicId ?: run { uploadInFlight = false; return }
         viewModelScope.launch {
+            try {
             _state.value = _state.value.copy(
                 phase = PracticePhase.Uploading,
                 uploadError = false,
@@ -239,6 +251,9 @@ class PracticeViewModel(
                         error = error.message ?: "Ошибка отправки"
                     )
                 }
+            } finally {
+                uploadInFlight = false
+            }
         }
     }
 

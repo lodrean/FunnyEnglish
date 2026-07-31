@@ -314,7 +314,11 @@ class FunnyEnglishApi(
 
     /** Загрузка текстового ресурса по URL (субтитры WebVTT из MinIO — не API-эндпоинт, спека Part 2 §3.3) */
     suspend fun getTextResource(url: String): Result<String> = safeCall {
-        client.get(url).bodyAsText()
+        client.get(url) {
+            // B3-фикс (review): defaultRequest добавляет Authorization на КАЖДЫЙ запрос —
+            // на медиа-хост (MinIO/S3/CDN) JWT утекать не должен
+            headers.remove(HttpHeaders.Authorization)
+        }.bodyAsText()
     }
 
     private suspend inline fun <reified T> safeCall(block: () -> T): Result<T> {

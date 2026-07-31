@@ -168,7 +168,17 @@ class TrainingViewModel(
 
     private fun load(topicId: String) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, error = null)
+            stopTimer()
+            // B1-фикс (review): повторный вход на экран — VoiceRecorder пересоздан экраном,
+            // поэтому застрявший recorder-state (Recording/Saving после ухода во время
+            // записи или поворота) сбрасываем в Idle; попытки перечитываем из store.
+            _state.value = _state.value.copy(
+                isLoading = true,
+                error = null,
+                recorder = RecorderUiState.Idle,
+                remainingSeconds = 0,
+                playingRecordingPath = null
+            )
             api.getSpeakingTopicDetail(topicId)
                 .onSuccess { detail ->
                     val attempts = recordingStore.list(topicId)

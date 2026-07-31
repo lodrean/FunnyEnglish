@@ -627,7 +627,7 @@ fun TrainingRoute(
             onBackToLibrary = {
                 vm.onAction(com.funnyenglish.app.viewmodel.TrainingAction.OnBackToLibrary)
             },
-            onOpenSettings = { /* «Открыть настройки» — android-обработка в T11 */ },
+            onOpenSettings = { com.funnyenglish.app.util.openAppSettings() },
             onRetry = {
                 vm.onAction(com.funnyenglish.app.viewmodel.TrainingAction.OnLoad(topicId))
             },

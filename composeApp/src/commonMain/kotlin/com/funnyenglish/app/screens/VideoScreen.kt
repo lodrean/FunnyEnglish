@@ -44,9 +44,9 @@ fun VideoScreen(
     val speaking = LocalSpeakingColors.current
     val playerState by controller.state.collectAsState()
 
-    // Подготовка плеера при появлении URL видео
+    // Подготовка плеера при появлении URL видео; reloadNonce — перезапуск после retry
     val videoUrl = state.topic?.video?.videoUrl
-    LaunchedEffect(videoUrl) {
+    LaunchedEffect(videoUrl, state.reloadNonce) {
         if (videoUrl != null) controller.prepare(videoUrl)
     }
 

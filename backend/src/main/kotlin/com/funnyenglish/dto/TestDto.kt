@@ -1,6 +1,7 @@
 package com.funnyenglish.dto
 
 import com.funnyenglish.entity.*
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
@@ -85,6 +86,7 @@ data class AdminTestDetailResponse(
     val difficulty: String,
     val pointsReward: Int,
     val timeLimitSeconds: Int?,
+    @JsonProperty("isPublished")
     val isPublished: Boolean,
     val displayOrder: Int,
     val questions: List<AdminQuestionResponse>
@@ -129,8 +131,7 @@ data class CreateTestRequest(
     val isPublished: Boolean = false,
     val displayOrder: Int = 0,
 
-    @field:NotEmpty(message = "At least one question is required")
-    val questions: List<CreateQuestionRequest>
+    val questions: List<CreateQuestionRequest> = emptyList()
 )
 
 /**
@@ -203,7 +204,7 @@ fun Test.toListResponse(
     thumbnailUrl = urlResolver(thumbnailUrl),
     difficulty = difficulty.name,
     pointsReward = pointsReward,
-    questionsCount = 0, // Temporarily disabled due to JSONB deserialization issue
+    questionsCount = questions.size,
     userProgress = progress?.let {
         TestProgressSummary(
             completed = true,

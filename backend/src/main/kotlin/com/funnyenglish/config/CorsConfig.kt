@@ -14,8 +14,16 @@ class CorsConfig {
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
+        val origins = allowedOrigins.split(",").map { it.trim() }
+        
         val configuration = CorsConfiguration().apply {
-            allowedOrigins = this@CorsConfig.allowedOrigins.split(",").map { it.trim() }
+            // Если указан *, используем allowedOriginPatterns вместо allowedOrigins
+            // т.к. allowCredentials=true несовместим с allowedOrigins="*"
+            if (origins.contains("*")) {
+                allowedOriginPatterns = listOf("*")
+            } else {
+                allowedOrigins = origins
+            }
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true

@@ -15,14 +15,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funnyenglish.app.components.*
-import com.funnyenglish.app.theme.FunnyColors
-import com.funnyenglish.app.theme.FunnyTheme
+import com.funnyenglish.designsystem.theme.funnyColors
 import com.funnyenglish.app.viewmodel.CategoriesState
 import com.funnyenglish.shared.model.Category
 
@@ -34,14 +34,12 @@ fun CategoriesScreenContent(
     onCategoryClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
-    val colors = FunnyTheme.colors
-
     LaunchedEffect(Unit) {
         onLoad()
     }
 
     Scaffold(
-        containerColor = colors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -56,11 +54,17 @@ fun CategoriesScreenContent(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
     ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding)
+        ) {
         when {
             state.isLoading -> {
                 LoadingIndicator()
@@ -79,7 +83,7 @@ fun CategoriesScreenContent(
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier.fillMaxSize().padding(padding).testTag("categories_grid"),
                     contentPadding = PaddingValues(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -87,7 +91,8 @@ fun CategoriesScreenContent(
                     items(state.categories) { category ->
                         CategoryGridCard(
                             category = category,
-                            onClick = { onCategoryClick(category.id) }
+                            onClick = { onCategoryClick(category.id) },
+                            modifier = Modifier.testTag("category_card_${category.id}")
                         )
                     }
                 }
@@ -95,19 +100,21 @@ fun CategoriesScreenContent(
         }
     }
 }
+}
 
 @Composable
 private fun CategoryGridCard(
     category: Category,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = listOf(
-        listOf(FunnyColors.Pink, FunnyColors.Purple),
-        listOf(FunnyColors.Green, FunnyColors.Cyan),
-        listOf(FunnyColors.Secondary, FunnyColors.Yellow),
-        listOf(FunnyColors.Primary, FunnyColors.PrimaryDark),
-        listOf(FunnyColors.Purple, FunnyColors.Pink),
-        listOf(FunnyColors.Cyan, FunnyColors.Green)
+        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary),
+        listOf(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.primary),
+        listOf(MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.secondary),
+        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.funnyColors.achievement),
+        listOf(MaterialTheme.funnyColors.achievement, MaterialTheme.colorScheme.primary),
+        listOf(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.tertiary)
     )
     val colorPair = colors[category.id.hashCode().mod(colors.size)]
 
@@ -122,7 +129,7 @@ private fun CategoryGridCard(
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .aspectRatio(0.9f)
             .clickable(onClick = onClick),
@@ -191,7 +198,7 @@ private fun CategoryGridCard(
                             Icon(
                                 Icons.Default.Star,
                                 contentDescription = null,
-                                tint = FunnyColors.StarFilled,
+                                tint = MaterialTheme.funnyColors.xp,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))

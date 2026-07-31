@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -32,12 +33,39 @@ kotlin {
 
     jvm("desktop")
 
+    // Web (WASM) target for browser testing
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        moduleName = "composeApp"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "composeApp.js"
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    static = (static ?: mutableListOf()).apply {
+                        add(project.projectDir.path + "/src/wasmJsMain/resources")
+                    }
+                }
+            }
+        }
+        binaries.executable()
+    }
+
     sourceSets {
         val desktopMain by getting
+        
+        // Disable WASM tests (kotest not supported)
+        wasmJsTest {
+            kotlin.setSrcDirs(emptyList<File>())
+        }
 
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.napier)
+            // Видеоплеер Speaking-тренажёра (спека Part 2 §3.1)
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.ui)
         }
 
         commonMain.dependencies {
@@ -49,10 +77,16 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            implementation(projects.shared)
+            api(projects.shared) {
+                exclude(group = "io.github.aakira", module = "napier")
+            }
+            implementation(projects.design) {
+                exclude(group = "io.github.aakira", module = "napier")
+            }
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -61,13 +95,53 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
-            implementation(libs.napier)
+            // Napier excluded from WASM - using stub in wasmJsMain
+            // implementation(libs.napier)
+            
+            // Ktor Client
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.napier)
         }
+
+        val wasmJsMain by getting
+        wasmJsMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(libs.ktor.client.js)
+            
+            // Exclude Napier - not supported on WASM
+            configurations["wasmJsMainApi"].exclude(group = "io.github.aakira", module = "napier")
+            configurations["wasmJsMainImplementation"].exclude(group = "io.github.aakira", module = "napier")
+        }
+
+        commonTest.dependencies {
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.koin.test)
+            implementation("io.kotest:kotest-framework-engine:5.8.0")
+            implementation("io.kotest:kotest-assertions-core:5.8.0")
+        }
+    }
+    
+    // Exclude dependencies not supported on WASM
+    configurations.all {
+        // Note: napier excluded from WASM specifically in wasmJsMain dependencies
+        // Do not exclude globally as it's needed for desktop and android
+        exclude(group = "io.kotest", module = "kotest-framework-engine")
+        exclude(group = "io.kotest", module = "kotest-assertions-core")
     }
 }
 
@@ -77,6 +151,13 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+    
+    testOptions {
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
+    }
+    
+    lint {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
     }
 
@@ -97,11 +178,19 @@ android {
         getByName("debug") {
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
             buildConfigField("boolean", "ENABLE_NETWORK_LOGS", "true")
+            // Feature Flags - ВКЛЮЧЕНЫ в debug
+            buildConfigField("boolean", "ENABLE_DRAG_DROP_QUESTIONS", "true")
+            buildConfigField("boolean", "ENABLE_IMAGE_WORD_MATCH", "true")
+            buildConfigField("boolean", "ENABLE_DEBUG_TOOLS", "true")
             manifestPlaceholders["usesCleartextTraffic"] = "true"
         }
         getByName("release") {
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
             buildConfigField("boolean", "ENABLE_NETWORK_LOGS", "false")
+            // Feature Flags - ОТКЛЮЧЕНЫ в release (нестабильные фичи)
+            buildConfigField("boolean", "ENABLE_DRAG_DROP_QUESTIONS", "false")
+            buildConfigField("boolean", "ENABLE_IMAGE_WORD_MATCH", "false")
+            buildConfigField("boolean", "ENABLE_DEBUG_TOOLS", "false")
             manifestPlaceholders["usesCleartextTraffic"] = "false"
             isMinifyEnabled = true
             proguardFiles(
@@ -121,10 +210,30 @@ compose.desktop {
     application {
         mainClass = "com.funnyenglish.app.MainKt"
 
+        // JVM args for better networking on Windows
+        jvmArgs("-Djava.net.preferIPv4Stack=true")
+        jvmArgs("-Dsun.net.client.defaultConnectTimeout=30000")
+        jvmArgs("-Dsun.net.client.defaultReadTimeout=30000")
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "FunnyEnglish"
             packageVersion = "1.0.0"
         }
     }
+}
+
+// UI tests configuration
+tasks.withType<Test>().configureEach {
+    // All tests run by default
+}
+
+// Separate task for UI tests (делегирует конфигурацию desktopTest с фильтром **/tests/**)
+tasks.register<Test>("uiTest") {
+    description = "Runs UI tests only"
+    group = "verification"
+    val dt = tasks.named<Test>("desktopTest")
+    testClassesDirs = dt.get().testClassesDirs
+    classpath = dt.get().classpath
+    include("**/tests/**")
 }

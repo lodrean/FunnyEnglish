@@ -57,8 +57,8 @@ gh auth status
 # Один issue
 gh issue create --title "Bug title" --body "Description" --label "bug"
 
-# Из файла
-gh issue create --title "Bug" --body-file docs/issues/BUG-001.md
+# Из файла (пример пути; bd-задачи предпочтительнее, см. AGENTS.md)
+gh issue create --title "Bug" --body-file /tmp/bug-report.md
 
 # Посмотреть issues
 gh issue list

@@ -30,16 +30,22 @@ data class User(
     val providerId: String? = null,
 
     @Column(nullable = false)
-    val level: Int = 1,
+    var level: Int = 1,
 
     @Column(name = "total_points", nullable = false)
-    val totalPoints: Int = 0,
+    var totalPoints: Int = 0,
 
     @Column(name = "current_streak", nullable = false)
-    val currentStreak: Int = 0,
+    var currentStreak: Int = 0,
+
+    @Column(name = "longest_streak", nullable = false)
+    var longestStreak: Int = 0,
 
     @Column(name = "last_activity_date")
-    val lastActivityDate: Instant? = null,
+    var lastActivityDate: Instant? = null,
+
+    @Column(name = "previous_streak_before_break")
+    var previousStreakBeforeBreak: Int? = null,
 
     @Column(nullable = false)
     val role: String = "USER",
@@ -48,7 +54,7 @@ data class User(
     val createdAt: Instant = Instant.now(),
 
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: Instant = Instant.now(),
+    var updatedAt: Instant = Instant.now(),
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val progress: MutableList<Progress> = mutableListOf(),
@@ -59,7 +65,7 @@ data class User(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "achievement_id")]
     )
-    val achievements: MutableSet<Achievement> = mutableSetOf()
+    val achievements: MutableSet<AchievementEntity> = mutableSetOf()
 )
 
 enum class AuthProvider {

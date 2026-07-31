@@ -50,6 +50,7 @@ export interface RecentActivityItem {
   userName: string;
   type: string;
   timestamp: string;
+  details?: string;
 }
 
 export interface AdminSettings {
@@ -219,4 +220,102 @@ export interface AdminUserDetail {
   achievements: Achievement[];
   progressSummary: UserProgressSummary;
   progress: UserProgress[];
+}
+
+// Re-export question types for convenience
+export * from './questions';
+
+// ==================== Student Groups ====================
+
+export interface StudentGroup {
+  id: string;
+  name: string;
+  description?: string;
+  teacherId: string;
+  teacherName?: string;
+  inviteCode: string;
+  maxStudents: number;
+  currentStudents: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface GroupDetail {
+  id: string;
+  name: string;
+  description?: string;
+  teacherId: string;
+  teacherName?: string;
+  inviteCode: string;
+  maxStudents: number;
+  isActive: boolean;
+  createdAt: string;
+  members: GroupMember[];
+  pendingRequests: number;
+}
+
+export interface GroupMember {
+  id: string;
+  userId: string;
+  displayName: string;
+  email: string;
+  avatarUrl?: string;
+  joinedAt: string;
+  level: number;
+  totalPoints: number;
+  completedTests: number;
+  currentStreak: number;
+}
+
+export interface JoinRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  requestedAt: string;
+}
+
+export interface CreateGroupRequest {
+  name: string;
+  description?: string;
+  maxStudents?: number;
+}
+
+export interface UpdateGroupRequest {
+  name?: string;
+  description?: string;
+  maxStudents?: number;
+  isActive?: boolean;
+}
+
+export interface ProcessJoinRequest {
+  approve: boolean;
+}
+
+export interface StudentProgress {
+  userId: string;
+  displayName: string;
+  email: string;
+  avatarUrl?: string;
+  level: number;
+  totalPoints: number;
+  currentStreak: number;
+  longestStreak: number;
+  completedTests: number;
+  averageScore: number;
+  totalTimeSpent: number; // in minutes
+  achievementsCount: number;
+  lastActivityAt?: string;
+  joinedAt: string;
+}
+
+export interface GroupProgressSummary {
+  groupId: string;
+  groupName: string;
+  totalStudents: number;
+  averageLevel: number;
+  averagePoints: number;
+  totalCompletedTests: number;
+  mostActiveStudents: StudentProgress[];
+  studentsNeedingAttention: StudentProgress[];
 }

@@ -25,7 +25,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funnyenglish.app.theme.FunnyColors
+import com.funnyenglish.designsystem.theme.funnyColors
 import com.funnyenglish.shared.model.Difficulty
 
 @Composable
@@ -35,7 +35,7 @@ fun LoadingIndicator(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = FunnyColors.Primary,
+            color = MaterialTheme.colorScheme.primary,
             strokeWidth = 4.dp
         )
     }
@@ -57,11 +57,11 @@ fun ErrorMessage(
         Text(
             text = "Упс!",
             style = MaterialTheme.typography.headlineMedium,
-            color = FunnyColors.Error
+            color = MaterialTheme.colorScheme.error
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = message,
+            text = userFriendlyError(message),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -75,13 +75,35 @@ fun ErrorMessage(
     }
 }
 
+/**
+ * Маппит технические сообщения об ошибках (дампы Ktor-исключений, URL, статус-коды)
+ * в понятный пользователю текст. Сырые exception.message в UI не показываем.
+ */
+private fun userFriendlyError(raw: String): String {
+    val lower = raw.lowercase()
+    return when {
+        "502" in lower || "503" in lower || "504" in lower || "proxy error" in lower ->
+            "Сервер временно недоступен. Попробуйте позже."
+        "unable to resolve host" in lower || "connection refused" in lower ||
+            "failed to connect" in lower || "timeout" in lower ->
+            "Нет соединения с сервером. Проверьте интернет."
+        "401" in lower -> "Сессия истекла. Войдите снова."
+        "403" in lower -> "Нет доступа к этим данным."
+        "404" in lower -> "Данные не найдены."
+        "notransformationfound" in lower || "expected response body" in lower ||
+            "kotlin reflection" in lower || raw.length > 200 ->
+            "Не удалось загрузить данные. Попробуйте ещё раз."
+        else -> raw
+    }
+}
+
 @Composable
 fun FunnyButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    colors: List<Color> = listOf(FunnyColors.Primary, FunnyColors.PrimaryDark)
+    colors: List<Color> = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary)
 ) {
     Button(
         onClick = onClick,
@@ -135,7 +157,7 @@ fun StarsDisplay(
             Icon(
                 imageVector = if (isFilled) Icons.Filled.Star else Icons.Outlined.Star,
                 contentDescription = null,
-                tint = if (isFilled) FunnyColors.StarFilled else FunnyColors.StarEmpty,
+                tint = if (isFilled) MaterialTheme.funnyColors.xp else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier
                     .size(size.dp)
                     .scale(animatedScale)
@@ -150,9 +172,9 @@ fun DifficultyBadge(
     modifier: Modifier = Modifier
 ) {
     val (color, text) = when (difficulty) {
-        Difficulty.EASY -> FunnyColors.DifficultyEasy to "Легко"
-        Difficulty.MEDIUM -> FunnyColors.DifficultyMedium to "Средне"
-        Difficulty.HARD -> FunnyColors.DifficultyHard to "Сложно"
+        Difficulty.EASY -> MaterialTheme.funnyColors.success to "Легко"
+        Difficulty.MEDIUM -> MaterialTheme.funnyColors.warning to "Средне"
+        Difficulty.HARD -> MaterialTheme.colorScheme.error to "Сложно"
     }
 
     Surface(
@@ -181,7 +203,7 @@ fun LevelBadge(
             .clip(CircleShape)
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(FunnyColors.Secondary, FunnyColors.SecondaryDark)
+                    colors = listOf(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondary)
                 )
             ),
         contentAlignment = Alignment.Center
@@ -203,7 +225,7 @@ fun PointsBadge(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        color = FunnyColors.Yellow.copy(alpha = 0.2f)
+        color = MaterialTheme.funnyColors.xp.copy(alpha = 0.2f)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -212,13 +234,13 @@ fun PointsBadge(
             Icon(
                 imageVector = Icons.Filled.Star,
                 contentDescription = null,
-                tint = FunnyColors.StarFilled,
+                tint = MaterialTheme.funnyColors.xp,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = points.toString(),
-                color = FunnyColors.SecondaryDark,
+                color = MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
@@ -230,8 +252,8 @@ fun PointsBadge(
 fun ProgressBar(
     progress: Float,
     modifier: Modifier = Modifier,
-    color: Color = FunnyColors.Primary,
-    trackColor: Color = FunnyColors.SurfaceVariant
+    color: Color = MaterialTheme.colorScheme.primary,
+    trackColor: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     Box(
         modifier = modifier
@@ -263,7 +285,7 @@ fun GradientButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     height: Dp = 56.dp,
-    colors: List<Color> = listOf(FunnyColors.Primary, FunnyColors.AccentPurple)
+    colors: List<Color> = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.funnyColors.achievement)
 ) {
     Button(
         onClick = onClick,
@@ -328,7 +350,7 @@ fun FunnyTextField(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    tint = FunnyColors.TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
@@ -341,13 +363,13 @@ fun FunnyTextField(
         isError = isError,
         shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = FunnyColors.Primary,
-            unfocusedBorderColor = FunnyColors.Border,
-            focusedLabelColor = FunnyColors.Primary,
-            unfocusedLabelColor = FunnyColors.TextSecondary,
-            cursorColor = FunnyColors.Primary,
-            errorBorderColor = FunnyColors.Error,
-            errorLabelColor = FunnyColors.Error,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            errorBorderColor = MaterialTheme.colorScheme.error,
+            errorLabelColor = MaterialTheme.colorScheme.error,
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent
         ),
@@ -363,9 +385,9 @@ fun AvatarCircle(
     name: String,
     modifier: Modifier = Modifier,
     size: Dp = 48.dp,
-    backgroundColor: Color = FunnyColors.Primary.copy(alpha = 0.2f),
-    borderColor: Color = FunnyColors.Primary,
-    textColor: Color = FunnyColors.Primary,
+    backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    borderColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.primary,
     fontSize: Int = 20
 ) {
     Box(
@@ -405,7 +427,7 @@ fun SectionHeader(
             text = title,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = FunnyColors.OnBackground
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         if (onViewAll != null) {
@@ -413,7 +435,7 @@ fun SectionHeader(
                 Text(
                     text = "View All",
                     fontWeight = FontWeight.Bold,
-                    color = FunnyColors.Primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -428,7 +450,7 @@ fun StatItem(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
-    valueColor: Color = FunnyColors.Primary
+    valueColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(
         modifier = modifier,
@@ -443,7 +465,7 @@ fun StatItem(
         Text(
             text = label,
             fontSize = 12.sp,
-            color = FunnyColors.TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

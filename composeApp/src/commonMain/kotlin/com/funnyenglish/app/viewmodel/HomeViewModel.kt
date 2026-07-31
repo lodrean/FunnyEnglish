@@ -24,15 +24,17 @@ class HomeViewModel(
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
-    fun loadHomeData() {
+    fun loadHomeData(isGuest: Boolean = false) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
 
-            // Load user profile
-            api.getUserProfile()
-                .onSuccess { profile ->
-                    _state.value = _state.value.copy(userProfile = profile)
-                }
+            // Load user profile (only for authenticated users)
+            if (!isGuest) {
+                api.getUserProfile()
+                    .onSuccess { profile ->
+                        _state.value = _state.value.copy(userProfile = profile)
+                    }
+            }
 
             // Load categories
             api.getCategories()

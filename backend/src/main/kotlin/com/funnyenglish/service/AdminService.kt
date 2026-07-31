@@ -3,20 +3,25 @@ package com.funnyenglish.service
 import com.funnyenglish.dto.AdminAnalyticsResponse
 import com.funnyenglish.dto.CategoryCompletionResponse
 import com.funnyenglish.dto.DailyActivityResponse
+import com.funnyenglish.dto.GuestAnalyticsResponse
 import com.funnyenglish.dto.LevelDistributionResponse
 import com.funnyenglish.dto.PopularTestResponse
 import com.funnyenglish.dto.RecentActivityResponse
+import com.funnyenglish.entity.GuestEventType
 import com.funnyenglish.repository.AnswerRepository
 import com.funnyenglish.repository.AchievementRepository
 import com.funnyenglish.repository.CategoryRepository
+import com.funnyenglish.repository.GuestEventRepository
 import com.funnyenglish.repository.ProgressRepository
 import com.funnyenglish.repository.QuestionRepository
 import com.funnyenglish.repository.TestRepository
 import com.funnyenglish.repository.UserRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 @Service
 class AdminService(
@@ -26,7 +31,8 @@ class AdminService(
     private val answerRepository: AnswerRepository,
     private val progressRepository: ProgressRepository,
     private val achievementRepository: AchievementRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val guestEventRepository: GuestEventRepository
 ) {
     companion object {
         private const val TOP_CATEGORIES_LIMIT = 5
@@ -101,13 +107,30 @@ class AdminService(
         }
     }
 
+    /** Аналитика по гостевым (обезличенным) пользователям */
+    fun getGuestAnalytics(): GuestAnalyticsResponse {
+        val total = guestEventRepository.countDistinctGuests()
+        val active7d = guestEventRepository.countDistinctGuestsActiveSince(
+            Instant.now().minus(7, ChronoUnit.DAYS)
+        )
+        val completions = guestEventRepository.countByType(GuestEventType.TEST_COMPLETED)
+        val converted = guestEventRepository.countDistinctConvertedGuests()
+        return GuestAnalyticsResponse(
+            totalGuests = total,
+            activeGuests7d = active7d,
+            guestTestCompletions = completions,
+            convertedGuests = converted,
+            conversionRate = if (total > 0) converted.toDouble() / total else 0.0
+        )
+    }
+
     fun getRecentActivity(): List<RecentActivityResponse> {
         return userRepository.findRecentActivity(RECENT_ACTIVITY_LIMIT).map { activity ->
             RecentActivityResponse(
                 type = activity.type,
                 userName = activity.userName,
                 details = activity.details,
-                timestamp = activity.timestamp
+                timestamp = activity.timestamp.toInstant()
             )
         }
     }

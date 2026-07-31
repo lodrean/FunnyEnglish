@@ -23,8 +23,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.funnyenglish.app.components.*
-import com.funnyenglish.app.theme.FunnyColors
-import com.funnyenglish.app.theme.FunnyTheme
+import com.funnyenglish.designsystem.theme.funnyColors
 import com.funnyenglish.app.viewmodel.CategoryTestsState
 import com.funnyenglish.shared.model.Difficulty
 import com.funnyenglish.shared.model.TestListItem
@@ -37,7 +36,7 @@ fun CategoryTestsScreenContent(
     onTestClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
-    val colors = FunnyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     LaunchedEffect(Unit) {
         onLoad()
@@ -89,7 +88,7 @@ fun CategoryTestsScreenContent(
                         Text(
                             text = "No tests available",
                             fontSize = 16.sp,
-                            color = colors.textSecondary
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -98,7 +97,8 @@ fun CategoryTestsScreenContent(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
+                        .padding(padding)
+                        .consumeWindowInsets(padding),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -123,7 +123,7 @@ private fun TestCard(
     test: TestListItem,
     onClick: () -> Unit
 ) {
-    val colors = FunnyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val isCompleted = test.userProgress != null
     val stars = test.userProgress?.stars ?: 0
     val bestPercentage = test.userProgress?.percentage
@@ -133,9 +133,9 @@ private fun TestCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.card),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (colors.isDark) 0.dp else 2.dp
+            defaultElevation = 2.dp
         )
     ) {
         Row(
@@ -151,9 +151,9 @@ private fun TestCard(
                     .clip(RoundedCornerShape(12.dp))
                     .background(
                         when (test.difficulty) {
-                            Difficulty.EASY -> FunnyColors.Success.copy(alpha = 0.15f)
-                            Difficulty.MEDIUM -> FunnyColors.Secondary.copy(alpha = 0.15f)
-                            Difficulty.HARD -> FunnyColors.Error.copy(alpha = 0.15f)
+                            Difficulty.EASY -> MaterialTheme.funnyColors.success.copy(alpha = 0.15f)
+                            Difficulty.MEDIUM -> colors.secondary.copy(alpha = 0.15f)
+                            Difficulty.HARD -> colors.error.copy(alpha = 0.15f)
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -207,7 +207,7 @@ private fun TestCard(
                     text = test.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = colors.onBackground
+                    color = colors.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -223,7 +223,7 @@ private fun TestCard(
                     Text(
                         text = "${test.questionsCount} questions",
                         fontSize = 12.sp,
-                        color = colors.textSecondary
+                        color = colors.onSurfaceVariant
                     )
                 }
 
@@ -236,14 +236,14 @@ private fun TestCard(
                     Icon(
                         Icons.Default.Star,
                         contentDescription = null,
-                        tint = FunnyColors.Secondary,
+                        tint = colors.secondary,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "+${test.pointsReward} points",
                         fontSize = 12.sp,
-                        color = FunnyColors.Secondary,
+                        color = colors.secondary,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -263,13 +263,13 @@ private fun TestCard(
                     Text(
                         text = "Best: $bestPercentage%",
                         fontSize = 11.sp,
-                        color = colors.textSecondary
+                        color = colors.onSurfaceVariant
                     )
                 } else {
                     Text(
                         text = "Not completed",
                         fontSize = 11.sp,
-                        color = colors.textSecondary
+                        color = colors.onSurfaceVariant
                     )
                 }
             }
@@ -291,7 +291,7 @@ private fun ThumbnailFallback(
         Icon(
             Icons.Default.Check,
             contentDescription = null,
-            tint = FunnyColors.Success,
+            tint = MaterialTheme.funnyColors.success,
             modifier = Modifier.size(32.dp)
         )
     } else {
@@ -300,9 +300,9 @@ private fun ThumbnailFallback(
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = when (difficulty) {
-                Difficulty.EASY -> FunnyColors.Success
-                Difficulty.MEDIUM -> FunnyColors.Secondary
-                Difficulty.HARD -> FunnyColors.Error
+                Difficulty.EASY -> MaterialTheme.funnyColors.success
+                Difficulty.MEDIUM -> MaterialTheme.colorScheme.secondary
+                Difficulty.HARD -> MaterialTheme.colorScheme.error
             }
         )
     }

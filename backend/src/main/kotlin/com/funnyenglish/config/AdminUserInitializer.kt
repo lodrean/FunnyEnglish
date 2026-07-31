@@ -15,7 +15,8 @@ class AdminUserInitializer(
     private val passwordEncoder: PasswordEncoder,
     @Value("\${app.admin.email:admin@funnyenglish.app}") private val adminEmail: String,
     @Value("\${app.admin.password:}") private val adminPassword: String,
-    @Value("\${app.admin.display-name:Admin}") private val adminDisplayName: String
+    @Value("\${app.admin.display-name:Admin}") private val adminDisplayName: String,
+    @Value("\${app.demo-user.enabled:false}") private val demoUserEnabled: Boolean
 ) : ApplicationRunner {
     private val logger = LoggerFactory.getLogger(AdminUserInitializer::class.java)
 
@@ -51,5 +52,32 @@ class AdminUserInitializer(
 
         userRepository.save(adminUser)
         logger.info("Admin user created: {}", adminEmail)
+        
+        // Create demo user (dev only: app.demo-user.enabled=true)
+        if (demoUserEnabled) {
+            createDemoUser()
+        }
+    }
+    
+    private fun createDemoUser() {
+        val demoEmail = "demo@funnyenglish.app"
+        val demoPassword = "demo123"
+        
+        val existingDemo = userRepository.findByEmail(demoEmail)
+        if (existingDemo != null) {
+            logger.info("Demo user already exists: {}", demoEmail)
+            return
+        }
+        
+        val demoUser = User(
+            email = demoEmail,
+            passwordHash = passwordEncoder.encode(demoPassword),
+            displayName = "Demo User",
+            role = "USER"
+        )
+        
+        userRepository.save(demoUser)
+        // Пароль НЕ логируем (security)
+        logger.info("Demo user created: {}", demoEmail)
     }
 }

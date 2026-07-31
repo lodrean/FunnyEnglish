@@ -56,3 +56,16 @@ data class RecentActivityResponse(
     val details: String?,
     val timestamp: Instant
 )
+
+data class GuestAnalyticsResponse(
+    /** Всего уникальных гостей (по anonymousId) */
+    val totalGuests: Long,
+    /** Гостей с событиями за последние 7 дней */
+    val activeGuests7d: Long,
+    /** Событий прохождения тестов гостями */
+    val guestTestCompletions: Long,
+    /** Гостей, конвертировавшихся в регистрацию */
+    val convertedGuests: Long,
+    /** Конверсия в регистрацию, 0..1 */
+    val conversionRate: Double
+)

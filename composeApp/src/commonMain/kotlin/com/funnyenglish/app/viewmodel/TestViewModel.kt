@@ -2,8 +2,10 @@ package com.funnyenglish.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.funnyenglish.app.util.GuestAnalytics
 import com.funnyenglish.shared.api.FunnyEnglishApi
 import com.funnyenglish.shared.model.*
+import com.funnyenglish.shared.repository.GuestProgressRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +13,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
+fun formatIsoDateTimeNow(): String {
+    return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString()
+}
 
 data class TestPlayState(
     val isLoading: Boolean = false,
@@ -24,7 +33,9 @@ data class TestPlayState(
 )
 
 class TestViewModel(
-    private val api: FunnyEnglishApi
+    private val api: FunnyEnglishApi,
+    private val guestRepo: GuestProgressRepository,
+    private val guestAnalytics: GuestAnalytics
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TestPlayState())
@@ -32,7 +43,10 @@ class TestViewModel(
 
     private var timerJob: Job? = null
 
-    fun loadTest(testId: String) {
+    private var isGuestSession: Boolean = false
+
+    fun loadTest(testId: String, isGuest: Boolean = false) {
+        isGuestSession = isGuest
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
 
@@ -154,8 +168,40 @@ class TestViewModel(
                 timeSpentSeconds = _state.value.timeElapsed
             )
 
-            api.submitTest(test.id, request)
+            val apiCall = if (isGuestSession) {
+                api.validateTest(test.id, request)
+            } else {
+                api.submitTest(test.id, request)
+            }
+
+            apiCall
                 .onSuccess { result ->
+                    if (isGuestSession) {
+                        guestRepo.addTestProgress(
+                            GuestTestProgress(
+                                testId = test.id,
+                                score = result.score,
+                                maxScore = result.maxScore,
+                                stars = result.stars,
+                                timeSpentSeconds = _state.value.timeElapsed,
+                                completedAt = formatIsoDateTimeNow()
+                            )
+                        )
+                        // Обезличенная аналитика: гость прошёл тест
+                        guestRepo.getAnonymousId()?.let { anonId ->
+                            guestAnalytics.track(
+                                GuestEventDto(
+                                    anonymousId = anonId,
+                                    type = "TEST_COMPLETED",
+                                    testId = test.id,
+                                    score = result.score,
+                                    maxScore = result.maxScore,
+                                    timeSpentSeconds = _state.value.timeElapsed,
+                                    clientTimestamp = formatIsoDateTimeNow()
+                                )
+                            )
+                        }
+                    }
                     _state.value = _state.value.copy(
                         isSubmitting = false,
                         result = result

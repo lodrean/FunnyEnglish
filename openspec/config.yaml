@@ -1,0 +1,41 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+context: |
+  Проект: FunnyEnglish → Speaking-тренажёр (пивот 2026-07-30, эпик bd FunnyEnglish-8tg).
+  Ученик: Library → Topic → видео (WebVTT-субтитры) → вопросы → Training (3 попытки голосом,
+  локально, лимиты 80/50/30с) / Practice (30с одна запись, автоотправка учителю, гейтинг авторизацией).
+  Учитель в admin-web оценивает по рубрике grammar/vocabulary/pronunciation/fluency (1–10) + комментарий.
+
+  Tech stack: Kotlin Multiplatform (composeApp — монолит, MVI State/Action/Event, Koin, Ktor client),
+  Android-first (iOS/Desktop/WASM — стабы), backend Spring Boot + Flyway + PostgreSQL,
+  S3-хранилище (dev MinIO / prod российский S3+CDN), admin-web React+TS+MUI v6 (Vitest+Playwright).
+
+  Конвенции: задачи в bd (beads), НЕ markdown-TODO; память проекта — memory.md (читать первой);
+  семантический поиск — Serena MCP; дизайн-система Playful Coach v1.1 (.docs/design-system/tokens.json).
+  Спеки версионируются (Version в заголовке + ченджлог) и ревьюятся до реализации — см. AGENTS.md правило 5.
+
+  Действующие спеки: docs/prd/SPEAKING-TRAINER-001.prd.md, docs/SPEAKING_TRAINER_SPEC_PART{1,2,3}.md,
+  план docs/plan/SPEAKING-TRAINER-001.md.
+
+# Per-artifact rules (optional)
+rules:
+  proposal:
+    - Писать по-русски (язык проекта), термины/API — по-английски
+    - Всегда включать секцию «Non-goals» и ссылку на bd-задачу/эпик
+  tasks:
+    - Дробить на задачи ≤ 1 дня, указывать зависимости
+    - Каждая задача дублируется в bd (bd create) перед реализацией
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

@@ -1,0 +1,64 @@
+# Test profile configuration
+# Used for unit tests with H2 database
+
+spring:
+  application:
+    name: funnyenglish-backend-test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-h2.sql
+
+  flyway:
+    enabled: false
+
+  h2:
+    console:
+      enabled: true
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: test-jwt-secret-key-that-should-not-be-used-in-production-only-for-testing
+    expiration: 3600000  # 1 hour for tests
+
+  s3:
+    endpoint: http://localhost:9000
+    public-url: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket: funnyenglish-test
+    region: us-east-1
+
+  cors:
+    allowed-origins: "*"
+
+  admin:
+    email: ${ADMIN_EMAIL:admin@funnyenglish.com}
+    password: ${ADMIN_PASSWORD:admin123}
+    display-name: ${ADMIN_DISPLAY_NAME:TestAdmin}
+
+logging:
+  level:
+    com.funnyenglish: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG

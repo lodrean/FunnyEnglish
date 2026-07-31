@@ -4,6 +4,7 @@ import com.funnyenglish.dto.*
 import com.funnyenglish.service.AdminService
 import com.funnyenglish.service.AdminSettingsService
 import com.funnyenglish.service.StorageService
+import org.slf4j.LoggerFactory
 import com.funnyenglish.service.TestService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -18,6 +19,7 @@ class AdminController(
     private val adminService: AdminService,
     private val adminSettingsService: AdminSettingsService
 ) {
+    private val logger = LoggerFactory.getLogger(AdminController::class.java)
     // Tests management
     @GetMapping("/tests")
     fun getAllTests(): ResponseEntity<List<AdminTestDetailResponse>> {
@@ -56,6 +58,11 @@ class AdminController(
         return ResponseEntity.ok(adminService.getAnalytics())
     }
 
+    @GetMapping("/analytics/guests")
+    fun getGuestAnalytics(): ResponseEntity<GuestAnalyticsResponse> {
+        return ResponseEntity.ok(adminService.getGuestAnalytics())
+    }
+
     @GetMapping("/analytics/daily-activity", "/analytics/activity")
     fun getDailyActivity(
         @RequestParam(defaultValue = "7") days: Int
@@ -90,8 +97,15 @@ class AdminController(
         @RequestParam("file") file: MultipartFile,
         @RequestParam("folder", defaultValue = "media") folder: String
     ): ResponseEntity<MediaUploadResponse> {
-        val url = storageService.uploadFile(file, folder)
-        return ResponseEntity.ok(MediaUploadResponse(url = url))
+        logger.info("Received upload request: file=${file.originalFilename}, size=${file.size}, folder=$folder")
+        return try {
+            val url = storageService.uploadFile(file, folder)
+            logger.info("Upload successful: $url")
+            ResponseEntity.ok(MediaUploadResponse(url = url))
+        } catch (e: Exception) {
+            logger.error("Upload failed", e)
+            throw e
+        }
     }
 
     @DeleteMapping("/media")

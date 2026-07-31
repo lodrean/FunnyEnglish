@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@chromatic-com/playwright": "^0.12.8",
+    "chromatic": "^15.1.1"
+  }
+}

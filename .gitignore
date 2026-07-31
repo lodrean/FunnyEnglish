@@ -93,3 +93,21 @@ coverage/
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# Session artifacts (2026-07-31)
+CREDENTIALS.md
+.playwright-mcp/
+admin-web-backup/
+/26.0.1
+
+# Root & e2e node_modules
+node_modules/
+e2e-cmp/node_modules/
+
+# Local tooling & secrets
+telegram-agent-worker*.py
+login.json
+gradle-temp/
+kotlin-js-store/
+maestro-cli
+/qa-agent/

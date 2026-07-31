@@ -26,7 +26,11 @@ interface TestRepository : JpaRepository<Test, UUID> {
     @Query("SELECT t FROM Test t LEFT JOIN FETCH t.questions WHERE t.id = :id")
     fun findByIdWithQuestions(id: UUID): Test?
 
-    @EntityGraph(attributePaths = ["questions", "questions.answers"])
+    @EntityGraph(attributePaths = ["questions"])
     @Query("SELECT t FROM Test t")
-    fun findAllWithQuestionsAndAnswers(): List<Test>
+    fun findAllWithQuestions(): List<Test>
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Test t WHERE t.id = :id")
+    fun deleteByIdWithoutLoading(id: UUID): Int
 }

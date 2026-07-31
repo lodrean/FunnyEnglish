@@ -1,0 +1,49 @@
+# E2E тест для проверки лидерборда (гостевой режим)
+appId: com.funnyenglish.app
+---
+- launchApp
+
+# Первый запуск: онбординг → гостевой режим
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+# Wait for home screen (guest mode)
+- extendedWaitUntil:
+    visible: "Категории"
+    timeout: 10000
+
+# Переход на лидерборд
+- tapOn: "Рейтинг"
+- waitForAnimationToEnd
+
+# Проверка элементов лидерборда
+- assertVisible: ".*Рейтинг.*"
+
+# Проверка переключения периодов (if available)
+- runFlow:
+    when:
+      visible: "Топ"
+    commands:
+      - tapOn: "Топ"
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Неделя"
+    commands:
+      - tapOn: "Неделя"
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Месяц"
+    commands:
+      - tapOn: "Месяц"
+      - waitForAnimationToEnd
+
+# Вернуться на главную
+- tapOn: "Главная"
+- waitForAnimationToEnd
+- assertVisible: "Категории"

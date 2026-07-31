@@ -2,9 +2,11 @@ package com.funnyenglish.app.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -17,10 +19,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -30,36 +32,43 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funnyenglish.app.components.FunnyTextField
-import com.funnyenglish.app.components.GradientButton
-import com.funnyenglish.app.theme.FunnyColors
-import com.funnyenglish.app.theme.FunnyTheme
+import com.funnyenglish.designsystem.components.buttons.FunnyButton
+import com.funnyenglish.designsystem.components.buttons.FunnyButtonSize
+import com.funnyenglish.designsystem.components.buttons.FunnyButtonType
+import com.funnyenglish.designsystem.components.inputs.FunnyTextField
+import com.funnyenglish.designsystem.tokens.*
 import com.funnyenglish.app.viewmodel.AuthState
+import com.funnyenglish.designsystem.theme.funnyColors
 
 @Composable
 fun LoginScreen(
     state: AuthState,
     onLogin: (String, String) -> Unit,
     onNavigateToRegister: () -> Unit,
-    onClearError: () -> Unit
+    onClearError: () -> Unit,
+    onContinueAsGuest: (() -> Unit)? = null
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var oauthMessage by remember { mutableStateOf<String?>(null) }
     val focusManager = LocalFocusManager.current
-    val colors = FunnyTheme.colors
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                // safeContent (а не systemBars): интерактивный контент не должен
+                // попадать в зону gesture-навигации (кнопка «Продолжить без регистрации»
+                // была перекрыта жестовой панелью и не нажималась — BUG, найден Maestro e2e)
+                .windowInsetsPadding(WindowInsets.safeContent)
+                .imePadding()
+                .padding(horizontal = SpaceLg),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(80.dp))
@@ -72,32 +81,37 @@ fun LoginScreen(
             // Login Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.card),
-                elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 4.dp)
+                shape = CardShape,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = if (MaterialTheme.funnyColors.isDark)
+                        ElevationSmall else ElevationMedium
+                )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(SpaceXl),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Welcome Back!",
-                        fontSize = 24.sp,
+                        text = "С возвращением!",
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = colors.onBackground
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(SpaceSm))
 
                     Text(
-                        text = "Sign in to continue learning",
-                        fontSize = 14.sp,
-                        color = colors.textSecondary
+                        text = "Войди, чтобы продолжить обучение",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(SpaceXl))
 
                     // Email field
                     FunnyTextField(
@@ -107,18 +121,15 @@ fun LoginScreen(
                             email = it
                         },
                         label = "Email",
+                        placeholder = "Введите email",
                         leadingIcon = Icons.Default.Email,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Next
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                        ),
-                        modifier = Modifier.fillMaxWidth()
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                        onImeAction = { focusManager.moveFocus(FocusDirection.Down) },
+                        modifier = Modifier.fillMaxWidth().testTag("login_email_field")
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpaceMd))
 
                     // Password field
                     FunnyTextField(
@@ -127,149 +138,133 @@ fun LoginScreen(
                             if (state.error != null) onClearError()
                             password = it
                         },
-                        label = "Password",
+                        label = "Пароль",
+                        placeholder = "Введите пароль",
                         leadingIcon = Icons.Default.Lock,
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                    tint = FunnyColors.TextSecondary
-                                )
+                        isPassword = true,
+                        isPasswordVisible = passwordVisible,
+                        onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                        onImeAction = {
+                            focusManager.clearFocus()
+                            if (email.isNotBlank() && password.isNotBlank()) {
+                                onLogin(email, password)
                             }
                         },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                if (email.isNotBlank() && password.isNotBlank()) {
-                                    onLogin(email, password)
-                                }
-                            }
-                        ),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag("login_password_field")
                     )
 
                     // Error message
                     if (state.error != null) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(SpaceMd))
                         Text(
                             text = state.error,
-                            color = FunnyColors.Error,
-                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(SpaceXl))
 
                     // Login button
-                    GradientButton(
-                        text = if (state.isLoading) "Signing in..." else "Sign In",
+                    FunnyButton(
+                        text = if (state.isLoading) "Вход..." else "Войти",
                         onClick = { onLogin(email, password) },
+                        type = FunnyButtonType.PRIMARY,
+                        size = FunnyButtonSize.LARGE,
                         enabled = !state.isLoading && email.isNotBlank() && password.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag("login_button")
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpaceMd))
 
                     Text(
                         text = "или",
-                        fontSize = 12.sp,
-                        color = colors.textSecondary
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(SpaceMd))
 
+                    // OAuth buttons
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(SpaceSm)
                     ) {
-                        OutlinedButton(
+                        FunnyButton(
+                            text = "Войти через Google",
                             onClick = { oauthMessage = "OAuth в разработке" },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = FunnyColors.Primary
-                            )
-                        ) {
-                            Text(
-                                text = "Войти через Google",
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                            type = FunnyButtonType.SECONDARY,
+                            size = FunnyButtonSize.MEDIUM,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                        OutlinedButton(
+                        FunnyButton(
+                            text = "Войти через VK",
                             onClick = { oauthMessage = "OAuth в разработке" },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = FunnyColors.Primary
-                            )
-                        ) {
-                            Text(
-                                text = "Войти через VK",
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        OutlinedButton(
-                            onClick = { oauthMessage = "OAuth в разработке" },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = FunnyColors.Primary
-                            )
-                        ) {
-                            Text(
-                                text = "Войти через Telegram",
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                            type = FunnyButtonType.GHOST,
+                            size = FunnyButtonSize.MEDIUM,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     oauthMessage?.let { message ->
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(SpaceMd))
                         Text(
                             text = message,
-                            color = colors.textSecondary,
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+
+                    onContinueAsGuest?.let {
+                        Spacer(modifier = Modifier.height(SpaceMd))
+                        TextButton(
+                            onClick = it,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Продолжить без регистрации",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(SpaceLg))
 
             // Register link
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Don't have an account? ",
-                    color = FunnyColors.TextSecondary,
-                    fontSize = 14.sp
+                    text = "Нет аккаунта? ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(
                     onClick = onNavigateToRegister,
-                    contentPadding = PaddingValues(horizontal = 4.dp)
+                    contentPadding = PaddingValues(horizontal = SpaceXs),
+                    modifier = Modifier.testTag("register_link")
                 ) {
                     Text(
-                        text = "Sign Up",
-                        color = FunnyColors.Primary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        text = "Зарегистрироваться",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Дополнительный нижний отступ, чтобы последние элементы
+            // не упирались в зону системных жестов
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }
@@ -286,7 +281,7 @@ private fun AppLogo() {
                 .clip(CircleShape)
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(FunnyColors.Primary, FunnyColors.AccentPurple)
+                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.funnyColors.achievement)
                     )
                 ),
             contentAlignment = Alignment.Center
@@ -297,19 +292,19 @@ private fun AppLogo() {
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(SpaceMd))
 
         Text(
             text = "FunnyEnglish",
-            fontSize = 32.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.ExtraBold,
-            color = FunnyColors.Primary
+            color = MaterialTheme.colorScheme.primary
         )
 
         Text(
-            text = "Learn English the Fun Way!",
-            fontSize = 14.sp,
-            color = FunnyColors.TextSecondary
+            text = "Учи English весело!",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

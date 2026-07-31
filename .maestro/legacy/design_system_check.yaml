@@ -1,0 +1,37 @@
+# E2E тест для проверки дизайн системы в мобильном приложении (гостевой режим)
+appId: com.funnyenglish.app
+---
+- launchApp:
+    clearState: false
+
+# Первый запуск: онбординг → гостевой режим
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+# Wait for home screen
+- extendedWaitUntil:
+    visible: "Категории"
+    timeout: 10000
+
+# Проверка виджетов геймификации
+- assertVisible: "🔥"
+- assertVisible: "XP"
+- assertVisible: ".*Уровень.*"
+
+# Проверка карточек категорий
+- assertVisible: "Цвета"
+- assertVisible: "Животные"
+
+# Переход в профиль
+- tapOn: "Профиль"
+- waitForAnimationToEnd
+
+# Проверка наличия настроек или профиля
+- assertVisible: "Профиль"
+
+# Вернуться в категории
+- tapOn: "Главная"
+- waitForAnimationToEnd
+- assertVisible: "Категории"

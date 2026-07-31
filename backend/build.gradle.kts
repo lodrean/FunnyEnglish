@@ -22,10 +22,15 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     // implementation(libs.spring.boot.starter.oauth2.client) // Uncomment when OAuth credentials are configured
 
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    // jackson-module-kotlin: без него не биндятся is-префиксные Boolean (isCorrect),
+    // не применяются Kotlin-дефолты (NPE -> 500) и non-null валидация даёт 500 вместо 400.
+    // Версия управляется Spring Boot BOM.
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)

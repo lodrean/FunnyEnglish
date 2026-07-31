@@ -41,75 +41,40 @@ FunnyEnglish/
 
 ### Требования
 
-- JDK 17+
-- Node.js 18+
-- PostgreSQL 14+
+- Docker + Docker Compose
 - Android Studio (для Android)
 
-### 1. База данных
+### Docker (всё вместе)
 
 ```bash
-# Через Docker
-docker run -d \
-  --name funnyenglish-db \
-  -e POSTGRES_DB=funnyenglish \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  postgres:15
+# Запуск всех сервисов
+docker compose up -d
 ```
 
-### 2. Backend
+Сервисы будут доступны:
+| Сервис | URL | Учетные данные |
+|--------|-----|----------------|
+| Admin Panel | http://localhost:3000 | `admin@funnyenglish.com` / `admin123` |
+| Backend API | http://localhost:8080 | - |
+| MinIO Console | http://localhost:9001 | `minioadmin` / `minioadmin` |
+
+Все учетные данные: [CREDENTIALS.md](CREDENTIALS.md)
 
 ```bash
-# Из корня проекта (bash)
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=funnyenglish
-export DB_USERNAME=postgres
-export DB_PASSWORD=postgres
-export JWT_SECRET=your-secret-key-minimum-32-characters
-export ADMIN_EMAIL=admin@funnyenglish.app
-export ADMIN_PASSWORD=admin123
+# Остановка
+docker compose down
 
-./gradlew -p backend bootRun
+# Пересборка
+docker compose up -d --build
 ```
 
-```powershell
-# Из корня проекта (PowerShell)
-$env:DB_HOST = "localhost"
-$env:DB_PORT = "5432"
-$env:DB_NAME = "funnyenglish"
-$env:DB_USERNAME = "postgres"
-$env:DB_PASSWORD = "postgres"
-$env:JWT_SECRET = "your-secret-key-minimum-32-characters"
-$env:ADMIN_EMAIL = "admin@funnyenglish.app"
-$env:ADMIN_PASSWORD = "admin123"
-
-./gradlew -p backend bootRun
-```
-
-Backend: `http://localhost:8080`
-
-### 3. Admin Web
-
-```bash
-cd admin-web
-npm install
-npm run dev
-```
-
-Admin: `http://localhost:5173`
-
-Вход: `admin@funnyenglish.app` / `admin123`
-
-### 4. Mobile (Desktop)
+### Mobile (Desktop)
 
 ```bash
 ./gradlew :composeApp:run
 ```
 
-### 5. Mobile (Android)
+### Mobile (Android)
 
 Откройте проект в Android Studio и запустите `composeApp`.
 
@@ -182,6 +147,38 @@ npm --prefix admin-web test
 # Mobile
 ./gradlew :shared:allTests
 ```
+
+### QA Automation
+
+Проект имеет комплексную систему автоматизации тестирования:
+
+| Тип | Инструмент | Команда |
+|-----|------------|---------|
+| **Unit** | Kotest | `./gradlew :shared:allTests` |
+| **API** | Newman (Postman) | `newman run qa/postman/funnyenglish-api.json` |
+| **E2E** | Maestro | `maestro test .maestro/flows/` |
+| **Visual** | AI QA Agent | `qa-agent compare base.png curr.png` |
+
+#### AI QA Agent (Visual Regression)
+
+```bash
+cd qa-agent
+./setup.sh                    # Установка
+source venv/bin/activate      # Активация
+
+qa-agent compare \
+  screenshots/baseline.png \
+  screenshots/current.png \
+  -n "home-screen"
+```
+
+Создаёт HTML-отчёт с:
+- Pixel-perfect сравнением
+- SSIM score
+- Heatmap различий
+- Side-by-side визуализацией
+
+Подробнее: [qa-agent/README.md](qa-agent/README.md)
 
 ### Сборка
 

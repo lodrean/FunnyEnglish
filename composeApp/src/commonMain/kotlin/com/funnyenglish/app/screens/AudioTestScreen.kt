@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 // import com.funnyenglish.app.components.ModernAudioPlayer // TEMPORARILY DISABLED
-import com.funnyenglish.app.theme.FunnyColors
+import com.funnyenglish.designsystem.theme.funnyColors
 import com.funnyenglish.app.viewmodel.AudioTestScreenState
 import com.funnyenglish.shared.model.*
 
@@ -33,6 +33,7 @@ import com.funnyenglish.shared.model.*
 @Composable
 fun AudioTestScreen(
     state: AudioTestScreenState,
+    isGuest: Boolean = false,
     onBack: () -> Unit,
     onSelectAnswer: (String, String) -> Unit,
     onNextQuestion: () -> Unit,
@@ -62,6 +63,7 @@ fun AudioTestScreen(
         AudioTestResultScreen(
             result = state.result,
             testTitle = audioTest.title,
+            isGuest = isGuest,
             onContinue = onBack
         )
         return
@@ -99,7 +101,7 @@ fun AudioTestScreen(
                     // Timer
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = FunnyColors.Primary.copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -116,7 +118,7 @@ fun AudioTestScreen(
                                 text = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = FunnyColors.Primary
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -136,6 +138,7 @@ fun AudioTestScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .consumeWindowInsets(padding)
                 .verticalScroll(rememberScrollState())
         ) {
             // Audio Player (TEMPORARILY DISABLED - ModernAudioPlayer has compilation issues)
@@ -208,13 +211,13 @@ private fun QuestionCard(
             // Question number badge
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = FunnyColors.Primary.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             ) {
                 Text(
                     text = "Вопрос $questionNumber",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = FunnyColors.Primary,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
@@ -262,17 +265,17 @@ private fun AnswerItem(
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
-        isSelected -> FunnyColors.Primary.copy(alpha = 0.1f)
+        isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     }
 
     val borderColor = when {
-        isSelected -> FunnyColors.Primary
+        isSelected -> MaterialTheme.colorScheme.primary
         else -> Color.Transparent
     }
 
     val textColor = when {
-        isSelected -> FunnyColors.Primary
+        isSelected -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.onSurface
     }
 
@@ -297,10 +300,10 @@ private fun AnswerItem(
                     .clip(CircleShape)
                     .border(
                         width = 2.dp,
-                        color = if (isSelected) FunnyColors.Primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                         shape = CircleShape
                     )
-                    .background(if (isSelected) FunnyColors.Primary else Color.Transparent),
+                    .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent),
                 contentAlignment = Alignment.Center
             ) {
                 if (isSelected) {
@@ -348,15 +351,15 @@ private fun QuestionProgressDots(
                     .clip(CircleShape)
                     .background(
                         when {
-                            isCurrent -> FunnyColors.Primary
-                            isAnswered -> FunnyColors.Success
+                            isCurrent -> MaterialTheme.colorScheme.primary
+                            isAnswered -> MaterialTheme.funnyColors.success
                             else -> MaterialTheme.colorScheme.surfaceVariant
                         }
                     )
                     .clickable { onQuestionClick(index) }
                     .border(
                         width = if (isCurrent) 0.dp else 1.dp,
-                        color = if (isAnswered) FunnyColors.Success else MaterialTheme.colorScheme.outline,
+                        color = if (isAnswered) MaterialTheme.funnyColors.success else MaterialTheme.colorScheme.outline,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -400,7 +403,7 @@ private fun BottomBar(
                         .height(56.dp),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = FunnyColors.AccentPurple
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
@@ -420,7 +423,7 @@ private fun BottomBar(
                         .height(56.dp),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = FunnyColors.Primary
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
@@ -464,7 +467,7 @@ private fun ErrorView(
                 text = "Ошибка",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = FunnyColors.Error
+                color = MaterialTheme.colorScheme.error
             )
             Text(
                 text = error,
@@ -485,6 +488,7 @@ private fun ErrorView(
 private fun AudioTestResultScreen(
     result: SubmitAudioTestResult,
     testTitle: String,
+    isGuest: Boolean,
     onContinue: () -> Unit
 ) {
     Column(
@@ -504,7 +508,7 @@ private fun AudioTestResultScreen(
                 Icon(
                     Icons.Default.Star,
                     contentDescription = null,
-                    tint = if (result.stars > index) FunnyColors.StarFilled else FunnyColors.StarEmpty,
+                    tint = if (result.stars > index) MaterialTheme.funnyColors.gold else MaterialTheme.colorScheme.outlineVariant,
                     modifier = Modifier.size(56.dp)
                 )
             }
@@ -522,9 +526,9 @@ private fun AudioTestResultScreen(
             fontSize = 32.sp,
             fontWeight = FontWeight.ExtraBold,
             color = when {
-                result.percentage >= 80 -> FunnyColors.Success
-                result.percentage >= 60 -> FunnyColors.Secondary
-                else -> FunnyColors.Error
+                result.percentage >= 80 -> MaterialTheme.funnyColors.success
+                result.percentage >= 60 -> MaterialTheme.colorScheme.secondary
+                else -> MaterialTheme.colorScheme.error
             }
         )
 
@@ -535,6 +539,35 @@ private fun AudioTestResultScreen(
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        if (isGuest) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Войдите, чтобы сохранить прогресс",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "В гостевом режиме результаты хранятся только на этом устройстве",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Score Card
         Card(
@@ -555,7 +588,7 @@ private fun AudioTestResultScreen(
                     text = "${result.percentage}%",
                     fontSize = 56.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = FunnyColors.Primary
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Surface(
@@ -569,7 +602,7 @@ private fun AudioTestResultScreen(
                         Icon(
                             Icons.Default.Check,
                             contentDescription = null,
-                            tint = FunnyColors.Success,
+                            tint = MaterialTheme.funnyColors.success,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -588,7 +621,7 @@ private fun AudioTestResultScreen(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = FunnyColors.Primary.copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -597,14 +630,14 @@ private fun AudioTestResultScreen(
                             Icon(
                                 Icons.Default.Star,
                                 contentDescription = null,
-                                tint = FunnyColors.StarFilled,
+                                tint = MaterialTheme.funnyColors.gold,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "+${result.pointsEarned} XP",
                                 fontWeight = FontWeight.Bold,
-                                color = FunnyColors.Primary
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }

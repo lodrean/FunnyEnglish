@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.springBoot) apply false
     alias(libs.plugins.springDependencyManagement) apply false
+    id("io.gitlab.arturbosch.detekt") version "1.23.7" apply false
 }
 
 allprojects {

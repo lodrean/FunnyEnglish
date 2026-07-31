@@ -1,7 +1,7 @@
 package com.funnyenglish.repository
 
 import java.sql.Date
-import java.time.Instant
+import java.sql.Timestamp
 import java.util.UUID
 
 interface DateCountProjection {
@@ -31,5 +31,7 @@ interface RecentActivityProjection {
     val type: String
     val userName: String
     val details: String?
-    val timestamp: Instant
+    // Не OffsetDateTime: native query отдаёт java.sql.Timestamp (колонки timestamp without time zone),
+    // Spring Data projection не умеет Timestamp -> OffsetDateTime (500 на /admin/analytics/recent-activity)
+    val timestamp: Timestamp
 }

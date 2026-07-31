@@ -25,11 +25,13 @@ interface ProgressRepository : JpaRepository<Progress, UUID> {
 
     @Query(
         value = """
-            SELECT DATE(completed_at) as date, COUNT(*) as count
+            SELECT 
+                CAST(completed_at AS DATE) as date,
+                COUNT(*) as count
             FROM progress
             WHERE completed_at >= :startDate
-            GROUP BY DATE(completed_at)
-            ORDER BY DATE(completed_at)
+            GROUP BY CAST(completed_at AS DATE)
+            ORDER BY CAST(completed_at AS DATE)
         """,
         nativeQuery = true
     )

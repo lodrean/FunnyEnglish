@@ -1,0 +1,88 @@
+# Flow: авторизованный пользователь — Practice: запись → автостоп → автоотправка → Sent → MySubmissions (спека §10.2)
+# Требует: docker-стек, demo@funnyenglish.app/demo123 (DEMO_USER_ENABLED=true), seed-контент.
+
+appId: com.funnyenglish.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      android.permission.RECORD_AUDIO: allow
+
+# Онбординг → гость (затем залогинимся через Профиль)
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+- extendedWaitUntil:
+    visible: "Библиотека"
+    timeout: 20000
+
+# Профиль → «Войти или зарегистрироваться»
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: "Войти или зарегистрироваться"
+    timeout: 10000
+- tapOn: "Войти или зарегистрироваться"
+
+# Логин demo-юзером
+- extendedWaitUntil:
+    visible: "С возвращением!"
+    timeout: 10000
+- tapOn: "Email"
+- inputText: "demo@funnyenglish.app"
+- hideKeyboard
+- tapOn: "Пароль"
+- inputText: "demo123"
+- hideKeyboard
+- tapOn: "Войти"
+
+# После логина — Библиотека
+- extendedWaitUntil:
+    visible: "Разговорный английский"
+    timeout: 20000
+
+# Topics → пропуск видео → Questions
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- tapOn: "Знакомство"
+- tapOn: "Пропустить видео — сразу к вопросам"
+
+# Questions → Practice (кнопка доступна авторизованному)
+- extendedWaitUntil:
+    visible: "Практика · 30 сек"
+    timeout: 15000
+- tapOn: "Практика · 30 сек"
+
+# Practice: Ready → Recording
+- extendedWaitUntil:
+    visible: "Начать запись"
+    timeout: 15000
+- assertVisible: "Контрольная · 30 сек"
+- assertVisible: ".*учителю автоматически.*"
+- tapOn: "Начать запись"
+
+# Запись ~3 сек по таймеру (0:30 → 0:27) → ручной стоп → автоотправка
+- extendedWaitUntil:
+    visible: "0:27"
+    timeout: 15000
+- tapOn: "Закончить и отправить"
+
+# Uploading → Sent
+- extendedWaitUntil:
+    visible: "Запись отправлена!"
+    timeout: 20000
+- assertVisible: "статус NEW · ждёт проверки"
+- tapOn: "Вернуться в библиотеку"
+
+# MySubmissions — статус NEW
+- extendedWaitUntil:
+    visible: "Библиотека"
+    timeout: 10000
+- tapOn: "Мои записи"
+- extendedWaitUntil:
+    visible: "На проверке"
+    timeout: 15000
+- assertVisible: "Знакомство"

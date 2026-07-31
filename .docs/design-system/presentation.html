@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speaking Trainer — Варианты дизайна для демо</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: Nunito, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #201f1c; color: #F7F5F1; }
+  .tnum { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: "tnum" 1; font-variant-numeric: tabular-nums; }
+  .ic { width: 20px; height: 20px; }
+
+  /* Deck mechanics */
+  .slide {
+    position: absolute; inset: 0; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 56px 72px; animation: slideIn .45s cubic-bezier(.16,1,.3,1);
+  }
+  .slide.active { display: flex; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .nav { position: fixed; bottom: 28px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 20px; z-index: 50; }
+  .nav button {
+    width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.06); color: #F7F5F1; font-size: 20px; cursor: pointer;
+    transition: all .15s cubic-bezier(.16,1,.3,1);
+  }
+  .nav button:hover { background: rgba(255,255,255,.16); }
+  .nav .counter { font-size: 13px; color: rgba(255,255,255,.55); min-width: 64px; text-align: center; }
+  .dots { position: fixed; top: 24px; right: 28px; display: flex; gap: 8px; z-index: 50; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); transition: all .2s; }
+  .dots i.on { background: #F7F5F1; transform: scale(1.3); }
+  .kicker { font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .65; margin-bottom: 14px; }
+  h1 { font-size: 54px; font-weight: 800; line-height: 1.12; text-align: center; }
+  h2 { font-size: 38px; font-weight: 800; margin-bottom: 10px; }
+  .sub { font-size: 18px; opacity: .75; margin-top: 16px; text-align: center; max-width: 640px; line-height: 1.55; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; gap: 14px; margin-top: 44px; flex-wrap: wrap; justify-content: center; }
+  .flow .node {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+    padding: 14px 22px; border-radius: 14px; font-weight: 700; font-size: 16px; text-align: center;
+  }
+  .flow .node small { display: block; font-size: 11px; font-weight: 600; opacity: .6; margin-top: 3px; }
+  .flow .arr { opacity: .45; font-size: 18px; }
+  .flow .split { display: flex; gap: 10px; }
+  .flow .node.train { border-color: #4A90D9; }
+  .flow .node.prac { border-color: #E53935; }
+
+  /* Principle cards */
+  .principles { display: grid; grid-template-columns: repeat(2, minmax(280px, 380px)); gap: 20px; margin-top: 40px; }
+  .pr-card { background: rgba(255,255,255,.06); border-radius: 18px; padding: 24px 26px; }
+  .pr-card .num { font-size: 12px; font-weight: 800; opacity: .5; letter-spacing: .1em; }
+  .pr-card h3 { font-size: 19px; font-weight: 800; margin: 6px 0 8px; }
+  .pr-card p { font-size: 14px; line-height: 1.55; opacity: .75; }
+
+  /* Variant slides */
+  .variant-body { display: flex; gap: 64px; align-items: center; margin-top: 36px; }
+  .variant-info { max-width: 400px; }
+  .variant-info .name { font-size: 34px; font-weight: 800; }
+  .variant-info .tagline { font-size: 15px; opacity: .7; margin: 8px 0 22px; line-height: 1.5; }
+  .variant-info ul { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; line-height: 1.45; }
+  .variant-info li { padding-left: 22px; position: relative; opacity: .9; }
+  .variant-info li::before { content: ""; position: absolute; left: 0; top: 7px; width: 8px; height: 8px; border-radius: 2px; background: currentColor; opacity: .55; }
+  .palette { display: flex; gap: 8px; margin: 22px 0 4px; }
+  .palette .sw { width: 44px; height: 44px; border-radius: 12px; border: 2px solid rgba(255,255,255,.15); }
+  .palette .hex { font-size: 10px; opacity: .55; margin-top: 4px; text-align: center; }
+  .pal-cell { display: flex; flex-direction: column; gap: 0; }
+
+  /* Mini phone mockup (shared skeleton, themed via CSS vars) */
+  .mphone {
+    width: 300px; height: 620px; border-radius: 32px; overflow: hidden;
+    display: flex; flex-direction: column; flex-shrink: 0;
+    background: var(--mp-bg); color: var(--mp-text);
+    box-shadow: 0 28px 72px rgba(0,0,0,.45), 0 0 0 9px #111, 0 0 0 11px #333;
+    font-size: 14px;
+  }
+  .mphone .sb { display: flex; justify-content: space-between; padding: 10px 20px 2px; font-size: 11px; font-weight: 700; opacity: .8; }
+  .mphone .ab { padding: 12px 18px 6px; }
+  .mphone .ab h4 { font-size: 17px; font-weight: 800; }
+  .mphone .ab .s { font-size: 10.5px; opacity: .6; font-weight: 700; }
+  .mphone .bd { flex: 1; padding: 6px 18px 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .mp-chip { align-self: flex-start; font-size: 10.5px; font-weight: 800; padding: 5px 11px; border-radius: 999px; background: var(--mp-chip-bg); color: var(--mp-chip-text); }
+  .mp-q { background: var(--mp-card); border-radius: var(--mp-radius); padding: 18px 16px; box-shadow: var(--mp-shadow); }
+  .mp-q .n { font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--mp-accent); margin-bottom: 6px; }
+  .mp-q .t { font-size: 16.5px; line-height: 1.35; font-weight: 600; }
+  .mp-ring { align-self: center; position: relative; width: 128px; height: 128px; margin: 6px 0; }
+  .mp-ring svg { transform: rotate(-90deg); }
+  .mp-ring .lb { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .mp-ring .tnum { font-size: 27px; font-weight: 700; color: var(--mp-text); }
+  .mp-ring .c { font-size: 9.5px; opacity: .55; font-weight: 700; }
+  .mp-wave { display: flex; align-items: center; justify-content: center; gap: 2.5px; height: 34px; }
+  .mp-wave i { width: 3.5px; border-radius: 2px; background: var(--mp-wave); }
+  .mp-rec {
+    align-self: center; width: 62px; height: 62px; border-radius: var(--mp-rec-radius);
+    background: var(--mp-rec); display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: var(--mp-rec-shadow); position: relative;
+  }
+  .mp-rec .ic { width: 24px; height: 24px; }
+  .mp-note { display: flex; gap: 8px; align-items: center; background: var(--mp-note-bg); border-radius: 10px; padding: 10px 12px; font-size: 10px; font-weight: 600; opacity: .85; }
+  .mp-note .ic { width: 15px; height: 15px; flex-shrink: 0; color: var(--mp-accent); }
+
+  /* Variant A theme: Calm Studio */
+  .theme-a {
+    --mp-bg: #F7F5F1; --mp-text: #2B2A26; --mp-card: #FFFFFF;
+    --mp-shadow: 0 1px 2px rgba(43,42,38,.06), 0 2px 8px rgba(43,42,38,.05);
+    --mp-accent: #4A90D9; --mp-chip-bg: #D6E6F5; --mp-chip-text: #0B3050;
+    --mp-wave: #FF5252; --mp-rec: #E53935; --mp-rec-radius: 50%;
+    --mp-rec-shadow: 0 4px 12px rgba(229,57,53,.35); --mp-note-bg: #F4F0EA;
+    --mp-radius: 16px; --mp-ring-track: #E8E4DC;
+  }
+  /* Variant B theme: Playful Coach */
+  .theme-b {
+    --mp-bg: #EEF3FF; --mp-text: #2D3561; --mp-card: #FFFFFF;
+    --mp-shadow: 0 3px 0 rgba(91,141,239,.25);
+    --mp-accent: #9B7EDE; --mp-chip-bg: #E5DCFF; --mp-chip-text: #5B3FA8;
+    --mp-wave: linear-gradient; --mp-wave: #9B7EDE; --mp-rec: #FF9F6B; --mp-rec-radius: 22px;
+    --mp-rec-shadow: 0 4px 0 rgba(217,114,56,.55); --mp-note-bg: #E5DCFF;
+    --mp-radius: 22px; --mp-ring-track: #D8E2FA;
+  }
+  /* Variant C theme: Dark Mic */
+  .theme-c {
+    --mp-bg: #12141F; --mp-text: #ECEAE4; --mp-card: #1C1F2E;
+    --mp-shadow: 0 1px 2px rgba(0,0,0,.4);
+    --mp-accent: #7BB3E8; --mp-chip-bg: #262A3D; --mp-chip-text: #7BB3E8;
+    --mp-wave: #FF6B60; --mp-rec: #FF3D30; --mp-rec-radius: 50%;
+    --mp-rec-shadow: 0 0 22px rgba(255,61,48,.65), 0 0 46px rgba(255,61,48,.3);
+    --mp-note-bg: #1C1F2E; --mp-radius: 14px; --mp-ring-track: #262A3D;
+  }
+  .theme-c .mphone::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+  }
+  .theme-c .mphone { position: relative; }
+  .theme-c .mp-wave i { box-shadow: 0 0 6px rgba(255,107,96,.7); }
+
+  /* Comparison table */
+  .cmp { margin-top: 36px; border-collapse: collapse; font-size: 15px; min-width: 860px; }
+  .cmp th, .cmp td { padding: 14px 20px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.12); }
+  .cmp th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; opacity: .55; }
+  .cmp td:first-child { font-weight: 800; opacity: .85; }
+  .cmp .colA { border-left: 3px solid #4A90D9; }
+  .cmp .colB { border-left: 3px solid #9B7EDE; }
+  .cmp .colC { border-left: 3px solid #FF3D30; }
+  .cmp .yes { color: #43A047; font-weight: 800; }
+  .cmp .warn { color: #FB8C00; font-weight: 800; }
+  .cmp .no { color: #FF6B60; font-weight: 800; }
+
+  /* Recommendation slide */
+  .reco { display: flex; gap: 48px; align-items: center; margin-top: 32px; max-width: 940px; }
+  .reco .badge {
+    flex-shrink: 0; width: 190px; height: 190px; border-radius: 36px;
+    background: linear-gradient(135deg, #4A90D9, #2E6BB0);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    box-shadow: 0 20px 48px rgba(74,144,217,.35);
+  }
+  .reco .badge .big { font-size: 56px; font-weight: 800; }
+  .reco .badge .sm { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+  .reco ol { display: flex; flex-direction: column; gap: 14px; font-size: 16px; line-height: 1.5; padding-left: 22px; }
+  .reco ol li::marker { font-weight: 800; color: #4A90D9; }
+  .reco code { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; background: rgba(255,255,255,.1); padding: 2px 8px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<div class="dots" id="dots"></div>
+
+<!-- 1 · Title -->
+<section class="slide active">
+  <div class="kicker">FunnyEnglish · Speaking Trainer · 30.07.2026</div>
+  <h1>Три направления дизайна<br>тренажёра устной речи</h1>
+  <p class="sub">Демо для выбора визуального направления. Каждый вариант показан на одном и том же ключевом экране — Training с записью голоса, таймером и waveform.</p>
+</section>
+
+<!-- 2 · Flow -->
+<section class="slide">
+  <div class="kicker">Продукт</div>
+  <h2>Что проектируем</h2>
+  <div class="flow">
+    <div class="node">Library<small>темы</small></div><span class="arr">→</span>
+    <div class="node">Topics<small>топики</small></div><span class="arr">→</span>
+    <div class="node">Video<small>± субтитры</small></div><span class="arr">→</span>
+    <div class="node">Questions<small>список вопросов</small></div><span class="arr">→</span>
+    <div class="split">
+      <div class="node train">Training<small>локально · 80→50→30 сек</small></div>
+      <div class="node prac">Practice<small>30 сек · учителю</small></div>
+    </div>
+  </div>
+  <p class="sub">Запись голоса — тревожный сценарий. Дизайн должен снижать стресс, а таймер и waveform — быть главными героями экрана.</p>
+</section>
+
+<!-- 3 · Principles -->
+<section class="slide">
+  <div class="kicker">Общие принципы (все варианты)</div>
+  <h2>Что не меняется между вариантами</h2>
+  <div class="principles">
+    <div class="pr-card"><div class="num">01</div><h3>Таймер не прыгает</h3><p>Моноширинные tabular-цифры + кольцо прогресса, пересчитываемое каждую секунду от доли оставшегося времени. Эскалация уровней 80→50→30 — цветом и подписью.</p></div>
+    <div class="pr-card"><div class="num">02</div><h3>Карточки без рамок</h3><p>Разделение поверхностей — сдвигом фона, а не обводкой. Тени 1–2dp, мягкие. Меньше визуального шума — меньше тревоги.</p></div>
+    <div class="pr-card"><div class="num">03</div><h3>Плеер — точный инструмент</h3><p>Тонкий progress-bar, расширяющийся при наведении; все длительности и даты — табличными цифрами. Record и error — разные красные + разная форма.</p></div>
+    <div class="pr-card"><div class="num">04</div><h3>A11y с самого начала</h3><p>Touch targets ≥48dp, recorder 64–72dp, двойное кольцо фокуса, статусы не только цветом, Reduce motion, таймер с liveRegion (не чаще 1/5с).</p></div>
+  </div>
+</section>
+
+<!-- 4 · Variant A -->
+<section class="slide" style="background:#2B2A26">
+  <div class="kicker">Вариант A · рекомендуемый</div>
+  <div class="variant-body">
+    <div class="variant-info">
+      <div class="name">Calm Studio</div>
+      <div class="tagline">Спокойная студия звукозаписи. Тёплая бумага, приглушённый синий, коралловый record — только там, где действие.</div>
+      <div class="palette">
+        <div class="pal-cell"><div class="sw" style="background:#F7F5F1"></div><div class="hex tnum">#F7F5F1</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#4A90D9"></div><div class="hex tnum">#4A90D9</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#D6E6F5"></div><div class="hex tnum">#D6E6F5</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#E53935"></div><div class="hex tnum">#E53935</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#006C4C"></div><div class="hex tnum">#006C4C</div></div>
+      </div>
+      <ul>
+        <li>Наследует текущий Primary #4A90D9 — минимум пересборки</li>
+        <li>Тёплая нейтральная база вместо стерильного серого</li>
+        <li>Комфортно и детям 7–14, и взрослым A2–B2</li>
+        <li>Nunito + JetBrains Mono для таймера</li>
+      </ul>
+    </div>
+    <div class="theme-a"><div class="mphone">
+      <div class="sb"><span class="tnum">9:41</span><span>▮▮▮</span></div>
+      <div class="ab"><h4>Training</h4><div class="s">At the airport</div></div>
+      <div class="bd">
+        <span class="mp-chip">Уровень 1 · 80 сек</span>
+        <div class="mp-q"><div class="n">Вопрос 2 из 5</div><div class="t">What do you usually do while waiting for your flight?</div></div>
+        <div class="mp-ring"><svg width="128" height="128" viewBox="0 0 128 128"><circle cx="64" cy="64" r="56" fill="none" stroke="var(--mp-ring-track)" stroke-width="9"/><circle cx="64" cy="64" r="56" fill="none" stroke="#4A90D9" stroke-width="9" stroke-linecap="round" stroke-dasharray="351.8" stroke-dashoffset="146"/></svg><div class="lb"><span class="tnum">0:47</span><span class="c">осталось</span></div></div>
+        <div class="mp-wave" data-wave></div>
+        <div class="mp-rec"><svg class="ic"><use href="icons.svg#i-stop"/></svg></div>
+        <div class="mp-note"><svg class="ic"><use href="icons.svg#i-shield"/></svg>Записи хранятся только на устройстве</div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 5 · Variant B -->
+<section class="slide" style="background:#2D3561">
+  <div class="kicker">Вариант B · эволюция DS 2.0</div>
+  <div class="variant-body">
+    <div class="variant-info">
+      <div class="name">Playful Coach</div>
+      <div class="tagline">Пастельная игровая палитра текущей DS 2.0, но без стриков и гемов: мотивация — прогресс-кольца и уровни таймера.</div>
+      <div class="palette">
+        <div class="pal-cell"><div class="sw" style="background:#EEF3FF"></div><div class="hex tnum">#EEF3FF</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#5B8DEF"></div><div class="hex tnum">#5B8DEF</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#9B7EDE"></div><div class="hex tnum">#9B7EDE</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#FF9F6B"></div><div class="hex tnum">#FF9F6B</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#E5DCFF"></div><div class="hex tnum">#E5DCFF</div></div>
+      </div>
+      <ul>
+        <li>Максимальное переиспользование готового кита DS 2.0</li>
+        <li>Record — дружелюбный персиковый, не «тревожный» красный</li>
+        <li>Кнопка записи — squircle, тени «оттопыренные» вниз</li>
+        <li>Риск: выглядит «детски» для взрослых учеников</li>
+      </ul>
+    </div>
+    <div class="theme-b"><div class="mphone">
+      <div class="sb"><span class="tnum">9:41</span><span>▮▮▮</span></div>
+      <div class="ab"><h4>Training</h4><div class="s">At the airport</div></div>
+      <div class="bd">
+        <span class="mp-chip">Уровень 1 · 80 сек</span>
+        <div class="mp-q"><div class="n">Вопрос 2 из 5</div><div class="t">What do you usually do while waiting for your flight?</div></div>
+        <div class="mp-ring"><svg width="128" height="128" viewBox="0 0 128 128"><circle cx="64" cy="64" r="56" fill="none" stroke="var(--mp-ring-track)" stroke-width="9"/><circle cx="64" cy="64" r="56" fill="none" stroke="#9B7EDE" stroke-width="9" stroke-linecap="round" stroke-dasharray="351.8" stroke-dashoffset="146"/></svg><div class="lb"><span class="tnum">0:47</span><span class="c">осталось</span></div></div>
+        <div class="mp-wave" data-wave></div>
+        <div class="mp-rec"><svg class="ic"><use href="icons.svg#i-stop"/></svg></div>
+        <div class="mp-note"><svg class="ic"><use href="icons.svg#i-shield"/></svg>Записи хранятся только на устройстве</div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 6 · Variant C -->
+<section class="slide" style="background:#0A0B12">
+  <div class="kicker">Вариант C · болдинговый</div>
+  <div class="variant-body">
+    <div class="variant-info">
+      <div class="name">Dark Mic</div>
+      <div class="tagline">Подкаст-студия после заката. Тёмная тема как основная, неоновый REC, светящаяся waveform, зернистость плёнки.</div>
+      <div class="palette">
+        <div class="pal-cell"><div class="sw" style="background:#12141F"></div><div class="hex tnum">#12141F</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#1C1F2E"></div><div class="hex tnum">#1C1F2E</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#7BB3E8"></div><div class="hex tnum">#7BB3E8</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#FF3D30"></div><div class="hex tnum">#FF3D30</div></div>
+        <div class="pal-cell"><div class="sw" style="background:#ECEAE4"></div><div class="hex tnum">#ECEAE4</div></div>
+      </div>
+      <ul>
+        <li>Максимально выразительный recorder — «красная кнопка»</li>
+        <li>Noise-текстура 5% — глубина материала</li>
+        <li>Риск: читаемость субтитров поверх видео</li>
+        <li>Риск: больше работы по a11y, разрыв со светлой базой</li>
+      </ul>
+    </div>
+    <div class="theme-c"><div class="mphone">
+      <div class="sb"><span class="tnum">9:41</span><span>▮▮▮</span></div>
+      <div class="ab"><h4>Training</h4><div class="s">At the airport</div></div>
+      <div class="bd">
+        <span class="mp-chip">Уровень 1 · 80 сек</span>
+        <div class="mp-q"><div class="n">Вопрос 2 из 5</div><div class="t">What do you usually do while waiting for your flight?</div></div>
+        <div class="mp-ring"><svg width="128" height="128" viewBox="0 0 128 128"><circle cx="64" cy="64" r="56" fill="none" stroke="var(--mp-ring-track)" stroke-width="9"/><circle cx="64" cy="64" r="56" fill="none" stroke="#FF6B60" stroke-width="9" stroke-linecap="round" stroke-dasharray="351.8" stroke-dashoffset="146"/></svg><div class="lb"><span class="tnum">0:47</span><span class="c">осталось</span></div></div>
+        <div class="mp-wave" data-wave></div>
+        <div class="mp-rec"><svg class="ic"><use href="icons.svg#i-stop"/></svg></div>
+        <div class="mp-note"><svg class="ic"><use href="icons.svg#i-shield"/></svg>Записи хранятся только на устройстве</div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 7 · Comparison -->
+<section class="slide">
+  <div class="kicker">Сравнение</div>
+  <h2>Три варианта бок о бок</h2>
+  <table class="cmp">
+    <tr><th></th><th class="colA">A · Calm Studio</th><th class="colB">B · Playful Coach</th><th class="colC">C · Dark Mic</th></tr>
+    <tr><td>Аудитория</td><td class="colA">дети + взрослые</td><td class="colB">в основном дети</td><td class="colC">взрослые, подростки</td></tr>
+    <tr><td>Тревожность записи</td><td class="colA yes">снижает</td><td class="colB yes">снижает</td><td class="colC warn">нейтрально</td></tr>
+    <tr><td>Пересборка существующего UI</td><td class="colA yes">минимум (Primary тот же)</td><td class="colB yes">минимум (кит DS 2.0)</td><td class="colC no">полная</td></tr>
+    <tr><td>Работа по a11y</td><td class="colA yes">стандарт</td><td class="colB yes">стандарт</td><td class="colC warn">выше (контрасты, субтитры)</td></tr>
+    <tr><td>Выразительность recorder</td><td class="colA">средняя</td><td class="colB">средняя</td><td class="colC yes">максимальная</td></tr>
+    <tr><td>Admin-web (та же палитра)</td><td class="colA yes">естественно</td><td class="colB warn">«детская» админка</td><td class="colC warn">тёмная админка — отдельная работа</td></tr>
+  </table>
+</section>
+
+<!-- 8 · Recommendation -->
+<section class="slide">
+  <div class="kicker">Рекомендация</div>
+  <div class="reco">
+    <div class="badge"><span class="big">A</span><span class="sm">Calm Studio</span></div>
+    <ol>
+      <li>Генерируем макеты в варианте <b>A</b>; вариант B остаётся fallback по скорости, C — на будущий «pro»-режим.</li>
+      <li>Токены уже готовы: <code>tokens.json</code> (W3C) + <code>tokens.css</code> — одна палитра, два таргета: <code>:design</code> ColorScheme и MUI <code>Theme.ts</code>.</li>
+      <li>Эталонные мокапы: Library, Training (запись), Grading detail — см. <code>mockups.html</code>. Остальные 9 экранов строятся из тех же токенов при реализации.</li>
+      <li>Иконки — SVG-спрайт <code>icons.svg</code> → перенос в <code>CustomIcons.kt</code> / composeResources.</li>
+    </ol>
+  </div>
+</section>
+
+<div class="nav">
+  <button id="prev" aria-label="Назад">←</button>
+  <span class="counter tnum" id="counter">1 / 8</span>
+  <button id="next" aria-label="Вперёд">→</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('i');
+    if (i === 0) d.classList.add('on');
+    dotsEl.appendChild(d);
+  });
+  const dots = dotsEl.querySelectorAll('i');
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, k) => s.classList.toggle('active', k === cur));
+    dots.forEach((d, k) => d.classList.toggle('on', k === cur));
+    document.getElementById('counter').textContent = (cur + 1) + ' / ' + slides.length;
+  }
+  document.getElementById('prev').addEventListener('click', () => show(cur - 1));
+  document.getElementById('next').addEventListener('click', () => show(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+
+  // waveform bars в мини-мокапах
+  document.querySelectorAll('[data-wave]').forEach(w => {
+    for (let i = 0; i < 26; i++) {
+      const b = document.createElement('i');
+      b.style.height = (8 + Math.round(24 * Math.abs(Math.sin(i * 0.7)))) + 'px';
+      w.appendChild(b);
+    }
+  });
+</script>
+</body>
+</html>

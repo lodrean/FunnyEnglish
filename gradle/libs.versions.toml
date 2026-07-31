@@ -23,16 +23,24 @@ springDependencyManagement = "1.1.7"
 # Database
 flyway = "10.22.0"
 postgresql = "42.7.4"
+h2 = "2.3.232"
+
+# Static Analysis
+detekt = "1.23.7"
 
 # Testing
 junit = "5.11.4"
 mockk = "1.13.13"
+kotlinx-coroutines-test = "1.9.0"
+koin-test = "4.0.0"
 
 # Other
 koin = "4.0.0"
 kotlinx-datetime = "0.6.1"
 coil = "3.0.4"
 napier = "2.7.1"
+navigation-compose = "2.8.0-alpha10"
+multiplatform-settings = "1.2.0"
 
 [libraries]
 # Kotlin
@@ -47,11 +55,13 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version = "2.8.0" }
 
 # Ktor Client
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
@@ -69,6 +79,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 # JWT
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version = "0.12.6" }
@@ -93,9 +104,29 @@ napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 # Audio playback for desktop (MP3 support)
 jlayer = { module = "javazoom:jlayer", version = "1.0.1" }
 
+# Media3 ExoPlayer
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = "1.5.1" }
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version = "1.5.1" }
+androidx-media3-session = { module = "androidx.media3:media3-session", version = "1.5.1" }
+
+# Gradle Plugins (for build-logic)
+android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-gradlePlugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
+
+# Navigation
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+
+# Settings
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatform-settings" }
+multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatform-settings" }
+
 # Testing
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

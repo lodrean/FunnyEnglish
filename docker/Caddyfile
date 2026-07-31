@@ -1,0 +1,28 @@
+# Caddy reverse-proxy для FunnyEnglish (production)
+# Автоматически получает и продлевает сертификаты Let's Encrypt
+# для указанных доменов (нужны DNS A-записи на сервер + открытые 80/443).
+#
+# Переменные берутся из .env (см. docker/.env.example):
+#   ACME_EMAIL  — email для Let's Encrypt
+#   API_HOST    — домен API (api.yourdomain.com)
+#   ADMIN_HOST  — домен админки (admin.yourdomain.com)
+#   MEDIA_HOST  — домен медиа/MinIO (cdn.yourdomain.com)
+
+{
+	email {$ACME_EMAIL}
+}
+
+# Админ-панель (React, nginx внутри контейнера)
+{$ADMIN_HOST} {
+	reverse_proxy admin:80
+}
+
+# Backend API (context-path /api сохраняется)
+{$API_HOST} {
+	reverse_proxy backend:8080
+}
+
+# Медиа-файлы (MinIO). S3_PUBLIC_URL должен быть https://<MEDIA_HOST>/<bucket>
+{$MEDIA_HOST} {
+	reverse_proxy minio:9000
+}

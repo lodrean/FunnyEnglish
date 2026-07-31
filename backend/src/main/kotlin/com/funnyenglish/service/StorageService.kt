@@ -23,8 +23,14 @@ class StorageService(
     private val logger = LoggerFactory.getLogger(StorageService::class.java)
     private val allowedImageExtensions = setOf("jpg", "jpeg", "png", "webp", "gif", "bmp")
     private val allowedAudioExtensions = setOf("mp3", "wav", "ogg", "m4a", "aac", "flac")
+    private val allowedVideoExtensions = setOf("mp4", "webm", "mov", "m4v")
+    private val allowedSubtitleExtensions = setOf("vtt")
 
     fun uploadFile(file: MultipartFile, folder: String): String {
+        logger.info("=".repeat(50))
+        logger.info("UPLOAD START: originalName=${file.originalFilename}, size=${file.size}, contentType=${file.contentType}, folder=$folder")
+        logger.info("S3 Config: endpoint=$endpoint, bucket=$bucket, publicUrl=$publicUrl")
+        
         val normalizedFolder = folder.trim().trim('/').ifEmpty { "media" }
         val originalName = file.originalFilename?.trim().orEmpty()
         val safeFileName = originalName
@@ -33,7 +39,11 @@ class StorageService(
             .trim()
             .ifEmpty { "file" }
         val extension = safeFileName.substringAfterLast('.', "").lowercase()
+        
+        logger.debug("Normalized folder: $normalizedFolder, safeFileName: $safeFileName, extension: $extension")
+        
         validateFileType(extension, file.contentType)
+        
         val key = buildString {
             append(normalizedFolder)
             append('/')
@@ -43,19 +53,29 @@ class StorageService(
                 append(extension.lowercase())
             }
         }
+        
+        logger.info("Uploading to S3: bucket=$bucket, key=$key")
 
-        val request = PutObjectRequest.builder()
-            .bucket(bucket)
-            .key(key)
-            .contentType(file.contentType ?: "application/octet-stream")
-            .contentLength(file.size)
-            .build()
+        try {
+            val request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(file.contentType ?: "application/octet-stream")
+                .contentLength(file.size)
+                .build()
 
-        file.inputStream.use { input ->
-            s3Client.putObject(request, RequestBody.fromInputStream(input, file.size))
+            file.inputStream.use { input ->
+                s3Client.putObject(request, RequestBody.fromInputStream(input, file.size))
+            }
+            
+            val url = buildObjectUrl(key)
+            logger.info("UPLOAD SUCCESS: $url")
+            logger.info("=".repeat(50))
+            return url
+        } catch (e: Exception) {
+            logger.error("Failed to upload file to S3: bucket=$bucket, key=$key", e)
+            throw IllegalStateException("Failed to upload file: ${e.message}", e)
         }
-
-        return buildObjectUrl(key)
     }
 
     fun deleteFile(url: String) {
@@ -127,7 +147,9 @@ class StorageService(
 
         val isImage = extension in allowedImageExtensions
         val isAudio = extension in allowedAudioExtensions
-        if (!isImage && !isAudio) {
+        val isVideo = extension in allowedVideoExtensions
+        val isSubtitle = extension in allowedSubtitleExtensions
+        if (!isImage && !isAudio && !isVideo && !isSubtitle) {
             throw IllegalArgumentException("Unsupported file type: .$extension")
         }
 
@@ -135,13 +157,21 @@ class StorageService(
         if (normalizedContentType.isNotEmpty() && normalizedContentType != "application/octet-stream") {
             val isContentImage = normalizedContentType.startsWith("image/")
             val isContentAudio = normalizedContentType.startsWith("audio/")
-            if (!isContentImage && !isContentAudio) {
+            val isContentVideo = normalizedContentType.startsWith("video/")
+            val isContentSubtitle = normalizedContentType == "text/vtt" || normalizedContentType.startsWith("text/plain")
+            if (!isContentImage && !isContentAudio && !isContentVideo && !isContentSubtitle) {
                 throw IllegalArgumentException("Unsupported content type: $normalizedContentType")
             }
             if (isContentImage && !isImage) {
                 throw IllegalArgumentException("File extension does not match content type")
             }
             if (isContentAudio && !isAudio) {
+                throw IllegalArgumentException("File extension does not match content type")
+            }
+            if (isContentVideo && !isVideo) {
+                throw IllegalArgumentException("File extension does not match content type")
+            }
+            if (isContentSubtitle && !isSubtitle) {
                 throw IllegalArgumentException("File extension does not match content type")
             }
         }

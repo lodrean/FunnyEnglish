@@ -1,0 +1,25 @@
+# Flow: гость проходит онбординг и попадает на стартовый экран — Библиотеку (пивот SPEAKING-TRAINER)
+# Legacy-флоу перенесены в .maestro/legacy/ (legacy-фичи скрыты из навигации, код сохранён).
+
+appId: com.funnyenglish.app
+---
+- launchApp
+
+# Первый запуск: онбординг (2 слайда + выбор режима) → гостевой режим
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+# Если попали на логин — входим гостем
+- runFlow:
+    when:
+      visible: "С возвращением!"
+    commands:
+      - tapOn: "Продолжить без регистрации"
+
+# Стартовый экран после пивота — Библиотека speaking-тренажёра
+- extendedWaitUntil:
+    visible: "Библиотека"
+    timeout: 20000
+- assertVisible: "Библиотека"

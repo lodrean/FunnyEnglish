@@ -40,8 +40,13 @@ class RateLimitingFilter(
     private val buckets = ConcurrentHashMap<String, TokenBucket>()
 
     // Rate limit configurations
-    private val loginConfig = RateLimitConfig(5, 1, 12)      // 5 per minute, refill 1 per 12s
-    private val registerConfig = RateLimitConfig(3, 1, 20)   // 3 per minute, refill 1 per 20s
+    // Лимиты настраиваются через env (E2E-сьюты делают десятки логинов с одного IP
+    // и упираются в 5/мин → флаки). В prod env НЕ выставлять — останутся безопасные дефолты.
+    private fun envInt(name: String, default: Int): Int = System.getenv(name)?.toIntOrNull() ?: default
+
+    private val loginConfig = RateLimitConfig(envInt("RATE_LIMIT_LOGIN_CAPACITY", 5), 1, 12)      // 5 per minute, refill 1 per 12s
+    private val registerConfig = RateLimitConfig(envInt("RATE_LIMIT_REGISTER_CAPACITY", 3), 1, 20)   // 3 per minute, refill 1 per 20s
+    private val mergeConfig = RateLimitConfig(3, 1, 10)      // burst 3, then 1 per 10s
     private val defaultConfig = RateLimitConfig(100, 10, 6)  // 100 per minute, refill 10 per 6s
 
     init {
@@ -140,12 +145,24 @@ class RateLimitingFilter(
     }
 
     private fun shouldApplyRateLimiting(path: String, method: String): Boolean {
-        // Only rate limit POST requests to auth endpoints
-        if (method != "POST") return false
-        
-        return path.contains("/auth/login") ||
-               path.contains("/auth/register") ||
-               path.contains("/auth/refresh")
+        // Rate limit POST requests to auth endpoints
+        if (method == "POST" && (path.contains("/auth/login") ||
+                path.contains("/auth/register") ||
+                path.contains("/auth/refresh"))) {
+            return true
+        }
+
+        // Rate limit public endpoints to prevent abuse
+        if (path.contains("/public/")) {
+            return true
+        }
+
+        // Rate limit merge endpoint
+        if (method == "POST" && path.contains("/merge-guest-progress")) {
+            return true
+        }
+
+        return false
     }
 
     private fun extractClientIp(request: HttpServletRequest): String {
@@ -170,6 +187,7 @@ class RateLimitingFilter(
         return when {
             path.contains("/auth/login") -> loginConfig
             path.contains("/auth/register") -> registerConfig
+            path.contains("/merge-guest-progress") -> mergeConfig
             else -> defaultConfig
         }
     }

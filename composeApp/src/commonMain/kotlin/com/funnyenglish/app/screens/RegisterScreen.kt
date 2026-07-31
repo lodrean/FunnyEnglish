@@ -2,9 +2,11 @@ package com.funnyenglish.app.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -12,8 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,16 +25,16 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.funnyenglish.designsystem.components.buttons.FunnyButton
 import androidx.compose.ui.unit.sp
-import com.funnyenglish.app.components.FunnyTextField
-import com.funnyenglish.app.components.GradientButton
-import com.funnyenglish.app.theme.FunnyColors
-import com.funnyenglish.app.theme.FunnyTheme
+import com.funnyenglish.designsystem.components.buttons.FunnyButtonSize
+import com.funnyenglish.designsystem.components.buttons.FunnyButtonType
+import com.funnyenglish.designsystem.components.inputs.FunnyTextField
+import com.funnyenglish.designsystem.tokens.*
 import com.funnyenglish.app.viewmodel.AuthState
+import com.funnyenglish.designsystem.theme.funnyColors
 
 @Composable
 fun RegisterScreen(
@@ -48,18 +48,19 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
-    val colors = FunnyTheme.colors
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .imePadding()
+                .padding(horizontal = SpaceLg),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(60.dp))
@@ -74,7 +75,7 @@ fun RegisterScreen(
                         .clip(CircleShape)
                         .background(
                             brush = Brush.linearGradient(
-                                colors = listOf(FunnyColors.Primary, FunnyColors.AccentPurple)
+                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.funnyColors.achievement)
                             )
                         ),
                     contentAlignment = Alignment.Center
@@ -85,47 +86,52 @@ fun RegisterScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(SpaceSm))
 
                 Text(
                     text = "FunnyEnglish",
-                    fontSize = 28.sp,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    color = FunnyColors.Primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(SpaceLg))
 
             // Register Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.card),
-                elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 4.dp)
+                shape = CardShape,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = if (MaterialTheme.funnyColors.isDark)
+                        ElevationSmall else ElevationMedium
+                )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(SpaceXl),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Create Account",
-                        fontSize = 24.sp,
+                        text = "Создать аккаунт",
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = colors.onBackground
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(SpaceSm))
 
                     Text(
-                        text = "Start your learning journey today",
-                        fontSize = 14.sp,
-                        color = colors.textSecondary
+                        text = "Начни свое обучение сегодня",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(SpaceLg))
 
                     // Name field
                     FunnyTextField(
@@ -134,19 +140,16 @@ fun RegisterScreen(
                             if (state.error != null) onClearError()
                             displayName = it
                         },
-                        label = "Name",
+                        label = "Имя",
+                        placeholder = "Введите имя",
                         leadingIcon = Icons.Default.Person,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                        ),
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next,
+                        onImeAction = { focusManager.moveFocus(FocusDirection.Down) },
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpaceMd))
 
                     // Email field
                     FunnyTextField(
@@ -156,18 +159,15 @@ fun RegisterScreen(
                             email = it
                         },
                         label = "Email",
+                        placeholder = "Введите email",
                         leadingIcon = Icons.Default.Email,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Next
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                        ),
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                        onImeAction = { focusManager.moveFocus(FocusDirection.Down) },
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpaceMd))
 
                     // Password field
                     FunnyTextField(
@@ -176,50 +176,42 @@ fun RegisterScreen(
                             if (state.error != null) onClearError()
                             password = it
                         },
-                        label = "Password",
+                        label = "Пароль",
+                        placeholder = "Введите пароль",
                         leadingIcon = Icons.Default.Lock,
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                    tint = colors.textSecondary
-                                )
+                        isPassword = true,
+                        isPasswordVisible = passwordVisible,
+                        onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                        onImeAction = {
+                            focusManager.clearFocus()
+                            if (email.isNotBlank() && password.isNotBlank() && displayName.isNotBlank()) {
+                                onRegister(email, password, displayName)
                             }
                         },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                if (email.isNotBlank() && password.isNotBlank() && displayName.isNotBlank()) {
-                                    onRegister(email, password, displayName)
-                                }
-                            }
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     // Error message
                     if (state.error != null) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(SpaceMd))
                         Text(
                             text = state.error,
-                            color = FunnyColors.Error,
-                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(SpaceXl))
 
                     // Register button
-                    GradientButton(
-                        text = if (state.isLoading) "Creating account..." else "Sign Up",
+                    FunnyButton(
+                        text = if (state.isLoading) "Создание..." else "Зарегистрироваться",
                         onClick = { onRegister(email, password, displayName) },
+                        type = FunnyButtonType.PRIMARY,
+                        size = FunnyButtonSize.LARGE,
                         enabled = !state.isLoading &&
                             email.isNotBlank() &&
                             password.isNotBlank() &&
@@ -229,31 +221,31 @@ fun RegisterScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(SpaceLg))
 
             // Login link
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Already have an account? ",
-                    color = colors.textSecondary,
-                    fontSize = 14.sp
+                    text = "Уже есть аккаунт? ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(
                     onClick = onNavigateToLogin,
-                    contentPadding = PaddingValues(horizontal = 4.dp)
+                    contentPadding = PaddingValues(horizontal = SpaceXs)
                 ) {
                     Text(
-                        text = "Sign In",
-                        color = FunnyColors.Primary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        text = "Войти",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(SpaceXl))
         }
     }
 }

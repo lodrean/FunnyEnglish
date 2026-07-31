@@ -1,0 +1,65 @@
+# Maestro E2E Test for Image Word Match Feature
+# Run with: maestro test .maestro/image-word-match-test.yaml
+
+appId: com.funnyenglish.app
+---
+
+# Launch the app
+- launchApp
+
+# Login flow
+- tapOn: "Sign In"
+- inputText: { text: "test@example.com" }
+- tapOn: "Password"  
+- inputText: { text: "password123" }
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to Tests
+- tapOn: "Tests"
+- assertVisible: "Categories"
+
+# Select Vocabulary category (contains IMAGE_WORD_MATCH test)
+- tapOn: "Vocabulary"
+- waitForAnimationToEnd
+
+# Select Room Objects test
+- tapOn: "Room Objects"
+- waitForAnimationToEnd
+
+# Verify ImageWordMatch question is displayed
+- assertVisible: "Drag the words to the correct objects on the image"
+- assertVisible: "0 / 4 words matched"
+
+# Verify word bank is displayed
+- assertVisible: "Drag words to the image:"
+- assertVisible: "door"
+- assertVisible: "window"
+- assertVisible: "table"
+- assertVisible: "chair"
+
+# Test drag and drop (this requires precise coordinates)
+# Note: Maestro dragAndDrop requires element IDs or exact coordinates
+# - dragAndDrop: 
+#     from: "door"
+#     to: 
+#       id: "iwm_hotspot_0"
+
+# Alternative: tap on word then tap on hotspot (if clickable)
+# - tapOn: "door"
+# - tapOn: 
+#     id: "iwm_hotspot_0"
+
+# Verify progress updated
+# - assertVisible: "1 / 4 words matched"
+
+# Exit test
+- tapOn: 
+    id: "exit_button"
+- tapOn: "Yes"
+
+# Verify we're back at test list
+- assertVisible: "Room Objects"
+
+# Success!
+- takeScreenshot: "image-word-match-test-completed"

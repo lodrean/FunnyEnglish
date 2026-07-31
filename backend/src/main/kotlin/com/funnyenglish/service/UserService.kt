@@ -1,9 +1,12 @@
 package com.funnyenglish.service
 
 import com.funnyenglish.dto.*
+import com.funnyenglish.entity.Progress
 import com.funnyenglish.entity.User
 import com.funnyenglish.repository.AchievementRepository
+import com.funnyenglish.repository.GuestEventRepository
 import com.funnyenglish.repository.ProgressRepository
+import com.funnyenglish.repository.TestRepository
 import com.funnyenglish.repository.UserRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -17,7 +20,9 @@ class UserService(
     private val userRepository: UserRepository,
     private val progressRepository: ProgressRepository,
     private val achievementRepository: AchievementRepository,
-    private val achievementService: AchievementService
+    private val achievementService: AchievementService,
+    private val testRepository: TestRepository,
+    private val guestEventRepository: GuestEventRepository
 ) {
     companion object {
         val LEVEL_THRESHOLDS = listOf(
@@ -124,6 +129,112 @@ class UserService(
                 lastActivityDate = today,
                 updatedAt = today
             )
+        )
+    }
+
+    @Transactional
+    @CacheEvict(value = ["userProfiles"], key = "#userId")
+    fun mergeGuestProgress(
+        userId: String,
+        request: MergeGuestProgressRequest
+    ): MergeGuestProgressResponse {
+        val user = getUserById(userId)
+        var totalXpAdded = 0
+        var mergedTests = 0
+        val allNewAchievements = mutableListOf<AchievementResponse>()
+        var levelUp: LevelUpInfo? = null
+
+        // Метрика конверсии: помечаем обезличенные события гостя как конвертированные
+        request.anonymousId?.let { anonId ->
+            runCatching { UUID.fromString(anonId) }.getOrNull()?.let { anonUUID ->
+                guestEventRepository.markConverted(anonUUID, user.id)
+            }
+        }
+
+        for (guestProgress in request.testProgress) {
+            val testUUID = UUID.fromString(guestProgress.testId)
+            val test = testRepository.findById(testUUID).orElse(null) ?: continue
+
+            // Security validation
+            if (guestProgress.score > guestProgress.maxScore || guestProgress.maxScore <= 0) {
+                continue
+            }
+
+            val existingProgress = progressRepository.findByUserIdAndTestId(user.id, testUUID)
+
+            val isNewBestScore = existingProgress == null || guestProgress.score > existingProgress.bestScore
+
+            if (!isNewBestScore) {
+                // No improvement, skip
+                continue
+            }
+
+            val percentage = guestProgress.maxScore.let {
+                if (it > 0) (guestProgress.score * 100) / it else 0
+            }
+            val stars = when {
+                percentage >= 95 -> 3
+                percentage >= 80 -> 2
+                percentage >= 60 -> 1
+                else -> 0
+            }
+
+            val progress = if (existingProgress != null) {
+                existingProgress.copy(
+                    score = guestProgress.score,
+                    maxScore = guestProgress.maxScore,
+                    stars = maxOf(existingProgress.stars, stars),
+                    attemptsCount = existingProgress.attemptsCount + 1,
+                    bestScore = maxOf(existingProgress.bestScore, guestProgress.score),
+                    timeSpentSeconds = guestProgress.timeSpentSeconds,
+                    lastAttemptAt = Instant.now()
+                )
+            } else {
+                Progress(
+                    user = user,
+                    test = test,
+                    score = guestProgress.score,
+                    maxScore = guestProgress.maxScore,
+                    stars = stars,
+                    bestScore = guestProgress.score,
+                    timeSpentSeconds = guestProgress.timeSpentSeconds
+                )
+            }
+
+            progressRepository.save(progress)
+            mergedTests++
+
+            // Calculate XP for this merge
+            val pointsEarned = if (existingProgress == null) {
+                test.pointsReward + (stars * 5)
+            } else {
+                // Only award difference for improvement
+                val oldXp = test.pointsReward + (existingProgress.stars * 5)
+                val newXp = test.pointsReward + (stars * 5)
+                maxOf(0, newXp - oldXp)
+            }
+
+            totalXpAdded += pointsEarned
+
+            // Check achievements for this test
+            val newAchievements = achievementService.checkAndAwardAchievements(userId, percentage, stars)
+            allNewAchievements.addAll(newAchievements)
+        }
+
+        if (totalXpAdded > 0) {
+            val (updatedUser, userLevelUp) = addPoints(userId, totalXpAdded)
+            levelUp = userLevelUp
+        }
+
+        if (mergedTests > 0) {
+            updateStreak(userId)
+        }
+
+        return MergeGuestProgressResponse(
+            mergedTests = mergedTests,
+            totalXpAdded = totalXpAdded,
+            newAchievements = allNewAchievements.distinctBy { it.id },
+            levelUp = levelUp
         )
     }
 

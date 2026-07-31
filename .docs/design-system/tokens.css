@@ -1,0 +1,133 @@
+/* FunnyEnglish Speaking Trainer — Design Tokens (Playful Coach, Variant B)
+   Источник: tokens.json (W3C DTCG draft). Одна палитра — два таргета (Compose + MUI).
+   v1.1.0 · 2026-07-31: выбран вариант B владельцем (презентация presentation.html, слайд 5). */
+
+:root {
+  /* Brand */
+  --color-primary: #5B8DEF;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #DDE8FD;
+  --color-on-primary-container: #1A2F5E;
+  --color-secondary: #9B7EDE;
+  --color-on-secondary: #FFFFFF;
+  --color-secondary-container: #E5DCFF;
+  --color-on-secondary-container: #5B3FA8;
+  --color-tertiary: #006C4C;
+  --color-on-tertiary: #FFFFFF;
+
+  /* Semantic */
+  --color-record: #FF9F6B;
+  --color-record-active: #FFB27D;
+  --color-record-shadow: #D97238;
+  --color-waveform-playback: #5B8DEF;
+  --color-success: #43A047;
+  --color-warning: #FB8C00;
+  --color-error: #E53935;
+  --color-on-error: #FFFFFF;
+
+  /* Timer levels */
+  --color-timer-80: #5B8DEF;
+  --color-timer-50: #9B7EDE;
+  --color-timer-30: #FF9F6B;
+
+  /* Status */
+  --color-status-new: #FB8C00;
+  --color-status-new-container: #FFE0B2;
+  --color-status-reviewed: #43A047;
+  --color-status-reviewed-container: #C8E6C9;
+
+  /* Neutral (light periwinkle) */
+  --color-background: #EEF3FF;
+  --color-surface: #FFFFFF;
+  --color-surface-warm: #E5DCFF;
+  --color-surface-card: #FFFFFF;
+  --color-surface-variant: #D8E2FA;
+  --color-outline: #B9C7EE;
+  --color-text: #2D3561;
+  --color-text-muted: #6E76A8;
+  --color-scrim-subtitle: rgba(0, 0, 0, 0.7);
+  --color-scrim-video-controls: rgba(0, 0, 0, 0.5);
+
+  /* Typography */
+  --font-brand: Nunito, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --text-label-small: 12px;
+  --text-body-small: 14px;
+  --text-body-medium: 16px;
+  --text-title-medium: 20px;
+  --text-question: 25px;
+  --text-headline-small: 31px;
+  --text-timer: 64px;
+  --text-subtitle: 17px;
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Spacing (4dp grid) */
+  --space-xs: 4px;
+  --space-s: 8px;
+  --space-m: 12px;
+  --space-l: 16px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+
+  /* Radius */
+  --radius-button: 16px;
+  --radius-card: 22px;
+  --radius-card-large: 26px;
+  --radius-sheet: 28px;
+  --radius-chip: 12px;
+  --radius-recorder: 22px;   /* squircle кнопки записи — НЕ круг */
+  --radius-full: 999px;
+
+  /* Size */
+  --size-touch: 48px;
+  --size-recorder: 72px;
+  --size-recorder-small: 56px;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px rgba(45, 53, 97, 0.06), 0 2px 8px rgba(45, 53, 97, 0.05);
+  --shadow-fab: 0 4px 0 rgba(217, 114, 56, 0.55);  /* «оттопыренная» жёсткая тень; :active → 0 1px 0 */
+  --shadow-sheet: 0 -4px 24px rgba(45, 53, 97, 0.12);
+  --shadow-focus: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);  /* игровой overshoot для ✅ и появления кнопок */
+  --duration-fast: 150ms;
+  --duration-medium: 300ms;
+  --duration-slow: 500ms;
+  --duration-rec-pulse: 1600ms;
+}
+
+[data-theme="dark"] {
+  --color-background: #161A2E;
+  --color-surface: #1F2440;
+  --color-surface-warm: #252B4A;
+  --color-surface-card: #252B4A;
+  --color-surface-variant: #2B3152;
+  --color-text: #E8EAF6;
+  --color-text-muted: #9AA0C4;
+  --color-primary: #8FB3F5;
+  --color-secondary: #B79EED;
+  --color-record: #FFB27D;
+  --color-outline: #3D4568;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-focus: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
+}
+
+/* Tabular numerals — таймер и длительности не прыгают по ширине */
+.tnum {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

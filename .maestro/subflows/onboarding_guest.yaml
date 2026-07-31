@@ -1,0 +1,21 @@
+# Subflow: первый запуск приложения — проходим онбординг (2 слайда)
+# и входим в гостевом режиме. Вызывать через runFlow+when после launchApp.
+appId: com.funnyenglish.app
+---
+- tapOn: "Далее"
+- waitForAnimationToEnd
+- tapOn: "Далее"
+- waitForAnimationToEnd
+- tapOn: "Продолжить как гость"
+
+# Тап иногда проглатывается во время перекомпоновки экрана выбора режима —
+# если остались на «Как начнём?», повторяем тап.
+- runFlow:
+    when:
+      visible: "Как начнём?"
+    commands:
+      - tapOn: "Продолжить как гость"
+
+- extendedWaitUntil:
+    notVisible: "Как начнём?"
+    timeout: 10000

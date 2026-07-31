@@ -1,0 +1,21 @@
+# Maestro Configuration
+# See: https://maestro.mobile.dev/cli/configuration
+
+flows:
+  - "flows/*.yaml"
+
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - login
+    - complete_test
+
+appStartup:
+  timeout: 30000
+
+debug:
+  output: maestro-debug
+  
+reporters:
+  - junit
+  - html

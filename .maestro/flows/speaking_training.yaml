@@ -1,0 +1,69 @@
+# Flow: гость — полный путь Library → Topics → Video → Questions → Training (спека §10.2)
+# Требует: docker-стек с seed-контентом («Разговорный английский» / «Знакомство»).
+# Запись на эмуляторе — виртуальный микрофон, permissions выдаются при запуске.
+
+appId: com.funnyenglish.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      android.permission.RECORD_AUDIO: allow
+
+# Онбординг → гость
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+# Library — стартовый экран
+- extendedWaitUntil:
+    visible: "Разговорный английский"
+    timeout: 20000
+- assertVisible: "Библиотека"
+
+# Topics
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- tapOn: "Знакомство"
+
+# Bottom-sheet выбора субтитров
+- assertVisible: "Без субтитров"
+- assertVisible: "С субтитрами"
+- tapOn: "Без субтитров"
+
+# Video — CTA «К вопросам» доступен всегда (видео может не грузиться с эмулятора — не критично)
+- extendedWaitUntil:
+    visible: "Перейти к вопросам"
+    timeout: 15000
+- tapOn: "Перейти к вопросам"
+
+# Questions — весь список вопросов
+- extendedWaitUntil:
+    visible: "What is your name?"
+    timeout: 15000
+- assertVisible: "Where are you from?"
+- tapOn: "Тренировка · 3 попытки"
+
+# Training — уровень 1, лимит 80 сек, одна запись на все вопросы
+- extendedWaitUntil:
+    visible: "Уровень 1 · 80 сек"
+    timeout: 15000
+- assertVisible: "Ответь на все вопросы одним голосовым сообщением"
+
+# Запись: старт → ~3 сек по таймеру (1:20 → 1:17) → стоп (досрочный стоп засчитывается)
+- tapOn: "Запись"
+- extendedWaitUntil:
+    visible: "1:17"
+    timeout: 15000
+- tapOn: "Стоп"
+
+# Попытка сохранена, ✅ автоматически
+- extendedWaitUntil:
+    visible: "Попытка 1"
+    timeout: 10000
+- assertVisible: "Твои попытки"
+
+# «Назад» → Questions → «назад» → Topics
+- assertVisible: "Уровень 2 · 50 сек"

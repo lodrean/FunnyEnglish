@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.funnyenglish.shared.api.FunnyEnglishApi
 import com.funnyenglish.shared.model.Achievement
+import com.funnyenglish.shared.model.GuestSession
 import com.funnyenglish.shared.model.ProgressSummary
 import com.funnyenglish.shared.model.UserProfile
+import com.funnyenglish.shared.repository.GuestProgressRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +17,7 @@ data class ProfileState(
     val isLoading: Boolean = false,
     val userProfile: UserProfile? = null,
     val progressSummary: ProgressSummary? = null,
+    val guestSession: GuestSession? = null,
     val error: String? = null
 )
 
@@ -25,7 +28,8 @@ data class AchievementsState(
 )
 
 class ProfileViewModel(
-    private val api: FunnyEnglishApi
+    private val api: FunnyEnglishApi,
+    private val guestRepo: GuestProgressRepository
 ) : ViewModel() {
 
     private val _profileState = MutableStateFlow(ProfileState())
@@ -36,7 +40,11 @@ class ProfileViewModel(
 
     fun loadProfile() {
         viewModelScope.launch {
-            _profileState.value = _profileState.value.copy(isLoading = true, error = null)
+            _profileState.value = _profileState.value.copy(
+                isLoading = true,
+                error = null,
+                guestSession = guestRepo.getSession()
+            )
 
             api.getUserProfile()
                 .onSuccess { profile ->

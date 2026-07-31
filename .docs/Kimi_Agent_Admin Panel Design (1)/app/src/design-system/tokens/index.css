@@ -1,0 +1,10 @@
+/* ============================================
+   FUNNYENGLISH DESIGN SYSTEM - TOKENS
+   ============================================
+   Import all design tokens
+   ============================================ */
+
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
+@import './animations.css';

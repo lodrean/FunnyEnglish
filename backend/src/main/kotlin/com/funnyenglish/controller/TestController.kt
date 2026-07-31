@@ -26,6 +26,11 @@ class TestController(
     fun getTestById(@PathVariable testId: String): ResponseEntity<TestDetailResponse> {
         return ResponseEntity.ok(testService.getTestById(testId))
     }
+    
+    @GetMapping("/{testId}/details")
+    fun getTestWithDetails(@PathVariable testId: String): ResponseEntity<TestDetailResponse> {
+        return ResponseEntity.ok(testService.getTestById(testId))
+    }
 
     @PostMapping("/{testId}/submit")
     fun submitTest(

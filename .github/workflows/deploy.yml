@@ -21,6 +21,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Dockerfile.backend uses the pre-built JAR approach — build it first
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build backend JAR
+        run: ./gradlew backend:bootJar -x test
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -63,7 +73,8 @@ jobs:
       - name: Build and push admin
         uses: docker/build-push-action@v5
         with:
-          context: admin-web
+          # Dockerfile.admin references admin-web/ and docker/ paths — context must be repo root
+          context: .
           file: docker/Dockerfile.admin
           push: true
           tags: ${{ steps.meta-admin.outputs.tags }}
@@ -103,4 +114,5 @@ jobs:
       - name: Health check
         run: |
           sleep 30
-          curl -f ${{ secrets.SERVER_URL }}/actuator/health || exit 1
+          # context-path is /api — actuator lives under it
+          curl -f ${{ secrets.SERVER_URL }}/api/actuator/health || exit 1

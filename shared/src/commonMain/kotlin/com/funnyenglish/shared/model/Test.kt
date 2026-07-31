@@ -91,6 +91,9 @@ enum class QuestionType {
 
 @Serializable
 data class ImageWordMatchContent(
+    val id: String? = null,
+    val type: String? = null,
+    val points: Int? = null,
     val imageUrl: String,
     val instruction: String,
     val hotspots: List<HotspotData>,
@@ -105,7 +108,7 @@ data class HotspotData(
     val width: Float,
     val height: Float,
     val shape: HotspotShape = HotspotShape.RECTANGLE,
-    val wordId: String
+    val wordId: String? = null  // Not sent to client for security (correct answer)
 ) {
     fun contains(rx: Float, ry: Float): Boolean = when (shape) {
         HotspotShape.RECTANGLE -> rx >= x && rx <= x + width && ry >= y && ry <= y + height

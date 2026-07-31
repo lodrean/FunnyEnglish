@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funnyenglish.app.theme.FunnyColors
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun SplashScreen(
@@ -32,8 +32,8 @@ fun SplashScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        FunnyColors.Primary.copy(alpha = 0.95f),
-                        FunnyColors.AccentPurple.copy(alpha = 0.95f)
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.95f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.95f)
                     )
                 )
             ),

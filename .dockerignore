@@ -6,6 +6,9 @@
 **/build
 **/.gradle
 
+# Allow backend JAR for Docker build
+!backend/build/libs/*.jar
+
 # IDE
 .idea
 *.iml

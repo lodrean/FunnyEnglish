@@ -23,7 +23,7 @@ data class SettingsState(
     val hapticsEnabled: Boolean = true,
     val autoPlayAudio: Boolean = false,
     val language: AppLanguage = AppLanguage.RU,
-    val themeMode: AppThemeMode = AppThemeMode.SYSTEM
+    val themeMode: AppThemeMode = AppThemeMode.DARK  // Default to dark theme as per design system
 )
 
 class SettingsViewModel(

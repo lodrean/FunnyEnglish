@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,8 @@ import coil3.compose.SubcomposeAsyncImage
 import com.funnyenglish.app.components.LoadingIndicator
 import com.funnyenglish.app.components.questions.ImageWordMatchQuestion
 import com.funnyenglish.designsystem.tokens.*
+import com.funnyenglish.designsystem.theme.funnyColors
+import com.funnyenglish.designsystem.layout.safeContentPadding
 import com.funnyenglish.designsystem.components.buttons.FunnyButton
 import com.funnyenglish.designsystem.components.buttons.FunnyButtonSize
 import com.funnyenglish.designsystem.components.buttons.FunnyButtonType
@@ -52,6 +55,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TestPlayScreen(
     state: TestPlayState,
+    isGuest: Boolean = false,
     onBack: () -> Unit,
     onSelectAnswer: (String, String) -> Unit,
     onSetDragDropMatch: (String, String, String) -> Unit,
@@ -82,7 +86,7 @@ fun TestPlayScreen(
                     text = "Ошибка",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ErrorLight
+                    color = MaterialTheme.colorScheme.error
                 )
                 Text(
                     text = state.error ?: "Неизвестная ошибка",
@@ -105,6 +109,7 @@ fun TestPlayScreen(
         TestResultScreen(
             result = state.result,
             testTitle = test.title,
+            isGuest = isGuest,
             onContinue = onShowResult,
             onRetry = onShowResult
         )
@@ -146,11 +151,14 @@ fun TestPlayScreen(
     val currentQuestion = test.questions.getOrNull(safeQuestionIndex)
     val isLastQuestion = safeQuestionIndex == totalQuestions - 1
     val currentAnswer = currentQuestion?.let { state.answers[it.id] }
+    val allQuestionsAnswered = state.answers.size >= totalQuestions
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .safeContentPadding()
+            .testTag("test_play_screen")
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -235,13 +243,15 @@ fun TestPlayScreen(
             if (isLastQuestion) {
                 Button(
                     onClick = onSubmit,
-                    enabled = !state.isSubmitting,
+                    enabled = !state.isSubmitting && allQuestionsAnswered,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .testTag("submit_button"),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = AchievementPurple
+                        containerColor = MaterialTheme.funnyColors.achievement,
+                        disabledContainerColor = MaterialTheme.funnyColors.achievement.copy(alpha = 0.5f)
                     )
                 ) {
                     if (state.isSubmitting) {
@@ -251,13 +261,20 @@ fun TestPlayScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
+                        val buttonText = if (allQuestionsAnswered) {
+                            "Завершить тест"
+                        } else {
+                            "Ответьте на все вопросы (${state.answers.size}/$totalQuestions)"
+                        }
                         Text(
-                            text = "Завершить тест",
+                            text = buttonText,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.Check, contentDescription = null)
+                        if (allQuestionsAnswered) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(Icons.Default.Check, contentDescription = null)
+                        }
                     }
                 }
             } else {
@@ -269,7 +286,7 @@ fun TestPlayScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryLight
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
@@ -319,13 +336,14 @@ private fun TestTopBar(
             Text(
                 text = title,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.testTag("question_number")
             )
 
             // Timer
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = PrimaryLight.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -342,7 +360,7 @@ private fun TestTopBar(
                         text = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PrimaryLight
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -373,7 +391,7 @@ private fun TestTopBar(
                 .fillMaxWidth()
                 .height(10.dp)
                 .clip(RoundedCornerShape(5.dp)),
-            color = PrimaryLight,
+            color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
@@ -403,8 +421,8 @@ private fun QuestionProgressDots(
                     .clip(CircleShape)
                     .background(
                         when {
-                            isCurrent -> PrimaryLight
-                            isAnswered -> SuccessLight.copy(alpha = 0.2f)
+                            isCurrent -> MaterialTheme.colorScheme.primary
+                            isAnswered -> MaterialTheme.funnyColors.success.copy(alpha = 0.2f)
                             else -> MaterialTheme.colorScheme.surface
                         }
                     )
@@ -412,7 +430,7 @@ private fun QuestionProgressDots(
                         width = if (isCurrent) 0.dp else 1.dp,
                         color = when {
                             isCurrent -> Color.Transparent
-                            isAnswered -> SuccessLight
+                            isAnswered -> MaterialTheme.funnyColors.success
                             else -> MaterialTheme.colorScheme.outline
                         },
                         shape = CircleShape
@@ -425,7 +443,7 @@ private fun QuestionProgressDots(
                         Icons.Default.Check,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = SuccessLight
+                        tint = MaterialTheme.funnyColors.success
                     )
                 } else {
                     Text(
@@ -468,7 +486,8 @@ private fun QuestionContent(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 8.dp)
+                .testTag("question_text"),
             lineHeight = 30.sp
         )
 
@@ -630,18 +649,18 @@ private fun AudioPlayerButton(url: String) {
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = PrimaryLight.copy(alpha = 0.1f)
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         )
     ) {
         Icon(
             imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
             contentDescription = if (isPlaying) "Пауза" else "Воспроизвести",
-            tint = PrimaryLight
+            tint = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = if (isPlaying) "Пауза" else "Послушать",
-            color = PrimaryLight,
+            color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
         )
     }
@@ -682,7 +701,7 @@ private fun AnswerOptions(
                 border = if (isSelected)
                     CardDefaults.outlinedCardBorder().copy(
                         width = 2.dp,
-                        brush = Brush.linearGradient(listOf(PrimaryLight, PrimaryLight))
+                        brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary))
                     )
                 else
                     CardDefaults.outlinedCardBorder().copy(
@@ -704,7 +723,7 @@ private fun AnswerOptions(
                         text = displayText,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) PrimaryLight else MaterialTheme.colorScheme.onBackground
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -752,7 +771,7 @@ private fun ImageAnswerOptions(
                 border = if (isSelected)
                     CardDefaults.outlinedCardBorder().copy(
                         width = 3.dp,
-                        brush = Brush.linearGradient(listOf(PrimaryLight, PrimaryLight))
+                        brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary))
                     )
                 else
                     CardDefaults.outlinedCardBorder().copy(
@@ -887,12 +906,12 @@ private fun DragDropQuestion(
                         .clickable { expanded = true },
                     shape = RoundedCornerShape(12.dp),
                     color = if (selectedTarget != null)
-                        SuccessLight.copy(alpha = 0.1f)
+                        MaterialTheme.funnyColors.success.copy(alpha = 0.1f)
                     else
                         MaterialTheme.colorScheme.surface,
                     border = if (selectedTarget != null)
                         CardDefaults.outlinedCardBorder().copy(
-                            brush = Brush.linearGradient(listOf(SuccessLight, SuccessLight))
+                            brush = Brush.linearGradient(listOf(MaterialTheme.funnyColors.success, MaterialTheme.funnyColors.success))
                         )
                     else null
                 ) {
@@ -927,6 +946,7 @@ private fun DragDropQuestion(
 private fun TestResultScreen(
     result: SubmitTestResult,
     testTitle: String,
+    isGuest: Boolean,
     onContinue: () -> Unit,
     onRetry: () -> Unit
 ) {
@@ -934,7 +954,8 @@ private fun TestResultScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .padding(24.dp)
+            .testTag("results_view"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -946,13 +967,13 @@ private fun TestResultScreen(
             Icon(
                 Icons.Default.Star,
                 contentDescription = null,
-                tint = if (result.stars >= 1) XPGold else MaterialTheme.colorScheme.surfaceVariant,
+                tint = if (result.stars >= 1) MaterialTheme.funnyColors.xp else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(56.dp)
             )
             Icon(
                 Icons.Default.Star,
                 contentDescription = null,
-                tint = if (result.stars >= 2) XPGold else MaterialTheme.colorScheme.surfaceVariant,
+                tint = if (result.stars >= 2) MaterialTheme.funnyColors.xp else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier
                     .size(72.dp)
                     .offset(y = (-8).dp)
@@ -960,7 +981,7 @@ private fun TestResultScreen(
             Icon(
                 Icons.Default.Star,
                 contentDescription = null,
-                tint = if (result.stars >= 3) XPGold else MaterialTheme.colorScheme.surfaceVariant,
+                tint = if (result.stars >= 3) MaterialTheme.funnyColors.xp else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(56.dp)
             )
         }
@@ -977,9 +998,9 @@ private fun TestResultScreen(
             fontSize = 32.sp,
             fontWeight = FontWeight.ExtraBold,
             color = when {
-                result.percentage >= 80 -> SuccessLight
-                result.percentage >= 60 -> SecondaryLight
-                else -> ErrorLight
+                result.percentage >= 80 -> MaterialTheme.funnyColors.success
+                result.percentage >= 60 -> MaterialTheme.colorScheme.secondary
+                else -> MaterialTheme.colorScheme.error
             }
         )
 
@@ -990,6 +1011,35 @@ private fun TestResultScreen(
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        if (isGuest) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Войдите, чтобы сохранить прогресс",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "В гостевом режиме результаты хранятся только на этом устройстве",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Score Card
         Card(
@@ -1010,7 +1060,7 @@ private fun TestResultScreen(
                     text = "${result.percentage}%",
                     fontSize = 56.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = PrimaryLight
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Surface(
@@ -1024,7 +1074,7 @@ private fun TestResultScreen(
                         Icon(
                             Icons.Default.Check,
                             contentDescription = null,
-                            tint = SuccessLight,
+                            tint = MaterialTheme.funnyColors.success,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -1043,7 +1093,7 @@ private fun TestResultScreen(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = PrimaryLight.copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -1052,14 +1102,14 @@ private fun TestResultScreen(
                             Icon(
                                 Icons.Default.Star,
                                 contentDescription = null,
-                                tint = XPGold,
+                                tint = MaterialTheme.funnyColors.xp,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "+${result.pointsEarned} XP",
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryLight
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -1067,13 +1117,13 @@ private fun TestResultScreen(
                     if (result.isNewBestScore) {
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = SecondaryLight.copy(alpha = 0.1f)
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
                         ) {
                             Text(
                                 text = "🏆 Рекорд!",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 fontWeight = FontWeight.Bold,
-                                color = SecondaryLight
+                                color = MaterialTheme.colorScheme.secondary
                             )
                         }
                     }
@@ -1087,7 +1137,7 @@ private fun TestResultScreen(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = SecondaryLight.copy(alpha = 0.1f)
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
                 )
             ) {
                 Row(
@@ -1156,7 +1206,7 @@ private fun TestResultScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = PrimaryLight
+                containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
             Text(
@@ -1175,7 +1225,7 @@ private fun TestResultScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = PrimaryLight
+                contentColor = MaterialTheme.colorScheme.primary
             )
         ) {
             Text(

@@ -42,16 +42,13 @@ This project follows the AIDD methodology where LLM acts as a team of specialize
 
 ## Project Overview
 
-FunnyEnglish is a cross-platform English learning application with gamification.
+FunnyEnglish — Speaking-тренажёр (пивот 2026-07-30): видео-топики + голосовые ответы. Актуальный контекст — `memory.md` и `AGENTS.md`.
 
 ### Current Status
-- **Status:** MVP Complete ✅ | UX Modernization Complete ✅
-- **E2E Tests:** 15/15 passing (100%) - [Details](docs/testing/TESTING_STATUS.md)
-- **Integration Tests:** 6/7 passing (85.7%)
-- **Module Architecture:** 7 feature modules migrated ✅
-- **Docker Stack:** All services healthy ✅
-- **Full Report:** [PROJECT_STATUS_REPORT.md](docs/PROJECT_STATUS_REPORT.md)
-- **UX Report:** [UX_AUDIT_REPORT.md](docs/UX_AUDIT_REPORT.md)
+- **Status:** Пивот в Speaking-тренажёр, эпик bd `FunnyEnglish-8tg` (реализация не начата, фазы в `docs/plan/SPEAKING-TRAINER-001.md`)
+- **Спеки (источник истины, SDD):** `docs/prd/SPEAKING-TRAINER-001.prd.md`, `docs/SPEAKING_TRAINER_SPEC_PART{1,2,3}.md`; версионируются и ревьюятся (AGENTS.md правило 5), изменения — через OpenSpec (`openspec/`)
+- **Дизайн-система:** Playful Coach v1.1 (`.docs/design-system/tokens.json`)
+- Устаревшие отчёты и статусы удалены 2026-07-31; история тестовых прогонов — в `memory.md` §5
 
 ### Tech Stack
 - **Backend**: Spring Boot 3 + Kotlin + PostgreSQL

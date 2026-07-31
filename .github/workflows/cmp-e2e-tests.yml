@@ -1,0 +1,91 @@
+name: CMP E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'composeApp/**'
+      - 'shared/**'
+      - 'design/**'
+      - 'e2e-cmp/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'composeApp/**'
+      - 'shared/**'
+      - 'design/**'
+      - 'e2e-cmp/**'
+
+jobs:
+  cmp-e2e-tests:
+    name: CMP WASM E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: wrapper
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: e2e-cmp/package-lock.json
+        
+    - name: Install dependencies
+      run: |
+        cd e2e-cmp
+        npm ci
+        
+    - name: Install Playwright browsers
+      run: |
+        cd e2e-cmp
+        npx playwright install --with-deps chromium
+        
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run CMP E2E tests
+      run: |
+        cd e2e-cmp
+        npx playwright test --reporter=line
+      env:
+        CI: true
+        GRADLE_OPTS: "-Xmx4g -Dorg.gradle.daemon=false"
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: cmp-e2e-results
+        path: |
+          e2e-cmp/playwright-report/
+          e2e-cmp/test-results/
+        retention-days: 7
+        
+    - name: Upload screenshots
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: cmp-screenshots
+        path: e2e-cmp/test-results/*.png
+        retention-days: 7

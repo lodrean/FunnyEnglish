@@ -5,23 +5,26 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,30 +33,47 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funnyenglish.app.components.ErrorMessage
 import com.funnyenglish.app.components.LoadingIndicator
-import com.funnyenglish.app.components.ProgressBar
-import com.funnyenglish.app.components.StarsDisplay
-import com.funnyenglish.app.theme.FunnyColors
-import com.funnyenglish.app.theme.FunnyTheme
 import com.funnyenglish.app.viewmodel.ProfileState
+import com.funnyenglish.designsystem.components.cards.FunnyCard
+import com.funnyenglish.designsystem.components.cards.FunnyCardType
+import com.funnyenglish.designsystem.components.gamification.FunnyLevelProgress
+import com.funnyenglish.designsystem.components.gamification.FunnyStreakWidget
+import com.funnyenglish.designsystem.components.gamification.FunnyXPCounter
+import com.funnyenglish.designsystem.tokens.SpaceMd
+import com.funnyenglish.designsystem.tokens.SpaceSm
 import com.funnyenglish.shared.model.CategoryProgress
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     state: ProfileState,
+    isGuest: Boolean = false,
     onLoad: () -> Unit,
     onBack: () -> Unit,
     onSettingsClick: () -> Unit,
-    onAchievementsClick: () -> Unit
+    onAchievementsClick: () -> Unit,
+    onLoginClick: (() -> Unit)? = null,
+    onMessagesClick: () -> Unit = {},
+    unreadMessages: Int = 0
 ) {
-    val colors = FunnyTheme.colors
+    if (!isGuest) {
+        LaunchedEffect(Unit) { onLoad() }
+    }
 
-    LaunchedEffect(Unit) { onLoad() }
+    if (isGuest) {
+        GuestProfileStub(
+            guestSession = state.guestSession,
+            onBack = onBack,
+            onLoginClick = onLoginClick
+        )
+        return
+    }
 
     if (state.isLoading && state.userProfile == null) {
         LoadingIndicator()
@@ -71,12 +91,13 @@ fun ProfileScreen(
     val profile = state.userProfile ?: return
 
     Scaffold(
-        containerColor = colors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Profile",
+                        text = "Профиль",
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -86,7 +107,7 @@ fun ProfileScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -94,88 +115,130 @@ fun ProfileScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .consumeWindowInsets(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                horizontal = 16.dp,
-                vertical = 12.dp
+                horizontal = SpaceMd,
+                vertical = SpaceSm
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(SpaceMd)
         ) {
+            // User Info Card with Design System
             item {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = FunnyColors.SurfaceVariant)
+                FunnyCard(
+                    type = FunnyCardType.ELEVATED,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(SpaceMd)) {
                         Text(
                             text = profile.user.displayName,
-                            fontSize = 20.sp,
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = profile.user.email,
-                            fontSize = 12.sp,
-                            color = FunnyColors.TextSecondary
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(SpaceMd))
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        // Stats Row with Design System components
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(SpaceSm)
                         ) {
-                            LevelBadgeText(profile.user.level)
-                            PointsBadgeText(profile.user.totalPoints)
-                            StreakBadgeText(profile.user.currentStreak)
+                            // Level Progress
+                            FunnyLevelProgress(
+                                currentLevel = profile.user.level,
+                                currentXp = profile.user.totalPoints,
+                                xpForNextLevel = profile.user.totalPoints + profile.stats.pointsToNextLevel,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            
+                            Spacer(modifier = Modifier.height(SpaceSm))
+                            
+                            // Streak and XP Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                FunnyStreakWidget(
+                                    streak = profile.user.currentStreak,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                
+                                Spacer(modifier = Modifier.width(SpaceSm))
+                                
+                                FunnyXPCounter(
+                                    currentXp = profile.user.totalPoints,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
                 }
             }
 
+            // Statistics Card
             item {
-                Card(
-                    shape = RoundedCornerShape(16.dp)
+                FunnyCard(
+                    type = FunnyCardType.FILLED,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(SpaceMd)) {
                         Text(
                             text = "Статистика",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(SpaceMd))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            StatItem(value = profile.stats.testsCompleted.toString(), label = "Тестов")
-                            StatItem(value = profile.stats.totalStars.toString(), label = "Звёзд")
-                            StatItem(value = profile.stats.perfectScores.toString(), label = "Идеальных")
+                            StatItem(
+                                value = profile.stats.testsCompleted.toString(),
+                                label = "Тестов"
+                            )
+                            StatItem(
+                                value = profile.stats.totalStars.toString(),
+                                label = "Звёзд"
+                            )
+                            StatItem(
+                                value = profile.stats.perfectScores.toString(),
+                                label = "Идеальных"
+                            )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(SpaceSm))
                         Text(
-                            text = "До следующего уровня: ${profile.stats.pointsToNextLevel}",
-                            fontSize = 12.sp,
-                            color = FunnyColors.TextSecondary
+                            text = "До следующего уровня: ${profile.stats.pointsToNextLevel} XP",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
+            // Category Progress Card
             item {
-                Card(
-                    shape = RoundedCornerShape(16.dp)
+                FunnyCard(
+                    type = FunnyCardType.FILLED,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(SpaceMd)) {
                         Text(
                             text = "Прогресс по категориям",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(SpaceSm))
                         val categories = state.progressSummary?.categoriesProgress ?: emptyList()
                         if (categories.isEmpty()) {
                             Text(
                                 text = "Нет данных",
-                                fontSize = 12.sp,
-                                color = FunnyColors.TextSecondary
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
                             CategoryProgressList(categories = categories)
@@ -184,17 +247,20 @@ fun ProfileScreen(
                 }
             }
 
+            // Achievements Card
             if (profile.achievements.isNotEmpty()) {
                 item {
-                    Card(
-                        shape = RoundedCornerShape(16.dp)
+                    FunnyCard(
+                        type = FunnyCardType.FILLED,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(SpaceMd)) {
                             Text(
                                 text = "Достижения",
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(SpaceSm))
                             profile.achievements.take(5).forEach { achievement ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -203,27 +269,35 @@ fun ProfileScreen(
                                     Icon(
                                         Icons.Default.Star,
                                         contentDescription = null,
-                                        tint = FunnyColors.StarFilled
+                                        tint = if (achievement.earned) 
+                                            MaterialTheme.colorScheme.primary 
+                                        else 
+                                            MaterialTheme.colorScheme.outline
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(SpaceSm))
                                     Column {
-                                        Text(achievement.name, fontWeight = FontWeight.Medium)
+                                        Text(
+                                            achievement.name,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium
+                                        )
                                         Text(
                                             achievement.description,
-                                            fontSize = 12.sp,
-                                            color = FunnyColors.TextSecondary
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
                             }
                             if (profile.achievements.size > 5) {
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(SpaceSm))
                                 Text(
-                                    text = "Показать все",
-                                    color = FunnyColors.Primary,
+                                    text = "Показать все (${profile.achievements.size})",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium,
                                     modifier = Modifier
                                         .align(Alignment.End)
-                                        .padding(top = 4.dp)
                                         .clickable { onAchievementsClick() },
                                 )
                             }
@@ -232,32 +306,77 @@ fun ProfileScreen(
                 }
             }
 
+            // Messages Card (inbox от учителя) — только для авторизованных
+            if (!isGuest) {
+                item {
+                    FunnyCard(
+                        type = FunnyCardType.OUTLINED,
+                        onClick = onMessagesClick,
+                        modifier = Modifier.fillMaxWidth().testTag("messages_card")
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SpaceMd),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.MailOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(SpaceSm))
+                            Text(
+                                text = "Сообщения",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (unreadMessages > 0) {
+                                Badge {
+                                    Text(unreadMessages.toString())
+                                }
+                                Spacer(modifier = Modifier.width(SpaceSm))
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Settings Card
             item {
-                Card(
-                    shape = RoundedCornerShape(16.dp)
+                FunnyCard(
+                    type = FunnyCardType.OUTLINED,
+                    onClick = onSettingsClick,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onSettingsClick() }
-                            .padding(16.dp),
+                            .padding(SpaceMd),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Default.Settings,
                             contentDescription = null,
-                            tint = FunnyColors.Primary
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(SpaceSm))
                         Text(
                             text = "Настройки",
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.weight(1f)
                         )
-                        Spacer(modifier = Modifier.weight(1f))
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = FunnyColors.TextSecondary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -268,36 +387,41 @@ fun ProfileScreen(
 
 @Composable
 private fun CategoryProgressList(categories: List<CategoryProgress>) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SpaceMd)) {
         categories.forEach { category ->
             Column {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = category.categoryName, fontWeight = FontWeight.Medium)
+                    Text(
+                        text = category.categoryName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
                     Text(
                         text = "${category.completedCount}/${category.testsCount}",
-                        fontSize = 12.sp,
-                        color = FunnyColors.TextSecondary
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                ProgressBar(
-                    progress = if (category.testsCount > 0) {
-                        category.completedCount.toFloat() / category.testsCount
-                    } else {
-                        0f
+                Spacer(modifier = Modifier.height(4.dp))
+                // Progress indicator
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { 
+                        if (category.testsCount > 0) {
+                            category.completedCount.toFloat() / category.testsCount
+                        } else {
+                            0f
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    color = FunnyColors.Primary,
-                    trackColor = FunnyColors.SurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                StarsDisplay(
-                    stars = category.totalStars,
-                    maxStars = category.maxStars,
-                    size = 12
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${category.totalStars} ★ / ${category.maxStars} макс",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -309,62 +433,105 @@ private fun StatItem(value: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
-            fontSize = 20.sp,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = FunnyColors.Primary
+            color = MaterialTheme.colorScheme.primary
         )
         Text(
             text = label,
-            fontSize = 12.sp,
-            color = FunnyColors.TextSecondary
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LevelBadgeText(level: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = "Уровень",
-            fontSize = 12.sp,
-            color = FunnyColors.TextSecondary
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = level.toString(),
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
+private fun GuestProfileStub(
+    guestSession: com.funnyenglish.shared.model.GuestSession?,
+    onBack: () -> Unit,
+    onLoginClick: (() -> Unit)?
+) {
+    val testsCount = guestSession?.testProgress?.size ?: 0
+    val totalStars = guestSession?.testProgress?.sumOf { it.stars } ?: 0
+    val totalXp = guestSession?.totalXpEarned ?: 0
 
-@Composable
-private fun PointsBadgeText(points: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = "Очки",
-            fontSize = 12.sp,
-            color = FunnyColors.TextSecondary
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = points.toString(),
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Профиль",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding)
+                .padding(SpaceMd),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "👤",
+                fontSize = 64.sp
+            )
+            Spacer(modifier = Modifier.height(SpaceMd))
+            Text(
+                text = "Гостевой режим",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(SpaceSm))
+            Text(
+                text = "Войдите, чтобы сохранить прогресс в облаке",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
 
-@Composable
-private fun StreakBadgeText(streak: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = "Серия",
-            fontSize = 12.sp,
-            color = FunnyColors.TextSecondary
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = streak.toString(),
-            fontWeight = FontWeight.Bold
-        )
+            if (testsCount > 0) {
+                Spacer(modifier = Modifier.height(SpaceMd))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(SpaceMd),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        StatItem(value = testsCount.toString(), label = "Тестов")
+                        StatItem(value = totalStars.toString(), label = "Звёзд")
+                        StatItem(value = totalXp.toString(), label = "XP")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(SpaceMd))
+            onLoginClick?.let {
+                androidx.compose.material3.Button(onClick = it) {
+                    Text("Войти или зарегистрироваться")
+                }
+            }
+        }
     }
 }

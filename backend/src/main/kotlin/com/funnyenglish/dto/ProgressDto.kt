@@ -1,5 +1,6 @@
 package com.funnyenglish.dto
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.funnyenglish.entity.Progress
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
@@ -28,6 +29,10 @@ data class SubmitTestResponse(
     val percentage: Int,
     val stars: Int,
     val pointsEarned: Int,
+    // Клиентский контракт (shared SubmitTestResult): поле "newBestScore" без is-префикса.
+    // Без @JsonProperty jackson-module-kotlin сериализует как "isNewBestScore" и KMP-клиент
+    // падает с "Field 'newBestScore' is required".
+    @get:JsonProperty("newBestScore")
     val isNewBestScore: Boolean,
     val newAchievements: List<AchievementResponse>,
     val levelUp: LevelUpInfo?
@@ -78,4 +83,26 @@ fun Progress.toResponse(testTitle: String) = ProgressResponse(
     bestScore = bestScore,
     completedAt = completedAt,
     lastAttemptAt = lastAttemptAt
+)
+
+// Guest progress merge DTOs
+data class GuestTestProgressDto(
+    val testId: String,
+    val score: Int,
+    val maxScore: Int,
+    val stars: Int,
+    val timeSpentSeconds: Int? = null
+)
+
+data class MergeGuestProgressRequest(
+    val testProgress: List<GuestTestProgressDto>,
+    /** Анонимный ID гостя (guestId с устройства) — для метрики конверсии. Опционально. */
+    val anonymousId: String? = null
+)
+
+data class MergeGuestProgressResponse(
+    val mergedTests: Int,
+    val totalXpAdded: Int,
+    val newAchievements: List<AchievementResponse>,
+    val levelUp: LevelUpInfo?
 )

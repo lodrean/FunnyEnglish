@@ -13,7 +13,61 @@
       "Bash(gradle wrapper:*)",
       "Bash(curl:*)",
       "Bash(powershell -Command:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "mcp__MCP_DOCKER__mcp-find",
+      "Bash(./gradlew composeApp:compileKotlinDesktop:*)",
+      "Bash(gradlew.bat composeApp:compileKotlinDesktop --no-daemon -q)",
+      "Bash(cmd.exe /c \"gradlew.bat composeApp:compileKotlinDesktop --no-daemon -q\")",
+      "Bash(cmd.exe /c \".\\\\gradlew.bat composeApp:compileKotlinDesktop --no-daemon --stacktrace\")",
+      "Bash(\"C:\\\\Users\\\\etaba\\\\IdeaProjects\\\\#-1469218141\\\\Packages\\\\FunnyEnglish\\\\gradle-temp\\\\gradle-8.13\\\\bin\\\\gradle.bat\" -p \"C:\\\\Users\\\\etaba\\\\IdeaProjects\\\\#-1469218141\\\\Packages\\\\FunnyEnglish\" composeApp:compileKotlinDesktop --no-daemon)",
+      "Bash(\"C:\\\\Users\\\\etaba\\\\IdeaProjects\\\\#-1469218141\\\\Packages\\\\FunnyEnglish\\\\gradle-temp\\\\gradle-8.13\\\\bin\\\\gradle.bat\" -p \"C:\\\\Users\\\\etaba\\\\IdeaProjects\\\\#-1469218141\\\\Packages\\\\FunnyEnglish\" composeApp:compileDebugKotlinAndroid --no-daemon)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cmd.exe /c \".\\\\gradlew.bat compileKotlin --no-daemon -q\")",
+      "Bash(\"C:\\\\Users\\\\etaba\\\\IdeaProjects\\\\#-1469218141\\\\Packages\\\\FunnyEnglish\\\\gradle-temp\\\\gradle-8.13\\\\bin\\\\gradle.bat\" -p \"C:\\\\Users\\\\etaba\\\\IdeaProjects\\\\#-1469218141\\\\Packages\\\\FunnyEnglish\\\\backend\" compileKotlin --no-daemon)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: MVP finalization - complete features, bug fixes, documentation\n\nMobile App:\n- Add persistent token storage \\(PersistentTokenProvider\\)\n- Add bottom navigation with Home, Categories, Leaderboard, Profile\n- Add Settings screen with theme switcher \\(light/dark/system\\)\n- Add Categories and CategoryTests screens\n- Add Leaderboard screen\n- Add Splash screen\n- Fix \"Continue Learning\" button navigation\n- Add localization support \\(Strings.kt\\)\n- Add AudioPlayer for test audio playback\n\nBackend:\n- Fix JWT NullPointerException in JwtAuthenticationFilter\n- Fix race condition in AchievementService \\(single atomic save\\)\n- Add analytics projections for dashboard\n- Add sample tests migration \\(V2\\)\n\nAdmin Web:\n- Integrate DashboardPage with real API data\n- Add TanStack Query for data fetching\n- Verify TestEditorPage functionality\n- Verify UserDetailPage functionality\n- Add analytics page improvements\n\nDocumentation:\n- Add complete REST API documentation \\(docs/API.md\\)\n- Add system architecture documentation \\(docs/ARCHITECTURE.md\\)\n- Add CONTRIBUTING.md with git workflow\n- Add MIT LICENSE\n- Update README.md with full project info\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git merge:*)",
+      "WebFetch(domain:habr.com)",
+      "Bash(dir:*)",
+      "Bash(git commit:*)",
+      "Bash(./gradlew :composeApp:compileKotlinDesktop:*)",
+      "Bash(./gradlew :shared:compileKotlinDesktop:*)",
+      "Bash(./gradlew compileKotlin:*)",
+      "Bash(./gradlew :backend:compileKotlin:*)",
+      "Bash(docker logs:*)",
+      "Bash(git remote:*)",
+      "mcp__github__create_issue",
+      "Bash(git fetch:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh issue:*)",
+      "Bash(./gradlew:*)",
+      "Bash(.\\gradlew.bat:*)",
+      "Bash(gh auth:*)"
     ]
-  }
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"%CLAUDE_PROJECT_DIR%/.claude/hooks/post-tool-call.py\""
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); branch=$(git -C \"C:\\Users\\etaba\\IdeaProjects\\#-1469218141\\Packages\\FunnyEnglish\" branch --show-current 2>/dev/null || echo \"no-git\"); used=$(echo \"$input\" | jq -r '.context_window.used_percentage // empty'); if [ -n \"$used\" ]; then printf \"[%s] Context: %.1f%% used\" \"$branch\" \"$used\"; else printf \"[%s]\" \"$branch\"; fi"
+  },
+  "outputStyle": "Learning"
 }

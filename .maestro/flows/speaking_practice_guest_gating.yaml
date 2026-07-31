@@ -1,0 +1,35 @@
+# Flow: гость — Practice заблокирован, CTA ведёт на логин (спека §10.2, PRD Story 3)
+
+appId: com.funnyenglish.app
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+- extendedWaitUntil:
+    visible: "Разговорный английский"
+    timeout: 20000
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- tapOn: "Знакомство"
+
+# Пропускаем видео — сразу к вопросам
+- tapOn: "Пропустить видео — сразу к вопросам"
+
+# Questions: у гостя вместо кнопки Practice — locked CTA
+- extendedWaitUntil:
+    visible: "Практика — войти / зарегистрироваться"
+    timeout: 15000
+- assertVisible: "Тренировка · 3 попытки"
+
+# Тап по locked CTA → экран логина
+- tapOn: "Практика — войти / зарегистрироваться"
+- extendedWaitUntil:
+    visible: "С возвращением!"
+    timeout: 10000

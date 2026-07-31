@@ -36,11 +36,13 @@ interface UserRepository : JpaRepository<User, UUID> {
 
     @Query(
         value = """
-            SELECT DATE(created_at) as date, COUNT(*) as count
+            SELECT 
+                CAST(created_at AS DATE) as date,
+                COUNT(*) as count
             FROM users
             WHERE created_at >= :startDate
-            GROUP BY DATE(created_at)
-            ORDER BY DATE(created_at)
+            GROUP BY CAST(created_at AS DATE)
+            ORDER BY CAST(created_at AS DATE)
         """,
         nativeQuery = true
     )

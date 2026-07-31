@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speaking Trainer — Эталонные мокапы (Playful Coach)</title>
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-brand);
+    background: var(--color-surface-warm);
+    color: var(--color-text);
+    min-height: 100vh;
+  }
+  /* ---- Switcher ---- */
+  .switcher {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; gap: var(--space-s); justify-content: center;
+    padding: var(--space-m);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-surface-variant);
+  }
+  .switcher button {
+    font-family: var(--font-brand); font-weight: var(--weight-bold); font-size: var(--text-body-small);
+    padding: 10px 20px; border: none; border-radius: var(--radius-full);
+    background: var(--color-surface-warm); color: var(--color-text-muted);
+    cursor: pointer; transition: all var(--duration-fast) var(--ease-standard);
+  }
+  .switcher button.active { background: var(--color-primary); color: var(--color-on-primary); }
+  .switcher button:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .frame-wrap { display: none; padding: var(--space-xxl); justify-content: center; }
+  .frame-wrap.active { display: flex; }
+  .ic { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+
+  /* ================= MOBILE FRAME 360×800 ================= */
+  .phone {
+    width: 360px; height: 800px; border-radius: 36px;
+    background: var(--color-background);
+    box-shadow: 0 24px 64px rgba(43,42,38,.18), 0 0 0 10px #201f1c, 0 0 0 12px #3a3833;
+    overflow: hidden; display: flex; flex-direction: column;
+    flex-shrink: 0;
+  }
+  .statusbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 24px 4px; font-size: 12px; font-weight: var(--weight-bold);
+  }
+  .statusbar .tnum { font-size: 12px; }
+  .appbar {
+    padding: var(--space-m) var(--space-l) var(--space-s);
+    display: flex; align-items: center; gap: var(--space-m);
+  }
+  .appbar h1 { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); }
+  .appbar .sub { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
+
+  /* ---- Library ---- */
+  .library-list { flex: 1; overflow-y: auto; padding: var(--space-s) var(--space-l) var(--space-l); display: flex; flex-direction: column; gap: var(--space-m); }
+  .theme-card {
+    display: flex; gap: var(--space-m); align-items: center;
+    background: var(--color-surface); border: none; border-radius: var(--radius-card);
+    padding: var(--space-m); box-shadow: var(--shadow-card);
+    cursor: pointer; text-align: left; width: 100%;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .theme-card:active { transform: scale(.98); }
+  .theme-card:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .theme-cover {
+    width: 64px; height: 64px; border-radius: var(--radius-button); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: var(--weight-extrabold); color: #fff;
+  }
+  .theme-info { flex: 1; min-width: 0; }
+  .theme-name { font-size: var(--text-body-medium); font-weight: var(--weight-bold); }
+  .theme-meta { font-size: var(--text-label-small); color: var(--color-text-muted); margin-top: 2px; display: flex; gap: var(--space-s); align-items: center; }
+  .theme-progress { height: 4px; border-radius: 2px; background: var(--color-surface-variant); margin-top: var(--space-s); overflow: hidden; }
+  .theme-progress > div { height: 100%; border-radius: 2px; background: var(--color-primary); transition: width var(--duration-medium) var(--ease-standard); }
+  .chip {
+    font-size: 11px; font-weight: var(--weight-extrabold); letter-spacing: .04em;
+    padding: 3px 8px; border-radius: var(--radius-chip); text-transform: uppercase;
+  }
+  .chip-done { background: var(--color-status-reviewed-container); color: #256629; }
+  .chip-new  { background: var(--color-status-new-container); color: #8a5200; }
+  .bottomnav {
+    display: flex; border-top: 1px solid var(--color-surface-variant);
+    background: var(--color-surface); padding: var(--space-s) 0 calc(var(--space-s) + 4px);
+  }
+  .bottomnav a {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: 11px; font-weight: var(--weight-bold); color: var(--color-text-muted); text-decoration: none;
+    min-height: var(--size-touch); justify-content: center;
+  }
+  .bottomnav a.active { color: var(--color-primary); }
+
+  /* ---- Training ---- */
+  .training { flex: 1; display: flex; flex-direction: column; padding: 0 var(--space-l); overflow-y: auto; }
+  .level-row { display: flex; align-items: center; gap: var(--space-s); margin: var(--space-s) 0; }
+  .level-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--text-label-small); font-weight: var(--weight-extrabold);
+    padding: 6px 12px; border-radius: var(--radius-full);
+    background: var(--color-primary-container); color: var(--color-on-primary-container);
+  }
+  .level-steps { display: flex; gap: 4px; margin-left: auto; }
+  .level-steps i { width: 20px; height: 6px; border-radius: 3px; background: var(--color-surface-variant); }
+  .level-steps i.on { background: var(--color-primary); }
+  .question-card {
+    background: var(--color-surface); border-radius: var(--radius-card-large);
+    padding: var(--space-xl) var(--space-l); box-shadow: var(--shadow-card); margin: var(--space-s) 0 var(--space-m);
+  }
+  .question-num { font-size: var(--text-label-small); font-weight: var(--weight-extrabold); color: var(--color-primary); letter-spacing: .08em; text-transform: uppercase; margin-bottom: var(--space-s); }
+  .question-text { font-size: var(--text-question); line-height: 1.35; font-weight: var(--weight-semibold); }
+  .rec-zone { display: flex; flex-direction: column; align-items: center; padding: var(--space-m) 0 var(--space-s); }
+  /* Timer ring */
+  .timer-ring { position: relative; width: 176px; height: 176px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring .track { stroke: var(--color-surface-variant); }
+  .timer-ring .bar { stroke: var(--color-timer-80); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke var(--duration-medium) var(--ease-standard); }
+  .timer-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+  }
+  .timer-label .tnum { font-size: 44px; font-weight: 700; line-height: 1; }
+  .timer-label .cap { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-bold); }
+  /* Waveform */
+  .waveform { display: flex; align-items: center; gap: 3px; height: 48px; margin: var(--space-m) 0 var(--space-s); }
+  .waveform i {
+    width: 4px; border-radius: 2px; background: var(--color-record-active);
+    animation: wave 1.1s var(--ease-standard) infinite alternate;
+  }
+  @keyframes wave { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+  /* Record button */
+  .rec-btn {
+    width: var(--size-recorder); height: var(--size-recorder); border-radius: var(--radius-full);
+    border: none; background: var(--color-record); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-fab); position: relative;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .rec-btn:active { transform: scale(.94); }
+  .rec-btn:focus-visible { outline: none; box-shadow: var(--shadow-fab), var(--shadow-focus); }
+  .rec-btn .ic { width: 30px; height: 30px; }
+  .rec-btn.recording::before {
+    content: ""; position: absolute; inset: -8px; border-radius: var(--radius-full);
+    border: 3px solid var(--color-record); opacity: 0;
+    animation: recPulse var(--duration-rec-pulse) var(--ease-standard) infinite;
+  }
+  @keyframes recPulse { 0% { transform: scale(.9); opacity: .7; } 100% { transform: scale(1.25); opacity: 0; } }
+  .rec-hint { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); margin-top: var(--space-s); }
+  .privacy-note {
+    display: flex; gap: var(--space-s); align-items: center;
+    background: var(--color-surface-warm); border-radius: var(--radius-button);
+    padding: var(--space-m); margin: var(--space-s) 0 var(--space-m);
+    font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold);
+  }
+  .privacy-note .ic { color: var(--color-secondary); flex-shrink: 0; }
+  /* Recording rows */
+  .rec-list { display: flex; flex-direction: column; gap: var(--space-s); padding-bottom: var(--space-l); }
+  .rec-list h3 { font-size: var(--text-body-small); font-weight: var(--weight-extrabold); margin: var(--space-s) 0 2px; }
+  .rec-row {
+    display: flex; align-items: center; gap: var(--space-m);
+    background: var(--color-surface); border-radius: var(--radius-card);
+    padding: var(--space-m); box-shadow: var(--shadow-card);
+  }
+  .rec-play {
+    width: var(--size-touch); height: var(--size-touch); border-radius: var(--radius-full); flex-shrink: 0;
+    border: none; background: var(--color-primary-container); color: var(--color-on-primary-container);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-standard);
+  }
+  .rec-play:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .rec-info { flex: 1; min-width: 0; }
+  .rec-name { font-size: var(--text-body-small); font-weight: var(--weight-bold); }
+  /* slim expanding progress bar (player craft) */
+  .rec-bar { height: 5px; border-radius: 3px; background: var(--color-surface-variant); margin-top: 6px; overflow: hidden; transition: transform var(--duration-fast) var(--ease-standard); transform-origin: center; cursor: pointer; }
+  .rec-row:hover .rec-bar { transform: scaleY(2); }
+  .rec-bar > div { height: 100%; width: 38%; background: var(--color-waveform-playback); border-radius: 3px; }
+  .rec-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
+  .rec-del {
+    width: var(--size-touch); height: var(--size-touch); border-radius: var(--radius-full); flex-shrink: 0;
+    border: none; background: transparent; color: var(--color-text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rec-del:hover { color: var(--color-error); background: #FBEAE8; }
+  .rec-del:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+  /* ================= DESKTOP FRAME (Grading) ================= */
+  .desktop {
+    width: 1180px; height: 780px; border-radius: 20px; overflow: hidden;
+    background: var(--color-background); display: flex; flex-direction: column;
+    box-shadow: 0 24px 64px rgba(43,42,38,.18), 0 0 0 8px #201f1c, 0 0 0 10px #3a3833;
+    flex-shrink: 0;
+  }
+  .admin-top {
+    display: flex; align-items: center; gap: var(--space-l);
+    background: var(--color-surface); padding: 0 var(--space-xl); height: 56px; flex-shrink: 0;
+    border-bottom: 1px solid var(--color-surface-variant);
+  }
+  .admin-top .logo { font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); color: var(--color-primary); }
+  .admin-top nav { display: flex; gap: var(--space-s); margin-left: var(--space-xxl); height: 100%; }
+  .admin-top nav a {
+    display: flex; align-items: center; padding: 0 var(--space-m); height: 100%;
+    font-size: var(--text-body-small); font-weight: var(--weight-bold); color: var(--color-text-muted); text-decoration: none;
+    border-bottom: 3px solid transparent;
+  }
+  .admin-top nav a.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+  .admin-top .avatar { margin-left: auto; width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--color-primary-container); color: var(--color-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-extrabold); font-size: 14px; }
+  .admin-body { flex: 1; display: flex; gap: var(--space-xl); padding: var(--space-xl); overflow: hidden; }
+  .admin-col-main { flex: 1.4; display: flex; flex-direction: column; gap: var(--space-l); min-width: 0; }
+  .admin-col-side { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .panel { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-xl); }
+  .panel h2 { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); margin-bottom: var(--space-s); }
+  .student-row { display: flex; align-items: center; gap: var(--space-m); }
+  .student-row .avatar { width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--color-tertiary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: var(--weight-extrabold); }
+  .student-name { font-weight: var(--weight-bold); font-size: var(--text-body-medium); }
+  .student-meta { font-size: var(--text-label-small); color: var(--color-text-muted); }
+  /* Admin audio player */
+  .player { display: flex; align-items: center; gap: var(--space-l); }
+  .player-play {
+    width: 56px; height: 56px; border-radius: var(--radius-full); border: none; flex-shrink: 0;
+    background: var(--color-primary); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .player-play:active { transform: scale(.94); }
+  .player-play:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .player-track { flex: 1; }
+  .player-wave { display: flex; align-items: center; gap: 2px; height: 40px; cursor: pointer; }
+  .player-wave i { flex: 1; border-radius: 2px; background: var(--color-surface-variant); transition: background var(--duration-fast); }
+  .player-wave i.played { background: var(--color-waveform-playback); }
+  .player-times { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
+  .q-list { display: flex; flex-direction: column; }
+  .q-item { display: flex; gap: var(--space-m); padding: var(--space-m) 0; border-bottom: 1px solid var(--color-surface-warm); font-size: var(--text-body-small); line-height: 1.5; }
+  .q-item:last-child { border-bottom: none; }
+  .q-item .qn { font-weight: var(--weight-extrabold); color: var(--color-primary); flex-shrink: 0; font-size: 13px; }
+  /* Rubric */
+  .rubric { display: flex; flex-direction: column; gap: var(--space-l); flex: 1; }
+  .rubric-row { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .rubric-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .rubric-head label { font-size: var(--text-body-small); font-weight: var(--weight-bold); }
+  .rubric-head .val { font-size: var(--text-title-medium); font-weight: 700; color: var(--color-primary); }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, var(--color-primary) var(--fill,50%), var(--color-surface-variant) var(--fill,50%));
+    outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--color-surface); border: 3px solid var(--color-primary);
+    box-shadow: var(--shadow-card); transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type="range"]:focus-visible { box-shadow: var(--shadow-focus); }
+  .rubric-scale { display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-muted); }
+  .avg-box {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--color-surface-warm); border-radius: var(--radius-button); padding: var(--space-m) var(--space-l);
+  }
+  .avg-box .lbl { font-size: var(--text-body-small); font-weight: var(--weight-bold); }
+  .avg-box .val { font-size: var(--text-headline-small); font-weight: 700; color: var(--color-secondary); }
+  textarea {
+    font-family: var(--font-brand); font-size: var(--text-body-small); line-height: 1.5;
+    border: 1px solid var(--color-outline); border-radius: var(--radius-button);
+    padding: var(--space-m); resize: none; min-height: 88px; color: var(--color-text);
+    background: var(--color-surface);
+  }
+  textarea:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
+  .btn {
+    font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-small);
+    border: none; border-radius: var(--radius-button); padding: 14px 28px; cursor: pointer;
+    min-height: var(--size-touch); transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .btn-primary { background: var(--color-primary); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--color-primary); }
+  .admin-actions { display: flex; gap: var(--space-m); justify-content: flex-end; margin-top: auto; }
+
+  /* ---- Video player ---- */
+  .video-body { flex: 1; display: flex; flex-direction: column; padding: 0 var(--space-l) var(--space-l); gap: var(--space-m); overflow-y: auto; }
+  .mode-chips { display: flex; gap: var(--space-s); flex-wrap: nowrap; }
+  .mode-chip {
+    font-family: var(--font-brand); font-size: var(--text-label-small); font-weight: var(--weight-extrabold);
+    padding: 8px 14px; border-radius: var(--radius-full); border: none; cursor: pointer;
+    background: var(--color-surface-warm); color: var(--color-text-muted);
+    min-height: 40px; transition: all var(--duration-fast) var(--ease-standard);
+    flex: 1; display: flex; align-items: center; justify-content: center; white-space: nowrap;
+  }
+  .mode-chip.on { background: var(--color-primary-container); color: var(--color-on-primary-container); }
+  .mode-chip:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .video-box { position: relative; border-radius: var(--radius-card); overflow: hidden; background: #1A2E42; aspect-ratio: 16/9; box-shadow: var(--shadow-card); flex-shrink: 0; }
+  .video-scene { position: absolute; inset: 0; background: linear-gradient(160deg, #2C4A6B 0%, #1A2E42 55%, #101E2E 100%); display: flex; align-items: center; justify-content: center; }
+  .scene-hint { color: rgba(255,255,255,.35); font-size: 11px; font-weight: var(--weight-extrabold); letter-spacing: .12em; text-transform: uppercase; }
+  .big-play {
+    position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%; border: none; z-index: 4;
+    background: rgba(255,255,255,.92); color: #1A2E42; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.35); transition: transform var(--duration-fast) var(--ease-standard), opacity var(--duration-fast);
+  }
+  .big-play:active { transform: scale(.92); }
+  .big-play.hidden { opacity: 0; pointer-events: none; }
+  .big-play .ic { width: 28px; height: 28px; }
+  .subtitle { text-align: center; min-height: 52px; display: flex; align-items: center; justify-content: center; background: var(--color-surface); border-radius: var(--radius-button); box-shadow: var(--shadow-card); padding: var(--space-s) var(--space-m); flex-shrink: 0; }
+  .subtitle span { display: inline; color: var(--text-subtitle-color, var(--color-text)); font-size: var(--text-subtitle); line-height: 1.4; font-weight: var(--weight-semibold); }
+  .video-controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: var(--space-s); padding: 10px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
+  .vc-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background var(--duration-fast); }
+  .vc-btn:hover { background: rgba(255,255,255,.15); }
+  .vc-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #000, 0 0 0 4px #fff; }
+  .vc-btn .ic { width: 20px; height: 20px; }
+  .vc-btn.cc { border-radius: var(--radius-chip); width: 44px; font-size: 12px; font-weight: var(--weight-extrabold); letter-spacing: .03em; }
+  .vc-btn.cc.on { background: rgba(255,255,255,.22); box-shadow: inset 0 -3px 0 #FFD666; }
+  .vc-btn .ic-pause { display: none; }
+  .vc-btn.playing .ic-play { display: none; }
+  .vc-btn.playing .ic-pause { display: block; }
+  .vc-seek { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3); cursor: pointer; transition: transform var(--duration-fast) var(--ease-standard); }
+  .vc-seek:hover { transform: scaleY(1.8); }
+  .vc-seek > div { height: 100%; width: 0%; background: #fff; border-radius: 3px; }
+  .vc-time { font-size: 11px; color: #fff; flex-shrink: 0; }
+  .video-cta {
+    font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-medium);
+    border: none; border-radius: var(--radius-button); padding: 16px; min-height: var(--size-touch);
+    cursor: pointer; background: var(--color-primary); color: #fff; flex-shrink: 0;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .video-cta:active { transform: scale(.98); }
+  .video-cta:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .video-hint { text-align: center; font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
+
+  /* ---- Training: флоу попыток (без удаления) ---- */
+  .rec-btn .ic-stop { display: none; }
+  .rec-btn.recording .ic-mic { display: none; }
+  .rec-btn.recording .ic-stop { display: block; }
+  .waveform { visibility: hidden; }
+  .waveform.live { visibility: visible; }
+  .attempt-check {
+    width: var(--size-touch); height: var(--size-touch); border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--color-success); background: var(--color-surface); color: var(--color-success);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-standard);
+  }
+  .attempt-check:hover { background: var(--color-status-reviewed-container); }
+  .attempt-check:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .attempt-check:disabled { cursor: default; }
+  .attempt-check.confirmed {
+    background: var(--color-success); border-color: var(--color-success); color: #fff; cursor: default;
+    animation: checkPop .5s var(--ease-standard);
+  }
+  @keyframes checkPop { 0% { transform: scale(.3); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  .attempt-row.pending { outline: 2px dashed var(--color-outline); outline-offset: -2px; }
+
+  /* ---- Practice (30 сек, отправка учителю) ---- */
+  .pq-list { display: flex; flex-direction: column; gap: var(--space-s); }
+  .pq-item { display: flex; gap: 10px; font-size: 13px; line-height: 1.45; background: var(--color-surface); border-radius: var(--radius-button); padding: 10px 12px; box-shadow: var(--shadow-card); }
+  .pq-item .qn { font-weight: var(--weight-extrabold); color: var(--color-primary); flex-shrink: 0; }
+  .state-panel { display: none; flex-direction: column; gap: var(--space-m); background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-l); margin: var(--space-s) 0; }
+  .state-panel.show { display: flex; }
+  .state-title { font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); text-align: center; }
+  .upload-track { height: 8px; border-radius: 4px; background: var(--color-surface-variant); overflow: hidden; }
+  .upload-track > div { height: 100%; width: 0%; background: var(--color-primary); border-radius: 4px; transition: width .18s linear; }
+  .upload-row { display: flex; justify-content: space-between; font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
+  .sent-badge { align-self: center; width: 64px; height: 64px; border-radius: 50%; background: var(--color-status-reviewed-container); color: var(--color-success); display: flex; align-items: center; justify-content: center; animation: checkPop .5s var(--ease-standard); }
+  .sent-badge .ic { width: 32px; height: 32px; }
+  .practice-note { display: flex; gap: var(--space-s); align-items: center; background: var(--color-status-new-container); border-radius: var(--radius-button); padding: var(--space-m); font-size: var(--text-label-small); color: #8a5200; font-weight: var(--weight-semibold); }
+  .practice-note .ic { flex-shrink: 0; }
+  .final-cta { display: none; flex-direction: column; gap: var(--space-m); padding: var(--space-m) 0; }
+  .final-cta.show { display: flex; }
+  .final-msg { text-align: center; font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); color: var(--color-secondary); padding: var(--space-s) 0; }
+  .btn-wide { width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="tablist">
+  <button class="active" data-frame="library" role="tab">1 · Library (mobile)</button>
+  <button data-frame="video" role="tab">2 · Video — плеер (mobile)</button>
+  <button data-frame="training" role="tab">3 · Training — запись (mobile)</button>
+  <button data-frame="practice" role="tab">4 · Practice — сдача (mobile)</button>
+  <button data-frame="grading" role="tab">5 · Grading detail (admin)</button>
+</div>
+
+<!-- ============ 1. LIBRARY ============ -->
+<div class="frame-wrap active" id="frame-library">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Библиотека тем</h1>
+        <div class="sub">Выбери тему и начни говорить</div>
+      </div>
+    </div>
+    <div class="library-list">
+      <button class="theme-card">
+        <div class="theme-cover" style="background:linear-gradient(135deg,#4A90D9,#2E6BB0)">Tr</div>
+        <div class="theme-info">
+          <div class="theme-name">Travel &amp; Holidays</div>
+          <div class="theme-meta"><span class="tnum">6 топиков</span><span class="chip chip-done">2 пройдено</span></div>
+          <div class="theme-progress"><div style="width:33%"></div></div>
+        </div>
+        <svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg>
+      </button>
+      <button class="theme-card">
+        <div class="theme-cover" style="background:linear-gradient(135deg,#006C4C,#2E8B6A)">Fd</div>
+        <div class="theme-info">
+          <div class="theme-name">Food &amp; Cooking</div>
+          <div class="theme-meta"><span class="tnum">4 топика</span><span class="chip chip-new">новая</span></div>
+          <div class="theme-progress"><div style="width:0%"></div></div>
+        </div>
+        <svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg>
+      </button>
+      <button class="theme-card">
+        <div class="theme-cover" style="background:linear-gradient(135deg,#5C6BC0,#3F51B5)">Jb</div>
+        <div class="theme-info">
+          <div class="theme-name">Jobs &amp; Interviews</div>
+          <div class="theme-meta"><span class="tnum">5 топиков</span></div>
+          <div class="theme-progress"><div style="width:0%"></div></div>
+        </div>
+        <svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg>
+      </button>
+      <button class="theme-card">
+        <div class="theme-cover" style="background:linear-gradient(135deg,#FB8C00,#E65100)">Hb</div>
+        <div class="theme-info">
+          <div class="theme-name">Hobbies &amp; Free Time</div>
+          <div class="theme-meta"><span class="tnum">3 топика</span></div>
+          <div class="theme-progress"><div style="width:0%"></div></div>
+        </div>
+        <svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg>
+      </button>
+    </div>
+    <nav class="bottomnav">
+      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-check-circle"/></svg>Темы</a>
+      <a href="#"><svg class="ic"><use href="icons.svg#i-upload"/></svg>Отправки</a>
+      <a href="#"><svg class="ic"><use href="icons.svg#i-clock"/></svg>Профиль</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ 2. VIDEO (player + subtitles) ============ -->
+<div class="frame-wrap" id="frame-video">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>At the airport</h1>
+        <div class="sub">Travel &amp; Holidays · видео <span class="tnum">1:35</span></div>
+      </div>
+    </div>
+    <div class="video-body">
+      <div class="mode-chips">
+        <button class="mode-chip on" id="modeSub">С субтитрами</button>
+        <button class="mode-chip" id="modeNoSub">Без субтитров</button>
+      </div>
+      <div class="video-box">
+        <div class="video-scene"><span class="scene-hint">Видео топика · 16:9</span></div>
+        <button class="big-play" id="bigPlay" aria-label="Смотреть видео">
+          <svg class="ic"><use href="icons.svg#i-play"/></svg>
+        </button>
+        <div class="video-controls">
+          <button class="vc-btn" id="vcPlay" aria-label="Пауза / продолжить">
+            <svg class="ic ic-play"><use href="icons.svg#i-play"/></svg>
+            <svg class="ic ic-pause"><use href="icons.svg#i-pause"/></svg>
+          </button>
+          <div class="vc-seek" id="vcSeek" role="slider" aria-label="Перемотка видео"><div id="vcSeekFill"></div></div>
+          <span class="vc-time tnum" id="vcTime">0:00 / 1:35</span>
+          <button class="vc-btn cc on" id="vcCc" aria-label="Субтитры вкл/выкл">CC</button>
+        </div>
+      </div>
+      <div class="subtitle" id="subtitleBox"><span id="subtitleText"></span></div>
+      <button class="video-cta">Перейти к вопросам</button>
+      <div class="video-hint">Смотреть всё видео необязательно — к вопросам можно перейти в любой момент</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3. TRAINING (recording) ============ -->
+<div class="frame-wrap" id="frame-training">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Training</h1>
+        <div class="sub">Travel &amp; Holidays · At the airport</div>
+      </div>
+    </div>
+    <div class="training">
+      <div class="level-row">
+        <span class="level-chip"><svg class="ic" style="width:14px;height:14px"><use href="icons.svg#i-clock"/></svg><span id="levelText">Уровень 1 · 80 сек</span></span>
+        <div class="level-steps" id="levelSteps"><i class="on"></i><i></i><i></i></div>
+      </div>
+      <div class="pq-list">
+        <div class="pq-item"><span class="qn tnum">1</span><span>Where do you usually fly to on holidays?</span></div>
+        <div class="pq-item"><span class="qn tnum">2</span><span>What do you usually do while waiting for your flight?</span></div>
+        <div class="pq-item"><span class="qn tnum">3</span><span>Do you prefer window or aisle seats? Why?</span></div>
+        <div class="pq-item"><span class="qn tnum">4</span><span>What was your most memorable flight?</span></div>
+        <div class="pq-item"><span class="qn tnum">5</span><span>Would you like to work at an airport? Why / why not?</span></div>
+      </div>
+      <div class="rec-zone" id="recZone">
+        <div class="timer-ring" role="timer" aria-label="Осталось 1 минута 20 секунд">
+          <svg width="176" height="176" viewBox="0 0 176 176">
+            <circle class="track" cx="88" cy="88" r="80" fill="none" stroke-width="10"/>
+            <circle class="bar" id="timerBar" cx="88" cy="88" r="80" fill="none" stroke-width="10"
+              stroke-dasharray="502.65" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-label">
+            <span class="tnum" id="timerNum">1:20</span>
+            <span class="cap">лимит попытки</span>
+          </div>
+        </div>
+        <div class="waveform" aria-hidden="true" id="waveform"></div>
+        <button class="rec-btn" id="recBtn" aria-label="Начать запись">
+          <svg class="ic ic-mic"><use href="icons.svg#i-mic"/></svg>
+          <svg class="ic ic-stop"><use href="icons.svg#i-stop"/></svg>
+        </button>
+        <div class="rec-hint" id="recHint">Попытка 1 · ответь на все вопросы одной записью</div>
+      </div>
+      <div class="final-cta" id="finalCta">
+        <div class="final-msg">Все 3 попытки записаны — отличная работа!</div>
+        <button class="btn btn-primary btn-wide" id="goPracticeBtn">Перейти к практике · 30 сек на все ответы</button>
+        <button class="btn btn-ghost btn-wide" id="backToLibraryBtn">Вернуться в библиотеку</button>
+        <button class="btn btn-ghost btn-wide" id="restartBtn">Начать заново с попытки 1</button>
+      </div>
+      <div class="privacy-note">
+        <svg class="ic"><use href="icons.svg#i-shield"/></svg>
+        Записи хранятся только на твоём устройстве и никуда не отправляются
+      </div>
+      <div class="rec-list">
+        <h3 id="attemptsTitle">Попытки · 0 из 3</h3>
+        <div id="attemptsList"></div>
+        <div class="rec-meta" id="attemptsEmpty" style="font-size:12px">Записей пока нет — начни с попытки 1. Удалять записи нельзя, только прослушать.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. PRACTICE (30 сек, отправка учителю) ============ -->
+<div class="frame-wrap" id="frame-practice">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Practice</h1>
+        <div class="sub">Travel &amp; Holidays · At the airport</div>
+      </div>
+    </div>
+    <div class="training">
+      <div class="level-row">
+        <span class="level-chip" style="background:#FBEAE8;color:#B3261E"><svg class="ic" style="width:14px;height:14px"><use href="icons.svg#i-clock"/></svg>Контрольная · 30 сек</span>
+        <span class="chip chip-new">1 запись на все вопросы</span>
+      </div>
+      <div class="pq-list">
+        <div class="pq-item"><span class="qn tnum">1</span><span>Where do you usually fly to on holidays?</span></div>
+        <div class="pq-item"><span class="qn tnum">2</span><span>What do you usually do while waiting for your flight?</span></div>
+        <div class="pq-item"><span class="qn tnum">3</span><span>Do you prefer window or aisle seats? Why?</span></div>
+        <div class="pq-item"><span class="qn tnum">4</span><span>What was your most memorable flight?</span></div>
+        <div class="pq-item"><span class="qn tnum">5</span><span>Would you like to work at an airport? Why / why not?</span></div>
+      </div>
+      <div class="rec-zone" id="pRecZone" style="padding-top:var(--space-s)">
+        <div class="timer-ring" style="width:150px;height:150px" role="timer" aria-label="Осталось 30 секунд">
+          <svg width="150" height="150" viewBox="0 0 176 176">
+            <circle class="track" cx="88" cy="88" r="80" fill="none" stroke-width="10"/>
+            <circle class="bar" id="pTimerBar" cx="88" cy="88" r="80" fill="none" stroke-width="10"
+              style="stroke:var(--color-record)" stroke-dasharray="502.65" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-label">
+            <span class="tnum" id="pTimerNum" style="font-size:36px">0:30</span>
+            <span class="cap">на все ответы</span>
+          </div>
+        </div>
+        <div class="waveform" aria-hidden="true" id="pWaveform"></div>
+        <button class="rec-btn" id="pRecBtn" aria-label="Начать запись">
+          <svg class="ic ic-mic"><use href="icons.svg#i-mic"/></svg>
+          <svg class="ic ic-stop"><use href="icons.svg#i-stop"/></svg>
+        </button>
+        <div class="rec-hint" id="pHint">Ответь на все вопросы подряд одной записью</div>
+      </div>
+      <div class="state-panel" id="pUpload">
+        <div class="state-title">Отправка учителю…</div>
+        <div class="upload-track"><div id="uploadFill"></div></div>
+        <div class="upload-row"><span>Загрузка записи</span><span class="tnum" id="uploadPct">0%</span></div>
+      </div>
+      <div class="state-panel" id="pSent">
+        <div class="sent-badge"><svg class="ic"><use href="icons.svg#i-check-circle"/></svg></div>
+        <div class="state-title">Запись отправлена!</div>
+        <div style="text-align:center"><span class="chip chip-new">статус NEW · ждёт проверки</span></div>
+        <div class="rec-meta" style="justify-content:center;font-size:12px">Оценка и комментарий появятся в «Мои отправки»</div>
+        <button class="btn btn-primary btn-wide" id="pSentBack">Вернуться в библиотеку</button>
+      </div>
+      <div class="practice-note">
+        <svg class="ic"><use href="icons.svg#i-upload"/></svg>
+        В отличие от Training, эта запись уйдёт учителю автоматически сразу после остановки таймера — изменить её нельзя
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5. GRADING DETAIL (admin desktop) ============ -->
+<div class="frame-wrap" id="frame-grading">
+  <div class="desktop">
+    <div class="admin-top">
+      <div class="logo">FunnyEnglish Admin</div>
+      <nav>
+        <a href="#">Speaking Content</a>
+        <a href="#" class="active">Grading <span class="chip chip-new" style="margin-left:6px">7 new</span></a>
+        <a href="#">Пользователи</a>
+      </nav>
+      <div class="avatar">ЕК</div>
+    </div>
+    <div class="admin-body">
+      <div class="admin-col-main">
+        <div class="panel">
+          <div class="student-row">
+            <div class="avatar">АС</div>
+            <div>
+              <div class="student-name">Анна Смирнова</div>
+              <div class="student-meta">Travel &amp; Holidays → At the airport · отправлено <span class="tnum">29.07.2026, 21:14</span></div>
+            </div>
+            <span class="chip chip-new" style="margin-left:auto">NEW</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Запись · <span class="tnum">0:30</span></h2>
+          <div class="player">
+            <button class="player-play" aria-label="Прослушать запись"><svg class="ic"><use href="icons.svg#i-play"/></svg></button>
+            <div class="player-track">
+              <div class="player-wave" id="adminWave"></div>
+              <div class="player-times"><span class="tnum">0:12</span><span class="tnum">0:30</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1;overflow:auto">
+          <h2>Вопросы топика</h2>
+          <div class="q-list">
+            <div class="q-item"><span class="qn tnum">1</span><span>Where do you usually fly to on holidays?</span></div>
+            <div class="q-item"><span class="qn tnum">2</span><span>What do you usually do while waiting for your flight?</span></div>
+            <div class="q-item"><span class="qn tnum">3</span><span>Do you prefer window or aisle seats? Why?</span></div>
+            <div class="q-item"><span class="qn tnum">4</span><span>What was your most memorable flight?</span></div>
+            <div class="q-item"><span class="qn tnum">5</span><span>Would you like to work at an airport? Why / why not?</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-col-side">
+        <div class="panel" style="flex:1;display:flex;flex-direction:column">
+          <h2>Оценка по рубрике</h2>
+          <div class="rubric">
+            <div class="rubric-row">
+              <div class="rubric-head"><label for="r-grammar">Grammar</label><span class="val tnum" id="v-grammar">7</span></div>
+              <input type="range" id="r-grammar" min="1" max="10" value="7" aria-label="Grammar, от 1 до 10">
+              <div class="rubric-scale tnum"><span>1</span><span>5</span><span>10</span></div>
+            </div>
+            <div class="rubric-row">
+              <div class="rubric-head"><label for="r-vocab">Vocabulary</label><span class="val tnum" id="v-vocab">6</span></div>
+              <input type="range" id="r-vocab" min="1" max="10" value="6" aria-label="Vocabulary, от 1 до 10">
+              <div class="rubric-scale tnum"><span>1</span><span>5</span><span>10</span></div>
+            </div>
+            <div class="rubric-row">
+              <div class="rubric-head"><label for="r-pron">Pronunciation</label><span class="val tnum" id="v-pron">8</span></div>
+              <input type="range" id="r-pron" min="1" max="10" value="8" aria-label="Pronunciation, от 1 до 10">
+              <div class="rubric-scale tnum"><span>1</span><span>5</span><span>10</span></div>
+            </div>
+            <div class="rubric-row">
+              <div class="rubric-head"><label for="r-fluency">Fluency</label><span class="val tnum" id="v-fluency">7</span></div>
+              <input type="range" id="r-fluency" min="1" max="10" value="7" aria-label="Fluency, от 1 до 10">
+              <div class="rubric-scale tnum"><span>1</span><span>5</span><span>10</span></div>
+            </div>
+            <div class="avg-box">
+              <span class="lbl">Общий балл (среднее)</span>
+              <span class="val tnum" id="avg">7.0</span>
+            </div>
+            <textarea placeholder="Комментарий ученику: что хорошо, над чем поработать…" aria-label="Комментарий учителя"></textarea>
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-ghost">Пропустить</button>
+            <button class="btn btn-primary">Сохранить оценку</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Переключатель экранов
+  document.querySelectorAll('.switcher button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.frame-wrap').forEach(f => f.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('frame-' + btn.dataset.frame).classList.add('active');
+    });
+  });
+
+  // ============ VIDEO PLAYER ============
+  const VDUR = 95; // 1:35
+  const cues = [
+    [0,  'Welcome aboard! Today we are at the airport.'],
+    [7,  'Check-in opens two hours before departure.'],
+    [16, 'Do you have your boarding pass ready?'],
+    [25, 'Security check: laptops out of your bags, please.'],
+    [36, 'Our gate number is B12 — this way, please.'],
+    [47, 'Boarding starts in twenty minutes.'],
+    [58, 'While waiting, you can grab a coffee or read a book.'],
+    [72, 'Listen for the final call for your flight.'],
+    [85, 'Have a nice flight!']
+  ];
+  let vt = 0, vplaying = false, vtick = null, ccOn = true;
+  const bigPlay = document.getElementById('bigPlay');
+  const vcPlay = document.getElementById('vcPlay');
+  const vcSeekFill = document.getElementById('vcSeekFill');
+  const vcTime = document.getElementById('vcTime');
+  const vcCc = document.getElementById('vcCc');
+  const subtitleBox = document.getElementById('subtitleBox');
+  const subtitleText = document.getElementById('subtitleText');
+  const vfmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+  function renderVideo() {
+    vcSeekFill.style.width = (vt / VDUR * 100) + '%';
+    vcTime.textContent = vfmt(vt) + ' / ' + vfmt(VDUR);
+    let cue = '';
+    for (const [t, txt] of cues) if (vt >= t) cue = txt;
+    subtitleText.textContent = cue;
+    subtitleBox.style.display = (ccOn && cue) ? '' : 'none';
+    bigPlay.classList.toggle('hidden', vplaying);
+    vcPlay.classList.toggle('playing', vplaying);
+  }
+  function setPlaying(p) {
+    vplaying = p;
+    clearInterval(vtick);
+    if (p) vtick = setInterval(() => {
+      vt += 0.5;
+      if (vt >= VDUR) { vt = VDUR; setPlaying(false); }
+      renderVideo();
+    }, 500);
+    renderVideo();
+  }
+  bigPlay.addEventListener('click', () => { if (vt >= VDUR) vt = 0; setPlaying(true); });
+  vcPlay.addEventListener('click', () => setPlaying(!vplaying));
+  document.getElementById('vcSeek').addEventListener('click', e => {
+    const r = e.currentTarget.getBoundingClientRect();
+    vt = Math.round((e.clientX - r.left) / r.width * VDUR);
+    renderVideo();
+  });
+  function setCc(on) {
+    ccOn = on;
+    vcCc.classList.toggle('on', on);
+    document.getElementById('modeSub').classList.toggle('on', on);
+    document.getElementById('modeNoSub').classList.toggle('on', !on);
+    renderVideo();
+  }
+  vcCc.addEventListener('click', () => setCc(!ccOn));
+  document.getElementById('modeSub').addEventListener('click', () => setCc(true));
+  document.getElementById('modeNoSub').addEventListener('click', () => setCc(false));
+  renderVideo();
+
+  // ============ TRAINING: флоу 3 попыток (без удаления) ============
+  const wf = document.getElementById('waveform');
+  for (let i = 0; i < 32; i++) {
+    const b = document.createElement('i');
+    const h = 12 + Math.round(36 * Math.abs(Math.sin(i * 0.7)) * (0.5 + Math.random() * 0.5));
+    b.style.height = h + 'px';
+    b.style.animationDelay = (i * 45) + 'ms';
+    wf.appendChild(b);
+  }
+
+  const LEVELS = [80, 50, 30];
+  const TCIRC = 502.65;
+  let attempt = 1, phase = 'idle', tleft = LEVELS[0], ttick = null, recFrom = 0;
+  const timerBar = document.getElementById('timerBar');
+  const timerNum = document.getElementById('timerNum');
+  const recBtn = document.getElementById('recBtn');
+  const recHint = document.getElementById('recHint');
+  const recZone = document.getElementById('recZone');
+  const levelText = document.getElementById('levelText');
+  const levelSteps = document.getElementById('levelSteps');
+  const attemptsList = document.getElementById('attemptsList');
+  const attemptsTitle = document.getElementById('attemptsTitle');
+  const attemptsEmpty = document.getElementById('attemptsEmpty');
+  const finalCta = document.getElementById('finalCta');
+  const tfmt = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+
+  function renderLevel() {
+    levelText.textContent = 'Уровень ' + attempt + ' · ' + LEVELS[attempt - 1] + ' сек';
+    Array.from(levelSteps.children).forEach((el, k) => el.classList.toggle('on', k < attempt));
+  }
+  function renderTimer() {
+    const total = LEVELS[attempt - 1];
+    timerNum.textContent = tfmt(tleft);
+    timerBar.style.strokeDashoffset = TCIRC * (1 - tleft / total);
+    timerBar.style.stroke = total === 80 ? 'var(--color-timer-80)' : total === 50 ? 'var(--color-timer-50)' : 'var(--color-timer-30)';
+  }
+  function startRec() {
+    phase = 'recording';
+    recFrom = tleft = LEVELS[attempt - 1];
+    recBtn.classList.add('recording');
+    recBtn.setAttribute('aria-label', 'Остановить запись');
+    wf.classList.add('live');
+    recHint.textContent = 'Идёт запись · нажми, чтобы остановить';
+    renderTimer();
+    ttick = setInterval(() => {
+      tleft--;
+      if (tleft <= 0) { stopRec(); return; }
+      renderTimer();
+    }, 1000);
+  }
+  function stopRec() {
+    clearInterval(ttick);
+    phase = 'review';
+    recBtn.classList.remove('recording');
+    recBtn.setAttribute('aria-label', 'Начать запись');
+    wf.classList.remove('live');
+    const dur = Math.max(1, recFrom - tleft);
+    tleft = LEVELS[attempt - 1];
+    renderTimer();
+    addAttemptRow(dur);
+    recHint.textContent = 'Попытка ' + attempt + ' записана · можно прослушать, ✅ проставится автоматически';
+  }
+  recBtn.addEventListener('click', () => {
+    if (phase === 'idle') startRec();
+    else if (phase === 'recording') stopRec();
+  });
+
+  function addAttemptRow(dur) {
+    attemptsEmpty.style.display = 'none';
+    attemptsTitle.textContent = 'Попытки · ' + attempt + ' из 3';
+    const n = attempt;
+    const row = document.createElement('div');
+    row.className = 'rec-row attempt-row pending';
+    row.innerHTML =
+      '<button class="rec-play" aria-label="Прослушать попытку ' + n + '">' +
+        '<svg class="ic ic-play"><use href="icons.svg#i-play"/></svg>' +
+        '<svg class="ic ic-pause" style="display:none"><use href="icons.svg#i-pause"/></svg></button>' +
+      '<div class="rec-info">' +
+        '<div class="rec-name">Попытка ' + n + ' · <span class="tnum">' + tfmt(dur) + '</span></div>' +
+        '<div class="rec-bar"><div style="width:0%"></div></div>' +
+        '<div class="rec-meta"><span class="tnum att-time">0:00 / ' + tfmt(dur) + '</span><span class="att-state">можно только прослушать</span></div>' +
+      '</div>' +
+      '<button class="attempt-check" disabled aria-label="Попытка ' + n + ' записана"><svg class="ic"><use href="icons.svg#i-check-circle"/></svg></button>';
+    attemptsList.appendChild(row);
+
+    // Прослушивание: play/pause + фейковый прогресс
+    const playBtn = row.querySelector('.rec-play');
+    const icPlay = playBtn.querySelector('.ic-play');
+    const icPause = playBtn.querySelector('.ic-pause');
+    const barFill = row.querySelector('.rec-bar > div');
+    const timeEl = row.querySelector('.att-time');
+    let pt = 0, ptick = null;
+    function stopPlay() {
+      clearInterval(ptick); ptick = null; pt = 0;
+      icPlay.style.display = ''; icPause.style.display = 'none';
+      barFill.style.width = '0%';
+      timeEl.textContent = '0:00 / ' + tfmt(dur);
+    }
+    playBtn.addEventListener('click', () => {
+      if (ptick) { stopPlay(); return; }
+      icPlay.style.display = 'none'; icPause.style.display = '';
+      ptick = setInterval(() => {
+        pt++;
+        if (pt >= dur) { stopPlay(); return; }
+        barFill.style.width = (pt / dur * 100) + '%';
+        timeEl.textContent = tfmt(pt) + ' / ' + tfmt(dur);
+      }, 1000);
+    });
+
+    // ✅ проставляется автоматически с анимацией — ручного подтверждения нет
+    setTimeout(() => {
+      stopPlay();
+      row.classList.remove('pending');
+      const check = row.querySelector('.attempt-check');
+      check.classList.add('confirmed');
+      check.setAttribute('aria-label', 'Попытка ' + n + ' принята');
+      row.querySelector('.att-state').textContent = 'принята';
+      attempt++;
+      if (attempt > 3) {
+        phase = 'done';
+        recZone.style.display = 'none';
+        finalCta.classList.add('show');
+      } else {
+        phase = 'idle';
+        tleft = LEVELS[attempt - 1];
+        renderLevel();
+        renderTimer();
+        recHint.textContent = 'Попытка ' + attempt + ' · ответь на все вопросы одной записью';
+      }
+    }, 900);
+  }
+
+  // Начать заново с попытки 1 (та же тема)
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    attempt = 1; phase = 'idle';
+    attemptsList.innerHTML = '';
+    attemptsEmpty.style.display = '';
+    attemptsTitle.textContent = 'Попытки · 0 из 3';
+    finalCta.classList.remove('show');
+    recZone.style.display = '';
+    tleft = LEVELS[0];
+    renderLevel();
+    renderTimer();
+    recHint.textContent = 'Попытка 1 · ответь на все вопросы одной записью';
+  });
+  renderLevel();
+  renderTimer();
+
+  // Переходы из финального экрана Training
+  function activateFrame(name) {
+    document.querySelector('.switcher button[data-frame="' + name + '"]').click();
+  }
+  document.getElementById('goPracticeBtn').addEventListener('click', () => activateFrame('practice'));
+  document.getElementById('backToLibraryBtn').addEventListener('click', () => activateFrame('library'));
+
+  // ============ PRACTICE: 30 сек, одна запись, сразу учителю ============
+  const pWf = document.getElementById('pWaveform');
+  for (let i = 0; i < 32; i++) {
+    const b = document.createElement('i');
+    b.style.height = (12 + Math.round(36 * Math.abs(Math.sin(i * 0.75)) * (0.5 + Math.random() * 0.5))) + 'px';
+    b.style.animationDelay = (i * 40) + 'ms';
+    pWf.appendChild(b);
+  }
+  const PDUR = 30;
+  let pLeft = PDUR, pTick = null, pPhase = 'idle';
+  const pTimerBar = document.getElementById('pTimerBar');
+  const pTimerNum = document.getElementById('pTimerNum');
+  const pRecBtn = document.getElementById('pRecBtn');
+  const pHint = document.getElementById('pHint');
+  const pRecZone = document.getElementById('pRecZone');
+  const pUpload = document.getElementById('pUpload');
+  const pSent = document.getElementById('pSent');
+  function pRender() {
+    pTimerNum.textContent = '0:' + String(pLeft).padStart(2, '0');
+    pTimerBar.style.strokeDashoffset = TCIRC * (1 - pLeft / PDUR);
+  }
+  function pStart() {
+    pPhase = 'recording'; pLeft = PDUR;
+    pRecBtn.classList.add('recording');
+    pRecBtn.setAttribute('aria-label', 'Остановить запись');
+    pWf.classList.add('live');
+    pHint.textContent = 'Идёт запись · говори ответы подряд, автостоп на 0:00';
+    pRender();
+    pTick = setInterval(() => {
+      pLeft--;
+      if (pLeft <= 0) { pStop(); return; }
+      pRender();
+    }, 1000);
+  }
+  function pStop() {
+    clearInterval(pTick);
+    pPhase = 'uploading';
+    pRecBtn.classList.remove('recording');
+    pRecBtn.setAttribute('aria-label', 'Начать запись');
+    pWf.classList.remove('live');
+    // Без review и кнопок: запись сразу уходит учителю
+    pRecZone.style.display = 'none';
+    pStartUpload();
+  }
+  pRecBtn.addEventListener('click', () => {
+    if (pPhase === 'idle') pStart();
+    else if (pPhase === 'recording') pStop();
+  });
+  // Автоотправка: uploading → sent
+  function pStartUpload() {
+    pUpload.classList.add('show');
+    let pct = 0;
+    const fill = document.getElementById('uploadFill');
+    const pctEl = document.getElementById('uploadPct');
+    const upTick = setInterval(() => {
+      pct = Math.min(100, pct + 4 + Math.round(Math.random() * 5));
+      fill.style.width = pct + '%';
+      pctEl.textContent = pct + '%';
+      if (pct >= 100) {
+        clearInterval(upTick);
+        setTimeout(() => {
+          pUpload.classList.remove('show');
+          pSent.classList.add('show');
+          pPhase = 'sent';
+        }, 350);
+      }
+    }, 120);
+  }
+  document.getElementById('pSentBack').addEventListener('click', () => activateFrame('library'));
+  pRender();
+
+  // Admin waveform: 56 статичных баров, часть "played"
+  const aw = document.getElementById('adminWave');
+  for (let i = 0; i < 56; i++) {
+    const b = document.createElement('i');
+    b.style.height = (6 + Math.round(34 * Math.abs(Math.sin(i * 0.45 + 1)))) + 'px';
+    if (i < 22) b.classList.add('played');
+    aw.appendChild(b);
+  }
+
+  // Рубрика: заполнение трека + авто-среднее
+  const sliders = ['grammar', 'vocab', 'pron', 'fluency'].map(k => document.getElementById('r-' + k));
+  function updateRubric() {
+    let sum = 0;
+    sliders.forEach(s => {
+      const v = +s.value; sum += v;
+      s.style.setProperty('--fill', ((v - 1) / 9 * 100) + '%');
+      document.getElementById('v-' + s.id.slice(2)).textContent = v;
+    });
+    document.getElementById('avg').textContent = (sum / sliders.length).toFixed(1);
+  }
+  sliders.forEach(s => s.addEventListener('input', updateRubric));
+  updateRubric();
+</script>
+</body>
+</html>

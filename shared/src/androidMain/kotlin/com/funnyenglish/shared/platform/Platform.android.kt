@@ -2,12 +2,21 @@ package com.funnyenglish.shared.platform
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.media.MediaPlayer
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Legacy AudioPlayer implementation using ExoPlayer
+ */
 actual class AudioPlayer {
     private val lock = Any()
     @Volatile
-    private var mediaPlayer: MediaPlayer? = null
+    private var exoPlayer: ExoPlayer? = null
     @Volatile
     private var onCompletionListener: (() -> Unit)? = null
 
@@ -17,87 +26,194 @@ actual class AudioPlayer {
             stop()
             return
         }
-        val newPlayer = MediaPlayer()
+
         synchronized(lock) {
-            stopLocked()
-            mediaPlayer = newPlayer
-        }
-        try {
-            newPlayer.setDataSource(sanitizedUrl)
-            newPlayer.setOnPreparedListener {
-                synchronized(lock) {
-                    if (mediaPlayer !== newPlayer) {
-                        return@setOnPreparedListener
-                    }
-                }
-                newPlayer.start()
+            // Reuse existing player if available
+            var player = exoPlayer
+            if (player == null) {
+                player = createExoPlayer()
+                exoPlayer = player
             }
-            newPlayer.setOnCompletionListener {
-                handleCompletion(newPlayer)
-            }
-            newPlayer.setOnErrorListener { _, _, _ ->
-                handleError(newPlayer)
-                true
-            }
-            newPlayer.prepareAsync()
-        } catch (e: Exception) {
-            handleError(newPlayer)
+
+            val mediaItem = MediaItem.fromUri(sanitizedUrl)
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.play()
         }
     }
 
     actual fun pause() {
         synchronized(lock) {
-            runCatching { mediaPlayer?.pause() }
+            exoPlayer?.pause()
         }
     }
 
     actual fun stop() {
         synchronized(lock) {
-            stopLocked()
+            exoPlayer?.stop()
         }
     }
 
     actual fun release() {
-        stop()
+        synchronized(lock) {
+            exoPlayer?.release()
+            exoPlayer = null
+        }
     }
 
-    actual fun isPlaying(): Boolean = synchronized(lock) { mediaPlayer?.isPlaying ?: false }
+    actual fun isPlaying(): Boolean = synchronized(lock) {
+        exoPlayer?.isPlaying ?: false
+    }
 
     actual fun setOnCompletionListener(listener: () -> Unit) {
         onCompletionListener = listener
     }
 
-    private fun handleCompletion(player: MediaPlayer) {
-        val listener = synchronized(lock) {
-            if (mediaPlayer !== player) {
-                null
-            } else {
-                stopLocked()
-                onCompletionListener
-            }
+    actual fun seekTo(position: Long) {
+        synchronized(lock) {
+            exoPlayer?.seekTo(position)
         }
-        listener?.invoke()
     }
 
-    private fun handleError(player: MediaPlayer) {
-        val listener = synchronized(lock) {
-            if (mediaPlayer !== player) {
-                null
-            } else {
-                stopLocked()
-                onCompletionListener
-            }
-        }
-        listener?.invoke()
+    actual fun getCurrentPosition(): Long = synchronized(lock) {
+        exoPlayer?.currentPosition ?: 0
     }
 
-    private fun stopLocked() {
-        mediaPlayer?.let { player ->
-            runCatching { if (player.isPlaying) player.stop() }
-            runCatching { player.reset() }
-            runCatching { player.release() }
+    actual fun getDuration(): Long = synchronized(lock) {
+        exoPlayer?.duration ?: 0
+    }
+
+    actual fun setPlaybackSpeed(speed: Float) {
+        synchronized(lock) {
+            exoPlayer?.setPlaybackSpeed(speed)
         }
-        mediaPlayer = null
+    }
+
+    private fun createExoPlayer(): ExoPlayer {
+        val context = AndroidContextHolder.requireContext()
+        val player = ExoPlayer.Builder(context).build()
+        
+        player.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) {
+                    onCompletionListener?.invoke()
+                }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                onCompletionListener?.invoke()
+            }
+        })
+        
+        return player
+    }
+}
+
+/**
+ * Modern AudioPlayerController with StateFlow for reactive UI
+ */
+actual class AudioPlayerController {
+    private val _state = MutableStateFlow(AudioPlayerState())
+    actual val state: StateFlow<AudioPlayerState> = _state.asStateFlow()
+
+    private var exoPlayer: ExoPlayer? = null
+    private val playerListener = object : Player.Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            _state.value = _state.value.copy(
+                isBuffering = playbackState == Player.STATE_BUFFERING,
+                isReady = playbackState == Player.STATE_READY,
+                isPlaying = exoPlayer?.isPlaying ?: false,
+                duration = exoPlayer?.duration?.coerceAtLeast(0) ?: 0
+            )
+        }
+
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            _state.value = _state.value.copy(isPlaying = isPlaying)
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            _state.value = _state.value.copy(
+                error = error.message,
+                isPlaying = false,
+                isBuffering = false
+            )
+        }
+
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            _state.value = _state.value.copy(
+                currentPosition = exoPlayer?.currentPosition?.coerceAtLeast(0) ?: 0
+            )
+        }
+    }
+
+    init {
+        val context = AndroidContextHolder.requireContext()
+        exoPlayer = ExoPlayer.Builder(context).build().apply {
+            addListener(playerListener)
+        }
+    }
+
+    actual fun prepare(url: String) {
+        val sanitizedUrl = url.trim()
+        if (sanitizedUrl.isEmpty()) {
+            _state.value = AudioPlayerState(error = "Invalid URL")
+            return
+        }
+
+        _state.value = AudioPlayerState(isBuffering = true)
+        
+        val mediaItem = MediaItem.fromUri(sanitizedUrl)
+        exoPlayer?.apply {
+            setMediaItem(mediaItem)
+            prepare()
+        }
+    }
+
+    actual fun play() {
+        exoPlayer?.play()
+    }
+
+    actual fun pause() {
+        exoPlayer?.pause()
+    }
+
+    actual fun stop() {
+        exoPlayer?.stop()
+        _state.value = AudioPlayerState()
+    }
+
+    actual fun release() {
+        exoPlayer?.removeListener(playerListener)
+        exoPlayer?.release()
+        exoPlayer = null
+    }
+
+    actual fun seekTo(position: Long) {
+        exoPlayer?.seekTo(position.coerceAtLeast(0))
+    }
+
+    actual fun setPlaybackSpeed(speed: Float) {
+        exoPlayer?.setPlaybackSpeed(speed.coerceIn(0.25f, 2.0f))
+    }
+
+    actual fun setVolume(volume: Float) {
+        exoPlayer?.volume = volume.coerceIn(0f, 1f)
+    }
+
+    /**
+     * Update current position - call this periodically for progress updates
+     */
+    fun updatePosition() {
+        exoPlayer?.let { player ->
+            _state.value = _state.value.copy(
+                currentPosition = player.currentPosition.coerceAtLeast(0),
+                duration = player.duration.coerceAtLeast(0)
+            )
+        }
     }
 }
 

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funnyenglish.app.theme.FunnyTheme
 import com.funnyenglish.app.viewmodel.AppLanguage
 import com.funnyenglish.app.viewmodel.AppThemeMode
 import com.funnyenglish.app.viewmodel.SettingsState
@@ -66,12 +67,11 @@ fun SettingsScreen(
     onThemeSelected: (AppThemeMode) -> Unit,
     onLogout: () -> Unit
 ) {
-    val colors = FunnyTheme.colors
     var languageExpanded by remember { mutableStateOf(false) }
     var themeExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = colors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -86,7 +86,7 @@ fun SettingsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -94,7 +94,8 @@ fun SettingsScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .consumeWindowInsets(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {

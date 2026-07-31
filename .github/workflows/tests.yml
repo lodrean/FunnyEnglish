@@ -1,0 +1,254 @@
+name: Tests
+
+# DEPRECATED (2026-07-20): джобы этого workflow дублируют ci.yml
+# (backend-unit-tests ⊂ backend-test, shared-tests ⊂ shared-test,
+# build-verification ⊂ android-build, code-quality — detekt не подключён).
+# Push/PR-триггеры отключены, чтобы не гонять backend-тесты 3 раза на каждый push.
+# Оставлен ручной запуск для отладки. Удалить после валидации ci.yml.
+on:
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+
+jobs:
+  # Backend Unit Tests
+  backend-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Backend Unit Tests
+        run: ./gradlew :backend:test --no-daemon
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/build/reports/tests/
+
+  # Shared Module Tests
+  shared-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Shared Module Tests
+        run: ./gradlew :shared:allTests --no-daemon
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shared-test-results
+          path: shared/build/reports/tests/
+
+  # Backend E2E Tests
+  backend-e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: funnyenglish_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Backend
+        run: ./gradlew :backend:bootJar --no-daemon
+
+      - name: Start Backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/funnyenglish_test
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+          JWT_SECRET: test-secret-key-for-testing-purposes-only
+        run: |
+          java -jar backend/build/libs/*.jar &
+          echo $! > backend.pid
+          sleep 30
+
+      - name: Wait for Backend
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/actuator/health > /dev/null; then
+              echo "Backend is up!"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/30)"
+            sleep 2
+          done
+          echo "Backend failed to start"
+          exit 1
+
+      - name: Run E2E Tests
+        shell: pwsh
+        run: |
+          PowerShell -ExecutionPolicy Bypass -File ./api-tests/e2e-backend-tests.ps1
+
+      - name: Cleanup Backend
+        if: always()
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+          fi
+
+  # Admin Panel E2E Tests
+  admin-e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-e2e-tests]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: admin-web/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd admin-web
+          npm ci
+
+      - name: Install Playwright
+        run: |
+          cd admin-web
+          npx playwright install chromium
+
+      - name: Build Admin Panel
+        run: |
+          cd admin-web
+          npm run build
+
+      - name: Start Admin Panel
+        run: |
+          cd admin-web
+          npm run preview &
+          sleep 5
+
+      - name: Run Playwright Tests
+        run: |
+          cd admin-web
+          npx playwright test --project=chromium-headless
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: admin-web/playwright-report/
+
+  # Build Verification
+  build-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build All Modules
+        run: ./gradlew build -x test --no-daemon
+
+  # Code Quality Check (Detekt)
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Detekt
+        run: ./gradlew detekt --no-daemon
+
+      - name: Upload Detekt Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: detekt-report
+          path: build/reports/detekt/
+
+  # Summary
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, shared-tests, backend-e2e-tests, admin-e2e-tests, build-verification]
+    if: always()
+    steps:
+      - name: Test Summary
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Unit Tests | ${{ needs.backend-unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Shared Module Tests | ${{ needs.shared-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend E2E Tests | ${{ needs.backend-e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin E2E Tests | ${{ needs.admin-e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Verification | ${{ needs.build-verification.result }} |" >> $GITHUB_STEP_SUMMARY

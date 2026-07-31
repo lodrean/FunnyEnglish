@@ -1,0 +1,57 @@
+# Flow: Complete Test Journey
+# Tests full user flow from category selection to results
+
+appId: com.funnyenglish.app
+---
+- launchApp
+
+# Первый запуск: онбординг → гостевой режим
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+# Wait for app to load
+- extendedWaitUntil:
+    visible: "Категории"
+    timeout: 10000
+
+# Select Colors category
+- tapOn: "Цвета"
+- assertVisible: "Цвета: Базовый"
+
+# Start the test
+- tapOn: "Цвета: Базовый"
+
+# Answer questions
+# Question 1: Red
+- assertVisible: ".*Как будет.*"
+- tapOn: "Red"
+- tapOn: "Далее"
+
+# Question 2: Blue
+- tapOn: "Blue"
+- tapOn: "Далее"
+
+# Question 3: Green
+- tapOn: "Green"
+- tapOn: "Далее"
+
+# Question 4: Yellow
+- tapOn: "Yellow"
+- tapOn: "Далее"
+
+# Question 5: Black
+- tapOn: "Black"
+- tapOn: "Завершить тест"
+
+# Verify results screen
+- extendedWaitUntil:
+    visible: "Ваш результат"
+    timeout: 15000
+- assertVisible: "5 / 5 правильно"
+- tapOn: "На главную"
+
+# Verify back to categories with progress
+- assertVisible: "Категории"
+- assertVisible: ".*XP.*"

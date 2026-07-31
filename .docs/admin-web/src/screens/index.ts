@@ -1,0 +1,7 @@
+export { Dashboard } from './Dashboard'
+export { Categories } from './Categories'
+export { Tests } from './Tests'
+export { TestEditor } from './TestEditor'
+export { Users } from './Users'
+export { Analytics } from './Analytics'
+export { Settings } from './Settings'

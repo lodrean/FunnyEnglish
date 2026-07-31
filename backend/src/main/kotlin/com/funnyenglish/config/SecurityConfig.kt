@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -22,22 +23,24 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity, corsConfigurationSource: CorsConfigurationSource): SecurityFilterChain {
         return http
             .csrf { it.disable() }
-            .cors { }
+            .cors { it.configurationSource(corsConfigurationSource) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    // Public endpoints
+                    // Public endpoints (paths without /api context path)
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/tests/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/audio-tests/**").permitAll()
+                    .requestMatchers("/public/**").permitAll()
                     .requestMatchers("/leaderboard/**").permitAll()
 
-                    // Admin endpoints
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
+                    // Admin endpoints (hasAuthority because JwtAuthFilter adds ROLE_ prefix)
+                    .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 
                     // All other endpoints require authentication
                     .anyRequest().authenticated()

@@ -4,7 +4,10 @@ import com.funnyenglish.dto.*
 import com.funnyenglish.security.UserPrincipal
 import com.funnyenglish.service.AchievementService
 import com.funnyenglish.service.ProgressService
+import com.funnyenglish.service.StreakService
 import com.funnyenglish.service.UserService
+import com.funnyenglish.shared.model.StreakData
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -14,7 +17,8 @@ import org.springframework.web.bind.annotation.*
 class UserController(
     private val userService: UserService,
     private val progressService: ProgressService,
-    private val achievementService: AchievementService
+    private val achievementService: AchievementService,
+    private val streakService: StreakService
 ) {
     @GetMapping("/me")
     fun getCurrentUser(
@@ -50,5 +54,21 @@ class UserController(
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<List<AchievementResponse>> {
         return ResponseEntity.ok(achievementService.getUserAchievements(principal.userId))
+    }
+
+    @GetMapping("/me/streak")
+    fun getCurrentUserStreak(
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<StreakData> {
+        val userId = java.util.UUID.fromString(principal.userId)
+        return ResponseEntity.ok(streakService.getStreakData(userId))
+    }
+
+    @PostMapping("/me/merge-guest-progress")
+    fun mergeGuestProgress(
+        @AuthenticationPrincipal principal: UserPrincipal,
+        @Valid @RequestBody request: MergeGuestProgressRequest
+    ): ResponseEntity<MergeGuestProgressResponse> {
+        return ResponseEntity.ok(userService.mergeGuestProgress(principal.userId, request))
     }
 }

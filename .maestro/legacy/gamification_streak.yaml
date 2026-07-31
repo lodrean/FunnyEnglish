@@ -1,0 +1,35 @@
+# E2E Test: Streak System (guest mode)
+appId: com.funnyenglish.app
+---
+- launchApp
+
+# Первый запуск: онбординг → гостевой режим
+- runFlow:
+    when:
+      visible: "Учим английский играючи"
+    file: ../subflows/onboarding_guest.yaml
+
+# Wait for home screen (guest mode)
+- extendedWaitUntil:
+    visible: "Категории"
+    timeout: 10000
+
+# Check greeting is visible
+- assertVisible: ".*Привет!.*"
+
+# Check streak widget is visible
+- assertVisible: "🔥"
+
+# Check XP widget
+- assertVisible: "XP"
+
+# Check level widget
+- assertVisible: ".*Уровень.*"
+
+# Navigate to categories
+- tapOn: "Категории"
+- assertVisible: "Категории"
+
+# Navigate back to home
+- tapOn: "Главная"
+- assertVisible: ".*Привет!.*"

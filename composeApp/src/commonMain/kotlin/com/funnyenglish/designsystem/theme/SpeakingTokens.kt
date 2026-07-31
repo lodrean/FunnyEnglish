@@ -1,0 +1,142 @@
+package com.funnyenglish.designsystem.theme
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+/**
+ * Speaking Trainer — токены Playful Coach v1.1 (.docs/design-system/tokens.json).
+ *
+ * Используются новыми speaking-экранами; legacy-палитра (FunnyColorScheme) не тронута.
+ * Доступ: `MaterialTheme.speakingColors` или `LocalSpeakingColors.current`.
+ *
+ * WCAG: на record-фоне (#FF9F6B) — только тёмный текст [text] (5.8:1);
+ * белый на record = 2.0:1 (FAIL). textMuted 3.9:1 — только large text.
+ */
+@Immutable
+data class SpeakingColors(
+    val primary: Color,            // #5B8DEF — навигация, play-контролы
+    val onPrimary: Color,
+    val primaryContainer: Color,   // #DDE8FD
+    val onPrimaryContainer: Color, // #1A2F5E
+    val secondary: Color,          // #9B7EDE — фирменный фиолетовый
+    val secondaryContainer: Color, // #E5DCFF (note-bg)
+    val background: Color,         // #EEF3FF светлый / #161A2E тёмный
+    val surface: Color,
+    val surfaceVariant: Color,     // трек таймер-кольца
+    val text: Color,
+    val textMuted: Color,
+    val outline: Color,
+    val record: Color,             // #FF9F6B — персиковый, НЕ error!
+    val onRecord: Color,           // тёмный текст на record (WCAG AA)
+    val recordActive: Color,       // #FFB27D — waveform при записи
+    val recordShadow: Color,       // #D97238 — жёсткая тень rec-кнопки
+    val waveformPlayback: Color,   // #5B8DEF
+    val timerLevel80: Color,
+    val timerLevel50: Color,
+    val timerLevel30: Color,
+    val statusNew: Color,          // #FB8C00
+    val statusNewContainer: Color, // #FFE0B2
+    val statusReviewed: Color,     // #43A047
+    val statusReviewedContainer: Color, // #C8E6C9
+    val success: Color,
+    val error: Color,              // #E53935
+    val scrimSubtitle: Color,      // #000000B3 — подложка субтитров 70%
+    val scrimVideoControls: Color  // #00000080
+)
+
+val LightSpeakingColors = SpeakingColors(
+    primary = Color(0xFF5B8DEF),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFDDE8FD),
+    onPrimaryContainer = Color(0xFF1A2F5E),
+    secondary = Color(0xFF9B7EDE),
+    secondaryContainer = Color(0xFFE5DCFF),
+    background = Color(0xFFEEF3FF),
+    surface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFFD8E2FA),
+    text = Color(0xFF2D3561),
+    textMuted = Color(0xFF6E76A8),
+    outline = Color(0xFFB9C7EE),
+    record = Color(0xFFFF9F6B),
+    onRecord = Color(0xFF2D3561),
+    recordActive = Color(0xFFFFB27D),
+    recordShadow = Color(0xFFD97238),
+    waveformPlayback = Color(0xFF5B8DEF),
+    timerLevel80 = Color(0xFF5B8DEF),
+    timerLevel50 = Color(0xFF9B7EDE),
+    timerLevel30 = Color(0xFFFF9F6B),
+    statusNew = Color(0xFFFB8C00),
+    statusNewContainer = Color(0xFFFFE0B2),
+    statusReviewed = Color(0xFF43A047),
+    statusReviewedContainer = Color(0xFFC8E6C9),
+    success = Color(0xFF43A047),
+    error = Color(0xFFE53935),
+    scrimSubtitle = Color(0xB3000000),
+    scrimVideoControls = Color(0x80000000)
+)
+
+val DarkSpeakingColors = LightSpeakingColors.copy(
+    primary = Color(0xFF8FB3F5),
+    secondary = Color(0xFFB79EED),
+    background = Color(0xFF161A2E),
+    surface = Color(0xFF1F2440),
+    surfaceVariant = Color(0xFF2B3152),
+    text = Color(0xFFE8EAF6),
+    textMuted = Color(0xFF9AA0C4),
+    outline = Color(0xFF3D4568),
+    record = Color(0xFFFFB27D),
+    onRecord = Color(0xFF161A2E)
+)
+
+val LocalSpeakingColors = staticCompositionLocalOf { LightSpeakingColors }
+
+/** Текстовые стили Speaking Trainer (tokens.json font.scale) */
+@Immutable
+object SpeakingTextStyles {
+    /** Вопросы читаются с расстояния вытянутой руки: 25sp, w600, lineHeight 1.35 */
+    val QuestionText = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 25.sp,
+        lineHeight = 34.sp
+    )
+
+    /** Таймер: моноширинные tabular-цифры (tnum) — не прыгает по ширине, 64sp */
+    val TimerDisplay = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Bold,
+        fontSize = 64.sp,
+        lineHeight = 72.sp,
+        fontFeatureSettings = "tnum"
+    )
+
+    /** Субтитры поверх scrim-подложки: 17sp, lineHeight 1.4 */
+    val SubtitleText = TextStyle(
+        fontSize = 17.sp,
+        lineHeight = 24.sp
+    )
+}
+
+/** Формы Speaking Trainer (tokens.json radius) */
+@Immutable
+object SpeakingShapes {
+    val Recorder = RoundedCornerShape(22.dp)   // squircle кнопки записи, НЕ круг
+    val Card = RoundedCornerShape(22.dp)       // фирменный радиус Variant B
+    val Chip = RoundedCornerShape(12.dp)
+    val Sheet = RoundedCornerShape(28.dp)      // top corners bottom sheet
+    val StatusPill = RoundedCornerShape(999.dp)
+}
+
+/** Жёсткая «оттопыренная» тень rec-кнопки: 0 4px 0 recordShadow; при нажатии — 1dp */
+@Immutable
+object SpeakingElevation {
+    val RecorderShadowOffsetY = 4.dp
+    val RecorderShadowPressedOffsetY = 1.dp
+}

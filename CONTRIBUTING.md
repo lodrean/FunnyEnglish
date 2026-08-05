@@ -1,11 +1,11 @@
-# Contributing to FunnyEnglish
+# Contributing to So to Speak
 
 ## Структура проекта
 
 ```
-FunnyEnglish/
+So to Speak/
 ├── backend/                 # Spring Boot API (Kotlin)
-│   └── src/main/kotlin/com/funnyenglish/
+│   └── src/main/kotlin/com/sotospeak/
 │       ├── controller/      # REST контроллеры
 │       ├── service/         # Бизнес-логика
 │       ├── repository/      # JPA репозитории
@@ -25,7 +25,7 @@ FunnyEnglish/
 ├── composeApp/              # Compose Multiplatform UI
 │   └── src/
 │       ├── commonMain/      # Общий код
-│       │   └── kotlin/com/funnyenglish/app/
+│       │   └── kotlin/com/sotospeak/app/
 │       │       ├── screens/     # UI экраны
 │       │       ├── viewmodel/   # ViewModels
 │       │       ├── theme/       # Темы (Material 3)
@@ -38,7 +38,7 @@ FunnyEnglish/
 ├── shared/                  # KMP Shared Module
 │   └── src/
 │       ├── commonMain/      # Общий код
-│       │   └── kotlin/com/funnyenglish/shared/
+│       │   └── kotlin/com/sotospeak/shared/
 │       │       ├── api/         # API клиент (Ktor)
 │       │       ├── model/       # Data models
 │       │       └── platform/    # Platform expect declarations
@@ -65,8 +65,8 @@ FunnyEnglish/
 ```bash
 # Docker
 docker run -d \
-  --name funnyenglish-db \
-  -e POSTGRES_DB=funnyenglish \
+  --name sotospeak-db \
+  -e POSTGRES_DB=sotospeak \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -p 5432:5432 \
@@ -81,11 +81,11 @@ docker run -d \
 cd backend
 
 # Настройте переменные окружения
-export DATABASE_URL=jdbc:postgresql://localhost:5432/funnyenglish
+export DATABASE_URL=jdbc:postgresql://localhost:5432/sotospeak
 export DATABASE_USERNAME=postgres
 export DATABASE_PASSWORD=postgres
 export JWT_SECRET=your-secret-key-min-32-chars
-export ADMIN_EMAIL=admin@funnyenglish.app
+export ADMIN_EMAIL=admin@sotospeak.app
 export ADMIN_PASSWORD=admin123
 
 # Запуск
@@ -240,7 +240,7 @@ npm run test
 При изменении API:
 
 1. Обновите backend контроллер/DTO
-2. Обновите `shared/api/FunnyEnglishApi.kt`
+2. Обновите `shared/api/SoToSpeakApi.kt`
 3. Обновите `admin-web/src/api/client.ts`
 4. Обновите `docs/API.md`
 

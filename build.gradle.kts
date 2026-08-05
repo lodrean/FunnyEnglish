@@ -12,6 +12,6 @@ plugins {
 }
 
 allprojects {
-    group = "com.funnyenglish"
+    group = "com.sotospeak"
     version = "1.0.0-SNAPSHOT"
 }

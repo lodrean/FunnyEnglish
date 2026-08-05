@@ -31,7 +31,7 @@ type AuthFixtures = {
 export const test = base.extend<AuthFixtures>({
   // Фикстура с учетными данными админа
   adminCredentials: {
-    email: process.env.ADMIN_EMAIL || 'admin@funnyenglish.com',
+    email: process.env.ADMIN_EMAIL || 'admin@sotospeak.com',
     password: process.env.ADMIN_PASSWORD || 'admin123',
   },
 
@@ -75,6 +75,7 @@ export const test = base.extend<AuthFixtures>({
       }
     };
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- Playwright fixture, не React
     await use(auth);
   },
 });

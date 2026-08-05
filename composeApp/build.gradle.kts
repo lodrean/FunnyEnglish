@@ -40,7 +40,9 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).copy(
+                    port = 8082
+                ).apply {
                     static = (static ?: mutableListOf()).apply {
                         add(project.projectDir.path + "/src/wasmJsMain/resources")
                     }
@@ -48,6 +50,17 @@ kotlin {
             }
         }
         binaries.executable()
+    }
+
+    // Override generated index.html with the custom shell that includes
+    // crypto.randomUUID polyfill, theme sync and cache-busting.
+    tasks.named<Copy>("wasmJsBrowserDistribution") {
+        doLast {
+            copy {
+                from("src/wasmJsMain/resources/index.html")
+                into(layout.buildDirectory.dir("dist/wasmJs/productionExecutable"))
+            }
+        }
     }
 
     sourceSets {
@@ -117,6 +130,7 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
+            implementation(compose.material)
             implementation(compose.ui)
             implementation(libs.ktor.client.js)
             
@@ -146,7 +160,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.app"
+    namespace = "com.sotospeak.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -171,25 +185,19 @@ android {
         }
     }
 
-    val apiBaseUrl = providers.gradleProperty("FUNNYENGLISH_API_BASE_URL")
+    val apiBaseUrl = providers.gradleProperty("SOTOSPEAK_API_BASE_URL")
         .orElse("http://10.0.2.2:8080/")
 
     buildTypes {
         getByName("debug") {
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
             buildConfigField("boolean", "ENABLE_NETWORK_LOGS", "true")
-            // Feature Flags - ВКЛЮЧЕНЫ в debug
-            buildConfigField("boolean", "ENABLE_DRAG_DROP_QUESTIONS", "true")
-            buildConfigField("boolean", "ENABLE_IMAGE_WORD_MATCH", "true")
             buildConfigField("boolean", "ENABLE_DEBUG_TOOLS", "true")
             manifestPlaceholders["usesCleartextTraffic"] = "true"
         }
         getByName("release") {
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
             buildConfigField("boolean", "ENABLE_NETWORK_LOGS", "false")
-            // Feature Flags - ОТКЛЮЧЕНЫ в release (нестабильные фичи)
-            buildConfigField("boolean", "ENABLE_DRAG_DROP_QUESTIONS", "false")
-            buildConfigField("boolean", "ENABLE_IMAGE_WORD_MATCH", "false")
             buildConfigField("boolean", "ENABLE_DEBUG_TOOLS", "false")
             manifestPlaceholders["usesCleartextTraffic"] = "false"
             isMinifyEnabled = true
@@ -208,7 +216,7 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "com.funnyenglish.app.MainKt"
+        mainClass = "com.sotospeak.app.MainKt"
 
         // JVM args for better networking on Windows
         jvmArgs("-Djava.net.preferIPv4Stack=true")
@@ -217,7 +225,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "FunnyEnglish"
+            packageName = "SoToSpeak"
             packageVersion = "1.0.0"
         }
     }

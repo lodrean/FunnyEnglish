@@ -1,4 +1,4 @@
-# FunnyEnglish Admin Panel - Route Testing Script
+# So to Speak Admin Panel - Route Testing Script
 # Run after: docker compose up -d
 # 
 # Usage: .\test-routes.ps1
@@ -6,12 +6,12 @@
 $baseUrl = "http://localhost:3000"
 $apiUrl = "http://localhost:8080"
 
-Write-Host "=== FunnyEnglish Admin Navigation Test ===" -ForegroundColor Cyan
+Write-Host "=== So to Speak Admin Navigation Test ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Test credentials
 $loginBody = @{
-    email = "admin@funnyenglish.com"
+    email = "admin@sotospeak.com"
     password = "admin123"
 } | ConvertTo-Json
 
@@ -64,7 +64,7 @@ Write-Host "=== Test Instructions ===" -ForegroundColor Cyan
 Write-Host "1. Run: docker compose up -d" -ForegroundColor White
 Write-Host "2. Wait 30 seconds for services to start" -ForegroundColor White
 Write-Host "3. Open: http://localhost:3000" -ForegroundColor White
-Write-Host "4. Login with: admin@funnyenglish.com / admin123" -ForegroundColor White
+Write-Host "4. Login with: admin@sotospeak.com / admin123" -ForegroundColor White
 Write-Host "5. Click each menu item in sidebar" -ForegroundColor White
 Write-Host "6. Verify no 404 errors in browser console" -ForegroundColor White
 Write-Host ""

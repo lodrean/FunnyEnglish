@@ -3,8 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FunnyEnglish Web</title>
-    <script src="skiko.js"></script>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <title>So to speak Web</title>
+    <script>
+        (function () {
+            window.onerror = function(message, source, lineno, colno, error) {
+                console.error('[window.onerror]', message, 'at', source + ':' + lineno + ':' + colno, error);
+                if (error && error.stack) console.error('[window.onerror stack]', error.stack);
+                return false;
+            };
+            window.onunhandledrejection = function(event) {
+                var r = event.reason;
+                console.error('[window.onunhandledrejection]', r);
+                if (r && r.stack) console.error('[window.onunhandledrejection stack]', r.stack);
+                if (r && typeof r.toString === 'function') {
+                    try { console.error('[window.onunhandledrejection toString]', r.toString()); } catch(e) {}
+                }
+                try {
+                    console.error('[window.onunhandledrejection keys]', Object.keys(r || {}));
+                    console.error('[window.onunhandledrejection json]', JSON.stringify(r));
+                } catch(e) {}
+                try {
+                    var s = '';
+                    for (var k in r) { s += k + ': ' + r[k] + '; '; }
+                    console.error('[window.onunhandledrejection props]', s);
+                } catch(e) {}
+            };
+
+            // Polyfill crypto.randomUUID for non-secure contexts (e.g. http://192.168.x.x)
+            // Koin 4.0 uses kotlin.uuid.randomUUID which requires this on WASM.
+            (function() {
+                var crypto = window.crypto || window.msCrypto;
+                if (crypto && !crypto.randomUUID) {
+                    crypto.randomUUID = function() {
+                        var buf = new Uint8Array(16);
+                        crypto.getRandomValues(buf);
+                        buf[6] = (buf[6] & 0x0f) | 0x40;
+                        buf[8] = (buf[8] & 0x3f) | 0x80;
+                        var hex = Array.from(buf, function(b) { return (b < 16 ? '0' : '') + b.toString(16); });
+                        return hex.slice(0,4).join('') + '-' + hex.slice(4,6).join('') + '-' + hex.slice(6,8).join('') + '-' + hex.slice(8,10).join('') + '-' + hex.slice(10,16).join('');
+                    };
+                }
+            })();
+        })();
+    </script>
+    <script>
+        // Sync the HTML shell background with the app theme before the canvas loads.
+        // Compose reads the same localStorage key, so this avoids a light flash in dark mode.
+        (function () {
+            try {
+                const mode = localStorage.getItem('sotospeak.preferences_theme_mode') || localStorage.getItem('theme_mode') || 'system';
+                const isDark = mode === 'dark' ||
+                    (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <style>
         html, body {
             width: 100%;
@@ -12,14 +69,17 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f5f5f5;
+            background-color: #EEF3FF;
+        }
+        html[data-theme="dark"], html[data-theme="dark"] body {
+            background-color: #161A2E;
         }
         #ComposeTarget {
             width: 100%;
             height: 100%;
             display: block;
         }
-        /* Loading spinner */
+        /* Loading screen with logo */
         #loading {
             position: absolute;
             top: 50%;
@@ -27,36 +87,73 @@
             transform: translate(-50%, -50%);
             text-align: center;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #2D3561;
         }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e0e0e0;
-            border-top-color: #4A90E2;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        html[data-theme="dark"] #loading {
+            color: #EEF3FF;
+        }
+        #loading svg {
+            display: block;
             margin: 0 auto 16px;
+            width: 96px;
+            height: 96px;
+            animation: pulse 1.6s ease-in-out infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(0.96); }
         }
     </style>
 </head>
 <body>
     <div id="loading">
-        <div class="spinner"></div>
-        <p>Loading FunnyEnglish...</p>
+        <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="logoWaveGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#5B8DEF"/>
+                    <stop offset=".5" stop-color="#9B7EDE"/>
+                    <stop offset="1" stop-color="#FF9F6B"/>
+                </linearGradient>
+            </defs>
+            <!-- Microphone -->
+            <rect x="41" y="12" width="14" height="26" rx="7" fill="#FF9F6B"/>
+            <path d="M34 30a14 14 0 0 0 28 0" fill="none" stroke="#FF9F6B" stroke-width="4" stroke-linecap="round"/>
+            <line x1="48" y1="44" x2="48" y2="50" stroke="#FF9F6B" stroke-width="4" stroke-linecap="round"/>
+            <line x1="41" y1="54" x2="55" y2="54" stroke="#FF9F6B" stroke-width="4" stroke-linecap="round"/>
+            <!-- Waveform bars -->
+            <g fill="url(#logoWaveGrad)">
+                <rect x="26" y="68" width="6" height="10" rx="3"/>
+                <rect x="36" y="63" width="6" height="20" rx="3"/>
+                <rect x="46" y="58" width="6" height="30" rx="3"/>
+                <rect x="56" y="65" width="6" height="16" rx="3"/>
+                <rect x="66" y="67" width="6" height="12" rx="3"/>
+            </g>
+        </svg>
+        <p>Loading So to speak...</p>
     </div>
-    <canvas id="ComposeTarget" style="display: none;"></canvas>
-    <script src="composeApp.js"></script>
+    <canvas id="ComposeTarget" style="display: block;"></canvas>
+    <script src="composeApp.js?v=20260803c"></script>
     <script>
-        // Hide loading spinner when app starts
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('ComposeTarget').style.display = 'block';
-            }, 500);
-        });
+        (function () {
+            var loading = document.getElementById('loading');
+            var timeout;
+            window.markComposeReady = function () {
+                clearTimeout(timeout);
+                if (loading) loading.style.display = 'none';
+            };
+            window.markComposeError = function (message) {
+                clearTimeout(timeout);
+                if (loading) {
+                    loading.innerHTML = '<p style="color:#d32f2f;padding:20px;">Ошибка загрузки приложения:<br>' + (message || 'неизвестная ошибка') + '</p>';
+                }
+            };
+            // Fallback: if Compose never signals ready, show a message instead of a blank screen.
+            timeout = setTimeout(function () {
+                if (loading && loading.style.display !== 'none') {
+                    loading.innerHTML = '<p style="color:#d32f2f;padding:20px;">Приложение загружается слишком долго.<br>Попробуйте обновить страницу (Ctrl+F5) или очистить кэш.</p>';
+                }
+            }, 15000);
+        })();
     </script>
 </body>
 </html>

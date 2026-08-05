@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Components
+ * So to speak Admin Web - Components
  * Design System 2.0
  */
 
@@ -18,14 +18,8 @@ export * from './feedback';
 // Navigation Components
 export * from './navigation';
 
-// Content Management Components (when implemented)
-// export * from './content';
-
 // User Management Components (when implemented)
 // export * from './users';
 
 // Chart Components (when implemented)
 // export * from './charts';
-
-// Question Components (when implemented)
-// export * from './questions';

@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    FunnyEnglish Simple API Test
+    So to Speak Simple API Test
 #>
 param(
     [string]$BaseUrl = "http://localhost:8080"
@@ -54,7 +54,7 @@ function Test-Endpoint($Name, $Method, $Path, $ExpectedCode = 200, $Body = $null
 }
 
 Write-Host "========================================" -ForegroundColor $Colors.Info
-Write-Host "  FunnyEnglish API Tests" -ForegroundColor $Colors.Info
+Write-Host "  So to Speak API Tests" -ForegroundColor $Colors.Info
 Write-Host "  Target: $BaseUrl" -ForegroundColor $Colors.Info
 Write-Host "========================================" -ForegroundColor $Colors.Info
 Write-Host ""
@@ -67,7 +67,7 @@ if (Test-Endpoint "Health Check" "GET" "/categories" 200 $null $true) { $passed+
 
 # Test 2: Login
 Write-Host "Testing POST /auth/login..." -NoNewline
-$loginBody = '{"email":"demo@funnyenglish.app","password":"demo123"}' | Out-File -FilePath "$env:TEMP\login.json" -Encoding ascii -Force
+$loginBody = '{"email":"demo@sotospeak.app","password":"demo123"}' | Out-File -FilePath "$env:TEMP\login.json" -Encoding ascii -Force
 $loginResponse = & curl.exe -s -X POST "$BaseUrl/auth/login" -H "Content-Type: application/json" -d "@$env:TEMP\login.json" --max-time 10 2>$null | ConvertFrom-Json
 if ($loginResponse.token) {
     Write-Host " ✅ PASS (Got token)" -ForegroundColor $Colors.Success

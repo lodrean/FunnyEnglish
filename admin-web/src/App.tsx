@@ -8,13 +8,17 @@ import { useAuthStore } from './store/authStore'
 import { RouteValidator } from './components/navigation/RouteValidator'
 import {
   Dashboard,
-  Categories,
-  Tests,
-  TestEditor,
   Users,
   Analytics,
   Settings,
   Login,
+  SpeakingLibraries,
+  SpeakingLibraryEditor,
+  SpeakingTopics,
+  SpeakingTopicEditor,
+  GradingInbox,
+  GradingDetail,
+  ClientLogs,
 } from './screens'
 
 // Protected Route wrapper component
@@ -118,20 +122,23 @@ function App() {
               {/* Dashboard */}
               <Route index element={<Dashboard />} />
               
-              {/* Content Management - nested routes */}
-              <Route path="content">
-                <Route index element={<Navigate to="/content/categories" replace />} />
-                <Route path="categories" element={<Categories />} />
-                <Route path="tests" element={<Tests />} />
-                <Route path="tests/:id" element={<TestEditor />} />
-                <Route path="questions" element={<Tests />} />
+              {/* Speaking Content */}
+              <Route path="speaking">
+                <Route index element={<Navigate to="/speaking/libraries" replace />} />
+                <Route path="libraries" element={<SpeakingLibraries />} />
+                <Route path="libraries/new" element={<SpeakingLibraryEditor />} />
+                <Route path="libraries/:id/edit" element={<SpeakingLibraryEditor />} />
+                <Route path="topics" element={<SpeakingTopics />} />
+                <Route path="topics/new" element={<SpeakingTopicEditor />} />
+                <Route path="topics/:id/edit" element={<SpeakingTopicEditor />} />
               </Route>
-              
-              {/* Legacy redirects */}
-              <Route path="categories" element={<Navigate to="/content/categories" replace />} />
-              <Route path="tests" element={<Navigate to="/content/tests" replace />} />
-              <Route path="questions" element={<Navigate to="/content/questions" replace />} />
-              
+
+              {/* Grading */}
+              <Route path="grading">
+                <Route index element={<GradingInbox />} />
+                <Route path="submissions/:id" element={<GradingDetail />} />
+              </Route>
+
               {/* User Management */}
               <Route path="users" element={<Users />} />
               <Route path="users/students" element={<Users />} />
@@ -145,6 +152,9 @@ function App() {
                 <Route path="statistics" element={<Analytics />} />
               </Route>
               
+              {/* Client Logs (OpenSpec add-client-logging) */}
+              <Route path="logs" element={<ClientLogs />} />
+
               {/* Settings */}
               <Route path="settings" element={<Settings />} />
             </Route>

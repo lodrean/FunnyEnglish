@@ -53,23 +53,27 @@ PRD → спеки Part 1–3 → дизайн-бриф → схемы. Выхо
 
 **Проверка и ревью (gate Фазы 2):** `./gradlew :composeApp:desktopTest :composeApp:uiTest` + `:app:assembleDebug` (exit code), Maestro-флоу speaking на эмуляторе против docker-стека, ручной смоук Training/Practice на устройстве, ревью экранов на соответствие мокапам Playful Coach v1.1 и спеке Part 2 (владелец), сверка API-контрактов с Part 1 (только реализованные эндпоинты). Результат фиксируется в этом плане + `memory.md`.
 
-### Фаза 3 — Admin-web (спека Part 3)
+### Фаза 3 — Admin-web (спека Part 3) — ✅ ВЫПОЛНЕНА 2026-08-01
+> Реализовано AW-T1…AW-T17 (bd `8tg.3.1`–`8tg.3.16` закрыты). Quality gate: `npm run lint` 0 errors/warnings (в eslint.config добавлены ignores coverage/storybook-static), vitest 256/256 (38 новых по §7.1), `npm run build` + `npm run build-storybook` зелёные, полный Playwright **328/328** против docker-стека (~21 мин, последовательно), живые прогоны: создание контента с реальным upload mp4/vtt в MinIO, grading-флоу NEW→оценка 7.5→REVIEWED→edit 8.5. Storybook-preview всех экранов (требование владельца): stories на QueryClient `setQueryData` + MemoryRouter, без msw. Контрактная адаптация спека Part 3 ↔ фактический backend сосредоточена в `speakingApi.ts` (publish через PUT, маппинг полей, детали из кэша списков, reorder цепочкой PUT, вопросы из AdminTopicResponse) — владельцу предложен дифф спеки → v1.1 (ADR-007). Найдено и исправлено 2 реальных бага платформы: ToastProvider props (белый экран через 5с после любого тоста), MUI Tabs direct-child; visual-базлайны обновлены (новые пункты меню в сайдбаре).
 1. Раздел Speaking: CRUD Libraries/Topics/Videos/Questions (MediaUploader).
 2. Раздел Grading: inbox, плеер, рубрика, REVIEWED.
 3. Vitest + Playwright e2e.
 
 **Проверка и ревью (gate Фазы 3):** `npm test` (vitest) + `npm run lint` + `npm run build`, Playwright-сьют против docker-стека (`SKIP_WEB_SERVER=1 ADMIN_URL=http://localhost:3000`), ручной смоук CRUD контента и grading-флоу в админке, ревью UI спеки Part 3 (владелец). Результат фиксируется в этом плане + `memory.md`.
 
-### Фаза 4 — Дизайн-система handoff (параллельно с фазами 2–3)
-Концепт готов: Playful Coach v1.1 — вариант B (`.docs/design-system/`). Осталось:
-1. `tokens.json` → `:design` theme: `Color.kt` (light+dark, новые семантические токены record/timer/status), `Type.kt` (questionText/timerDisplay mono+tnum/subtitleText), `Shape.kt`, `Elevation.kt`.
-2. Та же палитра (HEX 1:1) → `admin-web/src/theme/Theme.ts` (brandColors/semanticColors).
-3. `icons.svg` → `design/.../icons/CustomIcons.kt` (ImageVector) и/или composeResources/drawable.
-4. Верификация: сборка `:design` + `npm run build`, контраст record vs error (WCAG AA), detekt/ktlint; обновить `docs/DESIGN_SYSTEM_SPEC.md`.
+### Фаза 4 — Дизайн-система handoff — ✅ ВЫПОЛНЕНА 2026-08-01
+> Реализовано DS-1…DS-6 (bd `8tg.4.1`–`8tg.4.6` закрыты). Токены Playful Coach v1.1 в `:design` и `SpeakingTokens.kt` (DS-1, ранее); полный ребренд admin-web `Theme.ts` (HEX 1:1, палитра `speaking`, Nunito, radius 16/22/12, индиго-тени — владелец выбрал полный ребренд, не только палитру); `SpeakingIcons.kt` — 15 ImageVector из icons.svg; motion-токены `SpeakingMotion` + reduce-motion expect/actual; `SpeakingRecording.kt` (RecIndicator с пульсом 1600ms, CheckPopAppear, waveform-панели декоративные — решение владельца, не реальная амплитуда); `SpeakingTimerRing` вместо LinearProgressIndicator (Training 176dp / Practice 150dp). Quality gate: `:design:build`, compile desktop+wasm, desktopTest 73/73, admin build/vitest 237/237/lint/build-storybook, полный Playwright 156/156 против docker-стека (visual-базлайны пересняты под ребренд + удаление Content), WCAG-фикс чипов NEW/REVIEWED (белый на #FB8C00 = 2.37:1 FAIL → container + тёмный текст 9.2/8.7:1 AA). 6 оставшихся расхождений с мокапом зафиксированы в отчёте фазы.
+> **Также в рамках фазы (решение владельца 2026-08-01)**: legacy-код старого приложения УДАЛЁН из admin-web (Tests/Categories/TestEditor + компоненты + API + e2e) и composeApp/shared (~70 файлов: экраны/VM/gamification/модели/эндпоинты/тесты) — bd `8tg.6`/`8tg.7` (заменили ST-2 «скрыть из навигации»). Оставлены: Groups/Messages, GuestSession/аналитика, :design gamification, backend legacy-эндпоинты (решение отложено).
+Концепт реализован: Playful Coach v1.1 — вариант B (`.docs/design-system/`). Статус на 2026-08-01 — всё выполнено:
+1. ~~`tokens.json` → `:design` theme~~ ✅ (DS-1)
+2. ~~Палитра → `admin-web/src/theme/Theme.ts`~~ ✅ (DS-2, полный ребренд)
+3. ~~`icons.svg` → `SpeakingIcons.kt`~~ ✅ (DS-3)
+4. ~~Верификация~~ ✅ (DS-4): сборки зелёные, WCAG AA (чипы на container-фонах), detekt НЕ подключён ни к одному модулю (memory №8) — не является gate; `docs/DESIGN_SYSTEM_SPEC.md` — дифф до v2.0 предложен владельцу (ADR-007).
+5. Дополнительно: DS-5 (анимации) и DS-6 (pixel-perfect: таймер-кольцо, waveform, иконки).
 
 **Проверка и ревью (gate Фазы 4):** визуальная сверка компонентов с мокапами Figma-концепта (владелец), проверка контрастов WCAG AA (record `#FF9F6B` ≠ error `#E53935`), сборки зелёные по exit code.
 
-### Фаза 5 — Стабилизация и пивот навигации
+### Фаза 5 — Стабилизация и пивот навигации — ✅ ВЫПОЛНЕНА 2026-08-01
 1. Полный прогон тестов (backend, composeApp, admin vitest+e2e, API-коллекция, Maestro).
 2. Скрытие legacy-экранов из навигации (Home → Library как старт).
 3. Обновить `docs/API.md`, `docs/ARCHITECTURE.md`, `docs/USER_GUIDE.md`, `memory.md`.

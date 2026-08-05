@@ -1,8 +1,8 @@
-# FunnyEnglish UI Stack Visual Reference
+# So to Speak UI Stack Visual Reference
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         FUNNYENGLISH UI STACK 2024                          │
+│                         SOTOSPEAK UI STACK 2024                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -218,7 +218,7 @@
                               FILE STRUCTURE
 ═══════════════════════════════════════════════════════════════════════════════
 
-composeApp/src/commonMain/kotlin/com/funnyenglish/designsystem/
+composeApp/src/commonMain/kotlin/com/sotospeak/designsystem/
 │
 ├── theme/
 │   ├── FunnyTheme.kt                 # Main theme wrapper
@@ -315,4 +315,4 @@ composeApp/src/commonMain/kotlin/com/funnyenglish/designsystem/
 
 ---
 
-**Reference:** This visual guide complements the full [PRD](../prd/FUNNYENGLISH-REDESIGN-2024.prd.md)
+**Reference:** This visual guide complements the full [PRD](../prd/SOTOSPEAK-REDESIGN-2024.prd.md)

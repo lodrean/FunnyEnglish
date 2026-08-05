@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    FunnyEnglish Integration Tests
+    So to Speak Integration Tests
     
 .DESCRIPTION
     Complex integration tests covering multiple endpoints and workflows.
@@ -9,7 +9,7 @@
 [CmdletBinding()]
 param(
     [string]$BaseUrl = "http://localhost:8080/api",
-    [string]$DemoEmail = "demo@funnyenglish.app",
+    [string]$DemoEmail = "demo@sotospeak.app",
     [string]$DemoPassword = "demo123"
 )
 
@@ -157,7 +157,7 @@ Write-TestHeader "WORKFLOW 3: Admin Operations"
 
 # Admin login
 $adminLogin = Invoke-ApiRequest -Method "POST" -Endpoint "/auth/login" -Body @{ 
-    email = "admin@funnyenglish.com"; password = "admin123" 
+    email = "admin@sotospeak.com"; password = "admin123" 
 }
 
 if ($adminLogin.Success) {

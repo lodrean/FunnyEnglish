@@ -1,6 +1,6 @@
-# 🎯 FunnyEnglish - Production Deploy Master Plan
+# 🎯 So to Speak - Production Deploy Master Plan
 
-> **Цель:** Запустить FunnyEnglish в production на российской инфраструктуре за 6-8 недель  
+> **Цель:** Запустить So to Speak в production на российской инфраструктуре за 6-8 недель  
 > **Статус:** MVP ✅ | Pre-Production 🔄  
 > **Дата обновления:** March 2026
 
@@ -138,7 +138,7 @@ Week 7-8    │█████████████████████�
 □ AppMetrica integration
 
 # Deliverables:
-✓ grafana.funnyenglish.ru доступен
+✓ grafana.sotospeak.ru доступен
 ✓ Алерты приходят в Telegram
 ✓ Логи в Grafana
 ```
@@ -146,7 +146,7 @@ Week 7-8    │█████████████████████�
 ### Day 9-10: Domain & SSL
 ```bash
 # Задачи:
-□ Купить funnyenglish.ru
+□ Купить sotospeak.ru
 □ Yandex Cloud DNS настройка
 □ cert-manager + Let's Encrypt
 □ HTTP→HTTPS redirect
@@ -154,8 +154,8 @@ Week 7-8    │█████████████████████�
 □ Security headers (CSP)
 
 # Deliverables:
-✓ https://api.funnyenglish.ru
-✓ https://admin.funnyenglish.ru
+✓ https://api.sotospeak.ru
+✓ https://admin.sotospeak.ru
 ✓ SSL Labs A+ rating
 ```
 
@@ -169,7 +169,7 @@ Week 7-8    │█████████████████████�
 □ Failover testing
 
 # Deliverables:
-✓ https://staging.funnyenglish.ru
+✓ https://staging.sotospeak.ru
 ✓ Автоматический деплой из develop
 ```
 
@@ -379,7 +379,7 @@ Monitoring (self-hosted):               0 ₽
 
 2. [ ] Регистрация домена
    - Рекомендую: reg.ru или nic.ru
-   - funnyenglish.ru или funnyenglish.app
+   - sotospeak.ru или sotospeak.app
    - Добавить в Yandex Cloud DNS
 
 3. [ ] GitFlic регистрация

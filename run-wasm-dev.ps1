@@ -3,7 +3,7 @@
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host "🚀 Запуск FunnyEnglish WASM Dev Server..." -ForegroundColor Cyan
+Write-Host "🚀 Запуск So to Speak WASM Dev Server..." -ForegroundColor Cyan
 Write-Host ""
 
 # Check if distribution exists

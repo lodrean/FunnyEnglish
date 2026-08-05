@@ -1,8 +1,8 @@
-# 🚀 FunnyEnglish на Timeweb VPS - Полная Инструкция
+# 🚀 So to Speak на Timeweb VPS - Полная Инструкция
 
 > **Цель:** Развернуть весь проект (Backend + Admin + PostgreSQL + MinIO) на VPS за 600₽/мес  
 > **Время:** ~45 минут  
-> **Результат:** Работающий https://admin.funnyenglish.ru и https://api.funnyenglish.ru
+> **Результат:** Работающий https://admin.sotospeak.ru и https://api.sotospeak.ru
 
 ---
 
@@ -221,8 +221,8 @@ fail2ban-client status
 
 ```bash
 # Создаём директорию проекта
-mkdir -p /opt/funnyenglish
-cd /opt/funnyenglish
+mkdir -p /opt/sotospeak
+cd /opt/sotospeak
 
 # Создаём необходимые директории
 mkdir -p {nginx,postgres-init,certbot/conf,certbot/www,backups}
@@ -240,20 +240,20 @@ ADMIN_PASSWORD="admin123"  # Измените после первого вход
 GRAFANA_PASSWORD=$(openssl rand -base64 16)
 
 # Создаём .env файл
-cat > /opt/funnyenglish/.env << EOF
+cat > /opt/sotospeak/.env << EOF
 # Database
 DB_PASSWORD=${DB_PASSWORD}
-DB_NAME=funnyenglish
+DB_NAME=sotospeak
 DB_USER=postgres
 
 # MinIO S3
 MINIO_ROOT_USER=minioadmin
 MINIO_PASSWORD=${MINIO_PASSWORD}
-MINIO_BUCKET=funnyenglish
+MINIO_BUCKET=sotospeak
 
 # Backend
 JWT_SECRET=${JWT_SECRET}
-ADMIN_EMAIL=admin@funnyenglish.com
+ADMIN_EMAIL=admin@sotospeak.com
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 ADMIN_DISPLAY_NAME=Admin
 
@@ -261,8 +261,8 @@ ADMIN_DISPLAY_NAME=Admin
 GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
 
 # Domains (замените на свои!)
-API_DOMAIN=api.funnyenglish.ru
-ADMIN_DOMAIN=admin.funnyenglish.ru
+API_DOMAIN=api.sotospeak.ru
+ADMIN_DOMAIN=admin.sotospeak.ru
 EOF
 
 # Сохраняем пароли в надёжное место!
@@ -278,24 +278,24 @@ echo "Grafana Password: ${GRAFANA_PASSWORD}"
 
 ```bash
 # Клонируем проект (замените на свой URL)
-cd /opt/funnyenglish
-git clone https://github.com/yourusername/funnyenglish.git app
+cd /opt/sotospeak
+git clone https://github.com/yourusername/sotospeak.git app
 
 # Если репозиторий приватный:
-# git clone https://username:token@github.com/yourusername/funnyenglish.git app
+# git clone https://username:token@github.com/yourusername/sotospeak.git app
 ```
 
 ### Шаг 3.4: Создание Docker Compose
 
 ```bash
-cat > /opt/funnyenglish/docker-compose.yml << 'EOF'
+cat > /opt/sotospeak/docker-compose.yml << 'EOF'
 version: '3.8'
 
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: funnyenglish-postgres
+    container_name: sotospeak-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -328,7 +328,7 @@ services:
   # MinIO S3 Storage
   minio:
     image: minio/minio:latest
-    container_name: funnyenglish-minio
+    container_name: sotospeak-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -354,7 +354,7 @@ services:
     build:
       context: ./app/backend
       dockerfile: ../../docker/Dockerfile.backend.prod
-    container_name: funnyenglish-backend
+    container_name: sotospeak-backend
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: production
@@ -401,7 +401,7 @@ services:
       dockerfile: ../../docker/Dockerfile.admin.prod
       args:
         VITE_API_URL: /api
-    container_name: funnyenglish-admin
+    container_name: sotospeak-admin
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:80"
@@ -413,7 +413,7 @@ services:
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
-    container_name: funnyenglish-nginx
+    container_name: sotospeak-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -434,7 +434,7 @@ services:
   # Certbot for SSL
   certbot:
     image: certbot/certbot
-    container_name: funnyenglish-certbot
+    container_name: sotospeak-certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
@@ -453,9 +453,9 @@ EOF
 ### Шаг 3.5: Создание Production Dockerfile для Backend
 
 ```bash
-mkdir -p /opt/funnyenglish/docker
+mkdir -p /opt/sotospeak/docker
 
-cat > /opt/funnyenglish/docker/Dockerfile.backend.prod << 'EOF'
+cat > /opt/sotospeak/docker/Dockerfile.backend.prod << 'EOF'
 # Stage 1: Build
 FROM gradle:8.5-jdk21-alpine AS builder
 
@@ -508,7 +508,7 @@ EOF
 ### Шаг 3.6: Создание Production Dockerfile для Admin
 
 ```bash
-cat > /opt/funnyenglish/docker/Dockerfile.admin.prod << 'EOF'
+cat > /opt/sotospeak/docker/Dockerfile.admin.prod << 'EOF'
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
@@ -551,9 +551,9 @@ EOF
 ### Шаг 3.7: Создание Nginx Config для Admin
 
 ```bash
-mkdir -p /opt/funnyenglish/app/admin-web
+mkdir -p /opt/sotospeak/app/admin-web
 
-cat > /opt/funnyenglish/app/admin-web/nginx.conf << 'EOF'
+cat > /opt/sotospeak/app/admin-web/nginx.conf << 'EOF'
 server {
     listen 80;
     server_name localhost;
@@ -606,7 +606,7 @@ EOF
 ### Шаг 3.8: Создание Nginx Config для Proxy
 
 ```bash
-cat > /opt/funnyenglish/nginx/nginx.conf << 'EOF'
+cat > /opt/sotospeak/nginx/nginx.conf << 'EOF'
 user nginx;
 worker_processes auto;
 error_log /var/log/nginx/error.log warn;
@@ -652,7 +652,7 @@ http {
     server {
         listen 80;
         listen [::]:80;
-        server_name api.funnyenglish.ru;
+        server_name api.sotospeak.ru;
 
         # Certbot challenge
         location /.well-known/acme-challenge/ {
@@ -668,12 +668,12 @@ http {
     server {
         listen 443 ssl http2;
         listen [::]:443 ssl http2;
-        server_name api.funnyenglish.ru;
+        server_name api.sotospeak.ru;
 
         # SSL certificates (will be created by certbot)
-        ssl_certificate /etc/letsencrypt/live/api.funnyenglish.ru/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/api.funnyenglish.ru/privkey.pem;
-        ssl_trusted_certificate /etc/letsencrypt/live/api.funnyenglish.ru/chain.pem;
+        ssl_certificate /etc/letsencrypt/live/api.sotospeak.ru/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/api.sotospeak.ru/privkey.pem;
+        ssl_trusted_certificate /etc/letsencrypt/live/api.sotospeak.ru/chain.pem;
 
         # SSL settings
         ssl_protocols TLSv1.2 TLSv1.3;
@@ -717,7 +717,7 @@ http {
     server {
         listen 80;
         listen [::]:80;
-        server_name admin.funnyenglish.ru;
+        server_name admin.sotospeak.ru;
 
         location /.well-known/acme-challenge/ {
             root /var/www/certbot;
@@ -731,11 +731,11 @@ http {
     server {
         listen 443 ssl http2;
         listen [::]:443 ssl http2;
-        server_name admin.funnyenglish.ru;
+        server_name admin.sotospeak.ru;
 
-        ssl_certificate /etc/letsencrypt/live/admin.funnyenglish.ru/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/admin.funnyenglish.ru/privkey.pem;
-        ssl_trusted_certificate /etc/letsencrypt/live/admin.funnyenglish.ru/chain.pem;
+        ssl_certificate /etc/letsencrypt/live/admin.sotospeak.ru/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/admin.sotospeak.ru/privkey.pem;
+        ssl_trusted_certificate /etc/letsencrypt/live/admin.sotospeak.ru/chain.pem;
 
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
@@ -792,7 +792,7 @@ EOF
 ### Шаг 4.1: Покупка Домена
 
 1. Зайдите на https://reg.ru или https://nic.ru
-2. Найдите домен `funnyenglish.ru` (или другой)
+2. Найдите домен `sotospeak.ru` (или другой)
 3. Купите домен (~600₽/год)
 4. В панели управления доменом найдите **"Управление DNS"**
 
@@ -819,17 +819,17 @@ TTL: 3600
 
 Тип: CNAME
 Имя: api
-Значение: funnyenglish.ru
+Значение: sotospeak.ru
 
 Тип: CNAME
 Имя: admin
-Значение: funnyenglish.ru
+Значение: sotospeak.ru
 ```
 
 ### Шаг 4.3: Получение SSL Сертификатов
 
 ```bash
-cd /opt/funnyenglish
+cd /opt/sotospeak
 
 # Запускаем только nginx и certbot для получения сертификатов
 docker-compose up -d nginx
@@ -841,10 +841,10 @@ sleep 10
 docker-compose run --rm certbot certonly \
     --standalone \
     --preferred-challenges http \
-    -d api.funnyenglish.ru \
-    -d admin.funnyenglish.ru \
+    -d api.sotospeak.ru \
+    -d admin.sotospeak.ru \
     --agree-tos \
-    -m admin@funnyenglish.ru \
+    -m admin@sotospeak.ru \
     --no-eff-email
 
 # Перезапускаем nginx с новыми сертификатами
@@ -857,9 +857,9 @@ docker-compose restart nginx
 
 ```bash
 # Проверка сертификата
-curl -v https://api.funnyenglish.ru/actuator/health 2>&1 | grep "SSL"
+curl -v https://api.sotospeak.ru/actuator/health 2>&1 | grep "SSL"
 
-# Или через браузер откройте https://api.funnyenglish.ru
+# Или через браузер откройте https://api.sotospeak.ru
 # Должен быть зелёный замок!
 ```
 
@@ -870,7 +870,7 @@ curl -v https://api.funnyenglish.ru/actuator/health 2>&1 | grep "SSL"
 ### Шаг 5.1: Сборка Проекта
 
 ```bash
-cd /opt/funnyenglish
+cd /opt/sotospeak
 
 # Загружаем переменные окружения
 set -a && source .env && set +a
@@ -891,14 +891,14 @@ docker-compose ps
 
 # Должно показать:
 # NAME                     STATUS
-# funnyenglish-admin       Up 30 seconds
-# funnyenglish-backend     Up 30 seconds (healthy)
-# funnyenglish-postgres    Up 30 seconds (healthy)
-# funnyenglish-minio       Up 30 seconds
-# funnyenglish-nginx       Up 30 seconds
-# funnyenglish-certbot     Up 30 seconds
+# sotospeak-admin       Up 30 seconds
+# sotospeak-backend     Up 30 seconds (healthy)
+# sotospeak-postgres    Up 30 seconds (healthy)
+# sotospeak-minio       Up 30 seconds
+# sotospeak-nginx       Up 30 seconds
+# sotospeak-certbot     Up 30 seconds
 
-# Проверяем логи backend (должно быть "Started FunnyEnglishApplication")
+# Проверяем логи backend (должно быть "Started SoToSpeakApplication")
 docker-compose logs backend | tail -20
 
 # Проверяем API
@@ -918,24 +918,24 @@ mv mc /usr/local/bin/
 mc alias set local http://localhost:9000 minioadmin "${MINIO_PASSWORD}"
 
 # Создаём bucket
-mc mb local/funnyenglish
+mc mb local/sotospeak
 
 # Делаем bucket публичным для чтения
-mc policy set download local/funnyenglish
+mc policy set download local/sotospeak
 ```
 
 ### Шаг 5.4: Проверка Доступа
 
 ```bash
 # API health check
-curl https://api.funnyenglish.ru/actuator/health
+curl https://api.sotospeak.ru/actuator/health
 
 # Admin panel (должен вернуть HTML)
-curl -I https://admin.funnyenglish.ru
+curl -I https://admin.sotospeak.ru
 
 # Открываем в браузере:
-# https://admin.funnyenglish.ru
-# Логин: admin@funnyenglish.com
+# https://admin.sotospeak.ru
+# Логин: admin@sotospeak.com
 # Пароль: admin123 (измените!)
 ```
 
@@ -951,7 +951,7 @@ curl -I https://admin.funnyenglish.ru
   # Prometheus
   prometheus:
     image: prom/prometheus:latest
-    container_name: funnyenglish-prometheus
+    container_name: sotospeak-prometheus
     restart: unless-stopped
     ports:
       - "127.0.0.1:9090:9090"
@@ -969,7 +969,7 @@ curl -I https://admin.funnyenglish.ru
   # Grafana
   grafana:
     image: grafana/grafana:latest
-    container_name: funnyenglish-grafana
+    container_name: sotospeak-grafana
     restart: unless-stopped
     ports:
       - "127.0.0.1:3001:3000"
@@ -977,27 +977,27 @@ curl -I https://admin.funnyenglish.ru
       - grafana_data:/var/lib/grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
-      GF_SERVER_ROOT_URL: https://grafana.funnyenglish.ru
+      GF_SERVER_ROOT_URL: https://grafana.sotospeak.ru
 ```
 
 ### Шаг 6.2: Автоматические Бэкапы
 
 ```bash
 # Создаём скрипт бэкапа
-cat > /opt/funnyenglish/backup.sh << 'EOF'
+cat > /opt/sotospeak/backup.sh << 'EOF'
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/opt/funnyenglish/backups"
+BACKUP_DIR="/opt/sotospeak/backups"
 RETENTION_DAYS=7
 
 # Create backup directory
 mkdir -p ${BACKUP_DIR}
 
 # Backup PostgreSQL
-docker exec funnyenglish-postgres pg_dump -U postgres funnyenglish | gzip > ${BACKUP_DIR}/postgres_${DATE}.sql.gz
+docker exec sotospeak-postgres pg_dump -U postgres sotospeak | gzip > ${BACKUP_DIR}/postgres_${DATE}.sql.gz
 
 # Backup MinIO data
-tar -czf ${BACKUP_DIR}/minio_${DATE}.tar.gz -C /opt/funnyenglish docker-compose.yml .env nginx/
+tar -czf ${BACKUP_DIR}/minio_${DATE}.tar.gz -C /opt/sotospeak docker-compose.yml .env nginx/
 
 # Remove old backups
 find ${BACKUP_DIR} -name "postgres_*.sql.gz" -mtime +${RETENTION_DAYS} -delete
@@ -1009,10 +1009,10 @@ find ${BACKUP_DIR} -name "minio_*.tar.gz" -mtime +${RETENTION_DAYS} -delete
 echo "Backup completed: ${DATE}"
 EOF
 
-chmod +x /opt/funnyenglish/backup.sh
+chmod +x /opt/sotospeak/backup.sh
 
 # Добавляем в cron (ежедневно в 3:00 AM)
-(crontab -l 2>/dev/null; echo "0 3 * * * /opt/funnyenglish/backup.sh >> /var/log/funnyenglish-backup.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "0 3 * * * /opt/sotospeak/backup.sh >> /var/log/sotospeak-backup.log 2>&1") | crontab -
 
 # Проверяем
 crontab -l
@@ -1022,7 +1022,7 @@ crontab -l
 
 ```bash
 # Перезапуск всех сервисов
-cd /opt/funnyenglish && docker-compose restart
+cd /opt/sotospeak && docker-compose restart
 
 # Пересборка после изменений
 docker-compose up -d --build
@@ -1033,8 +1033,8 @@ docker-compose logs -f admin
 docker-compose logs -f nginx
 
 # Вход в контейнер
-docker exec -it funnyenglish-backend sh
-docker exec -it funnyenglish-postgres psql -U postgres -d funnyenglish
+docker exec -it sotospeak-backend sh
+docker exec -it sotospeak-postgres psql -U postgres -d sotospeak
 
 # Очистка неиспользуемых образов
 docker system prune -a
@@ -1057,7 +1057,7 @@ docker-compose run --rm certbot renew
 docker-compose logs backend
 
 # Проверяем подключение к БД
-docker exec -it funnyenglish-backend sh
+docker exec -it sotospeak-backend sh
 # Внутри контейнера:
 apk add --no-cache postgresql-client
 pg_isready -h postgres -p 5432 -U postgres
@@ -1073,7 +1073,7 @@ env | grep DB_
 docker-compose ps backend
 
 # Проверяем порт
-docker exec funnyenglish-nginx nc -zv backend 8080
+docker exec sotospeak-nginx nc -zv backend 8080
 
 # Перезапускаем nginx
 docker-compose restart nginx
@@ -1083,10 +1083,10 @@ docker-compose restart nginx
 
 ```bash
 # Проверяем существование сертификатов
-ls -la /opt/funnyenglish/certbot/conf/live/
+ls -la /opt/sotospeak/certbot/conf/live/
 
 # Перевыпускаем
-docker-compose run --rm certbot certonly --force-renew -d api.funnyenglish.ru -d admin.funnyenglish.ru
+docker-compose run --rm certbot certonly --force-renew -d api.sotospeak.ru -d admin.sotospeak.ru
 
 # Перезапускаем nginx
 docker-compose restart nginx
@@ -1116,11 +1116,11 @@ docker-compose restart backend
 
 Откройте в браузере:
 
-1. **Admin Panel:** https://admin.funnyenglish.ru
-   - Логин: `admin@funnyenglish.com`
+1. **Admin Panel:** https://admin.sotospeak.ru
+   - Логин: `admin@sotospeak.com`
    - Пароль: `admin123` (измените!)
 
-2. **API Health:** https://api.funnyenglish.ru/actuator/health
+2. **API Health:** https://api.sotospeak.ru/actuator/health
    - Должно вернуть: `{"status":"UP"}`
 
 3. **MinIO Console:** http://185.XXX.XXX.XXX:9001
@@ -1135,7 +1135,7 @@ docker-compose restart backend
 Пользователь
     │
     ▼
-funnyenglish.ru (домен)
+sotospeak.ru (домен)
     │
     ▼
 Timeweb VPS (185.XXX.XXX.XXX)

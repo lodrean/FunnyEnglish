@@ -265,12 +265,11 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
         aria-label="Notifications"
         sx={positionStyles}
       >
-        {toasts.map((toast, index) => (
+        {toasts.map((toast) => (
           <Toast
             key={toast.id}
-            toast={toast}
-            onDismiss={dismiss}
-            index={index}
+            {...toast}
+            onClose={dismiss}
           />
         ))}
       </Box>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Base application theme for So to Speak.
+      Uses a light Material theme with a window background that matches the
+      SpeakingTokens palette. The actual light/dark choice is made in Compose,
+      but MainActivity pre-sets the window background to avoid a flash during
+      rotation or config changes.
+      windowActionBar=false because the UI is fully in Compose.
+    -->
+    <style name="Theme.SoToSpeak" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/splash_background</item>
+        <!-- Android 12+ splash screen: keep only the background color, the logo
+             is rendered by Compose in SplashScreen. -->
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="android:windowSplashScreenBrandingImage">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

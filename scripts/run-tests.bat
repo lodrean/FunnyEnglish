@@ -9,7 +9,7 @@ set "TEST_TYPE=%~1"
 if "%~1"=="" set "TEST_TYPE=all"
 
 echo ==========================================
-echo FunnyEnglish Test Runner
+echo So to Speak Test Runner
 echo Test type: %TEST_TYPE%
 echo ==========================================
 

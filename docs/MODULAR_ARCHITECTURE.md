@@ -2,12 +2,12 @@
 
 ## Обзор
 
-FunnyEnglish использует многомодульную архитектуру на базе Kotlin Multiplatform с поддержкой **Feature Toggles** - системы динамического включения/выключения функциональности.
+So to Speak использует многомодульную архитектуру на базе Kotlin Multiplatform с поддержкой **Feature Toggles** - системы динамического включения/выключения функциональности.
 
 ## Структура модулей
 
 ```
-FunnyEnglish/
+So to Speak/
 ├── core/                   # Базовая инфраструктура
 │   ├── toggle/            # Feature toggle система
 │   ├── network/           # HTTP клиенты

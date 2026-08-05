@@ -51,6 +51,7 @@ dependencies {
     // Caching (Caffeine)
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     // Testing
     testImplementation(libs.spring.boot.starter.test)
@@ -64,7 +65,7 @@ tasks.withType<Test> {
 }
 
 springBoot {
-    mainClass.set("com.funnyenglish.FunnyEnglishApplicationKt")
+    mainClass.set("com.sotospeak.SoToSpeakApplicationKt")
 }
 
 allOpen {

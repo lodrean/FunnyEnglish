@@ -1,4 +1,4 @@
-# 🚀 Быстрый старт - Деплой FunnyEnglish
+# 🚀 Быстрый старт - Деплой So to Speak
 
 > **Бюджет:** 600₽/мес | **Время:** 45 минут | **Хостинг:** Timeweb Cloud (Россия)
 
@@ -10,10 +10,10 @@
 # 1. Создать VPS на https://timeweb.cloud (Ubuntu 22.04, 2GB RAM)
 
 # 2. Подключиться по SSH и настроить сервер
-ssh root@YOUR_SERVER_IP "curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/funnyenglish/main/scripts/setup-server.sh | bash"
+ssh root@YOUR_SERVER_IP "curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/sotospeak/main/scripts/setup-server.sh | bash"
 
 # 3. Запустить деплой
-ssh root@YOUR_SERVER_IP "cd /opt/funnyenglish && curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/funnyenglish/main/scripts/deploy-production.sh | bash -s -- --domain=funnyenglish.ru --repo-url=https://github.com/YOUR_USERNAME/funnyenglish.git"
+ssh root@YOUR_SERVER_IP "cd /opt/sotospeak && curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/sotospeak/main/scripts/deploy-production.sh | bash -s -- --domain=sotospeak.ru --repo-url=https://github.com/YOUR_USERNAME/sotospeak.git"
 ```
 
 ---
@@ -25,7 +25,7 @@ ssh root@YOUR_SERVER_IP "cd /opt/funnyenglish && curl -fsSL https://raw.githubus
 | Сервис | Действие | Ссылка |
 |--------|----------|--------|
 | Timeweb Cloud | Создать аккаунт, пополнить на 600₽ | https://timeweb.cloud |
-| reg.ru | Купить домен (funnyenglish.ru) | https://reg.ru |
+| reg.ru | Купить домен (sotospeak.ru) | https://reg.ru |
 
 ### Шаг 2: Создание VPS (5 минут)
 
@@ -67,17 +67,17 @@ ssh root@185.XXX.XXX.XXX
 Выполните команды:
 ```bash
 # Настройка сервера (~5 минут)
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/funnyenglish/main/scripts/setup-server.sh | bash
+curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/sotospeak/main/scripts/setup-server.sh | bash
 
 # Переход в директорию
-cd /opt/funnyenglish
+cd /opt/sotospeak
 
 # Клонирование репозитория
-git clone https://github.com/YOUR_USERNAME/funnyenglish.git app
+git clone https://github.com/YOUR_USERNAME/sotospeak.git app
 
 # Деплой (~20 минут)
 ./scripts/deploy-production.sh \
-  --domain=funnyenglish.ru \
+  --domain=sotospeak.ru \
   --api-subdomain=api \
   --admin-subdomain=admin
 ```
@@ -85,12 +85,12 @@ git clone https://github.com/YOUR_USERNAME/funnyenglish.git app
 ### Шаг 5: Проверка
 
 Откройте в браузере:
-- ✅ https://admin.funnyenglish.ru - Admin panel
-- ✅ https://api.funnyenglish.ru/actuator/health - API health
+- ✅ https://admin.sotospeak.ru - Admin panel
+- ✅ https://api.sotospeak.ru/actuator/health - API health
 
 Логин в админку:
-- Email: `admin@funnyenglish.com`
-- Пароль: смотрите в `/root/.funnyenglish-credentials`
+- Email: `admin@sotospeak.com`
+- Пароль: смотрите в `/root/.sotospeak-credentials`
 
 ---
 
@@ -109,22 +109,22 @@ git clone https://github.com/YOUR_USERNAME/funnyenglish.git app
 
 ```bash
 # Подключение к серверу
-ssh root@funnyenglish.ru
+ssh root@sotospeak.ru
 
 # Просмотр статуса
-cd /opt/funnyenglish && docker-compose ps
+cd /opt/sotospeak && docker-compose ps
 
 # Логи
-cd /opt/funnyenglish && docker-compose logs -f backend
+cd /opt/sotospeak && docker-compose logs -f backend
 
 # Перезапуск
-cd /opt/funnyenglish && docker-compose restart
+cd /opt/sotospeak && docker-compose restart
 
 # Обновление приложения
-cd /opt/funnyenglish/app && git pull && cd .. && docker-compose up -d --build
+cd /opt/sotospeak/app && git pull && cd .. && docker-compose up -d --build
 
 # Бэкап вручную
-cd /opt/funnyenglish && ./backup.sh
+cd /opt/sotospeak && ./backup.sh
 ```
 
 ---

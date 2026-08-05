@@ -7,7 +7,7 @@
 const newman = require('newman');
 const path = require('path');
 
-const COLLECTION_PATH = path.join(__dirname, 'funnyenglish-api-collection.json');
+const COLLECTION_PATH = path.join(__dirname, '..', 'qa', 'postman', 'sotospeak-api.json');
 
 // Environment configuration
 const environments = {
@@ -18,7 +18,7 @@ const environments = {
     baseUrl: 'http://localhost:8081'
   },
   staging: {
-    baseUrl: 'https://api-staging.funnyenglish.app'
+    baseUrl: 'https://api-staging.sotospeak.app'
   }
 };
 
@@ -37,7 +37,7 @@ console.log(`🧪 Running API tests against: ${environment.baseUrl}\n`);
 newman.run({
   collection: require(COLLECTION_PATH),
   environment: {
-    name: `FunnyEnglish ${env}`,
+    name: `So to Speak ${env}`,
     values: [
       { key: 'baseUrl', value: environment.baseUrl, enabled: true },
       { key: 'auth_token', value: '', enabled: true },
@@ -51,7 +51,7 @@ newman.run({
   reporter: {
     htmlextra: {
       export: path.join(__dirname, 'reports', `api-test-report-${env}-${Date.now()}.html`),
-      title: `FunnyEnglish API Tests - ${env}`,
+      title: `So to Speak API Tests - ${env}`,
       showEnvironmentData: true,
       skipHeaders: ['Authorization']
     }

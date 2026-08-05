@@ -1,6 +1,6 @@
 #!/bin/bash
-# FunnyEnglish Auto-Installer for Timeweb VPS
-# Usage: curl -fsSL https://raw.githubusercontent.com/your/funnyenglish/main/install-timeweb.sh | bash
+# So to Speak Auto-Installer for Timeweb VPS
+# Usage: curl -fsSL https://raw.githubusercontent.com/your/sotospeak/main/install-timeweb.sh | bash
 
 set -e
 
@@ -11,8 +11,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-INSTALL_DIR="/opt/funnyenglish"
-GITHUB_REPO="${GITHUB_REPO:-https://github.com/yourusername/funnyenglish.git}"
+INSTALL_DIR="/opt/sotospeak"
+GITHUB_REPO="${GITHUB_REPO:-https://github.com/yourusername/sotospeak.git}"
 
 # Logging
 log() {
@@ -38,9 +38,9 @@ SERVER_IP=$(curl -s ifconfig.me)
 log "Server IP: $SERVER_IP"
 
 # User input
-read -p "Enter your domain (e.g., funnyenglish.ru): " DOMAIN
+read -p "Enter your domain (e.g., sotospeak.ru): " DOMAIN
 read -p "Enter admin email for SSL: " ADMIN_EMAIL
-read -sp "Enter admin password for FunnyEnglish: " ADMIN_PASSWORD
+read -sp "Enter admin password for So to Speak: " ADMIN_PASSWORD
 echo
 
 API_DOMAIN="api.${DOMAIN}"
@@ -138,13 +138,13 @@ GRAFANA_PASSWORD=$(openssl rand -base64 16)
 cat > ${INSTALL_DIR}/.env << EOF
 # Database
 DB_PASSWORD=${DB_PASSWORD}
-DB_NAME=funnyenglish
+DB_NAME=sotospeak
 DB_USER=postgres
 
 # MinIO S3
 MINIO_ROOT_USER=minioadmin
 MINIO_PASSWORD=${MINIO_PASSWORD}
-MINIO_BUCKET=funnyenglish
+MINIO_BUCKET=sotospeak
 
 # Backend
 JWT_SECRET=${JWT_SECRET}
@@ -162,7 +162,7 @@ EOF
 
 # Save credentials
 cat > ${INSTALL_DIR}/credentials.txt << EOF
-FunnyEnglish Credentials
+So to Speak Credentials
 ========================
 Generated: $(date)
 
@@ -170,7 +170,7 @@ Database:
   Host: localhost:5432
   User: postgres
   Password: ${DB_PASSWORD}
-  Database: funnyenglish
+  Database: sotospeak
 
 MinIO S3:
   Endpoint: http://localhost:9000
@@ -178,7 +178,7 @@ MinIO S3:
   Access Key: minioadmin
   Secret Key: ${MINIO_PASSWORD}
 
-FunnyEnglish Admin:
+So to Speak Admin:
   URL: https://${ADMIN_PANEL_DOMAIN}
   Email: ${ADMIN_EMAIL}
   Password: ${ADMIN_PASSWORD}
@@ -213,7 +213,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: funnyenglish-postgres
+    container_name: sotospeak-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -242,7 +242,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: funnyenglish-minio
+    container_name: sotospeak-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -267,7 +267,7 @@ services:
     build:
       context: ./app/backend
       dockerfile: ../../docker/Dockerfile.backend
-    container_name: funnyenglish-backend
+    container_name: sotospeak-backend
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: production
@@ -310,7 +310,7 @@ services:
       dockerfile: ../../docker/Dockerfile.admin
       args:
         VITE_API_URL: /api
-    container_name: funnyenglish-admin
+    container_name: sotospeak-admin
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:80"
@@ -321,7 +321,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: funnyenglish-nginx
+    container_name: sotospeak-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -336,7 +336,7 @@ services:
 
   certbot:
     image: certbot/certbot
-    container_name: funnyenglish-certbot
+    container_name: sotospeak-certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
@@ -552,16 +552,16 @@ log "Waiting for services to initialize..."
 sleep 30
 
 # Setup MinIO bucket
-docker exec funnyenglish-minio sh -c "mc alias set local http://localhost:9000 minioadmin ${MINIO_PASSWORD} && mc mb local/funnyenglish 2>/dev/null || true && mc policy set download local/funnyenglish" || warn "Could not setup MinIO bucket automatically"
+docker exec sotospeak-minio sh -c "mc alias set local http://localhost:9000 minioadmin ${MINIO_PASSWORD} && mc mb local/sotospeak 2>/dev/null || true && mc policy set download local/sotospeak" || warn "Could not setup MinIO bucket automatically"
 
 # Create backup script
 cat > ${INSTALL_DIR}/backup.sh << 'BACKUPEOF'
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/opt/funnyenglish/backups"
+BACKUP_DIR="/opt/sotospeak/backups"
 mkdir -p ${BACKUP_DIR}
-docker exec funnyenglish-postgres pg_dump -U postgres funnyenglish | gzip > ${BACKUP_DIR}/postgres_${DATE}.sql.gz
-tar -czf ${BACKUP_DIR}/config_${DATE}.tar.gz -C /opt/funnyenglish docker-compose.yml .env nginx/
+docker exec sotospeak-postgres pg_dump -U postgres sotospeak | gzip > ${BACKUP_DIR}/postgres_${DATE}.sql.gz
+tar -czf ${BACKUP_DIR}/config_${DATE}.tar.gz -C /opt/sotospeak docker-compose.yml .env nginx/
 find ${BACKUP_DIR} -name "*.sql.gz" -mtime +7 -delete
 find ${BACKUP_DIR} -name "*.tar.gz" -mtime +7 -delete
 echo "Backup completed: ${DATE}"
@@ -570,7 +570,7 @@ BACKUPEOF
 chmod +x ${INSTALL_DIR}/backup.sh
 
 # Add to cron
-(crontab -l 2>/dev/null; echo "0 3 * * * /opt/funnyenglish/backup.sh >> /var/log/funnyenglish-backup.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "0 3 * * * /opt/sotospeak/backup.sh >> /var/log/sotospeak-backup.log 2>&1") | crontab -
 
 # Final status
 log "=========================================="

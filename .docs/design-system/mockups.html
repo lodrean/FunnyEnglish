@@ -90,7 +90,7 @@
     font-size: 11px; font-weight: var(--weight-bold); color: var(--color-text-muted); text-decoration: none;
     min-height: var(--size-touch); justify-content: center;
   }
-  .bottomnav a.active { color: var(--color-primary); }
+  .bottomnav a.active { color: var(--color-primary-strong); }
 
   /* ---- Training ---- */
   .training { flex: 1; display: flex; flex-direction: column; padding: 0 var(--space-l); overflow-y: auto; }
@@ -131,12 +131,13 @@
   @keyframes wave { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
   /* Record button */
   .rec-btn {
-    width: var(--size-recorder); height: var(--size-recorder); border-radius: var(--radius-full);
-    border: none; background: var(--color-record); color: #fff; cursor: pointer;
+    width: var(--size-recorder); height: var(--size-recorder); border-radius: var(--radius-recorder);
+    border: none; background: var(--color-record); color: var(--color-on-record); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     box-shadow: var(--shadow-fab); position: relative;
-    transition: transform var(--duration-fast) var(--ease-standard);
+    transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
   }
+  .rec-btn:active { box-shadow: 0 1px 0 rgba(217,114,56,.55); }
   .rec-btn:active { transform: scale(.94); }
   .rec-btn:focus-visible { outline: none; box-shadow: var(--shadow-fab), var(--shadow-focus); }
   .rec-btn .ic { width: 30px; height: 30px; }
@@ -272,7 +273,7 @@
   }
   .btn:active { transform: scale(.97); }
   .btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
-  .btn-primary { background: var(--color-primary); color: #fff; }
+  .btn-primary { background: var(--color-primary-strong); color: #fff; }
   .btn-ghost { background: transparent; color: var(--color-primary); }
   .admin-actions { display: flex; gap: var(--space-m); justify-content: flex-end; margin-top: auto; }
 
@@ -283,7 +284,7 @@
     font-family: var(--font-brand); font-size: var(--text-label-small); font-weight: var(--weight-extrabold);
     padding: 8px 14px; border-radius: var(--radius-full); border: none; cursor: pointer;
     background: var(--color-surface-warm); color: var(--color-text-muted);
-    min-height: 40px; transition: all var(--duration-fast) var(--ease-standard);
+    min-height: 48px; transition: all var(--duration-fast) var(--ease-standard);
     flex: 1; display: flex; align-items: center; justify-content: center; white-space: nowrap;
   }
   .mode-chip.on { background: var(--color-primary-container); color: var(--color-on-primary-container); }
@@ -302,11 +303,11 @@
   .subtitle { text-align: center; min-height: 52px; display: flex; align-items: center; justify-content: center; background: var(--color-surface); border-radius: var(--radius-button); box-shadow: var(--shadow-card); padding: var(--space-s) var(--space-m); flex-shrink: 0; }
   .subtitle span { display: inline; color: var(--text-subtitle-color, var(--color-text)); font-size: var(--text-subtitle); line-height: 1.4; font-weight: var(--weight-semibold); }
   .video-controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: var(--space-s); padding: 10px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
-  .vc-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background var(--duration-fast); }
+  .vc-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background var(--duration-fast); }
   .vc-btn:hover { background: rgba(255,255,255,.15); }
   .vc-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #000, 0 0 0 4px #fff; }
   .vc-btn .ic { width: 20px; height: 20px; }
-  .vc-btn.cc { border-radius: var(--radius-chip); width: 44px; font-size: 12px; font-weight: var(--weight-extrabold); letter-spacing: .03em; }
+  .vc-btn.cc { border-radius: var(--radius-chip); width: 48px; font-size: 12px; font-weight: var(--weight-extrabold); letter-spacing: .03em; }
   .vc-btn.cc.on { background: rgba(255,255,255,.22); box-shadow: inset 0 -3px 0 #FFD666; }
   .vc-btn .ic-pause { display: none; }
   .vc-btn.playing .ic-play { display: none; }
@@ -318,7 +319,7 @@
   .video-cta {
     font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-medium);
     border: none; border-radius: var(--radius-button); padding: 16px; min-height: var(--size-touch);
-    cursor: pointer; background: var(--color-primary); color: #fff; flex-shrink: 0;
+    cursor: pointer; background: var(--color-primary-strong); color: #fff; flex-shrink: 0;
     transition: transform var(--duration-fast) var(--ease-standard);
   }
   .video-cta:active { transform: scale(.98); }
@@ -365,6 +366,89 @@
   .final-cta.show { display: flex; }
   .final-msg { text-align: center; font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); color: var(--color-secondary); padding: var(--space-s) 0; }
   .btn-wide { width: 100%; }
+
+  /* ================= AUTH & ONBOARDING (Playful Coach v1.1) ================= */
+  /* Input field: radius-button 16, surface bg, focus ring primary */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: var(--text-label-small); font-weight: var(--weight-extrabold); letter-spacing: .04em; }
+  .input {
+    font-family: var(--font-brand); font-size: var(--text-body-medium); color: var(--color-text);
+    background: var(--color-surface); border: 2px solid var(--color-outline);
+    border-radius: var(--radius-button); padding: 12px 16px; min-height: var(--size-touch); width: 100%;
+    transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+  }
+  .input::placeholder { color: var(--color-text-muted); }
+  .input:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
+  .field-error .input { border-color: var(--color-error); }
+  /* Текст ошибки: #B3261E (6.4:1 на белом) — token --color-error #E53935 даёт только 4.29:1, ниже AA для мелкого текста */
+  .field-error-text { font-size: var(--text-label-small); font-weight: var(--weight-bold); color: #B3261E; }
+  /* Buttons */
+  .btn-danger-ghost { background: transparent; color: #B3261E; }
+  .link-btn {
+    font-family: var(--font-brand); font-size: var(--text-body-small); font-weight: var(--weight-bold);
+    color: var(--color-primary); background: none; border: none; cursor: pointer;
+    padding: 10px 16px; min-height: var(--size-touch); border-radius: var(--radius-button);
+  }
+  .link-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .text-link {
+    font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold);
+    text-decoration: none; padding: 10px 4px; border-radius: var(--radius-button);
+  }
+  .text-link b { color: var(--color-primary); font-weight: var(--weight-extrabold); }
+  .text-link:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  /* Auth layout */
+  .auth { flex: 1; display: flex; flex-direction: column; gap: var(--space-m); padding: var(--space-xl) var(--space-l) var(--space-l); overflow-y: auto; }
+  .auth-title { font-size: var(--text-headline-small); font-weight: var(--weight-extrabold); }
+  .auth-sub { font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); line-height: 1.5; margin-top: var(--space-xs); }
+  .auth-links { display: flex; flex-direction: column; align-items: center; margin-top: auto; padding-top: var(--space-m); }
+  /* Onboarding */
+  .onb { flex: 1; display: flex; flex-direction: column; padding: 0 var(--space-l) var(--space-l); }
+  .onb-illu { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .onb-emoji {
+    width: 180px; height: 180px; border-radius: var(--radius-card-large);
+    background: var(--color-primary-container); box-shadow: var(--shadow-card);
+    display: flex; align-items: center; justify-content: center; font-size: 88px;
+  }
+  .onb-dots { display: flex; gap: 8px; justify-content: center; padding: var(--space-m) 0 var(--space-l); }
+  .onb-dots i { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-surface-variant); transition: all var(--duration-medium) var(--ease-standard); }
+  .onb-dots i.on { width: 24px; background: var(--color-primary); }
+  .onb-copy { text-align: center; padding-bottom: var(--space-l); }
+  .onb-copy h1 { font-size: var(--text-headline-small); font-weight: var(--weight-extrabold); }
+  .onb-copy p { font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); line-height: 1.5; margin-top: var(--space-s); }
+  /* Locked gate / empty states */
+  .gate {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: var(--space-m); padding: 0 var(--space-xl) var(--space-xl); text-align: center;
+  }
+  .gate-illu {
+    width: 120px; height: 120px; border-radius: var(--radius-full);
+    background: var(--color-secondary-container); color: var(--color-on-secondary-container);
+    display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-card);
+    font-size: 56px;
+  }
+  .gate-illu .ic { width: 48px; height: 48px; }
+  .gate-title { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); }
+  .gate-text { font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); line-height: 1.5; }
+  .gate-actions { display: flex; flex-direction: column; gap: var(--space-s); width: 100%; padding-top: var(--space-s); }
+  /* Profile */
+  .profile { flex: 1; display: flex; flex-direction: column; gap: var(--space-m); padding: 0 var(--space-l) var(--space-l); overflow-y: auto; }
+  .profile-head { display: flex; flex-direction: column; align-items: center; gap: var(--space-s); padding: var(--space-l) 0 var(--space-s); }
+  .avatar-circle {
+    width: 88px; height: 88px; border-radius: var(--radius-full);
+    background: var(--color-tertiary); color: #fff; box-shadow: var(--shadow-card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: var(--weight-extrabold);
+  }
+  .profile-name { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); }
+  .profile-mail { font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
+  .stat-row { display: flex; gap: var(--space-m); }
+  .stat-card {
+    flex: 1; background: var(--color-surface); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card); padding: var(--space-m);
+    display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;
+  }
+  .stat-num { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); color: var(--color-primary); }
+  .stat-lbl { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-bold); }
 </style>
 </head>
 <body>
@@ -375,6 +459,12 @@
   <button data-frame="training" role="tab">3 · Training — запись (mobile)</button>
   <button data-frame="practice" role="tab">4 · Practice — сдача (mobile)</button>
   <button data-frame="grading" role="tab">5 · Grading detail (admin)</button>
+  <button data-frame="onboarding" role="tab">6 · Onboarding</button>
+  <button data-frame="login" role="tab">7 · Login</button>
+  <button data-frame="register" role="tab">8 · Register</button>
+  <button data-frame="locked" role="tab">9 · Practice locked (гость)</button>
+  <button data-frame="profile" role="tab">10 · Профиль</button>
+  <button data-frame="profile-guest" role="tab">11 · Профиль (гость)</button>
 </div>
 
 <!-- ============ 1. LIBRARY ============ -->
@@ -426,9 +516,9 @@
       </button>
     </div>
     <nav class="bottomnav">
-      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-check-circle"/></svg>Темы</a>
-      <a href="#"><svg class="ic"><use href="icons.svg#i-upload"/></svg>Отправки</a>
-      <a href="#"><svg class="ic"><use href="icons.svg#i-clock"/></svg>Профиль</a>
+      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-home"/></svg>Темы</a>
+      <a href="#"><svg class="ic"><use href="icons.svg#i-send"/></svg>Отправки</a>
+      <a href="#"><svg class="ic"><use href="icons.svg#i-user"/></svg>Профиль</a>
     </nav>
   </div>
 </div>
@@ -595,7 +685,7 @@
 <div class="frame-wrap" id="frame-grading">
   <div class="desktop">
     <div class="admin-top">
-      <div class="logo">FunnyEnglish Admin</div>
+      <div class="logo">So to Speak Admin</div>
       <nav>
         <a href="#">Speaking Content</a>
         <a href="#" class="active">Grading <span class="chip chip-new" style="margin-left:6px">7 new</span></a>
@@ -675,6 +765,167 @@
     </div>
   </div>
 </div>
+
+<!-- ============ 6. ONBOARDING (первый запуск, guest-first) ============ -->
+<!-- 3 слайда value-prop: 1 «Смотри видео» 🎬 → 2 «Тренируйся вслух» 🎙 (показан) → 3 «Отправь учителю» 📨.
+     Регистрации на онбординге НЕТ — гость сразу попадает в библиотеку. -->
+<section class="frame-wrap" id="frame-onboarding">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="onb">
+      <div class="onb-illu"><div class="onb-emoji" role="img" aria-label="Микрофон">🎙️</div></div>
+      <div class="onb-dots" aria-label="Слайд 2 из 3"><i></i><i class="on"></i><i></i></div>
+      <div class="onb-copy">
+        <h1>Тренируйся вслух</h1>
+        <p>Отвечай на вопросы голосом — три попытки, записи остаются только на твоём устройстве</p>
+      </div>
+      <button class="btn btn-primary btn-wide" style="margin-bottom:var(--space-l)">Начать</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. LOGIN ============ -->
+<section class="frame-wrap" id="frame-login">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="auth">
+      <div>
+        <h1 class="auth-title">С возвращением!</h1>
+        <p class="auth-sub">Войди, чтобы отправлять записи учителю и видеть оценки</p>
+      </div>
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input class="input" id="loginEmail" type="email" placeholder="you@example.com" value="anna@smirnova.ru" autocomplete="email">
+      </div>
+      <div class="field field-error">
+        <label for="loginPass">Пароль</label>
+        <input class="input" id="loginPass" type="password" value="123" aria-invalid="true" aria-describedby="loginPassErr" autocomplete="current-password">
+        <span class="field-error-text" id="loginPassErr" role="alert">Пароль должен быть не короче 6 символов</span>
+      </div>
+      <!-- Loading state: кнопка получает aria-busy="true" и disabled, текст меняется на «Входим…» + спиннер, поля формы disabled -->
+      <button class="btn btn-primary btn-wide">Войти</button>
+      <div class="auth-links">
+        <a class="text-link" href="#">Нет аккаунта? <b>Регистрация</b></a>
+        <button class="link-btn">Продолжить как гость</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. REGISTER ============ -->
+<section class="frame-wrap" id="frame-register">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="auth">
+      <div>
+        <h1 class="auth-title">Создай аккаунт</h1>
+        <p class="auth-sub">Чтобы отправлять записи учителю и получать оценки</p>
+      </div>
+      <div class="field">
+        <label for="regName">Имя</label>
+        <input class="input" id="regName" type="text" placeholder="Как тебя зовут?" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="regEmail">Email</label>
+        <input class="input" id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="regPass">Пароль</label>
+        <input class="input" id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+      </div>
+      <!-- Loading state: как на Login — aria-busy, «Создаём…», поля disabled -->
+      <button class="btn btn-primary btn-wide">Создать аккаунт</button>
+      <div class="auth-links">
+        <a class="text-link" href="#">Уже есть аккаунт? <b>Войти</b></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. PRACTICE LOCKED (гость-гейт) ============ -->
+<!-- Регистрация предлагается ТОЛЬКО здесь (и в гостевом профиле) — не на онбординге и не в библиотеке. -->
+<section class="frame-wrap" id="frame-locked">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Practice</h1>
+        <div class="sub">Travel &amp; Holidays · At the airport</div>
+      </div>
+    </div>
+    <div class="gate">
+      <div class="gate-illu"><svg class="ic"><use href="icons.svg#i-lock"/></svg></div>
+      <div class="gate-title">Ты почти у цели!</div>
+      <p class="gate-text">Отправка записи учителю доступна после регистрации</p>
+      <div class="gate-actions">
+        <button class="btn btn-primary btn-wide">Зарегистрироваться</button>
+        <button class="btn btn-ghost btn-wide">Войти</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. PROFILE ============ -->
+<section class="frame-wrap" id="frame-profile">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Профиль</h1>
+        <div class="sub">Твой прогресс и записи</div>
+      </div>
+    </div>
+    <div class="profile">
+      <div class="profile-head">
+        <div class="avatar-circle" role="img" aria-label="Аватар: Анна Смирнова">АС</div>
+        <div class="profile-name">Анна Смирнова</div>
+        <div class="profile-mail">anna@smirnova.ru</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-num tnum">3</span>
+          <span class="stat-lbl">записи отправлено</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num tnum">2</span>
+          <span class="stat-lbl">темы пройдено</span>
+        </div>
+      </div>
+      <button class="btn btn-danger-ghost btn-wide" style="margin-top:auto">Выйти</button>
+    </div>
+    <nav class="bottomnav">
+      <a href="#"><svg class="ic"><use href="icons.svg#i-home"/></svg>Темы</a>
+      <a href="#"><svg class="ic"><use href="icons.svg#i-send"/></svg>Отправки</a>
+      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-user"/></svg>Профиль</a>
+    </nav>
+  </div>
+</section>
+
+<!-- ============ 11. PROFILE (гость) — GuestProfileStub ============ -->
+<section class="frame-wrap" id="frame-profile-guest">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Профиль</h1>
+        <div class="sub">Гостевой режим</div>
+      </div>
+    </div>
+    <div class="gate">
+      <div class="gate-illu" role="img" aria-label="Почтовый ящик">📬</div>
+      <p class="gate-text">Зарегистрируйся, чтобы отправлять записи учителю и видеть оценки</p>
+      <div class="gate-actions">
+        <button class="btn btn-primary btn-wide">Зарегистрироваться</button>
+        <a class="text-link" href="#">Уже есть аккаунт? <b>Войти</b></a>
+      </div>
+    </div>
+    <nav class="bottomnav">
+      <a href="#"><svg class="ic"><use href="icons.svg#i-home"/></svg>Темы</a>
+      <a href="#"><svg class="ic"><use href="icons.svg#i-send"/></svg>Отправки</a>
+      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-user"/></svg>Профиль</a>
+    </nav>
+  </div>
+</section>
 
 <script>
   // Переключатель экранов

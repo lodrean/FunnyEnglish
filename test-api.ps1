@@ -1,10 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    FunnyEnglish API Test Suite
+    So to Speak API Test Suite
     
 .DESCRIPTION
-    Automated API testing script for FunnyEnglish backend.
+    Automated API testing script for So to Speak backend.
     Tests authentication, categories, tests, and user flows.
     
 .EXAMPLE
@@ -19,7 +19,7 @@
 [CmdletBinding()]
 param(
     [string]$BaseUrl = "http://localhost:8080",
-    [string]$AdminEmail = "demo@funnyenglish.app",
+    [string]$AdminEmail = "demo@sotospeak.app",
     [string]$AdminPassword = "demo123"
 )
 
@@ -332,7 +332,7 @@ function Show-TestSummary {
 
 # Main execution
 Write-Host "========================================" -ForegroundColor $Colors.Info
-Write-Host "  FunnyEnglish API Test Suite" -ForegroundColor $Colors.Info
+Write-Host "  So to Speak API Test Suite" -ForegroundColor $Colors.Info
 Write-Host "  Target: $BaseUrl" -ForegroundColor $Colors.Info
 Write-Host "========================================" -ForegroundColor $Colors.Info
 

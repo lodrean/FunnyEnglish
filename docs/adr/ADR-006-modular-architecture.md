@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-FunnyEnglish has grown from a simple app to a complex platform with multiple features:
+So to Speak has grown from a simple app to a complex platform with multiple features:
 - Authentication (email, social, biometric)
 - Test system (5 question types)
 - Gamification (streaks, achievements, quests)

@@ -2,8 +2,8 @@
 ## Клиент: composeApp (Android-first)
 
 **Feature ID:** SPEAKING-TRAINER-001
-**Version:** 1.3 (2026-07-31: §8.2/§8.3 и ссылки по тексту синхронизированы с реализованным контрактом Part 1 — имена моделей Speaking* и пути API; v1.2 — попытка Training = одна запись на ВСЕ вопросы, весь список виден на экране; v1.1 — синхронизация с дизайн-системой Playful Coach: Training 3 попытки без удаления, Practice без Review)
-**Date:** 2026-07-30
+**Version:** 1.5 (2026-08-02: онбординг-иллюстрации заменены на векторные иконки `SpeakingIcons.*` для совместимости с WASM canvas; default темы — `system`; рантайм-override `api_base_url_override` применяется без перезапуска; v1.4 — guest-first старт и онбординг по мокапам Playful Coach v1.1 — 3 слайда без экрана выбора режима «Как начнём?»; Practice-гейт — SpeakingGate; bottom nav «Темы/Отправки/Профиль»; профиль по frame-profile/profile-guest; bottom-sheet выбора субтитров удалён (DC-5) — mode-chips на экране видео; §10.2 Maestro-флоу синхронизированы с реальными текстами; v1.3 — §8.2/§8.3 синхронизированы с контрактом Part 1; v1.2 — попытка Training = одна запись на ВСЕ вопросы; v1.1 — Playful Coach: Training 3 попытки без удаления, Practice без Review)
+**Date:** 2026-08-02
 **Estimated Effort:** 8–12 дней
 **Связанные документы:**
 - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md`
@@ -44,7 +44,7 @@ Part 2 покрывает **только клиент `composeApp`** (монол
 | R4 | Субтитры — собственный парсер WebVTT (~100 строк) в `commonMain`, панель под плеером (дизайн v1.0) | Стабильной KMP-библиотеки WebVTT нет; парсинг на клиенте снимает нагрузку с backend (вариант «cues с backend» из PRD отклонён) |
 | R5 | Ошибки в State — `String?`, маппинг в человеческий текст — через существующий `userFriendlyError` (`app/components/Common.kt`) | Монолит composeApp **не зависит от `:core:presentation`** — `UiText` там недоступен (проверено: в `composeApp/build.gradle.kts` нет `projects.core.presentation`; существующие VM, напр. `AudioTestViewModel`, используют `error: String?`). UiText — долгосрочная цель (memory.md §15), внедрение в этой фиче не делаем, чтобы не тащить зависимость |
 | R6 | Android-first: ios/desktop/wasm — стабы «недоступно на этой платформе» для записи и видео | PRD, решения владельца 2026-07-30 |
-| R7 | Practice — гейтинг по `AuthMode` (гость → CTA логина), как существующий `LockedFeature` | PRD Story 3/5 |
+| R7 | Practice — гейтинг по `AuthMode`: гость видит `SpeakingGate` (`app/components/SpeakingAuth.kt`) в нижней зоне QuestionsScreen — «Ты почти у цели!» + кнопки «Зарегистрироваться»/«Войти» | PRD Story 3/5, мокап frame-locked |
 
 **Что НЕ делаем (Out of Scope, по PRD):** iOS/Desktop/WASM-реализации, ASR-скоринг, удаление legacy-фич, пуши.
 
@@ -54,7 +54,7 @@ Part 2 покрывает **только клиент `composeApp`** (монол
 
 ### 1.1 Как устроена навигация сейчас
 
-`composeApp/src/commonMain/kotlin/com/funnyenglish/app/App.kt`:
+`composeApp/src/commonMain/kotlin/com/sotospeak/app/App.kt`:
 
 - `sealed class AppScreen` (строки 444–461) + `var currentScreen by remember { mutableStateOf<AppScreen>(...) }`.
 - **Back stack отсутствует** — навигация одноячейковая. Каждый экран обязан явно указывать цель `onBack` (см. граблю: WASM browser history guard, memory.md §5 запись 2026-07-20).
@@ -64,7 +64,7 @@ Part 2 покрывает **только клиент `composeApp`** (монол
 ### 1.2 Новые записи AppScreen
 
 ```kotlin
-// composeApp/src/commonMain/kotlin/com/funnyenglish/app/App.kt — дополнение sealed class AppScreen
+// composeApp/src/commonMain/kotlin/com/sotospeak/app/App.kt — дополнение sealed class AppScreen
 
 sealed class AppScreen {
     // ... существующие записи без изменений ...
@@ -83,31 +83,37 @@ sealed class AppScreen {
 ### 1.3 Flow (по PRD «Navigation flow»)
 
 ```
-                    ┌──────────────────────────────────────────────┐
-                    │                                              │
-  Splash/Login ──► Library ──► Topics(libraryId) ──► Video(topicId, choice)
-                    │                                     │
-                    │            (выбор: «С субтитрами» / «Без субтитров»)
-                    │                                     ▼
-                    │                            Questions(topicId)
-                    │                               │           │
-                    │                               ▼           ▼
-                    │                        Training(topicId)  Practice(topicId)  [только AUTH]
-                    │                               │           │
-                    └───────────────────────────────┘           ▼
-                          «К библиотеке»                 MySubmissions
-                                                              │
-                                              (после REVIEWED — просмотр оценки)
+  Splash ──► (первый запуск ──► Onboarding: 3 слайда, «Начать») ──► Library
+                    │
+                    │   UNKNOWN-сессия ──► startGuestSession() синхронно до навигации
+                    ▼
+  Library ──► Topics(libraryId) ──► Video(topicId)
+                    │                   │  (mode-chips «С субтитрами/Без субтитров»
+                    │                   │   на экране видео; bottom-sheet удалён, DC-5)
+                    │                   ▼
+                    │            Questions(topicId)
+                    │               │           │
+                    │               ▼           ▼
+                    │        Training(topicId)  Practice(topicId)  [гость → SpeakingGate]
+                    │               │           │
+                    └───────────────┘           ▼
+                      «К библиотеке»     MySubmissions («Отправки»)
+                                              │
+                              (после REVIEWED — просмотр оценки)
+
+  Login/Register — только из авторизованной зоны: Practice-гейт (QuestionsScreen)
+  и гостевой профиль. Экрана выбора режима «Как начнём?» НЕТ (мокап frame-onboarding).
 ```
 
 Правила переходов (явные, т.к. back stack отсутствует):
 
 | Экран | onBack | Доп. переходы |
 |---|---|---|
-| Library | `Home` | `Topics(libraryId)` по клику на тему |
-| Topics | `Library` | `Video(topicId, withSubtitles)` после выбора субтитров; `Questions(topicId)` — «Пропустить видео» |
-| Video | `Topics(libraryId)` — libraryId пробрасываем параметром конструктора Video (добавить поле `libraryId: String`) | `Questions(topicId)` — кнопка «Перейти к вопросам» (доступна всегда, PRD Story 2) |
-| Questions | `Video(topicId, …)` или `Topics` | `Training(topicId)` / `Practice(topicId)` (гость → CTA логина) |
+| Onboarding | — | 3 слайда («Смотри видео» → «Тренируйся вслух» → «Отправь учителю»), иллюстрации — векторные иконки `SpeakingIcons.*` (Play/Mic/Send) для совместимости с WASM canvas; CTA «Далее»×2 → «Начать» → `Library`; показывается только при первом запуске (`onboarding_completed` в Settings) |
+| Library | `Home` | `Topics(libraryId)` по клику на тему; заголовок «Библиотека тем» |
+| Topics | `Library` | `Video(topicId)` по клику на топик — сразу видео (bottom-sheet удалён, DC-5) |
+| Video | `Topics(libraryId)` | mode-chips «С субтитрами/Без субтитров» на экране; `Questions(topicId)` — кнопка «Перейти к вопросам» (доступна всегда, PRD Story 2; в error-стабе плеера — «К вопросам») |
+| Questions | `Video(topicId)` или `Topics` | `Training(topicId)` / `Practice(topicId)` (гость → SpeakingGate: «Зарегистрироваться»/«Войти») |
 | Training | `Questions(topicId)` | `Library` — кнопка «К библиотеке» (PRD: «из любого места Training можно вернуться в Library») |
 | Practice | `Questions(topicId)` (запрещён во время записи — см. §6) | `MySubmissions` после успешной отправки |
 | MySubmissions | `Library` | — |
@@ -117,7 +123,7 @@ sealed class AppScreen {
 ### 1.4 Изменения в `MainAppContent` и bottom nav
 
 - В `showBottomNav` добавить `AppScreen.Library` и `AppScreen.MySubmissions`.
-- Bottom nav (пивот): пункты `Library` («Библиотека», `Icons.AutoMirrored.Filled.MenuBook` — уже импортирована в App.kt), `MySubmissions` («Мои записи», `Icons.Default.Mic`), `Profile`. Старые пункты (`Categories`, `Groups`, `Leaderboard`) **не удаляем из кода** (решение владельца: legacy-код не трогаем до стабилизации), но из bottom nav убираем.
+- Bottom nav (пивот + guest-first): пункты `Library` («Темы», `SpeakingIcons.Home`), `MySubmissions` («Отправки», `SpeakingIcons.Send`), `Profile` («Профиль», `SpeakingIcons.User`). Старые пункты (`Categories`, `Groups`, `Leaderboard`) из bottom nav убраны; legacy-код позже удалён (2026-08-01, bd `8tg.7`).
 - Стартовый экран после Splash/Onboarding меняется: `AppScreen.Home` → `AppScreen.Library` (ветка Splash в `AppContent`, строки 91–99, и `onContinueAsGuest`, строка 115).
 - Каждая новая ветка `when (currentScreen)` — по существующему шаблону (`collectAsState()` + `LaunchedEffect(id) { vm.load(id) }` + колбэки навигации), см. ветку `AppScreen.TestPlay` как референс.
 
@@ -130,7 +136,7 @@ sealed class AppScreen {
 Файловая раскладка (монолит, плоско, как существующие VM):
 
 ```
-composeApp/src/commonMain/kotlin/com/funnyenglish/app/
+composeApp/src/commonMain/kotlin/com/sotospeak/app/
 ├── screens/
 │   ├── LibraryScreen.kt
 │   ├── TopicsScreen.kt
@@ -257,17 +263,17 @@ data class QuestionsState(
 sealed interface QuestionsAction {
     data class OnLoad(val topicId: String) : QuestionsAction
     data object OnStartTraining : QuestionsAction
-    data object OnStartPractice : QuestionsAction           // гость → событие ShowLoginCta
+    data object OnStartPractice : QuestionsAction           // гостю недоступен — SpeakingGate на экране
     data object OnBack : QuestionsAction
 }
 
 sealed interface QuestionsEvent {
     data class NavigateToTraining(val topicId: String) : QuestionsEvent
     data class NavigateToPractice(val topicId: String) : QuestionsEvent
-    data object ShowLoginCta : QuestionsEvent               // диалог «Войти/Зарегистрироваться»
     data object NavigateBack : QuestionsEvent
 }
 ```
+> Событие `ShowLoginCta` удалено (2026-08-01, guest-first): гейт гостя — не VM-событие, а перманентный `SpeakingGate` в нижней зоне экрана с прямыми колбэками `onRegisterClick`/`onLoginClick`.
 
 ### 2.5 TrainingScreen
 
@@ -383,13 +389,13 @@ Media3 ExoPlayer уже используется в проекте для ауд
 
 ```
 composeApp/src/
-├── commonMain/kotlin/com/funnyenglish/app/player/
+├── commonMain/kotlin/com/sotospeak/app/player/
 │   ├── VideoPlayerController.kt        # expect class + VideoPlayerState
 │   ├── VideoPlayerView.kt              # common composable-обёртка + expect NativeVideoSurface
 │   └── ...
-├── androidMain/kotlin/com/funnyenglish/app/player/
+├── androidMain/kotlin/com/sotospeak/app/player/
 │   └── VideoPlayerController.android.kt
-├── desktopMain/kotlin/com/funnyenglish/app/player/
+├── desktopMain/kotlin/com/sotospeak/app/player/
 │   └── VideoPlayerController.desktop.kt   # СТАБ
 ├── iosMain/...  # СТАБ
 └── wasmJsMain/... # СТАБ
@@ -408,8 +414,8 @@ androidMain.dependencies {
 ### 3.2 Контракт
 
 ```kotlin
-// composeApp/src/commonMain/kotlin/com/funnyenglish/app/player/VideoPlayerController.kt
-package com.funnyenglish.app.player
+// composeApp/src/commonMain/kotlin/com/sotospeak/app/player/VideoPlayerController.kt
+package com.sotospeak.app.player
 
 import kotlinx.coroutines.flow.StateFlow
 
@@ -442,7 +448,7 @@ expect fun NativeVideoSurface(
 Android actual:
 
 ```kotlin
-// composeApp/src/androidMain/kotlin/com/funnyenglish/app/player/VideoPlayerController.android.kt
+// composeApp/src/androidMain/kotlin/com/sotospeak/app/player/VideoPlayerController.android.kt
 actual class VideoPlayerController {
     private val context = ApplicationProvider.get()   // см. примечание ниже
     private var player: ExoPlayer? = null
@@ -483,8 +489,8 @@ actual fun NativeVideoSurface(controller: VideoPlayerController, modifier: Modif
 ### 3.3 Парсер WebVTT (commonMain, свой)
 
 ```kotlin
-// composeApp/src/commonMain/kotlin/com/funnyenglish/app/subtitles/WebVttParser.kt
-package com.funnyenglish.app.subtitles
+// composeApp/src/commonMain/kotlin/com/sotospeak/app/subtitles/WebVttParser.kt
+package com.sotospeak.app.subtitles
 
 data class SubtitleCue(
     val startMs: Long,
@@ -506,14 +512,14 @@ object WebVttParser {
 }
 ```
 
-Загрузка субтитров: обычный GET через существующий Ktor-клиент (`client.get(subtitlesUrl).bodyAsText()`) — добавить в `VideoViewModel`, не в `FunnyEnglishApi` (файл лежит в MinIO по публичному URL, не API-эндпоинт; URL приходит в `SpeakingTopicDetail.video?.subtitleUrl`). Юнит-тесты парсера в `commonTest` (минимум: тайминги обоих форматов, NOTE, многострочный cue, мусорные строки).
+Загрузка субтитров: обычный GET через существующий Ktor-клиент (`client.get(subtitlesUrl).bodyAsText()`) — добавить в `VideoViewModel`, не в `SoToSpeakApi` (файл лежит в MinIO по публичному URL, не API-эндпоинт; URL приходит в `SpeakingTopicDetail.video?.subtitleUrl`). Юнит-тесты парсера в `commonTest` (минимум: тайминги обоих форматов, NOTE, многострочный cue, мусорные строки).
 
 ### 3.4 Панель субтитров под плеером
 
 Дизайн-система v1.0: субтитры отображаются **под плеером** (отдельная панель на scrim-подложке 70%, `subtitleText` 17sp), а не оверлеем поверх видео. Переключение — mode-chips «С субтитрами / Без субтитров» над плеером + CC-кнопка в контролах плеера.
 
 ```kotlin
-// composeApp/src/commonMain/kotlin/com/funnyenglish/app/subtitles/SubtitlePanel.kt
+// composeApp/src/commonMain/kotlin/com/sotospeak/app/subtitles/SubtitlePanel.kt
 @Composable
 fun SubtitlePanel(
     cues: List<SubtitleCue>,
@@ -535,19 +541,19 @@ fun SubtitlePanel(
 ### 4.1 Контракт (expect/actual)
 
 ```
-composeApp/src/commonMain/kotlin/com/funnyenglish/app/recorder/
+composeApp/src/commonMain/kotlin/com/sotospeak/app/recorder/
 ├── VoiceRecorder.kt                 # expect class + VoiceRecorderState
 ├── MicPermission.kt                 # expect rememberMicrophonePermissionState()
 └── ...
 
-composeApp/src/androidMain/kotlin/com/funnyenglish/app/recorder/
+composeApp/src/androidMain/kotlin/com/sotospeak/app/recorder/
 ├── VoiceRecorder.android.kt         # MediaRecorder → AAC/m4a
 └── MicPermission.android.kt         # ActivityResultContracts.RequestPermission
 ```
 
 ```kotlin
 // commonMain/app/recorder/VoiceRecorder.kt
-package com.funnyenglish.app.recorder
+package com.sotospeak.app.recorder
 
 import kotlinx.coroutines.flow.StateFlow
 
@@ -629,7 +635,7 @@ expect fun rememberMicrophonePermissionState(
 
 ```kotlin
 // commonMain/app/storage/RecordingFileStorage.kt
-package com.funnyenglish.app.storage
+package com.sotospeak.app.storage
 
 /** Файловые операции. Android/desktop actual — java.io.File; ios/wasm — стаб UnsupportedOperationException. */
 expect class RecordingFileStorage() {
@@ -728,20 +734,20 @@ Ready ──OnStart──► Recording(30с, автостоп/OnStopEarly/OnInte
 - Таймер: тот же тик-паттерн; по 0 — `recorder.stop()` автоматически (PRD Story 5) → upload.
 - На экране: список всех вопросов топика, level-chip «Контрольная · 30 сек», чип «1 запись на все вопросы», плашка «запись уйдёт учителю автоматически — изменить её нельзя».
 - В фазах `Recording`/`Uploading` системная кнопка «назад» и `OnBack` — диалог-подтверждение («Запись будет потеряна/отправка прервётся»).
-- Sent-экран: бейдж ✅, чип «статус NEW · ждёт проверки», подпись «Оценка и комментарий появятся в «Мои отправки»», CTA «Вернуться в библиотеку».
+- Sent-экран: бейдж ✅, чип «статус NEW · ждёт проверки», подпись «Оценка и комментарий появятся в «Отправки»», CTA «Вернуться в библиотеку».
 - После отправки запись нельзя прослушать/перезаписать (PRD) — тейк помечается `uploaded=true`.
 
 ### 6.2 Гейтинг гостя
 
-- `QuestionsScreen` получает `isGuest = authMode == AuthMode.GUEST` (проброс из `MainAppContent`, как в `LeaderboardScreen`). Кнопка «Practice» у гостя — в стиле `LockedFeature` (`app/components/LockedFeature.kt`): замок + CTA «Войти/Зарегистрироваться» → `onNavigate(AppScreen.Login)`.
+- `QuestionsScreen` получает `isGuest = authMode == AuthMode.GUEST`. У гостя вместо кнопки Practice в нижней зоне экрана — `SpeakingGate` (`app/components/SpeakingAuth.kt`, мокап frame-locked): иконка Lock, «Ты почти у цели!», «Отправка записи учителю доступна после регистрации», `SpeakingPrimaryButton` «Зарегистрироваться» (`practice_locked_cta` → Register) + `SpeakingGhostButton` «Войти» (`practice_locked_login` → Login). Training при этом остаётся доступным (гейт НЕ full-screen).
 - Дополнительная защита: в `PracticeViewModel.onAction(OnStart)` проверять `tokenProvider.getToken() != null` (токен провайдер уже в Koin), иначе — `ShowMessage("Требуется вход")`. Backend тоже ограничивает (ROLE_USER+, Part 1).
 
 ### 6.3 Multipart-загрузка через Ktor
 
-Метод `FunnyEnglishApi` (уже реализован в Фазе 1; эндпоинт — по Part 1):
+Метод `SoToSpeakApi` (уже реализован в Фазе 1; эндпоинт — по Part 1):
 
 ```kotlin
-// shared/src/commonMain/kotlin/com/funnyenglish/shared/api/FunnyEnglishApi.kt
+// shared/src/commonMain/kotlin/com/sotospeak/shared/api/SoToSpeakApi.kt
 suspend fun submitSpeakingPractice(
     topicId: String,
     durationSec: Int,
@@ -779,7 +785,7 @@ suspend fun submitSpeakingPractice(
 - Прослушивание своей отправленной записи: по `audioUrl` через `AudioPlayer` (публичный MinIO URL; учесть BUG-004 — URL должен быть `S3_PUBLIC_URL`, memory.md грабля №2).
 - Секция «Не отправлено» (`pendingUploads` из RecordingStore) с кнопкой retry — визуально отделена.
 - Empty state: «У вас пока нет отправленных записей» + CTA в Library (PRD Edge Cases).
-- Доступен только авторизованным; гость на этом экране — `GuestProfileStub`-подобная заглушка с CTA логина (bottom nav пункт виден обоим).
+- Доступен только авторизованным; гость на этом экране — GuestProfileStub по мокапу frame-profile-guest (`SpeakingGate` с 📬: «Зарегистрируйся, чтобы отправлять записи учителю и видеть оценки» + «Зарегистрироваться»/«Уже есть аккаунт? Войти»). Авторизованный профиль по frame-profile: аватар 88dp с инициалами, stat-карточки (отправки/топики из MySubmissionsViewModel), «Выйти» danger-ghost (logout переехал из Settings в профиль).
 
 ---
 
@@ -805,7 +811,12 @@ viewModel { MySubmissionsViewModel(get(), get()) }          // api + RecordingSt
 
 `VoiceRecorder` и `VideoPlayerController` — НЕ в Koin: создаются экраном через `remember { VoiceRecorder() }` + `DisposableEffect { onDispose { release() } }` (жизненный цикл привязан к композиции, expect class без аргументов конструктора). Альтернатива — `factory { VoiceRecorder() }` в Koin; выбираем remember-подход как более простой.
 
-### 8.2 Методы `FunnyEnglishApi` (дополнения; пути — по Part 1)
+#### Рантайм-override baseUrl
+- `AppConfig` принимает `baseUrlProvider: () -> String`; значение читается лениво перед каждым запросом.
+- Android: `Settings("sotospeak.preferences")` ключ `api_base_url_override` перекрывает `BuildConfig.API_BASE_URL`. Изменение применяется без перезапуска приложения.
+- WASM/Desktop: env/location определяет URL при старте.
+
+### 8.2 Методы `SoToSpeakApi` (дополнения; пути — по Part 1)
 
 ```kotlin
 // Публичный контент (доступен гостю, как getCategories):
@@ -830,7 +841,7 @@ suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeC
 ### 8.3 Модели (shared) — зеркала DTO из Part 1 (реализованы в Фазе 1, здесь сигнатуры)
 
 ```kotlin
-// shared/src/commonMain/kotlin/com/funnyenglish/shared/model/Speaking.kt
+// shared/src/commonMain/kotlin/com/sotospeak/shared/model/Speaking.kt
 @Serializable data class SpeakingLibrary(
     val id: String, val title: String, val description: String? = null,
     val coverUrl: String? = null, val topicCount: Int
@@ -890,7 +901,7 @@ suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeC
 
 ### 10.1 desktopTest (паттерн — commonTest, kotest, реальные экраны + моки)
 
-Референс: `composeApp/src/commonTest/kotlin/com/funnyenglish/app/tests/HomeUserFlowTest.kt` + `BaseUiTest` (runComposeUiTest + Koin) + моки `app/di/TestMocks.kt`. Запуск: `./gradlew :composeApp:desktopTest` (uiTest — для `**/tests/**`).
+Референс: `composeApp/src/commonTest/kotlin/com/sotospeak/app/tests/HomeUserFlowTest.kt` + `BaseUiTest` (runComposeUiTest + Koin) + моки `app/di/TestMocks.kt`. Запуск: `./gradlew :composeApp:desktopTest` (uiTest — для `**/tests/**`).
 
 - **TestMocks.kt** — добавить: `mockSpeakingLibraries` (2 темы, одна с `topicCount=0` — проверка фильтрации), `mockSpeakingTopics` (с субтитрами и без), `mockSpeakingQuestions` (3 вопроса), `mockSpeakingSubmissions` (NEW и REVIEWED с полной рубрикой), `mockRecordingMeta`-список.
 - **Новые тест-классы** (`app/tests/`): `LibraryScreenTest`, `TopicsScreenTest`, `QuestionsScreenTest` (гость: Practice заблокирован, CTA виден), `TrainingScreenTest` (таймер-тег, level-chip, список попыток без delete, финальный CTA после 3-й, disabled без permission), `PracticeScreenTest` (фазы Ready/Recording/Uploading/Sent, автоотправка после стопа, гейтинг), `MySubmissionsScreenTest` (статусы, рубрика, empty state). Паттерн: реальный экран + моковый State + captured callbacks (грабля №16: `useUnmergedTree = true`, клики внизу через `performScrollTo()` в try/catch Throwable).
@@ -908,15 +919,14 @@ suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeC
 | Practice | `practice_screen`, `practice_timer`, `practice_questions_list`, `practice_start_button`, `practice_stop_button`, `practice_auto_send_note`, `upload_panel`, `upload_retry_button`, `sent_panel`, `sent_back_button` |
 | MySubmissions | `my_submissions_screen`, `submission_item_<id>`, `submission_status_<id>`, `grade_card_<id>`, `pending_upload_item`, `submissions_empty` |
 
-### 10.2 Maestro (план флоу)
+### 10.2 Maestro (флоу — актуализированы 2026-08-01 под guest-first)
 
-Новые файлы (паттерн `.maestro/flows/complete_test.yaml` + subflow `onboarding_guest.yaml`):
+1. `.maestro/flows/speaking_training.yaml` — гость: онбординг-subflow (3 слайда «Смотри видео» → «Далее»×2 → «Начать») → «Библиотека тем» → «Разговорный английский» → «Знакомство» → видео (mode-chips на экране; bottom-sheet удалён) → «Перейти к вопросам» → Questions → «Тренировка · 3 попытки» → запись по record-кнопке (contentDescription «Начать запись»/«Остановить запись») → «Попытки · 1 из 3».
+2. `.maestro/flows/speaking_practice_guest_gating.yaml` — гость: Questions → SpeakingGate «Ты почти у цели!» → «Войти» → экран логина.
+3. `.maestro/flows/speaking_practice_auth.yaml` — логин demo@sotospeak.app через гостевой профиль («Профиль» → «Войти»; тапы по полям координатами — label-тап не переносит фокус в SpeakingField) → Practice: `launchApp` с `permissions: { android.permission.RECORD_AUDIO: allow }` → «Начать запись» → таймер 0:27 → «Остановить запись» → автоотправка → «Запись отправлена!» → «Вернуться в библиотеку» → «Отправки», статус «На проверке».
+4. `.maestro/subflows/onboarding_guest.yaml` — 3 слайда → «Начать» (+retry-тап); вызывается по `visible: "Смотри видео"`.
 
-1. `.maestro/flows/speaking_training.yaml` — гость: онбординг-subflow → Library видна → открыть тему → топик → выбор «С субтитрами» → видео-экран (assertVisible `go_to_questions_button` по тексту «Перейти к вопросам») → Questions → Training → assertVisible таймер/вопрос → «К библиотеке».
-2. `.maestro/flows/speaking_practice_guest_gating.yaml` — гость: Questions → Practice-кнопка заблокирована → CTA «Войти».
-3. `.maestro/flows/speaking_practice_auth.yaml` — логин (demo@funnyenglish.app, env dev) → Practice: `launchApp` с `permissions: { android.permission.RECORD_AUDIO: allow }` (Maestro поддерживает выдачу permissions при запуске) → «Начать» → ждать 31с автостопа (или ручной стоп) → автоматическая отправка → Sent-экран → «Вернуться в библиотеку» → MySubmissions, статус NEW.
-
-Грабли Maestro (memory.md №14, №22, №30): текст-матчинг ТОЧНЫЙ — regex `".*Текст.*"`; тапы по id/testTag НЕ работают (testTagsAsResourceId выключен) — только по видимому тексту; статус проверять по реальному exit code, не по `| tail`. Запись звука на эмуляторе — виртуальный микрофон, валидный AAC-файл создаётся.
+Грабли Maestro (memory.md №14, №30, №59–61, №63): текст-матчинг ТОЧНЫЙ — regex `".*Текст.*"`; заголовок Library — «Библиотека тем»; SpeakingTextLink разбит на 2 Text — regex; тапы по id/testTag НЕ работают — по видимому тексту/contentDescription/координатам; APK пересобирать перед прогоном; статус — по реальному exit code. Запись звука на эмуляторе — виртуальный микрофон, валидный AAC-файл создаётся.
 
 ---
 
@@ -926,7 +936,7 @@ suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeC
 
 | # | Задача | Содержание | Оценка | Зависит от |
 |---|---|---|---|---|
-| T1 | shared: модели + API | `model/Speaking.kt`, 5 методов в `FunnyEnglishApi` (§8.2–8.3), включая multipart (§6.3) | 1 д | Part 1 (контракты) |
+| T1 | shared: модели + API | `model/Speaking.kt`, 5 методов в `SoToSpeakApi` (§8.2–8.3), включая multipart (§6.3) | 1 д | Part 1 (контракты) |
 | T2 | Навигация | Новые `AppScreen`-записи, ветки в `MainAppContent`, bottom nav, стартовый экран → Library (§1) | 1 д | T1 |
 | T3 | Library + Topics экраны | MVI по §2.1–2.2, скелетоны, ErrorMessage, выбор субтитров | 1.5 д | T2 |
 | T4 | VideoPlayer expect/actual | Media3-зависимости, контроллер + `NativeVideoSurface`, стабы платформ (§3.1–3.2) | 1.5 д | — |
@@ -944,6 +954,6 @@ suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeC
 Риски и открытые вопросы реализации:
 1. Подключение `media3-ui` в composeApp androidMain — проверить конфликты версий с shared (тот же 1.5.1, конфликта быть не должно).
 2. `submitFormWithBinaryData` + `defaultRequest { contentType(Json) }` — проверить, что multipart content-type не переопределяется (§6.3).
-3. Получение `Context` в android actual'ях composeApp — сверить с механизмом shared (`Platform.android.kt`); возможно, потребуется инициализация из `FunnyEnglishApplication`.
+3. Получение `Context` в android actual'ях composeApp — сверить с механизмом shared (`Platform.android.kt`); возможно, потребуется инициализация из `SoToSpeakApplication`.
 4. Maestro-флоу записи звука — 31-секундное ожидание делает флоу медленным; рассмотреть debug-флаг сокращённого лимита (НЕ в проде, аналог `ENABLE_DEBUG_TOOLS`, грабля №5).
 5. После стабилизации: дополнить `memory.md` (решения R1–R7) и обновить нижнюю навигацию в `docs/USER_GUIDE.md`.

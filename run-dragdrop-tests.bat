@@ -5,7 +5,7 @@ REM Запуск E2E тестов Drag-and-Drop
 REM ============================================
 
 echo ============================================
-echo FunnyEnglish: Drag-and-Drop E2E Tests
+echo So to Speak: Drag-and-Drop E2E Tests
 echo ============================================
 echo.
 

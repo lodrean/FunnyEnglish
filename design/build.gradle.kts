@@ -39,7 +39,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.design"
+    namespace = "com.sotospeak.design"
     buildFeatures {
         compose = true
     }

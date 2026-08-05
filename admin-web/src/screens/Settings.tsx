@@ -118,20 +118,20 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
 // Default settings
 const defaultSettings: SettingsData = {
   general: {
-    siteName: 'FunnyEnglish',
+    siteName: 'So to speak',
     siteDescription: 'Learn English with fun and interactive tests',
     logoUrl: '',
     faviconUrl: '',
-    contactEmail: 'support@funnyenglish.com',
+    contactEmail: 'support@sotospeak.com',
     supportPhone: '+1 (555) 123-4567',
   },
   email: {
     smtpHost: 'smtp.gmail.com',
     smtpPort: 587,
-    smtpUsername: 'noreply@funnyenglish.com',
+    smtpUsername: 'noreply@sotospeak.com',
     smtpPassword: '',
-    fromEmail: 'noreply@funnyenglish.com',
-    fromName: 'FunnyEnglish',
+    fromEmail: 'noreply@sotospeak.com',
+    fromName: 'So to speak',
     enableSsl: true,
   },
   notifications: {

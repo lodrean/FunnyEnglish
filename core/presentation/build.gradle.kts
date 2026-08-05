@@ -29,5 +29,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.core.presentation"
+    namespace = "com.sotospeak.core.presentation"
 }

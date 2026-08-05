@@ -1,4 +1,4 @@
-# SWARM Agent Task: FunnyEnglish Admin Web Redesign
+# SWARM Agent Task: So to Speak Admin Web Redesign
 
 ## Task ID: ADMIN-REDSIGN-001
 ## Priority: HIGH
@@ -9,7 +9,7 @@
 
 ## 📌 Task Overview
 
-Implement a comprehensive Design System 2.0 for the FunnyEnglish Admin Web application. The admin panel is used by content managers and administrators to manage educational content (categories, tests, questions), users, and view analytics.
+Implement a comprehensive Design System 2.0 for the So to Speak Admin Web application. The admin panel is used by content managers and administrators to manage educational content (categories, tests, questions), users, and view analytics.
 
 **Current Stack:** React 18 + TypeScript + Vite + MUI v6 + react-hook-form + @tanstack/react-query + @dnd-kit + recharts
 
@@ -21,7 +21,7 @@ Implement a comprehensive Design System 2.0 for the FunnyEnglish Admin Web appli
 
 ## 🎯 Objectives
 
-1. Create a modern, professional admin interface matching the FunnyEnglish brand
+1. Create a modern, professional admin interface matching the So to Speak brand
 2. Implement reusable component library (34 components)
 3. Build 7 main screens with full functionality
 4. Ensure responsive design (desktop-first, tablet/mobile adaptive)

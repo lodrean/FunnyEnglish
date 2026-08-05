@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash screen background (matches SpeakingTokens dark background) -->
+    <color name="splash_background">@color/splash_background_dark</color>
+    <color name="splash_background_light">#EEF3FF</color>
+    <color name="splash_background_dark">#161A2E</color>
+</resources>

@@ -37,5 +37,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.core.data"
+    namespace = "com.sotospeak.core.data"
 }

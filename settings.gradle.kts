@@ -1,4 +1,4 @@
-rootProject.name = "FunnyEnglish"
+rootProject.name = "SoToSpeak"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 

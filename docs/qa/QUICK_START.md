@@ -1,4 +1,4 @@
-# Быстрый старт: QA Автоматизация для FunnyEnglish
+# Быстрый старт: QA Автоматизация для So to Speak
 
 ## 🚀 MVP QA Stack (минимум для старта)
 
@@ -33,7 +33,7 @@ kotlin {
 ### Создай первый тест:
 
 ```kotlin
-// shared/src/commonTest/kotlin/com/funnyenglish/shared/GameLogicTest.kt
+// shared/src/commonTest/kotlin/com/sotospeak/shared/GameLogicTest.kt
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -70,7 +70,7 @@ npm install -g newman-reporter-htmlextra
 
 ```json
 {
-  "info": { "name": "FunnyEnglish API Tests" },
+  "info": { "name": "So to Speak API Tests" },
   "item": [
     {
       "name": "Login",
@@ -80,7 +80,7 @@ npm install -g newman-reporter-htmlextra
         "url": "{{baseUrl}}/auth/login",
         "body": {
           "mode": "raw",
-          "raw": "{\"email\":\"demo@funnyenglish.app\",\"password\":\"demo123\"}"
+          "raw": "{\"email\":\"demo@sotospeak.app\",\"password\":\"demo123\"}"
         }
       },
       "event": [{
@@ -179,11 +179,11 @@ curl -Ls "https://get.maestro.mobile.dev" | bash
 ### Создай flow (`.maestro/flows/login.yaml`):
 
 ```yaml
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 - launchApp
 - tapOn: "Email"
-- inputText: "demo@funnyenglish.app"
+- inputText: "demo@sotospeak.app"
 - tapOn: "Password"  
 - inputText: "demo123"
 - tapOn: "Войти"
@@ -327,14 +327,14 @@ ENTRYPOINT ["python", "main.py"]
 
 ```bash
 # Сборка
-docker build -t funnyenglish-qa -f Dockerfile.qa-agent .
+docker build -t sotospeak-qa -f Dockerfile.qa-agent .
 
 # Сравнение скриншотов с дизайном
 docker run --rm \
   -v $(pwd)/screenshots:/screenshots \
   -v $(pwd)/designs:/designs \
   -e OPENAI_API_KEY=$OPENAI_API_KEY \
-  funnyenglish-qa \
+  sotospeak-qa \
   compare --designs=/designs --screenshots=/screenshots
 ```
 

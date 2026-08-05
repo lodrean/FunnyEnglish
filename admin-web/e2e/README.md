@@ -1,6 +1,6 @@
 # E2E Тестирование с Playwright
 
-Эта директория содержит E2E тесты для FunnyEnglish Admin Panel с использованием Playwright.
+Эта директория содержит E2E тесты для So to Speak Admin Panel с использованием Playwright.
 
 ## Быстрый старт
 
@@ -49,7 +49,7 @@ e2e/
 ADMIN_URL=http://localhost:5173
 
 # Тестовые учетные данные
-TEST_ADMIN_EMAIL=admin@funnyenglish.com
+TEST_ADMIN_EMAIL=admin@sotospeak.com
 TEST_ADMIN_PASSWORD=admin123
 
 # Пропустить автозапуск dev сервера
@@ -63,7 +63,7 @@ Playwright MCP сервер позволяет Claude взаимодейство
 ### Пример: Анализ компонентов
 
 ```
-Перейди на http://localhost:5173, сделай логин с admin@funnyenglish.com / admin123,
+Перейди на http://localhost:5173, сделай логин с admin@sotospeak.com / admin123,
 проанализируй компоненты на дашборде и проверь соответствие дизайн-системе.
 ```
 

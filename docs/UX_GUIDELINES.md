@@ -1,4 +1,4 @@
-# FunnyEnglish UX Guidelines
+# So to Speak UX Guidelines
 
 ## Общие принципы
 

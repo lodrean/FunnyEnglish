@@ -32,5 +32,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.feature.auth"
+    namespace = "com.sotospeak.feature.auth"
 }

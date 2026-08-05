@@ -1,6 +1,6 @@
 # QA Automation Documentation
 
-Complete guide to the QA Automation setup for FunnyEnglish application.
+Complete guide to the QA Automation setup for So to Speak application.
 
 ## Overview
 
@@ -27,7 +27,7 @@ The QA Automation framework consists of three layers:
 ## 1. Unit Tests (Kotest)
 
 ### Location
-- `shared/src/commonTest/kotlin/com/funnyenglish/shared/`
+- `shared/src/commonTest/kotlin/com/sotospeak/shared/`
 
 ### Running Tests
 
@@ -65,14 +65,14 @@ class AuthValidatorTest : FunSpec({
 cd qa
 
 # Basic run
-newman run postman/funnyenglish-api.json
+newman run postman/sotospeak-api.json
 
 # With environment
-newman run postman/funnyenglish-api.json \
+newman run postman/sotospeak-api.json \
   -e postman/test-environment.json
 
 # With HTML report
-newman run postman/funnyenglish-api.json \
+newman run postman/sotospeak-api.json \
   -e postman/test-environment.json \
   --reporters cli,htmlextra \
   --reporter-htmlextra-export reports/api-test-report.html
@@ -112,7 +112,7 @@ maestro test .maestro/ --include-tags=smoke
 ### Writing Flows
 
 ```yaml
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 - launchApp
 - assertVisible: "Вход"
@@ -201,7 +201,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Newman
-        run: newman run qa/postman/funnyenglish-api.json
+        run: newman run qa/postman/sotospeak-api.json
 
   e2e-tests:
     needs: api-tests
@@ -251,7 +251,7 @@ docker-compose -f docker-compose.test.yml up -d
 
 # Run tests
 ./gradlew :backend:test
-newman run qa/postman/funnyenglish-api.json
+newman run qa/postman/sotospeak-api.json
 
 # Stop
 docker-compose -f docker-compose.test.yml down

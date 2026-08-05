@@ -1,8 +1,8 @@
-# FunnyEnglish Development Workflow (AIDD Pipeline)
+# So to Speak Development Workflow (AIDD Pipeline)
 
 ## Overview
 
-This document describes the AI-Driven Development (AIDD) pipeline for the FunnyEnglish project. Each feature follows a structured workflow with quality gates.
+This document describes the AI-Driven Development (AIDD) pipeline for the So to Speak project. Each feature follows a structured workflow with quality gates.
 
 ## Pipeline Stages
 

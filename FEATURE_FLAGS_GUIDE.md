@@ -22,7 +22,7 @@
 ### 1. FeatureFlags объект (shared модуль)
 
 ```kotlin
-// shared/src/commonMain/kotlin/com/funnyenglish/shared/config/FeatureFlags.kt
+// shared/src/commonMain/kotlin/com/sotospeak/shared/config/FeatureFlags.kt
 object FeatureFlags {
     var ENABLE_DRAG_DROP_QUESTIONS: Boolean = false
     var ENABLE_IMAGE_WORD_MATCH: Boolean = false
@@ -90,8 +90,8 @@ getByName("release") {
 ### Desktop (переменные окружения)
 
 ```bash
-export FUNNYENGLISH_ENABLE_DRAG_DROP=true
-export FUNNYENGLISH_ENABLE_IMAGE_WORD_MATCH=true
+export SOTOSPEAK_ENABLE_DRAG_DROP=true
+export SOTOSPEAK_ENABLE_IMAGE_WORD_MATCH=true
 ./gradlew :composeApp:run
 ```
 
@@ -117,13 +117,13 @@ FeatureFlags.init(
 
 ## 📁 Изменённые файлы
 
-1. **shared/src/commonMain/kotlin/com/funnyenglish/shared/config/FeatureFlags.kt** (создан)
+1. **shared/src/commonMain/kotlin/com/sotospeak/shared/config/FeatureFlags.kt** (создан)
 2. **composeApp/build.gradle.kts** (обновлён)
-3. **composeApp/src/androidMain/kotlin/com/funnyenglish/app/di/AppConfig.android.kt** (обновлён)
-4. **composeApp/src/desktopMain/kotlin/com/funnyenglish/app/di/AppConfig.desktop.kt** (обновлён)
-5. **composeApp/src/wasmJsMain/kotlin/com/funnyenglish/app/di/AppConfig.wasmJs.kt** (обновлён)
-6. **composeApp/src/iosMain/kotlin/com/funnyenglish/app/di/AppConfig.ios.kt** (обновлён)
-7. **feature-tests/src/commonMain/kotlin/com/funnyenglish/tests/presentation/TestViewModel.kt** (обновлён)
+3. **composeApp/src/androidMain/kotlin/com/sotospeak/app/di/AppConfig.android.kt** (обновлён)
+4. **composeApp/src/desktopMain/kotlin/com/sotospeak/app/di/AppConfig.desktop.kt** (обновлён)
+5. **composeApp/src/wasmJsMain/kotlin/com/sotospeak/app/di/AppConfig.wasmJs.kt** (обновлён)
+6. **composeApp/src/iosMain/kotlin/com/sotospeak/app/di/AppConfig.ios.kt** (обновлён)
+7. **feature-tests/src/commonMain/kotlin/com/sotospeak/tests/presentation/TestViewModel.kt** (обновлён)
 
 ---
 

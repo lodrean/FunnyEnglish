@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ===========================================
-echo   Rebuild and Run FunnyEnglish
+echo   Rebuild and Run So to Speak
 echo ===========================================
 echo.
 
@@ -12,7 +12,7 @@ echo.
 
 REM Compile backend
 echo [2/4] Compiling backend...
-cd /d C:\Users\etaba\IdeaProjects\projects\Packages\FunnyEnglish
+cd /d C:\Users\etaba\IdeaProjects\projects\Packages\So to Speak
 call .\gradlew :backend:classes -x test --quiet
 if errorlevel 1 (
     echo [ERROR] Backend compilation failed!
@@ -48,7 +48,7 @@ echo.
 start /B .\gradlew :composeApp:run --quiet 2>&1
 echo Desktop app starting in background...
 echo.
-echo Logs: %USERPROFILE%\.funnyenglish\logs\
+echo Logs: %USERPROFILE%\.sotospeak\logs\
 echo Backend: http://localhost:8080
 echo.
 pause

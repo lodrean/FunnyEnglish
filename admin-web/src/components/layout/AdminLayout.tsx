@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Admin Layout Component
+ * So to speak Admin Web - Admin Layout Component
  * Main layout with fixed sidebar, header, and content area
  */
 
@@ -175,7 +175,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             color: 'text.secondary',
           }}
         >
-          <span>© 2024 FunnyEnglish. All rights reserved.</span>
+          <span>© 2026 So to speak. All rights reserved.</span>
           <span>Version 1.0.0</span>
         </Box>
       </Box>

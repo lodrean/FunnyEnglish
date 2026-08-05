@@ -16,7 +16,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: funnyenglish_test
+          POSTGRES_DB: sotospeak_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
@@ -45,7 +45,7 @@ jobs:
         env:
           DB_HOST: localhost
           DB_PORT: 5432
-          DB_NAME: funnyenglish_test
+          DB_NAME: sotospeak_test
           DB_USERNAME: postgres
           DB_PASSWORD: postgres
 
@@ -153,7 +153,7 @@ jobs:
           context: .
           file: docker/Dockerfile.backend
           push: false
-          tags: funnyenglish-backend:latest
+          tags: sotospeak-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -163,6 +163,6 @@ jobs:
           context: admin-web
           file: docker/Dockerfile.admin
           push: false
-          tags: funnyenglish-admin:latest
+          tags: sotospeak-admin:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max

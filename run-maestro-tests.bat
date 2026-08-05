@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ===========================================
-echo FunnyEnglish Maestro E2E Test Runner
+echo So to Speak Maestro E2E Test Runner
 echo ===========================================
 echo.
 
@@ -26,7 +26,7 @@ if %ERRORLEVEL% neq 0 (
 echo ✅ Android device connected
 
 REM Check if app is installed
-adb shell pm list packages | findstr "com.funnyenglish.app" >nul
+adb shell pm list packages | findstr "com.sotospeak.app" >nul
 if %ERRORLEVEL% neq 0 (
     echo ⚠️  App not installed. Building...
     call gradlew :composeApp:assembleDebug

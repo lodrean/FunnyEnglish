@@ -1,4 +1,4 @@
-# CLAUDE.md - FunnyEnglish Project Instructions
+# CLAUDE.md - So to Speak Project Instructions
 
 ## AI-Driven Development (AIDD) Process
 
@@ -42,10 +42,10 @@ This project follows the AIDD methodology where LLM acts as a team of specialize
 
 ## Project Overview
 
-FunnyEnglish — Speaking-тренажёр (пивот 2026-07-30): видео-топики + голосовые ответы. Актуальный контекст — `memory.md` и `AGENTS.md`.
+So to Speak — Speaking-тренажёр (пивот 2026-07-30): видео-топики + голосовые ответы. Актуальный контекст — `memory.md` и `AGENTS.md`.
 
 ### Current Status
-- **Status:** Пивот в Speaking-тренажёр, эпик bd `FunnyEnglish-8tg` (реализация не начата, фазы в `docs/plan/SPEAKING-TRAINER-001.md`)
+- **Status:** Пивот в Speaking-тренажёр, эпик bd `So to Speak-8tg` (реализация не начата, фазы в `docs/plan/SPEAKING-TRAINER-001.md`)
 - **Спеки (источник истины, SDD):** `docs/prd/SPEAKING-TRAINER-001.prd.md`, `docs/SPEAKING_TRAINER_SPEC_PART{1,2,3}.md`; версионируются и ревьюятся (AGENTS.md правило 5), изменения — через OpenSpec (`openspec/`)
 - **Дизайн-система:** Playful Coach v1.1 (`.docs/design-system/tokens.json`)
 - Устаревшие отчёты и статусы удалены 2026-07-31; история тестовых прогонов — в `memory.md` §5
@@ -72,7 +72,7 @@ cd admin-web && npm install && npm run dev
 
 ### Legacy Structure (Monolithic)
 ```
-FunnyEnglish/
+So to Speak/
 ├── backend/                 # Spring Boot API
 ├── admin-web/               # React Admin Panel
 ├── composeApp/              # Compose Multiplatform UI (legacy)
@@ -83,7 +83,7 @@ FunnyEnglish/
 
 ### New Modular Architecture (Recommended)
 ```
-FunnyEnglish/
+So to Speak/
 ├── backend/                 # Spring Boot API
 ├── admin-web/               # React Admin Panel
 │
@@ -121,7 +121,7 @@ FunnyEnglish/
 
 ## Feature Toggle System
 
-FunnyEnglish uses a comprehensive **Feature Toggle** system for dynamic feature management.
+So to Speak uses a comprehensive **Feature Toggle** system for dynamic feature management.
 
 ### Quick Usage
 

@@ -41,7 +41,7 @@ Create research document with:
 
 ## Project Context
 
-This is a FunnyEnglish project with:
+This is a So to Speak project with:
 - **Backend**: Spring Boot (Kotlin) - `backend/src/main/kotlin/`
 - **Mobile**: Compose Multiplatform - `composeApp/src/commonMain/kotlin/`
 - **Admin**: React TypeScript - `admin-web/src/`

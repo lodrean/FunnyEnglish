@@ -98,7 +98,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /opt/funnyenglish
+            cd /opt/sotospeak
 
             # Pull latest images
             docker pull ${{ env.BACKEND_IMAGE }}:latest

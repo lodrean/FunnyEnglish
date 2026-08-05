@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ===========================================
-echo FunnyEnglish Playwright E2E Test Runner
+echo So to Speak Playwright E2E Test Runner
 echo ===========================================
 echo.
 

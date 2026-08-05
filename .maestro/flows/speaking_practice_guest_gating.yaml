@@ -1,35 +1,44 @@
-# Flow: гость — Practice заблокирован, CTA ведёт на логин (спека §10.2, PRD Story 3)
+# Flow: гость — Practice заблокирован (SpeakingGate на QuestionsScreen), CTA ведёт на логин (спека §10.2, PRD Story 3)
 
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 - launchApp:
     clearState: true
 
 - runFlow:
     when:
-      visible: "Учим английский играючи"
+      visible: "Смотри видео"
     file: ../subflows/onboarding_guest.yaml
 
 - extendedWaitUntil:
-    visible: "Разговорный английский"
+    visible: ".*Библиотека тем.*"
     timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
 - tapOn: "Разговорный английский"
 - extendedWaitUntil:
     visible: "Знакомство"
     timeout: 15000
 - tapOn: "Знакомство"
 
-# Пропускаем видео — сразу к вопросам
-- tapOn: "Пропустить видео — сразу к вопросам"
-
-# Questions: у гостя вместо кнопки Practice — locked CTA
+# Видео: bottom-sheet удалён (DC-5) — пропускаем видео через CTA «Перейти к вопросам»
 - extendedWaitUntil:
-    visible: "Практика — войти / зарегистрироваться"
+    visible: "Перейти к вопросам"
     timeout: 15000
+- tapOn: "Перейти к вопросам"
+
+# Questions: у гостя вместо кнопки Practice — SpeakingGate в нижней зоне экрана
+- extendedWaitUntil:
+    visible: "Ты почти у цели!"
+    timeout: 15000
+- assertVisible: "Отправка записи учителю доступна после регистрации"
 - assertVisible: "Тренировка · 3 попытки"
 
-# Тап по locked CTA → экран логина
-- tapOn: "Практика — войти / зарегистрироваться"
+# Тап по «Войти» в гейте → экран логина
+- tapOn: "Войти"
 - extendedWaitUntil:
     visible: "С возвращением!"
     timeout: 10000

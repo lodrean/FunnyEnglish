@@ -17,7 +17,7 @@
 
 Остальные 9 экранов из брифа §2 в мокапах не генерируются — строятся из тех же токенов при реализации.
 
-## Handoff в код (Фаза 4, FunnyEnglish-8tg.4)
+## Handoff в код (Фаза 4, So to Speak-8tg.4)
 
 1. Скопировать папку в `.docs/design-system/`.
 2. `tokens.json` → `design/src/commonMain/kotlin/com/funnyenglish/design/theme/`:

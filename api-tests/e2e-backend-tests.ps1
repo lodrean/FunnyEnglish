@@ -1,10 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    FunnyEnglish Backend E2E Test Suite
+    So to Speak Backend E2E Test Suite
     
 .DESCRIPTION
-    Comprehensive API testing for FunnyEnglish backend.
+    Comprehensive API testing for So to Speak backend.
     Tests authentication, test completion, gamification, and user progress.
     
 .EXAMPLE
@@ -19,9 +19,9 @@
 [CmdletBinding()]
 param(
     [string]$BaseUrl = "http://localhost:8080/api",
-    [string]$DemoEmail = "demo@funnyenglish.app",
+    [string]$DemoEmail = "demo@sotospeak.app",
     [string]$DemoPassword = "demo123",
-    [string]$AdminEmail = "admin@funnyenglish.com",
+    [string]$AdminEmail = "admin@sotospeak.com",
     [string]$AdminPassword = "admin123"
 )
 
@@ -99,7 +99,7 @@ function Invoke-ApiRequest($Method, $Endpoint, $Body = $null, $Token = $null, $E
 $passed = 0
 $failed = 0
 
-Write-TestHeader "FUNNYENGLISH BACKEND E2E TESTS"
+Write-TestHeader "SOTOSPEAK BACKEND E2E TESTS"
 Write-Host "Base URL: $BaseUrl"
 Write-Host ""
 

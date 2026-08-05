@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Header Component
+ * So to speak Admin Web - Header Component
  * Top navigation with menu toggle, search, notifications, and user menu
  */
 
@@ -37,6 +37,7 @@ import {
 import { useTheme } from '../../theme/ThemeProvider';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useAuthStore } from '../../store/authStore';
+import { Logo } from '../common/Logo';
 
 // Header height constant
 export const HEADER_HEIGHT = 64;
@@ -159,6 +160,16 @@ export const Header: React.FC<HeaderProps> = ({
             <MenuIcon />
           </IconButton>
 
+          {/* Logo */}
+          <Logo
+            variant="horizontal"
+            height={28}
+            sx={{
+              mr: 2,
+              display: { xs: 'none', sm: 'block' },
+            }}
+          />
+
           {/* Page title (mobile only) */}
           {isMobile && title && (
             <Typography
@@ -239,6 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Theme toggle */}
           <Tooltip title={isDarkMode ? 'Light mode' : 'Dark mode'}>
             <IconButton
+              data-testid="theme-toggle-button"
               color="inherit"
               onClick={toggleTheme}
               sx={{
@@ -327,7 +339,7 @@ export const Header: React.FC<HeaderProps> = ({
             {user?.displayName || 'Admin User'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user?.email || 'admin@funnyenglish.com'}
+            {user?.email || 'admin@sotospeak.com'}
           </Typography>
         </Box>
         <Divider />

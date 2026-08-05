@@ -1,6 +1,6 @@
 # CMP (Compose Multiplatform) E2E Tests
 
-E2E тесты для FunnyEnglish CMP приложения с использованием Playwright.
+E2E тесты для So to Speak CMP приложения с использованием Playwright.
 
 ## 🎯 Цель
 
@@ -14,13 +14,16 @@ e2e-cmp/
 ├── package.json            # Зависимости
 ├── README.md               # Этот файл
 └── tests/
-    ├── smoke.spec.ts       # Базовые тесты загрузки
-    ├── auth.spec.ts        # Тесты авторизации
-    ├── navigation.spec.ts  # Тесты навигации
-    ├── image-word-match.spec.ts  # Тесты IWM
-    ├── gamification.spec.ts      # Тесты геймификации
-    └── performance.spec.ts       # Тесты производительности
+    ├── helpers.ts          # Координаты/хелперы speaking-флоу (canvas-only)
+    ├── smoke.spec.ts       # Базовые тесты загрузки + онбординг
+    ├── auth.spec.ts        # Онбординг → Register/Login/guest → Library
+    ├── navigation.spec.ts  # Speaking-флоу: Library→Topics→Questions→Training
+    ├── config.spec.ts      # Проверка конфигурации сьюта
+    └── performance.spec.ts # Тесты производительности
 ```
+
+> После пивота продукта (SPEAKING-TRAINER, bd `8tg.5.5`) legacy-спеки
+> `image-word-match.spec.ts` и `gamification.spec.ts` удалены.
 
 ## 🚀 Быстрый старт
 
@@ -71,26 +74,20 @@ CMP_URL=http://localhost:8082 npm test
 - ✅ Работа с изменением размера окна
 
 ### Auth Tests (`auth.spec.ts`)
-- ✅ Отображение экрана логина
-- ✅ Ввод с клавиатуры
-- ✅ Сохранение сессии
+- ✅ Онбординг: 2 слайда → экран выбора режима
+- ✅ Register ↔ Login навигация
+- ✅ Успешный логин (admin dev-стека) → Library
+- ✅ Гостевая сессия → Library, переживает reload
 
 ### Navigation Tests (`navigation.spec.ts`)
-- ✅ Навигация между экранами
-- ✅ Back navigation
+- ✅ Speaking-флоу гостя: Library → Topics → шит субтитров → Questions → Training
+- ✅ Practice-гейтинг гостя (CTA на логин)
+- ✅ «Мои записи» гостя — заглушка с CTA регистрации
+- ✅ Back navigation (Topics→Library, Training→Questions)
 - ✅ Mobile viewport
 
-### Image Word Match Tests (`image-word-match.spec.ts`)
-- ✅ Загрузка теста
-- ✅ Отображение изображения и hotspots
-- ✅ Drag & drop взаимодействие
-- ✅ Обратная связь о завершении
-
-### Gamification Tests (`gamification.spec.ts`)
-- ✅ Отображение статистики
-- ✅ Достижения
-- ✅ Таблица лидеров
-- ✅ Streak
+### Config Tests (`config.spec.ts`)
+- ✅ Валидность playwright.config.ts, структура сьюта
 
 ### Performance Tests (`performance.spec.ts`)
 - ⏱️ Время загрузки
@@ -121,10 +118,16 @@ webServer: {
 
 ### Canvas-based рендеринг
 
-CMP рендерит в HTML5 Canvas, поэтому:
-- Нельзя использовать CSS селекторы
-- Взаимодействие через координаты
-- Screenshot comparison для визуальной проверки
+CMP 1.7.1 (wasmJs) рендерит в HTML5 Canvas, семантика/testTag'и в DOM НЕ экспонируются:
+- Нельзя использовать CSS/text-селекторы для контента приложения
+- Взаимодействие через координаты (калиброваны под 1280x720, см. `tests/helpers.ts`)
+- Assertion'ы: смена пикселей clipped-региона + отсутствие console.error/HTTP 5xx
+- Координатные тесты скипаются на мобильном проекте (`skipOnMobile`)
+
+### Требования к окружению
+
+- Backend на `:8080` с seed-контентом («Разговорный английский»): `docker compose up -d`
+- Креды для логина: `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` (дефолт — admin dev-стека)
 
 ### Пример клика по координатам
 

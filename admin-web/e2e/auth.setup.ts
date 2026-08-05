@@ -16,10 +16,10 @@ setup('authenticate as admin', async ({ page }) => {
   await expect(emailInput).toBeVisible({ timeout: 10000 });
   
   // Fill email
-  await emailInput.fill('admin@funnyenglish.com');
+  await emailInput.fill(process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com');
   
   // Fill password
-  await page.locator('input[type="password"]').fill('admin123');
+  await page.locator('input[type="password"]').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
   
   // Click submit
   await page.locator('button[type="submit"]').click();

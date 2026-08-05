@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Global Styles
+ * So to speak Admin Web - Global Styles
  */
 
 import { useEffect } from 'react';

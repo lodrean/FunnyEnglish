@@ -1,4 +1,4 @@
-# Playwright MCP для FunnyEnglish Admin
+# Playwright MCP для So to Speak Admin
 
 Этот проект настроен для использования Playwright MCP сервера, который позволяет Claude напрямую взаимодействовать с браузером для тестирования и анализа админ-панели.
 
@@ -44,7 +44,7 @@ npm run test:e2e:debug
 
 ```
 Открой http://localhost:5173 и протестируй логин:
-1. Введи email: admin@funnyenglish.com, password: admin123
+1. Введи email: admin@sotospeak.com, password: admin123
 2. Нажми кнопку входа
 3. Проверь редирект на дашборд
 4. Сделай скриншот
@@ -129,7 +129,7 @@ Claude может записывать действия и генерирова�
 ADMIN_URL=http://localhost:5173
 
 # Тестовые учетные данные
-TEST_ADMIN_EMAIL=admin@funnyenglish.com
+TEST_ADMIN_EMAIL=admin@sotospeak.com
 TEST_ADMIN_PASSWORD=admin123
 
 # Пропустить автозапуск сервера

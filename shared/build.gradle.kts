@@ -120,7 +120,7 @@ afterEvaluate {
 }
 
 android {
-    namespace = "com.funnyenglish.shared"
+    namespace = "com.sotospeak.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

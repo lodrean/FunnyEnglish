@@ -13,7 +13,7 @@ test.describe('Navigation', () => {
   test('должен навигировать между разделами', async ({ page }) => {
     const sections = [
       { id: 'dashboard', name: 'Dashboard', url: '/' },
-      { id: 'content', name: 'Content', url: '/content/categories' },
+      { id: 'speaking', name: 'Speaking', url: '/speaking/libraries' },
       { id: 'users', name: 'Users', url: '/users' },
     ];
 
@@ -36,7 +36,7 @@ test.describe('Navigation', () => {
   });
 
   test('должен поддерживать прямой переход по URL', async ({ page }) => {
-    const routes = ['/content/categories', '/content/tests', '/users', '/analytics'];
+    const routes = ['/speaking/libraries', '/speaking/topics', '/users', '/analytics'];
     
     for (const route of routes) {
       await page.goto(route);
@@ -51,11 +51,11 @@ test.describe('Navigation', () => {
   });
 
   test('должен подсвечивать активный раздел', async ({ page }) => {
-    await page.goto('/content/categories');
+    await page.goto('/speaking/libraries');
     await page.locator('[data-testid="page-title"]').waitFor({ timeout: 15000 });
 
     // На mobile/tablet пункты меню в закрытом drawer — открываем его
-    const activeNav = page.locator('[data-testid="nav-content"]').first();
+    const activeNav = page.locator('[data-testid="nav-speaking"]').first();
     if (!(await activeNav.isVisible().catch(() => false))) {
       await page.getByRole('button', { name: 'toggle sidebar' }).first().click();
       await expect(activeNav).toBeVisible({ timeout: 5000 });

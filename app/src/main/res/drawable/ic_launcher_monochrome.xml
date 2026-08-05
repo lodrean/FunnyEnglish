@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!--
+      Monochrome adaptive icon foreground (Android 13+ themed icons).
+      Rounded microphone + waveform silhouette, all white.
+    -->
+
+    <!-- Microphone head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,35
+            A6,6 0 0 1 60,35
+            L60,47
+            A6,6 0 0 1 48,47
+            Z" />
+
+    <!-- U-shaped stand -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M42,47 A12,12 0 0 0 66,47" />
+
+    <!-- Stand stem -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M51,59 L51,64" />
+
+    <!-- Stand base -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M45,64 L63,64" />
+
+    <!-- Waveform tail -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M33,76
+            L39,76
+            A3,3 0 0 1 39,79
+            L39,79
+            A3,3 0 0 1 36,82
+            L36,82
+            A3,3 0 0 1 33,79
+            L33,79
+            A3,3 0 0 1 33,76
+            Z
+            M42,72
+            L48,72
+            A3,3 0 0 1 48,75
+            L48,79
+            A3,3 0 0 1 45,82
+            L45,82
+            A3,3 0 0 1 42,79
+            L42,75
+            A3,3 0 0 1 42,72
+            Z
+            M51,68
+            L57,68
+            A3,3 0 0 1 57,71
+            L57,79
+            A3,3 0 0 1 54,82
+            L54,82
+            A3,3 0 0 1 51,79
+            L51,71
+            A3,3 0 0 1 51,68
+            Z
+            M60,72
+            L66,72
+            A3,3 0 0 1 66,75
+            L66,79
+            A3,3 0 0 1 63,82
+            L63,82
+            A3,3 0 0 1 60,79
+            L60,75
+            A3,3 0 0 1 60,72
+            Z
+            M69,76
+            L75,76
+            A3,3 0 0 1 75,79
+            L75,79
+            A3,3 0 0 1 72,82
+            L72,82
+            A3,3 0 0 1 69,79
+            L69,79
+            A3,3 0 0 1 69,76
+            Z" />
+</vector>

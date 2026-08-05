@@ -5,7 +5,7 @@ This template helps you create a new feature module following the modular archit
 ## Step 1: Add Feature to Enum
 
 ```kotlin
-// core/src/commonMain/kotlin/com/funnyenglish/core/toggle/Feature.kt
+// core/src/commonMain/kotlin/com/sotospeak/core/toggle/Feature.kt
 
 enum class Feature(...) {
     // ... existing features
@@ -70,7 +70,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.feature.my"
+    namespace = "com.sotospeak.feature.my"
     compileSdk = 35
     defaultConfig { minSdk = 24 }
     compileOptions {
@@ -82,10 +82,10 @@ android {
 
 ## Step 3: Create Feature Entry
 
-### File: feature-my/src/commonMain/kotlin/com/funnyenglish/feature/my/MyFeatureEntry.kt
+### File: feature-my/src/commonMain/kotlin/com/sotospeak/feature/my/MyFeatureEntry.kt
 
 ```kotlin
-package com.funnyenglish.feature.my
+package com.sotospeak.feature.my
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -93,8 +93,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.funnyenglish.core.toggle.Feature
-import com.funnyenglish.featureapi.api.FeatureEntry
+import com.sotospeak.core.toggle.Feature
+import com.sotospeak.featureapi.api.FeatureEntry
 
 class MyFeatureEntry : FeatureEntry {
     override val feature: Feature = Feature.MY_FEATURE
@@ -115,10 +115,10 @@ class MyFeatureEntry : FeatureEntry {
 }
 ```
 
-### File: feature-my/src/commonMain/kotlin/com/funnyenglish/feature/my/MyScreen.kt
+### File: feature-my/src/commonMain/kotlin/com/sotospeak/feature/my/MyScreen.kt
 
 ```kotlin
-package com.funnyenglish.feature.my
+package com.sotospeak.feature.my
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -151,10 +151,10 @@ fun MyScreen(
 }
 ```
 
-### File: feature-my/src/commonMain/kotlin/com/funnyenglish/feature/my/MyViewModel.kt
+### File: feature-my/src/commonMain/kotlin/com/sotospeak/feature/my/MyViewModel.kt
 
 ```kotlin
-package com.funnyenglish.feature.my
+package com.sotospeak.feature.my
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -184,12 +184,12 @@ data class MyState(
 )
 ```
 
-### File: feature-my/src/commonMain/kotlin/com/funnyenglish/feature/my/di/MyModule.kt
+### File: feature-my/src/commonMain/kotlin/com/sotospeak/feature/my/di/MyModule.kt
 
 ```kotlin
-package com.funnyenglish.feature.my.di
+package com.sotospeak.feature.my.di
 
-import com.funnyenglish.feature.my.MyViewModel
+import com.sotospeak.feature.my.MyViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -203,8 +203,8 @@ val myModule = module {
 ### File: app/src/.../App.kt
 
 ```kotlin
-import com.funnyenglish.feature.my.MyFeatureEntry
-import com.funnyenglish.feature.my.di.myModule
+import com.sotospeak.feature.my.MyFeatureEntry
+import com.sotospeak.feature.my.di.myModule
 
 // In Koin modules list
 val appModules = listOf(

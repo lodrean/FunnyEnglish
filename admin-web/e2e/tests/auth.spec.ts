@@ -49,7 +49,7 @@ test.describe('Authentication', () => {
 
   test('должен успешно логиниться с правильными учетными данными', async () => {
     // Используем тестовые данные из переменных окружения или дефолтные
-    const email = process.env.TEST_ADMIN_EMAIL || 'admin@funnyenglish.com';
+    const email = process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com';
     const password = process.env.TEST_ADMIN_PASSWORD || 'admin123';
     
     await loginPage.goto();
@@ -74,7 +74,7 @@ test.describe('Authentication', () => {
 
   test('должен выходить из системы', async () => {
     // Сначала логинимся
-    const email = process.env.TEST_ADMIN_EMAIL || 'admin@funnyenglish.com';
+    const email = process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com';
     const password = process.env.TEST_ADMIN_PASSWORD || 'admin123';
     
     await loginPage.goto();

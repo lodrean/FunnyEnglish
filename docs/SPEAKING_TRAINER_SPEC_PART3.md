@@ -2,7 +2,8 @@
 
 > **Ticket**: SPEAKING-TRAINER-001
 > **Статус**: Draft
-> **Дата**: 2026-07-30
+> **Version**: 1.2 (2026-08-02: добавлен §2.5 «Переключатель темы» и E2E-проверка; v1.1 — контрактная адаптация к реализованному backend — §3.4 «Адаптер speakingApi.ts»; v1.0 — первоначальная спека)
+> **Дата**: 2026-08-02
 > **Связанные документы**:
 > - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md` (Story 6 — администрирование контента, Story 7 — Grading)
 > - Backend: `docs/SPEAKING_TRAINER_SPEC_PART1.md` (эндпоинты, сущности, Flyway V17+)
@@ -165,6 +166,16 @@ Sidebar автоматически выдаст `data-testid="nav-speaking"`, `d
 | `/speaking/topics/:id/edit` | `SpeakingTopicEditor` | Редактирование топика + вопросы |
 | `/grading` | `GradingInbox` | Inbox записей с фильтрами |
 | `/grading/submissions/:id` | `GradingDetail` | Плеер + вопросы + рубрика |
+
+### 2.5 Переключатель темы
+
+- Расположение: правая часть `Header.tsx` рядом с уведомлениями.
+- Компонент: `IconButton` с `data-testid="theme-toggle-button"`.
+- Иконка: `DarkModeIcon` в светлом режиме, `LightModeIcon` в тёмном (`isDarkMode ? <LightModeIcon /> : <DarkModeIcon />`).
+- Хук: `const { toggleTheme, isDarkMode } = useTheme()` из `src/theme/ThemeProvider.tsx`.
+- Поведение: клик переключает `mode` (`light` ↔ `dark`), сохраняет `sotospeak-theme-mode` в `localStorage`, применяет MUI-тему.
+- Default: системное предпочтение (`prefers-color-scheme`), если значение в localStorage отсутствует.
+- E2E: `e2e/tests/theme-toggle.spec.ts` — проверяет flip `localStorage` и смену `aria-label` кнопки.
 
 ---
 
@@ -449,7 +460,23 @@ export const getNewSubmissionsCount = async (): Promise<number> => {
 };
 ```
 
-### 3.4 TanStack Query hooks — `src/hooks/useSpeaking.ts`
+### 3.4 Контрактный адаптер к реализованному backend (v1.1, 2026-08-01)
+
+Спека §3.1–3.3 писалась до backend (Part 1). При реализации (Фаза 3, bd `8tg.3.*`) расхождения сосредоточены в адаптере `src/api/speakingApi.ts` — это каноническое описание фактического контракта:
+
+| Аспект | Спека v1.0 (ожидание) | Фактический backend (реализация) |
+|---|---|---|
+| Publish library/topic | `PATCH …/publish` | Отдельного endpoint нет — `PUT` с `isPublished: true` |
+| Детали library/topic/submission | `GET …/{id}` | GET by id нет — детали берутся из кэша списков TanStack Query |
+| Reorder вопросов/топиков | batch endpoint | Цепочка `PUT` с обновлённым `displayOrder` |
+| Вопросы топика | `GET …/topics/{id}/questions` | Вложенное поле `questions` в `AdminTopicResponse` (публичный detail отдаёт только опубликованное) |
+| Submissions (inbox) | вложенная структура | Плоский ответ — нормализация во вложенную на клиенте; фильтры `dateFrom/dateTo`; пагинация Spring Page (поле `number`) |
+| Маппинг полей | спековые имена | `title/topicCount/isDeleted/total/durationSec` — маппятся в спековые типы в адаптере |
+| DELETE Library | soft delete | Hard delete каскадом; 400 при наличии submissions по теме |
+
+При изменении backend-контракта правится ТОЛЬКО адаптер (+ эта таблица), экраны не трогаем.
+
+### 3.5 TanStack Query hooks — `src/hooks/useSpeaking.ts`
 
 Обёртки по паттерну из `src/screens/Categories.tsx` (`useQuery` + `queryKey` + `queryClient.invalidateQueries`):
 
@@ -783,7 +810,7 @@ SKIP_WEB_SERVER=1 ADMIN_URL=http://localhost:3000 npx playwright test e2e/tests/
 
 `e2e/tests/grading.spec.ts`:
 
-1. **Подготовка (beforeAll)**: submission создаётся через API — `request.post` practice-записи от имени demo-юзера (`demo@funnyenglish.app`, dev-compose) на `POST /api/speaking/practice` (multipart, как мобильный клиент; контракт — Part 1) с `sample-audio.m4a`. Если сид через API невозможен — backend-сид скрипт (согласовать с Part 1). Cleanup после прогона — спеки независимы при `workers: 1`.
+1. **Подготовка (beforeAll)**: submission создаётся через API — `request.post` practice-записи от имени demo-юзера (`demo@sotospeak.app`, dev-compose) на `POST /api/speaking/practice` (multipart, как мобильный клиент; контракт — Part 1) с `sample-audio.m4a`. Если сид через API невозможен — backend-сид скрипт (согласовать с Part 1). Cleanup после прогона — спеки независимы при `workers: 1`.
 2. Открыть `/grading` (`nav-grading`), дефолтный фильтр NEW → запись видна.
 3. Открыть запись → виден плеер (`audio` с `src`), список вопросов.
 4. Выставить оценки 8/7/9/6 (через inputs) → total «7.5» → комментарий → Save → toast, статус REVIEWED.
@@ -812,7 +839,7 @@ SKIP_WEB_SERVER=1 ADMIN_URL=http://localhost:3000 npx playwright test e2e/tests/
 |---|---|---|---|
 | T1 | `MediaUploader`: поддержка `video/*`, `.vtt`, `mediaKind`, `hint`, универсальный accept + client-side валидация размера (50 МБ) и WebVTT-заголовка. Регрессия существующих использований (TestEditor, AudioTestEditor) | — | 3h |
 | T2 | `speakingApi.ts`: типы + все axios-методы (§3), re-export в `src/api/index.ts`; `formatDuration` в `src/utils/formatters.ts` | — (контракт Part 1) | 3h |
-| T3 | `src/hooks/useSpeaking.ts`: `speakingKeys` + все хуки §3.4 | T2 | 3h |
+| T3 | `src/hooks/useSpeaking.ts`: `speakingKeys` + все хуки §3.5 | T2 | 3h |
 | T4 | Навигация: `navItems.ts` (2 раздела), роуты в `App.tsx`, `VALID_ROUTES` в `RouteValidator.tsx`, re-export экранов-заглушек в `src/screens/index.ts` | — | 2h |
 | T5 | `SpeakingLibraries` + `SpeakingLibraryEditor` (список, поиск, CRUD, publish, delete-confirm) | T1, T3, T4 | 6h |
 | T6 | `SpeakingTopics` (список, фильтр по теме, publish, archive, warning «not playable») | T3, T4 | 4h |

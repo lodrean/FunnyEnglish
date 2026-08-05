@@ -88,7 +88,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const color = colors[variant];
 
   const handleClose = () => {
-    onClose?.() || onCancel();
+    if (onClose) {
+      onClose();
+    } else {
+      onCancel();
+    }
   };
 
   return (

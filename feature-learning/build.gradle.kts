@@ -27,5 +27,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.feature.learning"
+    namespace = "com.sotospeak.feature.learning"
 }

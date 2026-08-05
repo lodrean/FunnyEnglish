@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   Typography,
-  IconButton,
   LinearProgress,
   alpha,
   useTheme,
@@ -16,7 +15,6 @@ import {
 import {
   CloudUpload as CloudUploadIcon,
   Delete as DeleteIcon,
-  Image as ImageIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';

@@ -1,4 +1,4 @@
-# Конвенции кода FunnyEnglish
+# Конвенции кода So to Speak
 
 - DI: Koin 4.0.0. `val xxxModule = module { single {...}; viewModel {...} }` (см. composeApp/.../app/di/AppModule.kt). Старт: KoinApplication { modules(appModule) } в App.kt (НЕ startKoin). VM через koinViewModel(). Платформенный конфиг — expect/actual provideAppConfig().
 - Presentation: MVI на StateFlow. Тройка файлов: XxxState.kt (data class), XxxAction.kt (sealed), XxxEvent.kt. ViewModel: MutableStateFlow + Channel<Event>.receiveAsFlow() + onAction(). Пример: feature-home/.../presentation/HomeViewModel.kt. Ошибки — UiText?.

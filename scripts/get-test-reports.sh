@@ -13,10 +13,10 @@ echo "Extracting test reports to: $OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
 # Extract from test container
-docker cp funnyenglish-test-runner:/app/backend/build/reports "$OUTPUT_DIR/backend-reports" 2>/dev/null || echo "Backend reports not available"
+docker cp sotospeak-test-runner:/app/backend/build/reports "$OUTPUT_DIR/backend-reports" 2>/dev/null || echo "Backend reports not available"
 
 # Try to extract from integration test container  
-docker cp funnyenglish-backend-integration:/app/backend/build/reports "$OUTPUT_DIR/integration-reports" 2>/dev/null || echo "Integration reports not available"
+docker cp sotospeak-backend-integration:/app/backend/build/reports "$OUTPUT_DIR/integration-reports" 2>/dev/null || echo "Integration reports not available"
 
 echo "Reports extracted to: $OUTPUT_DIR"
 echo ""

@@ -1,4 +1,4 @@
-# 🇷🇺 FunnyEnglish - Руководство по Российским Альтернативам
+# 🇷🇺 So to Speak - Руководство по Российским Альтернативам
 
 ## ⚠️ Текущие Ограничения и Риски
 
@@ -34,9 +34,9 @@
 # Настройки → Repository → Import
 
 # Или вручную:
-git clone --mirror https://github.com/your/funnyenglish.git
-cd funnyenglish.git
-git remote set-url origin https://gitflic.ru/project/your/funnyenglish.git
+git clone --mirror https://github.com/your/sotospeak.git
+cd sotospeak.git
+git remote set-url origin https://gitflic.ru/project/your/sotospeak.git
 git push --mirror
 ```
 
@@ -141,7 +141,7 @@ sudo gitlab-runner register \
 #### Yandex Container Registry
 ```bash
 # Создать registry
-yc container registry create --name funnyenglish
+yc container registry create --name sotospeak
 
 # Аутентификация
 yc container registry configure-docker
@@ -157,7 +157,7 @@ docker push cr.yandex/<registry-id>/backend:latest
 helm repo add harbor https://helm.goharbor.io
 helm install harbor harbor/harbor \
   --set expose.type=ingress \
-  --set expose.ingress.hosts.core=registry.funnyenglish.ru
+  --set expose.ingress.hosts.core=registry.sotospeak.ru
 ```
 
 ---
@@ -185,7 +185,7 @@ provider "yandex" {
 
 # Сеть
 resource "yandex_vpc_network" "main" {
-  name = "funnyenglish"
+  name = "sotospeak"
 }
 
 resource "yandex_vpc_subnet" "subnet_a" {
@@ -197,7 +197,7 @@ resource "yandex_vpc_subnet" "subnet_a" {
 
 # Managed Kubernetes
 resource "yandex_kubernetes_cluster" "main" {
-  name       = "funnyenglish"
+  name       = "sotospeak"
   network_id = yandex_vpc_network.main.id
   
   master {
@@ -240,7 +240,7 @@ resource "yandex_kubernetes_node_group" "main" {
 
 # Managed PostgreSQL
 resource "yandex_mdb_postgresql_cluster" "main" {
-  name        = "funnyenglish"
+  name        = "sotospeak"
   environment = "PRODUCTION"
   network_id  = yandex_vpc_network.main.id
   
@@ -262,7 +262,7 @@ resource "yandex_mdb_postgresql_cluster" "main" {
 
 # Object Storage
 resource "yandex_storage_bucket" "media" {
-  bucket     = "funnyenglish-media"
+  bucket     = "sotospeak-media"
   access_key = yandex_iam_service_account_storage.access_key
   secret_key = yandex_iam_service_account_storage.secret_key
 }
@@ -276,7 +276,7 @@ terraform plan
 terraform apply
 
 # Получить kubeconfig
-yc managed-kubernetes cluster get-credentials funnyenglish --external
+yc managed-kubernetes cluster get-credentials sotospeak --external
 ```
 
 #### Selectel (Альтернатива)
@@ -404,9 +404,9 @@ try {
 android {
     signingConfigs {
         create("release") {
-            storeFile = file("funnyenglish.keystore")
+            storeFile = file("sotospeak.keystore")
             storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = "funnyenglish"
+            keyAlias = "sotospeak"
             keyPassword = System.getenv("KEY_PASSWORD")
         }
     }
@@ -447,8 +447,8 @@ class PaymentController {
         val payment = yookassaClient.createPayment(
             amount = request.amount,
             currency = "RUB",
-            description = "FunnyEnglish Premium",
-            returnUrl = "https://funnyenglish.ru/payment/success",
+            description = "So to Speak Premium",
+            returnUrl = "https://sotospeak.ru/payment/success",
             capture = true
         )
         return ResponseEntity.ok(PaymentResponse(payment.confirmation.confirmationUrl))
@@ -478,7 +478,7 @@ spring:
   mail:
     host: smtp.mail.ru
     port: 465
-    username: noreply@funnyenglish.ru
+    username: noreply@sotospeak.ru
     password: ${MAIL_PASSWORD}
     protocol: smtps
     properties:
@@ -491,9 +491,9 @@ spring:
 val unisender = UnisenderClient(apiKey = "...")
 unisender.sendEmail(
     to = user.email,
-    subject = "Добро пожаловать в FunnyEnglish!",
+    subject = "Добро пожаловать в So to Speak!",
     body = templateEngine.render("welcome", context),
-    from = "noreply@funnyenglish.ru"
+    from = "noreply@sotospeak.ru"
 )
 ```
 
@@ -504,14 +504,14 @@ unisender.sendEmail(
 #### Yandex Cloud CDN
 ```hcl
 resource "yandex_cdn_origin_group" "main" {
-  name = "funnyenglish"
+  name = "sotospeak"
   origin {
     source = "storage.yandexcloud.net"
   }
 }
 
 resource "yandex_cdn_resource" "main" {
-  cname = "cdn.funnyenglish.ru"
+  cname = "cdn.sotospeak.ru"
   origin_group_id = yandex_cdn_origin_group.main.id
   
   options {

@@ -1,4 +1,4 @@
-# 🚀 FunnyEnglish на Timeweb - Быстрый Старт
+# 🚀 So to Speak на Timeweb - Быстрый Старт
 
 ## ⚡ Минимальные Действия (3 шага)
 
@@ -16,11 +16,11 @@ https://timeweb.cloud → Облачные серверы → Мощность (
 ssh root@ВАШ_IP
 
 # На сервере выполнить:
-curl -fsSL https://funnyenglish.ru/install.sh | bash
+curl -fsSL https://sotospeak.ru/install.sh | bash
 
 # Или если хотите ручную настройку:
-# git clone https://github.com/your/funnyenglish.git
-# cd funnyenglish && ./deploy/timeweb.sh
+# git clone https://github.com/your/sotospeak.git
+# cd sotospeak && ./deploy/timeweb.sh
 ```
 
 ### Шаг 3: Настроить DNS (5 минут)
@@ -38,10 +38,10 @@ curl -fsSL https://funnyenglish.ru/install.sh | bash
 ## ✅ Проверка
 
 Открываем в браузере:
-- **https://admin.funnyenglish.ru** ← Admin panel
-- **https://api.funnyenglish.ru/actuator/health** ← API health
+- **https://admin.sotospeak.ru** ← Admin panel
+- **https://api.sotospeak.ru/actuator/health** ← API health
 
-Логин: `admin@funnyenglish.com`  
+Логин: `admin@sotospeak.com`  
 Пароль: (тот что указали при установке или `admin123`)
 
 ---
@@ -74,21 +74,21 @@ curl -fsSL https://funnyenglish.ru/install.sh | bash
 ssh root@ВАШ_IP
 
 # Посмотреть статус
-cd /opt/funnyenglish && docker-compose ps
+cd /opt/sotospeak && docker-compose ps
 
 # Посмотреть логи
-cd /opt/funnyenglish && docker-compose logs -f backend
-cd /opt/funnyenglish && docker-compose logs -f admin
-cd /opt/funnyenglish && docker-compose logs -f nginx
+cd /opt/sotospeak && docker-compose logs -f backend
+cd /opt/sotospeak && docker-compose logs -f admin
+cd /opt/sotospeak && docker-compose logs -f nginx
 
 # Перезапуск
-cd /opt/funnyenglish && docker-compose restart
+cd /opt/sotospeak && docker-compose restart
 
 # Обновление после git pull
-cd /opt/funnyenglish && docker-compose up -d --build
+cd /opt/sotospeak && docker-compose up -d --build
 
 # Ручной бэкап
-cd /opt/funnyenglish && ./backup.sh
+cd /opt/sotospeak && ./backup.sh
 
 # Проверить использование ресурсов
 free -h
@@ -98,7 +98,7 @@ docker stats --no-stream
 ### Файлы и Директории
 
 ```
-/opt/funnyenglish/
+/opt/sotospeak/
 ├── docker-compose.yml      # Основная конфигурация
 ├── .env                    # Пароли (никому не показывать!)
 ├── credentials.txt         # Сохранённые пароли
@@ -113,12 +113,12 @@ docker stats --no-stream
 ## 🔐 Безопасность
 
 ### Сменить пароль Admin
-1. Залогиниться в https://admin.funnyenglish.ru
+1. Залогиниться в https://admin.sotospeak.ru
 2. Settings → Profile → Change Password
 
 ### Посмотреть все пароли
 ```bash
-cat /opt/funnyenglish/credentials.txt
+cat /opt/sotospeak/credentials.txt
 ```
 
 ### SSH ключ вместо пароля (рекомендуется)
@@ -137,22 +137,22 @@ ssh root@ВАШ_IP
 ### Сайт не открывается
 ```bash
 # 1. Проверить DNS
-nslookup admin.funnyenglish.ru
+nslookup admin.sotospeak.ru
 # Должен показывать ВАШ_IP
 
 # 2. Проверить что сервисы работают
-cd /opt/funnyenglish && docker-compose ps
+cd /opt/sotospeak && docker-compose ps
 
 # 3. Перезапустить
-cd /opt/funnyenglish && docker-compose restart
+cd /opt/sotospeak && docker-compose restart
 ```
 
 ### SSL ошибка
 ```bash
 # Перевыпустить сертификаты
-cd /opt/funnyenglish
+cd /opt/sotospeak
 docker-compose run --rm certbot certonly --force-renew \
-  -d api.funnyenglish.ru -d admin.funnyenglish.ru
+  -d api.sotospeak.ru -d admin.sotospeak.ru
 docker-compose restart nginx
 ```
 
@@ -181,7 +181,7 @@ Timeweb Cloud → Ваш сервер → Изменить конфигурац�
 
 Всё сохранится, просто перезапустить Docker:
 ```bash
-cd /opt/funnyenglish && docker-compose up -d
+cd /opt/sotospeak && docker-compose up -d
 ```
 
 ---

@@ -1,4 +1,4 @@
-# Логирование в FunnyEnglish
+# Логирование в So to Speak
 
 ## Desktop Application
 
@@ -12,13 +12,13 @@
 #### 2. Файл логов
 Логи автоматически сохраняются в файл:
 ```
-Windows: %USERPROFILE%\.funnyenglish\logs\app-YYYY-MM-DD.log
-Linux/Mac: ~/.funnyenglish/logs/app-YYYY-MM-DD.log
+Windows: %USERPROFILE%\.sotospeak\logs\app-YYYY-MM-DD.log
+Linux/Mac: ~/.sotospeak/logs/app-YYYY-MM-DD.log
 ```
 
 Пример пути на Windows:
 ```
-C:\Users\YourName\.funnyenglish\logs\app-2026-02-03.log
+C:\Users\YourName\.sotospeak\logs\app-2026-02-03.log
 ```
 
 ### Просмотр логов
@@ -35,13 +35,13 @@ C:\Users\YourName\.funnyenglish\logs\app-2026-02-03.log
 #### Вручную
 ```bash
 # Windows PowerShell
-Get-Content $env:USERPROFILE\.funnyenglish\logs\app-2026-02-03.log -Tail 50
+Get-Content $env:USERPROFILE\.sotospeak\logs\app-2026-02-03.log -Tail 50
 
 # Windows CMD
-type %USERPROFILE%\.funnyenglish\logs\app-2026-02-03.log
+type %USERPROFILE%\.sotospeak\logs\app-2026-02-03.log
 
 # Linux/Mac
-tail -f ~/.funnyenglish/logs/app-2026-02-03.log
+tail -f ~/.sotospeak/logs/app-2026-02-03.log
 ```
 
 ### Уровни логирования
@@ -63,7 +63,7 @@ tail -f ~/.funnyenglish/logs/app-2026-02-03.log
 
 #### Загрузка изображений
 ```
-[D] HttpClient: REQUEST: http://localhost:9000/funnyenglish/thumbnails/test_colors.png
+[D] HttpClient: REQUEST: http://localhost:9000/sotospeak/thumbnails/test_colors.png
 [D] HttpClient: RESPONSE: 200
 ```
 
@@ -78,17 +78,17 @@ java.net.ConnectException: Connection refused
 #### Через переменную окружения
 ```bash
 # Windows PowerShell
-$env:FUNNYENGLISH_HTTP_LOGS="true"
+$env:SOTOSPEAK_HTTP_LOGS="true"
 .\gradlew :composeApp:run
 
 # Windows CMD
-set FUNNYENGLISH_HTTP_LOGS=true
+set SOTOSPEAK_HTTP_LOGS=true
 gradlew :composeApp:run
 ```
 
 #### Через системное свойство
 ```bash
-.\gradlew :composeApp:run -Dfunnyenglish.debug=true
+.\gradlew :composeApp:run -Dsotospeak.debug=true
 ```
 
 #### По умолчанию
@@ -115,7 +115,7 @@ backend/build/logs/
 ```yaml
 logging:
   level:
-    com.funnyenglish: DEBUG      # Бизнес-логика
+    com.sotospeak: DEBUG      # Бизнес-логика
     org.springframework.web: DEBUG  # HTTP запросы
     org.apache.coyote.http11: DEBUG # Tomcat
 ```
@@ -125,7 +125,7 @@ logging:
 Пример вывода:
 ```
 2026-02-03 10:50:27 [http-nio-8080-exec-1] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping 
-  - Mapped to com.funnyenglish.controller.CategoryController#getAllCategories
+  - Mapped to com.sotospeak.controller.CategoryController#getAllCategories
 
 2026-02-03 10:50:27 [http-nio-8080-exec-1] DEBUG o.s.w.c.s.DefaultCorsProcessor 
   - Cross-origin request allowed
@@ -184,7 +184,7 @@ spring:
 
 3. Откройте URL в браузере:
    ```
-   http://localhost:9000/funnyenglish/thumbnails/test_colors.png
+   http://localhost:9000/sotospeak/thumbnails/test_colors.png
    ```
 
 ### "Network Error" в Admin Panel

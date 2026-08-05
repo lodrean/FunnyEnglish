@@ -1,4 +1,4 @@
-# FunnyEnglish - Dev Environment
+# So to speak - Dev Environment
 # Simple setup for local development and testing
 #
 # Quick Start:
@@ -11,16 +11,16 @@
 #   - PostgreSQL:     localhost:5432
 #
 # Default Credentials:
-#   Admin Panel:    admin@funnyenglish.com / admin123
+#   Admin Panel:    admin@sotospeak.com / admin123
 #   MinIO:          minioadmin / minioadmin
 #   Database:       postgres / postgres
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: funnyenglish-postgres
+    container_name: sotospeak-postgres
     environment:
-      POSTGRES_DB: funnyenglish
+      POSTGRES_DB: sotospeak
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -35,7 +35,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: funnyenglish-minio
+    container_name: sotospeak-minio
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -54,7 +54,7 @@ services:
   # One-shot MinIO initializer: creates bucket + public policy (docker/minio-init.sh)
   minio-init:
     image: minio/mc:latest
-    container_name: funnyenglish-minio-init
+    container_name: sotospeak-minio-init
     depends_on:
       minio:
         condition: service_healthy
@@ -67,11 +67,11 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.backend
-    container_name: funnyenglish-backend
+    container_name: sotospeak-backend
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: funnyenglish
+      DB_NAME: sotospeak
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -79,14 +79,14 @@ services:
       S3_ENDPOINT: http://minio:9000
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
-      S3_BUCKET: funnyenglish
-      S3_PUBLIC_URL: http://localhost:9000/funnyenglish
-      JWT_SECRET: funnyenglish_dev_jwt_secret_key_32chars
-      ADMIN_EMAIL: admin@funnyenglish.com
+      S3_BUCKET: sotospeak
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9000/sotospeak}
+      JWT_SECRET: sotospeak_dev_jwt_secret_key_32chars
+      ADMIN_EMAIL: admin@sotospeak.com
       ADMIN_PASSWORD: admin123
       ADMIN_DISPLAY_NAME: Admin
-      CORS_ORIGINS: "http://localhost:3000,http://localhost:5173"
-      DEMO_USER_ENABLED: "true"   # dev only: demo@funnyenglish.app/demo123
+      CORS_ORIGINS: ${CORS_ORIGINS:-"http://localhost:3000,http://localhost:5173,http://localhost:8081,http://192.168.1.148:3000,http://192.168.1.148:8081,http://192.168.1.148:8082"}
+      DEMO_USER_ENABLED: "true"   # dev only: demo@sotospeak.app/demo123
       # dev only: высокие лимиты для E2E-прогонов (в prod env не выставлять — дефолт 5/мин на login)
       RATE_LIMIT_LOGIN_CAPACITY: "100"
       RATE_LIMIT_REGISTER_CAPACITY: "50"
@@ -95,6 +95,9 @@ services:
       WEB_LOG_LEVEL: DEBUG
     ports:
       - "8080:8080"
+    volumes:
+      # файловый лог backend (logging.file.name=logs/backend.log) переживает контейнер
+      - ./logs/backend:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -115,7 +118,7 @@ services:
       dockerfile: docker/Dockerfile.admin
       args:
         VITE_API_URL: /api
-    container_name: funnyenglish-admin
+    container_name: sotospeak-admin
     ports:
       - "3000:80"
     depends_on:

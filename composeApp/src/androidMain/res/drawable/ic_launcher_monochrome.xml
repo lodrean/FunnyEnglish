@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Monochrome version for themed adaptive icons (Android 13+) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,24
+            C46,19.58 49.58,16 54,16
+            C58.42,16 62,19.58 62,24
+            L62,50
+            C62,54.42 58.42,58 54,58
+            C49.58,58 46,54.42 46,50
+            Z
+            M50,58 L58,58 L58,80 L50,80 Z
+            M40,88 L46,88 L46,96 L40,96 Z
+            M50,84 L58,84 L58,96 L50,96 Z
+            M62,88 L68,88 L68,96 L62,96 Z" />
+</vector>

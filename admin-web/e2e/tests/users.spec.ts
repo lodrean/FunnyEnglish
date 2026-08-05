@@ -41,12 +41,12 @@ test.describe('Управление пользователями', () => {
 
   test('должен открывать детали пользователя', async () => {
     // Ищем пользователя admin
-    await usersPage.searchUser('admin@funnyenglish.com');
+    await usersPage.searchUser('admin@sotospeak.com');
     
     // Кликаем для просмотра деталей если пользователь найден
     const count = await usersPage.getUsersCount();
     if (count > 0) {
-      await usersPage.clickViewUser('admin@funnyenglish.com');
+      await usersPage.clickViewUser('admin@sotospeak.com');
       await userDetailsPage.expectPageLoaded();
     }
   });

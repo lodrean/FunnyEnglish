@@ -27,5 +27,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.feature.gamification"
+    namespace = "com.sotospeak.feature.gamification"
 }

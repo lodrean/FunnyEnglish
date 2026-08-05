@@ -110,7 +110,6 @@ const SparklineChart: React.FC<{ data: number[]; color: string }> = ({ data, col
 
 const AreaChartComponent: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
   const chartData = data.map((val, idx) => ({ idx, val }));
-  const fillColor = alpha(color, 0.2);
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -141,8 +140,7 @@ const AreaChartComponent: React.FC<{ data: number[]; color: string }> = ({ data,
 const TrendIndicator: React.FC<{
   change: StatsCardProps['change'];
   variant: StatsCardVariant;
-}> = ({ change, variant }) => {
-  const theme = useTheme();
+}> = ({ change }) => {
 
   if (!change) return null;
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# FunnyEnglish Production Deploy Script
+# So to Speak Production Deploy Script
 # Разворачивает Backend + Admin + PostgreSQL + MinIO на VPS
 # =============================================================================
 
@@ -29,7 +29,7 @@ print_usage() {
     echo "Использование: $0 [OPTIONS]"
     echo ""
     echo "Обязательные параметры:"
-    echo "  --domain=DOMAIN           Основной домен (например: funnyenglish.ru)"
+    echo "  --domain=DOMAIN           Основной домен (например: sotospeak.ru)"
     echo ""
     echo "Опциональные параметры:"
     echo "  --api-subdomain=SUB       API поддомен (default: api)"
@@ -40,7 +40,7 @@ print_usage() {
     echo "  --help                    Показать эту справку"
     echo ""
     echo "Пример:"
-    echo "  $0 --domain=funnyenglish.ru --repo-url=https://github.com/user/funnyenglish.git"
+    echo "  $0 --domain=sotospeak.ru --repo-url=https://github.com/user/sotospeak.git"
 }
 
 log_info() {
@@ -117,7 +117,7 @@ fi
 API_DOMAIN="${API_SUBDOMAIN}.${DOMAIN}"
 ADMIN_DOMAIN="${ADMIN_SUBDOMAIN}.${DOMAIN}"
 
-echo -e "${GREEN}🚀 FunnyEnglish Production Deploy${NC}"
+echo -e "${GREEN}🚀 So to Speak Production Deploy${NC}"
 echo "====================================="
 echo ""
 log_info "Домен: $DOMAIN"
@@ -133,7 +133,7 @@ echo ""
 # =============================================================================
 echo -e "\n${YELLOW}📥 Шаг 1: Подготовка проекта...${NC}"
 
-cd /opt/funnyenglish
+cd /opt/sotospeak
 
 if [ -n "$REPO_URL" ]; then
     if [ -d "app" ]; then
@@ -166,22 +166,22 @@ JWT_SECRET=$(openssl rand -base64 64 | tr -d "=+/" | cut -c1-50)
 ADMIN_PASSWORD=$(openssl rand -base64 16 | tr -d "=+/" | cut -c1-12)
 
 cat > .env << EOF
-# FunnyEnglish Production Environment
+# So to Speak Production Environment
 # Generated: $(date)
 
 # Database
 DB_PASSWORD=${DB_PASSWORD}
-DB_NAME=funnyenglish
+DB_NAME=sotospeak
 DB_USER=postgres
 
 # MinIO S3
 MINIO_ROOT_USER=minioadmin
 MINIO_PASSWORD=${MINIO_PASSWORD}
-MINIO_BUCKET=funnyenglish
+MINIO_BUCKET=sotospeak
 
 # Backend
 JWT_SECRET=${JWT_SECRET}
-ADMIN_EMAIL=admin@funnyenglish.com
+ADMIN_EMAIL=admin@sotospeak.com
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 ADMIN_DISPLAY_NAME=Admin
 
@@ -191,8 +191,8 @@ ADMIN_DOMAIN=${ADMIN_DOMAIN}
 EOF
 
 # Сохраняем пароли в файл
-cat > /root/.funnyenglish-credentials << EOF
-FunnyEnglish Production Credentials
+cat > /root/.sotospeak-credentials << EOF
+So to Speak Production Credentials
 Generated: $(date)
 =====================================
 
@@ -203,21 +203,21 @@ Database:
 MinIO S3:
   Access Key: minioadmin
   Secret Key: ${MINIO_PASSWORD}
-  Bucket: funnyenglish
+  Bucket: sotospeak
 
 Admin Panel:
   URL: https://${ADMIN_DOMAIN}
-  Email: admin@funnyenglish.com
+  Email: admin@sotospeak.com
   Password: ${ADMIN_PASSWORD}
 
 API:
   URL: https://${API_DOMAIN}
 EOF
 
-chmod 600 /root/.funnyenglish-credentials
+chmod 600 /root/.sotospeak-credentials
 
 log_success "Секреты сгенерированы и сохранены"
-log_info "Пароли сохранены в: /root/.funnyenglish-credentials"
+log_info "Пароли сохранены в: /root/.sotospeak-credentials"
 
 # =============================================================================
 # Шаг 3: Создание Docker Compose
@@ -238,7 +238,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: funnyenglish-postgres
+    container_name: sotospeak-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -267,7 +267,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: funnyenglish-minio
+    container_name: sotospeak-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -292,7 +292,7 @@ services:
     build:
       context: ./app/backend
       dockerfile: Dockerfile
-    container_name: funnyenglish-backend
+    container_name: sotospeak-backend
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: production
@@ -335,7 +335,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
-    container_name: funnyenglish-admin
+    container_name: sotospeak-admin
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:80"
@@ -346,7 +346,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: funnyenglish-nginx
+    container_name: sotospeak-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -361,7 +361,7 @@ services:
 
   certbot:
     image: certbot/certbot
-    container_name: funnyenglish-certbot
+    container_name: sotospeak-certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
@@ -585,8 +585,8 @@ fi
 # Настройка bucket
 source .env
 mc alias set local http://localhost:9000 minioadmin "${MINIO_PASSWORD}" 2>/dev/null || true
-mc mb local/funnyenglish 2>/dev/null || true
-mc policy set download local/funnyenglish 2>/dev/null || true
+mc mb local/sotospeak 2>/dev/null || true
+mc policy set download local/sotospeak 2>/dev/null || true
 
 log_success "MinIO настроен"
 
@@ -621,13 +621,13 @@ echo "  🌐 Admin Panel: https://${ADMIN_DOMAIN}"
 echo "  🔌 API: https://${API_DOMAIN}"
 echo ""
 echo "Учётные данные Admin:"
-echo "  Email: admin@funnyenglish.com"
+echo "  Email: admin@sotospeak.com"
 echo "  Пароль: ${ADMIN_PASSWORD}"
 echo ""
-echo "Пароли сохранены в: /root/.funnyenglish-credentials"
+echo "Пароли сохранены в: /root/.sotospeak-credentials"
 echo ""
 echo "Полезные команды:"
-echo "  cd /opt/funnyenglish && docker-compose ps"
-echo "  cd /opt/funnyenglish && docker-compose logs -f backend"
-echo "  cd /opt/funnyenglish && docker-compose restart"
+echo "  cd /opt/sotospeak && docker-compose ps"
+echo "  cd /opt/sotospeak && docker-compose logs -f backend"
+echo "  cd /opt/sotospeak && docker-compose restart"
 echo ""

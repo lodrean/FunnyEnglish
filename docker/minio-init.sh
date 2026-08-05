@@ -9,7 +9,7 @@ set -e
 MINIO_HOST=${MINIO_HOST:-http://minio:9000}
 MINIO_USER=${MINIO_ROOT_USER:-minioadmin}
 MINIO_PASS=${MINIO_ROOT_PASSWORD:-minioadmin}
-BUCKET=${S3_BUCKET:-funnyenglish}
+BUCKET=${S3_BUCKET:-sotospeak}
 
 echo "Configuring MinIO at ${MINIO_HOST}..."
 

@@ -1,7 +1,7 @@
 {
-  "name": "funnyenglish-cmp-e2e",
+  "name": "sotospeak-cmp-e2e",
   "version": "1.0.0",
-  "description": "E2E tests for FunnyEnglish CMP (Compose Multiplatform) WASM target",
+  "description": "E2E tests for So to speak CMP (Compose Multiplatform) WASM target",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",
@@ -11,6 +11,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
-    "@types/node": "^20.10.0"
+    "@types/node": "^20.10.0",
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "^7.0.0"
   }
 }

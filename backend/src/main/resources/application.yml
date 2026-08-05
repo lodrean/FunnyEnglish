@@ -1,9 +1,9 @@
 spring:
   application:
-    name: funnyenglish-backend
+    name: sotospeak-backend
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:funnyenglish}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sotospeak}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:} # REQUIRED: set via env variable (no default — security)
     driver-class-name: org.postgresql.Driver
@@ -16,6 +16,19 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+
+  # SMTP (staging — Mailpit, prod — внешний провайдер; креды только через env)
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SPRING_MAIL_AUTH:false}
+          starttls:
+            enable: ${SPRING_MAIL_STARTTLS:false}
 
   flyway:
     enabled: true
@@ -64,29 +77,47 @@ app:
     public-url: ${S3_PUBLIC_URL:${S3_ENDPOINT:http://localhost:9000}}
     access-key: ${S3_ACCESS_KEY:} # REQUIRED: set via env variable (no default — security)
     secret-key: ${S3_SECRET_KEY:} # REQUIRED: set via env variable (no default — security)
-    bucket: ${S3_BUCKET:funnyenglish}
+    bucket: ${S3_BUCKET:sotospeak}
     region: ${S3_REGION:us-east-1}
 
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:3002,http://localhost:5173,http://localhost:5174}
 
   admin:
-    email: ${ADMIN_EMAIL:admin@funnyenglish.app}
+    email: ${ADMIN_EMAIL:admin@sotospeak.com}
     password: ${ADMIN_PASSWORD:} # REQUIRED: set via env variable
     display-name: ${ADMIN_DISPLAY_NAME:Admin}
 
-  # Демо-пользователь demo@funnyenglish.app/demo123 — ТОЛЬКО для dev (DEMO_USER_ENABLED=true в docker-compose)
+  # Демо-пользователь demo@sotospeak.app/demo123 — ТОЛЬКО для dev (DEMO_USER_ENABLED=true в docker-compose)
   demo-user:
     enabled: ${DEMO_USER_ENABLED:false}
 
+  # Email-верификация (OpenSpec add-email-verification): false — поведение как раньше;
+  # true (staging/prod) — регистрация без auto-login, login блокируется до подтверждения почты
+  email-verification:
+    enabled: ${EMAIL_VERIFICATION_ENABLED:false}
+    token-ttl-hours: ${EMAIL_VERIFICATION_TOKEN_TTL_HOURS:24}
+  # Публичный base URL API для ссылок в письмах (https://api.yourdomain.com — БЕЗ /api)
+  public-url: ${PUBLIC_APP_URL:http://localhost:8080}
+  # From-адрес писем верификации
+  mail-from: ${MAIL_FROM:noreply@sotospeak.local}
+
 logging:
   level:
-    com.funnyenglish: ${LOG_LEVEL:INFO}
+    com.sotospeak: ${LOG_LEVEL:INFO}
     org.springframework.security: ${SECURITY_LOG_LEVEL:WARN}
     org.springframework.web: ${WEB_LOG_LEVEL:WARN}
     org.apache.coyote.http11: ${TOMCAT_LOG_LEVEL:WARN}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  # Файловый лог с ротацией (OpenSpec add-client-logging). В docker — volume ./logs:/app/logs
+  file:
+    name: ${LOG_FILE:logs/backend.log}
+  logback:
+    rollingpolicy:
+      max-file-size: ${LOG_FILE_MAX_SIZE:10MB}
+      max-history: ${LOG_FILE_MAX_HISTORY:7}
+      total-size-cap: ${LOG_FILE_TOTAL_CAP:200MB}
 
 # Actuator: только health (используется docker healthcheck и CI deploy check)
 management:
@@ -97,6 +128,10 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    # Mail — не liveness-dependency: в dev SMTP нет, иначе health=DOWN и падает docker healthcheck
+    mail:
+      enabled: false
 
 # HTTP client timeouts
 rest:

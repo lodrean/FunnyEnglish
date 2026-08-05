@@ -1,10 +1,11 @@
 /* FunnyEnglish Speaking Trainer — Design Tokens (Playful Coach, Variant B)
    Источник: tokens.json (W3C DTCG draft). Одна палитра — два таргета (Compose + MUI).
-   v1.1.0 · 2026-07-31: выбран вариант B владельцем (презентация presentation.html, слайд 5). */
+   v1.2.0 · 2026-08-01: аудит WCAG — primaryStrong, textMuted/timer затемнены, recordContainer. */
 
 :root {
   /* Brand */
   --color-primary: #5B8DEF;
+  --color-primary-strong: #3B6FD4; /* белый текст на кнопках/чипах/nav (4.76:1 AA) */
   --color-on-primary: #FFFFFF;
   --color-primary-container: #DDE8FD;
   --color-on-primary-container: #1A2F5E;
@@ -17,18 +18,21 @@
 
   /* Semantic */
   --color-record: #FF9F6B;
-  --color-record-active: #FFB27D;
+  --color-record-active: #D97238; /* аудит: ≥3:1 */
   --color-record-shadow: #D97238;
+  --color-record-container: #FFE3D1;
+  --color-on-record-container: #8A3B0E;
+  --color-on-record: #2D3561; /* тёмный на record (5.81:1; белый = 2.01 fail) */
   --color-waveform-playback: #5B8DEF;
   --color-success: #43A047;
   --color-warning: #FB8C00;
   --color-error: #E53935;
   --color-on-error: #FFFFFF;
 
-  /* Timer levels */
-  --color-timer-80: #5B8DEF;
-  --color-timer-50: #9B7EDE;
-  --color-timer-30: #FF9F6B;
+  /* Timer levels (затемнены ≥3:1 для графики, аудит 2026-08-01) */
+  --color-timer-80: #4A7FE8;
+  --color-timer-50: #8A68D6;
+  --color-timer-30: #D97238;
 
   /* Status */
   --color-status-new: #FB8C00;
@@ -44,7 +48,7 @@
   --color-surface-variant: #D8E2FA;
   --color-outline: #B9C7EE;
   --color-text: #2D3561;
-  --color-text-muted: #6E76A8;
+  --color-text-muted: #58609A; /* 5.32:1 AA (был #6E76A8 = 3.92 fail) */
   --color-scrim-subtitle: rgba(0, 0, 0, 0.7);
   --color-scrim-video-controls: rgba(0, 0, 0, 0.5);
 

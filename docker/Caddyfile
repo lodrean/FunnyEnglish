@@ -1,4 +1,4 @@
-# Caddy reverse-proxy для FunnyEnglish (production)
+# Caddy reverse-proxy для So to Speak (production)
 # Автоматически получает и продлевает сертификаты Let's Encrypt
 # для указанных доменов (нужны DNS A-записи на сервер + открытые 80/443).
 #

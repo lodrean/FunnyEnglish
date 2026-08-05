@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# FunnyEnglish Server Setup Script
+# So to Speak Server Setup Script
 # Настройка сервера Ubuntu 22.04 LTS для production deploy
 # =============================================================================
 
@@ -11,7 +11,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🚀 FunnyEnglish Server Setup${NC}"
+echo -e "${GREEN}🚀 So to Speak Server Setup${NC}"
 echo "================================"
 
 # Проверка root прав
@@ -182,9 +182,9 @@ echo -e "${GREEN}✅ Timezone установлен: Europe/Moscow${NC}"
 # =============================================================================
 echo -e "\n${YELLOW}📁 Шаг 10: Создание структуры проекта...${NC}"
 
-mkdir -p /opt/funnyenglish/{nginx,postgres-init,certbot/{conf,www},backups}
+mkdir -p /opt/sotospeak/{nginx,postgres-init,certbot/{conf,www},backups}
 
-echo -e "${GREEN}✅ Структура создана: /opt/funnyenglish${NC}"
+echo -e "${GREEN}✅ Структура создана: /opt/sotospeak${NC}"
 
 # =============================================================================
 # Готово!
@@ -194,7 +194,7 @@ echo -e "${GREEN}🎉 Настройка сервера завершена!${NC}
 echo "================================"
 echo ""
 echo "Следующие шаги:"
-echo "1. Клонируйте проект: cd /opt/funnyenglish && git clone <repo> app"
+echo "1. Клонируйте проект: cd /opt/sotospeak && git clone <repo> app"
 echo "2. Запустите деплой: ./scripts/deploy-production.sh"
 echo ""
 echo "Полезные команды:"

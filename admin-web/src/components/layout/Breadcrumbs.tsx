@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Breadcrumbs Component
+ * So to speak Admin Web - Breadcrumbs Component
  * Auto-generated breadcrumbs from current route
  */
 

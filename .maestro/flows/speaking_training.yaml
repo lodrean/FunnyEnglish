@@ -2,7 +2,7 @@
 # Требует: docker-стек с seed-контентом («Разговорный английский» / «Знакомство»).
 # Запись на эмуляторе — виртуальный микрофон, permissions выдаются при запуске.
 
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 - launchApp:
     clearState: true
@@ -12,14 +12,19 @@ appId: com.funnyenglish.app
 # Онбординг → гость
 - runFlow:
     when:
-      visible: "Учим английский играючи"
+      visible: "Смотри видео"
     file: ../subflows/onboarding_guest.yaml
 
-# Library — стартовый экран
+# Library — стартовый экран (E2E-библиотеки могут быть сверху — скроллим до seed)
 - extendedWaitUntil:
-    visible: "Разговорный английский"
+    visible: ".*Библиотека тем.*"
     timeout: 20000
-- assertVisible: "Библиотека"
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
+- assertVisible: "Разговорный английский"
 
 # Topics
 - tapOn: "Разговорный английский"
@@ -28,15 +33,15 @@ appId: com.funnyenglish.app
     timeout: 15000
 - tapOn: "Знакомство"
 
-# Bottom-sheet выбора субтитров
-- assertVisible: "Без субтитров"
-- assertVisible: "С субтитрами"
-- tapOn: "Без субтитров"
-
-# Video — CTA «К вопросам» доступен всегда (видео может не грузиться с эмулятора — не критично)
+# Video: bottom-sheet удалён (DC-5) — клик по топику открывает сразу видео,
+# mode-chips «С субтитрами/Без субтитров» на экране видео (seed-топик с субтитрами)
 - extendedWaitUntil:
     visible: "Перейти к вопросам"
     timeout: 15000
+- assertVisible: "С субтитрами"
+- tapOn: "Без субтитров"
+
+# CTA «Перейти к вопросам» доступен всегда (видео может не грузиться с эмулятора — не критично)
 - tapOn: "Перейти к вопросам"
 
 # Questions — весь список вопросов
@@ -50,20 +55,21 @@ appId: com.funnyenglish.app
 - extendedWaitUntil:
     visible: "Уровень 1 · 80 сек"
     timeout: 15000
-- assertVisible: "Ответь на все вопросы одним голосовым сообщением"
+- assertVisible: ".*ответь на все вопросы одной записью.*"
 
-# Запись: старт → ~3 сек по таймеру (1:20 → 1:17) → стоп (досрочный стоп засчитывается)
-- tapOn: "Запись"
+# Запись: record-кнопка (contentDescription) → ~3 сек по таймеру (1:20 → 1:17) → стоп
+# (досрочный стоп засчитывается)
+- tapOn: "Начать запись"
 - extendedWaitUntil:
     visible: "1:17"
     timeout: 15000
-- tapOn: "Стоп"
+- tapOn: "Остановить запись"
 
-# Попытка сохранена, ✅ автоматически
+# Попытка сохранена, ✅ автоматически; заголовок списка «Попытки · N из 3»
 - extendedWaitUntil:
     visible: "Попытка 1"
     timeout: 10000
-- assertVisible: "Твои попытки"
+- assertVisible: "Попытки · 1 из 3"
 
-# «Назад» → Questions → «назад» → Topics
+# Следующий уровень разблокирован
 - assertVisible: "Уровень 2 · 50 сек"

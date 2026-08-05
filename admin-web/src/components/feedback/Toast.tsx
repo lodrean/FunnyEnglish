@@ -5,7 +5,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Snackbar,
   Alert,
   AlertTitle,
   IconButton,
@@ -253,6 +252,7 @@ export interface UseToastReturn {
   clearAll: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = (): UseToastReturn => {
   const [toasts, setToasts] = useState<ToastProps[]>([]);
 

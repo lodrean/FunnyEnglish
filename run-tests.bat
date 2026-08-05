@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ===========================================
-echo   FunnyEnglish Test Suite Runner
+echo   So to Speak Test Suite Runner
 echo ===========================================
 echo.
 
@@ -23,11 +23,11 @@ echo.
 REM Load test data
 echo [2/4] Loading test data...
 if exist "docs\testing\test-data.sql" (
-    docker exec -i funnyenglish-postgres-dev psql -U postgres -d funnyenglish < docs\testing\test-data.sql 2>nul
+    docker exec -i sotospeak-postgres-dev psql -U postgres -d sotospeak < docs\testing\test-data.sql 2>nul
     if errorlevel 1 (
         echo [WARNING] Could not load test data via Docker
         echo [INFO] You can run manually:
-        echo   docker exec -i funnyenglish-postgres-dev psql -U postgres -d funnyenglish ^< docs\testing\test-data.sql
+        echo   docker exec -i sotospeak-postgres-dev psql -U postgres -d sotospeak ^< docs\testing\test-data.sql
     ) else (
         echo [OK] Test data loaded
     )
@@ -54,7 +54,7 @@ echo.
 REM Check images
 echo [4/4] Checking test images...
 echo.
-curl -s -I http://localhost:9000/funnyenglish/thumbnails/test_colors.png | findstr /i "200 OK" >nul
+curl -s -I http://localhost:9000/sotospeak/thumbnails/test_colors.png | findstr /i "200 OK" >nul
 if errorlevel 1 (
     echo [WARNING] Test image not accessible
     echo [INFO] Upload test images via admin panel

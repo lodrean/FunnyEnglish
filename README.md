@@ -1,4 +1,4 @@
-# FunnyEnglish
+# So to Speak
 
 Кроссплатформенное приложение для изучения английского языка с геймификацией.
 
@@ -29,7 +29,7 @@
 ## Структура проекта
 
 ```
-FunnyEnglish/
+So to Speak/
 ├── backend/          # Spring Boot API
 ├── admin-web/        # React админ-панель
 ├── composeApp/       # Compose Multiplatform UI
@@ -54,7 +54,7 @@ docker compose up -d
 Сервисы будут доступны:
 | Сервис | URL | Учетные данные |
 |--------|-----|----------------|
-| Admin Panel | http://localhost:3000 | `admin@funnyenglish.com` / `admin123` |
+| Admin Panel | http://localhost:3000 | `admin@sotospeak.com` / `admin123` |
 | Backend API | http://localhost:8080 | - |
 | MinIO Console | http://localhost:9001 | `minioadmin` / `minioadmin` |
 
@@ -81,7 +81,7 @@ docker compose up -d --build
 ## Демо-аккаунт
 
 ```
-Email: demo@funnyenglish.app
+Email: demo@sotospeak.app
 Password: demo123
 ```
 
@@ -96,7 +96,7 @@ Password: demo123
 | `DATABASE_PASSWORD` | DB password | - |
 | `JWT_SECRET` | JWT signing key (min 32 chars) | - |
 | `JWT_EXPIRATION` | Token expiration (ms) | 86400000 |
-| `ADMIN_EMAIL` | Admin email | admin@funnyenglish.app |
+| `ADMIN_EMAIL` | Admin email | admin@sotospeak.app |
 | `ADMIN_PASSWORD` | Admin password | - |
 | `AWS_ACCESS_KEY` | S3 access key | - |
 | `AWS_SECRET_KEY` | S3 secret key | - |
@@ -106,7 +106,7 @@ Password: demo123
 ### Mobile (gradle.properties)
 
 ```properties
-FUNNYENGLISH_API_BASE_URL=http://10.0.2.2:8080
+SOTOSPEAK_API_BASE_URL=http://10.0.2.2:8080
 ```
 
 Для физического устройства используйте IP компьютера в локальной сети.
@@ -155,7 +155,7 @@ npm --prefix admin-web test
 | Тип | Инструмент | Команда |
 |-----|------------|---------|
 | **Unit** | Kotest | `./gradlew :shared:allTests` |
-| **API** | Newman (Postman) | `newman run qa/postman/funnyenglish-api.json` |
+| **API** | Newman (Postman) | `newman run qa/postman/sotospeak-api.json` |
 | **E2E** | Maestro | `maestro test .maestro/flows/` |
 | **Visual** | AI QA Agent | `qa-agent compare base.png curr.png` |
 

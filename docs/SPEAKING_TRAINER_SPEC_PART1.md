@@ -1,8 +1,8 @@
 # Speaking Trainer — Техническая спецификация (Part 1: Backend)
 
 **Feature ID:** SPEAKING-TRAINER-001
-**Version:** 1.1
-**Date:** 2026-07-30
+**Version:** 1.2
+**Date:** 2026-08-02
 **PRD:** `docs/prd/SPEAKING-TRAINER-001.prd.md`
 **Scope Part 1:** Backend (Spring Boot) + модель данных + REST API. Admin-web и KMP-клиент — Part 2/Part 3.
 **Blueprint-фича:** Audio Tests (`entity/audio/*`, `controller/audio/AudioTestController.kt`, `service/audio/AudioTestService.kt`, миграция `V11__create_audio_tests_tables.sql`, интеграционный тест `AudioTestIntegrationTest.kt`) — все новые компоненты повторяют её паттерны.
@@ -52,7 +52,7 @@
 ### 1.3 Целевая структура пакетов (новые файлы)
 
 ```
-backend/src/main/kotlin/com/funnyenglish/
+backend/src/main/kotlin/com/sotospeak/
 ├── entity/speaking/
 │   ├── Library.kt                  # NEW
 │   ├── Topic.kt                    # NEW (soft delete)
@@ -82,10 +82,22 @@ backend/src/main/resources/db/migration/
 ├── V17__create_speaking_content_tables.sql   # NEW
 └── V18__create_speaking_submissions_tables.sql # NEW
 
-backend/src/test/kotlin/com/funnyenglish/
+backend/src/test/kotlin/com/sotospeak/
 ├── service/speaking/PracticeSubmissionServiceTest.kt   # NEW (unit, mockk)
 └── controller/SpeakingFlowIntegrationTest.kt           # NEW (@SpringBootTest + MockMvc)
 ```
+
+### 1.4 Системный пользователь ADMIN
+
+- Создаётся/обновляется на старте приложения `AdminUserInitializer`.
+- Дефолтный email: `admin@sotospeak.com` (переопределяется `ADMIN_EMAIL`; должен совпадать с `docker-compose.yml` и README).
+- Дефолтный пароль: через `ADMIN_PASSWORD` (в dev — `admin123`).
+- Логика upsert:
+  1. Искать по `adminEmail`.
+  2. Если не найден — искать по `role = "ADMIN"` (legacy-записи с другим email).
+  3. При несовпадении email, passwordHash, role или `emailVerified` — обновить запись через `copy(...)` и сохранить.
+  4. Если admin отсутствует — создать нового с `emailVerified = true`.
+- Пароль в логах не выводится.
 
 ---
 
@@ -274,7 +286,7 @@ COMMENT ON TABLE grades IS 'Speaking trainer: оценка учителя по �
 
 ```kotlin
 // entity/speaking/Library.kt
-package com.funnyenglish.entity.speaking
+package com.sotospeak.entity.speaking
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
@@ -327,7 +339,7 @@ class Library(
 
 ```kotlin
 // entity/speaking/Topic.kt
-package com.funnyenglish.entity.speaking
+package com.sotospeak.entity.speaking
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
@@ -392,7 +404,7 @@ class Topic(
 
 ```kotlin
 // entity/speaking/Video.kt
-package com.funnyenglish.entity.speaking
+package com.sotospeak.entity.speaking
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
@@ -433,7 +445,7 @@ class Video(
 
 ```kotlin
 // entity/speaking/SpeakingQuestion.kt
-package com.funnyenglish.entity.speaking
+package com.sotospeak.entity.speaking
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
@@ -465,9 +477,9 @@ class SpeakingQuestion(
 
 ```kotlin
 // entity/speaking/PracticeSubmission.kt
-package com.funnyenglish.entity.speaking
+package com.sotospeak.entity.speaking
 
-import com.funnyenglish.entity.User
+import com.sotospeak.entity.User
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -523,9 +535,9 @@ class PracticeSubmission(
 
 ```kotlin
 // entity/speaking/Grade.kt
-package com.funnyenglish.entity.speaking
+package com.sotospeak.entity.speaking
 
-import com.funnyenglish.entity.User
+import com.sotospeak.entity.User
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -588,7 +600,7 @@ class Grade(
 
 ```kotlin
 // dto/SpeakingDtos.kt
-package com.funnyenglish.dto
+package com.sotospeak.dto
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.*
@@ -782,7 +794,7 @@ data class AdminSubmissionResponse(
     "id": "a1b2c3d4-0000-4000-8000-000000000001",
     "title": "Everyday Life",
     "description": "Daily routines and small talk",
-    "coverUrl": "https://media.funnyenglish.app/funnyenglish/speaking/covers/3f2a....webp",
+    "coverUrl": "https://media.sotospeak.app/sotospeak/speaking/covers/3f2a....webp",
     "topicCount": 4
   }
 ]
@@ -814,8 +826,8 @@ data class AdminSubmissionResponse(
   "title": "My Morning Routine",
   "description": "Talk about your typical morning",
   "video": {
-    "videoUrl": "https://media.funnyenglish.app/funnyenglish/speaking/videos/9c1e....mp4",
-    "subtitleUrl": "https://media.funnyenglish.app/funnyenglish/speaking/subtitles/7ab0....vtt",
+    "videoUrl": "https://media.sotospeak.app/sotospeak/speaking/videos/9c1e....mp4",
+    "subtitleUrl": "https://media.sotospeak.app/sotospeak/speaking/subtitles/7ab0....vtt",
     "durationSeconds": 95
   },
   "questions": [
@@ -844,7 +856,7 @@ data class AdminSubmissionResponse(
   "id": "d4e5f6a7-...-31",
   "topicId": "b2c3d4e5-...-10",
   "topicTitle": "My Morning Routine",
-  "audioUrl": "https://media.funnyenglish.app/funnyenglish/speaking/submissions/u_<userId>/e8f1....m4a",
+  "audioUrl": "https://media.sotospeak.app/sotospeak/speaking/submissions/u_<userId>/e8f1....m4a",
   "durationSec": 30,
   "status": "NEW",
   "grade": null,
@@ -863,7 +875,7 @@ data class AdminSubmissionResponse(
     "id": "d4e5f6a7-...-31",
     "topicId": "b2c3d4e5-...-10",
     "topicTitle": "My Morning Routine",
-    "audioUrl": "https://media.funnyenglish.app/.../e8f1....m4a",
+    "audioUrl": "https://media.sotospeak.app/.../e8f1....m4a",
     "durationSec": 30,
     "status": "REVIEWED",
     "grade": {
@@ -925,7 +937,7 @@ Query-параметры (все optional):
       "userDisplayName": "Ivan",
       "topicId": "b2c3d4e5-...-10",
       "topicTitle": "My Morning Routine",
-      "audioUrl": "https://media.funnyenglish.app/.../e8f1....m4a",
+      "audioUrl": "https://media.sotospeak.app/.../e8f1....m4a",
       "durationSec": 30,
       "status": "NEW",
       "grade": null,
@@ -1106,7 +1118,7 @@ interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID>
 
 Паттерны — существующие: unit на mockk (`UserServiceTest`), интеграция `@SpringBootTest + @AutoConfigureMockMvc + @ActiveProfiles("test")` (`AudioTestIntegrationTest.kt`, `UserControllerIntegrationTest.kt`). Тестовый профиль использует H2/Testcontainers — **проверить совместимость generated column `total` с тестовой БД**; если H2 — проверить поддержку `GENERATED ALWAYS AS ... STORED` (H2 поддерживает generated columns; при проблемах — в test profile считать total в маппере).
 
-### 8.1 Unit-тесты (`backend/src/test/kotlin/com/funnyenglish/service/speaking/PracticeSubmissionServiceTest.kt`)
+### 8.1 Unit-тесты (`backend/src/test/kotlin/com/sotospeak/service/speaking/PracticeSubmissionServiceTest.kt`)
 
 1. `createSubmission` — успех: файл валиден → save вызван, статус NEW, URL из StorageService.
 2. `createSubmission` — топик не опубликован/удалён → `NoSuchElementException`.
@@ -1156,8 +1168,8 @@ interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID>
 | 9 | Grading: inbox с фильтрами/пагинацией + POST/PUT grade + статус-машина | service + controller (admin) | 1.5 | 8 |
 | 10 | Unit-тесты сервисов (mockk) | `service/speaking/*Test.kt` | 1.0 | 8, 9 |
 | 11 | Интеграционный тест SpeakingFlowIntegrationTest (11 сценариев из 8.3) | `controller/SpeakingFlowIntegrationTest.kt` | 1.0 | 9 |
-| 12 | shared: методы `FunnyEnglishApi` (public content, multipart submit через `submitFormWithBinaryData`, my submissions) + модели | `shared/.../api/FunnyEnglishApi.kt`, `shared/.../model/*` | 1.0 | 6, 8 |
-| 13 | Регрессия: прогон существующих backend-тестов (34 шт.) + обновление `api-tests/funnyenglish-api-collection.json` новыми эндпоинтами | — | 0.5 | 11 |
+| 12 | shared: методы `SoToSpeakApi` (public content, multipart submit через `submitFormWithBinaryData`, my submissions) + модели | `shared/.../api/SoToSpeakApi.kt`, `shared/.../model/*` | 1.0 | 6, 8 |
+| 13 | Регрессия: прогон существующих backend-тестов (34 шт.) + обновление `api-tests/sotospeak-api-collection.json` новыми эндпоинтами | — | 0.5 | 11 |
 
 **Итого backend+shared:** ~10.5 идеальных дней. Из них критический путь: 1→3→6→8→9→11.
 

@@ -8,7 +8,6 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  Collapse,
   IconButton,
 } from '@mui/material';
 import {
@@ -16,7 +15,6 @@ import {
   Warning as WarningIcon,
   Info as InfoIcon,
   Close as CloseIcon,
-  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 
 export type ErrorSeverity = 'error' | 'warning' | 'info' | 'success';
@@ -174,6 +172,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 };
 
 // Hook to parse API errors
+// eslint-disable-next-line react-refresh/only-export-components
 export const useApiError = () => {
   const parseError = (error: any): ErrorDetails | null => {
     if (!error) return null;

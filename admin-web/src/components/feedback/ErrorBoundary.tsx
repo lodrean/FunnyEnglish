@@ -8,6 +8,7 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { logger } from '../../utils/logger';
 import {
   Box,
   Button,
@@ -118,8 +119,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
 
-    // Log to console
-    console.error('ErrorBoundary caught an error:', error);
+    // Log to console + remote (OpenSpec add-client-logging)
+    logger.error('ErrorBoundary', `Caught: ${error.message}`, error);
     console.error('Component stack:', errorInfo.componentStack);
 
     // Call optional error handler

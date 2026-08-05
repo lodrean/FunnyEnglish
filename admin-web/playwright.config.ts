@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright конфигурация для E2E тестирования FunnyEnglish Admin Panel
+ * Playwright конфигурация для E2E тестирования So to Speak Admin Panel
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({

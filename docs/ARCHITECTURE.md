@@ -1,8 +1,10 @@
-# FunnyEnglish Architecture
+# So to Speak Architecture
 
 ## Overview
 
-FunnyEnglish - это кроссплатформенное приложение для изучения английского языка, построенное на современном стеке технологий.
+So to Speak — speaking-тренажёр английского: ученик смотрит короткие видео с субтитрами
+и отвечает на вопросы голосом (режимы Training — до 3 попыток локально, и Practice —
+голосовое сообщение учителю на проверку). Гость может тренироваться без регистрации.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -68,7 +70,71 @@ FunnyEnglish - это кроссплатформенное приложение 
 | Axios | 1.x | HTTP клиент |
 | Recharts | 2.x | Графики |
 
-## Database Schema
+## Speaking Trainer
+
+Основной продукт после пивота (SPEAKING-TRAINER). Legacy-модули (gamification,
+image-word-match, категории/тесты) удалены из клиента и admin-web; legacy backend-эндпоинты
+пока живы — см. разделы ниже с пометкой ⚠️ Legacy.
+
+### Модель контента
+
+```
+Library (библиотека) ── 1:N ── Topic (топик) ── 1:1 ── Video (+ WebVTT субтитры, S3)
+                                   │
+                                   └── 1:N ── SpeakingQuestion (вопросы, displayOrder)
+
+PracticeSubmission (запись ученика, аудио ≤ 5МБ, статус NEW|REVIEWED)
+      └── 1:1 ── Grade (оценка учителя: grammar/vocabulary/pronunciation/fluency 1..10 + total)
+```
+
+### Backend-модули
+
+- `controller/speaking/SpeakingPublicController` — `/public/speaking/*`: библиотеки, топики, детали топика (гость)
+- `controller/speaking/SpeakingSubmissionController` — `/speaking/submissions*`: practice-записи (авторизованные)
+- `controller/speaking/SpeakingAdminController` — `/admin/speaking/*`: CRUD контента + grading inbox (роль ADMIN)
+- `controller/GuestEventController` — `/public/guest-events`: обезличенные события гостей
+- `service/speaking/SpeakingContentService`, `PracticeSubmissionService` — бизнес-логика
+- `dto/SpeakingDtos.kt` — все request/response DTO + мапперы
+
+### Клиент (composeApp, KMP + Compose Multiplatform)
+
+**Экраны** (`composeApp/src/commonMain/kotlin/com/sotospeak/app/screens/`):
+`LibraryScreen`, `TopicsScreen`, `VideoScreen` (плеер + шит выбора субтитров),
+`QuestionsScreen`, `TrainingScreen` (до 3 попыток, записи локально),
+`PracticeScreen` (одна запись → отправка учителю, только авторизованные),
+`MySubmissionsScreen` (статусы проверки NEW/REVIEWED) + auth-экраны.
+
+**Навигация — пивот на Library.** Ручной `when` по `sealed class AppScreen` в
+`composeApp/.../app/App.kt` (~строки 82–483). Back stack отсутствует — `libraryId`
+пробрасывается по цепочке экранов, `onBack` явный.
+
+```
+Splash → Onboarding → (Login/Register | Guest) → Library   ← стартовый экран приложения
+                                                  │
+                Library → Topics(libraryId) → Video(topicId, libraryId, withSubtitles)
+                                                  │        (шит: с субтитрами / без / пропустить)
+                                                  ▼
+                                          Questions(topicId, libraryId)
+                                                  ├→ Training (таймер-кольцо, уровни 1–3 по длительности)
+                                                  └→ Practice (guest → CTA логина)
+                Bottom nav: Библиотека (Library) | Мои записи (MySubmissions) | Профиль (Profile)
+```
+
+**Дизайн-система:** модуль `:design` + `composeApp/src/commonMain/kotlin/com/sotospeak/designsystem/`:
+- `theme/SpeakingTokens.kt` — токены (цвета, типографика, отступы) speaking-продукта
+- `SpeakingIcons`, `SpeakingMotion`, `SpeakingTimerRing` (анимированное кольцо таймера записи)
+
+**Shared-модуль:** `shared/src/commonMain/kotlin/com/sotospeak/shared/model/Speaking.kt` —
+сериализуемые модели (`SpeakingLibrary`, `SpeakingTopicListItem`, `SpeakingTopicDetail`,
+`SpeakingVideo`, `SpeakingQuestion`, submission/grade), имена полей = JSON-контракту backend.
+
+---
+
+## ⚠️ Legacy: Quiz-модель (не используется speaking-клиентом)
+
+> Судьба legacy-разделов ниже решается владельцем. Документация сохранена как справочная.
+
+## Database Schema (legacy quiz)
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -123,7 +189,9 @@ FunnyEnglish - это кроссплатформенное приложение 
                           └─────────────────────┘
 ```
 
-## Question Types
+## Question Types (legacy)
+
+⚠️ Legacy (не используется speaking-клиентом, судьба решается владельцем).
 
 | Тип | Описание | Поля |
 |-----|----------|------|
@@ -193,7 +261,7 @@ FunnyEnglish - это кроссплатформенное приложение 
        └────────────────────┼────────────────────┘
                             ▼
                   ┌──────────────────┐
-                  │ FunnyEnglishApi  │
+                  │ SoToSpeakApi  │
                   │   (Ktor HTTP)    │
                   └──────────────────┘
 ```
@@ -211,7 +279,7 @@ data class HomeState(
     val recentTests: List<TestListItem> = emptyList()
 )
 
-class HomeViewModel(private val api: FunnyEnglishApi) : ViewModel() {
+class HomeViewModel(private val api: SoToSpeakApi) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
@@ -225,7 +293,10 @@ class HomeViewModel(private val api: FunnyEnglishApi) : ViewModel() {
 }
 ```
 
-## Scoring System
+## Scoring System (legacy)
+
+⚠️ Legacy (не используется speaking-клиентом, судьба решается владельцем).
+В speaking-продукте оценку выставляет учитель: 4 критерия 1..10 + авто-усреднённый `total`.
 
 ### Points Calculation
 ```
@@ -248,7 +319,9 @@ Level = 1 + floor(totalPoints / 100)
 Points to Next Level = 100 - (totalPoints % 100)
 ```
 
-## Achievements
+## Achievements (legacy)
+
+⚠️ Legacy (не используется speaking-клиентом, судьба решается владельцем).
 
 | Code | Название | Условие |
 |------|----------|---------|
@@ -276,14 +349,15 @@ Points to Next Level = 100 - (totalPoints % 100)
 - Credentials: true
 
 ### Role-Based Access
-| Endpoint | USER | ADMIN |
-|----------|------|-------|
-| /auth/* | ✓ | ✓ |
-| /users/me/* | ✓ | ✓ |
-| /categories/* | ✓ | ✓ |
-| /tests/* | ✓ | ✓ |
-| /leaderboard | ✓ | ✓ |
-| /admin/* | ✗ | ✓ |
+| Endpoint | Гость | USER | ADMIN |
+|----------|-------|------|-------|
+| /auth/* | ✓ | ✓ | ✓ |
+| /public/speaking/* | ✓ | ✓ | ✓ |
+| /public/guest-events | ✓ | ✓ | ✓ |
+| /speaking/submissions* | ✗ | ✓ | ✓ |
+| /users/me | ✗ | ✓ | ✓ |
+| /categories/*, /tests/*, /leaderboard (legacy) | ✗ | ✓ | ✓ |
+| /admin/* | ✗ | ✗ | ✓ |
 
 ## Deployment
 

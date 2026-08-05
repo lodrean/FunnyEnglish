@@ -21,7 +21,6 @@ import {
   TrendingUp as TrendingUpIcon,
   AccessTime as AccessTimeIcon,
   Add as AddIcon,
-  Category as CategoryIcon,
   PersonAdd as PersonAddIcon,
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
@@ -230,18 +229,10 @@ const Dashboard: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate('/content/tests/new')}
-            data-testid="dashboard-new-test-button"
+            onClick={() => navigate('/speaking/libraries/new')}
+            data-testid="dashboard-new-library-button"
           >
-            Add Test
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<CategoryIcon />}
-            onClick={() => navigate('/content/categories')}
-            data-testid="dashboard-new-category-button"
-          >
-            Add Category
+            Add Library
           </Button>
           <Button
             variant="outlined"

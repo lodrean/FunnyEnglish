@@ -28,7 +28,7 @@ BEGIN
             cat_objects, 
             'Предметы', 
             'Изучи названия предметов в доме',
-            'https://cdn.funnyenglish.com/icons/objects.png',
+            'https://cdn.sotospeak.com/icons/objects.png',
             10,
             true
         );
@@ -57,7 +57,7 @@ BEGIN
         20, 
         true, 
         1,
-        'https://cdn.funnyenglish.com/images/kitchen_thumbnail.jpg'
+        'https://cdn.sotospeak.com/images/kitchen_thumbnail.jpg'
     );
 
     -- =============================================
@@ -162,7 +162,7 @@ BEGIN
         15, 
         true, 
         2,
-        'https://cdn.funnyenglish.com/images/livingroom_thumbnail.jpg'
+        'https://cdn.sotospeak.com/images/livingroom_thumbnail.jpg'
     );
 
     -- Reset word/hotspot IDs for second test

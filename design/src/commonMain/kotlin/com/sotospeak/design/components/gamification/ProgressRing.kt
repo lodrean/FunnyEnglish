@@ -1,0 +1,120 @@
+package com.sotospeak.design.components.gamification
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.sotospeak.design.theme.SoToSpeakTheme
+
+@Composable
+fun ProgressRing(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    strokeWidth: Dp = 8.dp,
+    color: Color = MaterialTheme.colorScheme.primary,
+    trackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    showPercentage: Boolean = false
+) {
+    val animatedProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(progress) {
+        animatedProgress.animateTo(
+            targetValue = progress.coerceIn(0f, 1f),
+            animationSpec = tween(durationMillis = 1000)
+        )
+    }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val stroke = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
+            val diameter = size.minDimension - stroke.width
+            val radius = diameter / 2
+            val centerX = size.width / 2
+            val centerY = size.height / 2
+
+            // Track
+            drawCircle(
+                color = trackColor,
+                radius = radius,
+                center = androidx.compose.ui.geometry.Offset(centerX, centerY),
+                style = stroke
+            )
+
+            // Progress arc
+            drawArc(
+                color = color,
+                startAngle = -90f,
+                sweepAngle = 360f * animatedProgress.value,
+                useCenter = false,
+                style = stroke,
+                size = androidx.compose.ui.geometry.Size(diameter, diameter),
+                topLeft = androidx.compose.ui.geometry.Offset(
+                    centerX - radius,
+                    centerY - radius
+                )
+            )
+        }
+
+        if (showPercentage) {
+            Text(
+                text = "${(animatedProgress.value * 100).toInt()}%",
+                style = MaterialTheme.typography.titleMedium,
+                color = color
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ProgressRingLightPreview() {
+    SoToSpeakTheme(darkTheme = false) {
+        ProgressRing(
+            progress = 0.75f,
+            modifier = Modifier.size(100.dp),
+            showPercentage = true
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ProgressRingDarkPreview() {
+    SoToSpeakTheme(darkTheme = true) {
+        ProgressRing(
+            progress = 0.45f,
+            modifier = Modifier.size(120.dp),
+            strokeWidth = 12.dp,
+            color = SoToSpeakTheme.colors.xp
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ProgressRingCompletePreview() {
+    SoToSpeakTheme {
+        ProgressRing(
+            progress = 1f,
+            modifier = Modifier.size(80.dp),
+            showPercentage = true
+        )
+    }
+}

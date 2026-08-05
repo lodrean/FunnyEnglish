@@ -36,5 +36,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.feature.home"
+    namespace = "com.sotospeak.feature.home"
 }

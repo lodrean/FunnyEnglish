@@ -75,7 +75,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: funnyenglish_test
+          POSTGRES_DB: sotospeak_test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
         options: >-
@@ -105,7 +105,7 @@ jobs:
 
       - name: Start Backend
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/funnyenglish_test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/sotospeak_test
           SPRING_DATASOURCE_USERNAME: test
           SPRING_DATASOURCE_PASSWORD: test
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop

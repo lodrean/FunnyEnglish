@@ -71,7 +71,7 @@ fun NewScreen(viewModel: NewViewModel = koinViewModel()) {
 }
 
 // ViewModel pattern
-class NewViewModel(private val api: FunnyEnglishApi) : ViewModel() {
+class NewViewModel(private val api: SoToSpeakApi) : ViewModel() {
     private val _state = MutableStateFlow(NewState())
     val state = _state.asStateFlow()
 }

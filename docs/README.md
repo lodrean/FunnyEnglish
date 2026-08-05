@@ -1,6 +1,6 @@
-# FunnyEnglish Documentation
+# So to Speak Documentation
 
-Complete documentation index for the FunnyEnglish project.
+Complete documentation index for the So to Speak project.
 
 ---
 

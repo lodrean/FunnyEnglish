@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.FunnyEnglish" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">#FF6200EE</item>
+    <!-- edge-to-edge: цвета системных бар не задаём — контент рисуется под ними,
+         контраст иконок управляется ApplySystemBarStyle (MainActivity enableEdgeToEdge) -->
+    <style name="Theme.SoToSpeak" parent="android:Theme.Material.Light.NoActionBar">
     </style>
 </resources>

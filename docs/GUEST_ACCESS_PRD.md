@@ -1,4 +1,4 @@
-# PRD: Guest-доступ для обучения (FunnyEnglish)
+# PRD: Guest-доступ для обучения (So to Speak)
 
 ## 1. Общее описание
 

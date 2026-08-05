@@ -15,7 +15,7 @@ if command -v bd >/dev/null 2>&1; then
     _bd_used_perl=1
     perl -e 'alarm shift; exec @ARGV' "$_bd_timeout" bd hooks run prepare-commit-msg "$@"
     _bd_exit=$?
-  else
+  elsez
     echo >&2 "beads: hook 'prepare-commit-msg' running without timeout; install coreutils or perl to enable BEADS_HOOK_TIMEOUT"
     bd hooks run prepare-commit-msg "$@"
     _bd_exit=$?

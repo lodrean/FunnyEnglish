@@ -16,10 +16,8 @@ describe('useConfirm', () => {
   it('opens confirmation dialog when confirm is called', async () => {
     const { result } = renderHook(() => useConfirm());
     
-    let confirmPromise: Promise<boolean>;
-    
     act(() => {
-      confirmPromise = result.current.confirm({
+      result.current.confirm({
         title: 'Delete Item?',
         message: 'Are you sure?',
       });

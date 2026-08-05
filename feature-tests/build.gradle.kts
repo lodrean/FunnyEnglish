@@ -42,5 +42,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.feature.tests"
+    namespace = "com.sotospeak.feature.tests"
 }

@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ==========================================
-echo   FunnyEnglish CMP E2E Tests
+echo   So to Speak CMP E2E Tests
 echo ==========================================
 echo.
 

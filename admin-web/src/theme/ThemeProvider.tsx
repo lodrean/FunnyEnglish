@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Theme Provider
+ * So to speak Admin Web - Theme Provider
  * Theme context with dark/light mode toggle, localStorage persistence, and system preference detection
  */
 
@@ -16,7 +16,7 @@ import { ThemeProvider as MuiThemeProvider, PaletteMode } from '@mui/material';
 import { createAppTheme } from './Theme';
 
 // Storage key for theme preference
-const THEME_STORAGE_KEY = 'funnyenglish-theme-mode';
+const THEME_STORAGE_KEY = 'sotospeak-theme-mode';
 
 // Theme context interface
 interface ThemeContextType {

@@ -1,7 +1,7 @@
 #!/bin/bash
-echo "Starting FunnyEnglish..."
+echo "Starting So to Speak..."
 docker compose up -d --build
 echo ""
 echo "Admin Panel: http://localhost:3000"
-echo "Email: admin@funnyenglish.com"
+echo "Email: admin@sotospeak.com"
 echo "Password: admin123"

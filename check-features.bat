@@ -2,7 +2,7 @@
 chcp 65001 >nul
 cls
 echo ==========================================
-echo   FunnyEnglish - Feature Check Tool
+echo   So to Speak - Feature Check Tool
 echo ==========================================
 echo.
 
@@ -43,7 +43,7 @@ echo   Checking: Authentication
 echo ==========================================
 echo.
 echo [1] Backend API...
-curl -s -X POST -H "Content-Type: application/json" -d "{\"email\":\"admin@funnyenglish.com\",\"password\":\"admin123\"}" http://localhost:8080/api/auth/login >nul 2>&1
+curl -s -X POST -H "Content-Type: application/json" -d "{\"email\":\"admin@sotospeak.com\",\"password\":\"admin123\"}" http://localhost:8080/api/auth/login >nul 2>&1
 if %errorlevel% == 0 (
     echo  ✅ Backend API: PASS
 ) else (

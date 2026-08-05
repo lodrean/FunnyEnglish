@@ -26,9 +26,8 @@ test.describe('CMP E2E - Configuration', () => {
       'smoke.spec.ts',
       'auth.spec.ts',
       'navigation.spec.ts',
-      'image-word-match.spec.ts',
-      'gamification.spec.ts',
-      'performance.spec.ts'
+      'performance.spec.ts',
+      'config.spec.ts'
     ];
     
     for (const file of expectedFiles) {
@@ -55,7 +54,7 @@ test.describe('CMP E2E - Configuration', () => {
     const testFiles = fs.readdirSync(testDir)
       .filter(f => f.endsWith('.spec.ts'));
     
-    expect(testFiles.length).toBeGreaterThanOrEqual(6);
+    expect(testFiles.length).toBeGreaterThanOrEqual(5);
     console.log(`✅ Found ${testFiles.length} test files`);
     
     // Verify each file has tests

@@ -2,7 +2,7 @@
 
 ## Why
 
-FunnyEnglish пивотируется в speaking-тренажёр (эпик bd `FunnyEnglish-8tg`, PRD `docs/prd/SPEAKING-TRAINER-001.prd.md`). Новое ядро продукта — Library → Topic → видео (WebVTT) → вопросы → Training/Practice — требует backend-фундамента: контентная модель, публичная выдача для гостей, приём голосовых practice-записей и grading учителем. Без этого backend-слоя невозможны Фаза 2 (клиент Android) и Фаза 3 (admin-web).
+So to Speak пивотируется в speaking-тренажёр (эпик bd `So to Speak-8tg`, PRD `docs/prd/SPEAKING-TRAINER-001.prd.md`). Новое ядро продукта — Library → Topic → видео (WebVTT) → вопросы → Training/Practice — требует backend-фундамента: контентная модель, публичная выдача для гостей, приём голосовых practice-записей и grading учителем. Без этого backend-слоя невозможны Фаза 2 (клиент Android) и Фаза 3 (admin-web).
 
 Источник истины по требованиям — утверждённая спека `docs/SPEAKING_TRAINER_SPEC_PART1.md` v1.0 (дельта ниже не дублирует её, а фиксирует контракты в каноническом виде OpenSpec).
 
@@ -14,7 +14,7 @@ FunnyEnglish пивотируется в speaking-тренажёр (эпик bd 
 - **User API** (`/api/speaking/**`, авторизованный): multipart-загрузка practice-записи (аудио ≤ 5 МБ, duration 1..60с) в MinIO, список своих отправок с оценками.
 - **Admin API** (`/api/admin/speaking/**`, ROLE_ADMIN): CRUD libraries/topics/video/questions (soft delete топиков), grading inbox с фильтрами/пагинацией, POST/PUT grade.
 - **StorageService**: расширение whitelist — видео (mp4/webm/mov/m4v) и субтитры (vtt); лимиты multipart подняты до 200MB (Spring) / 200m (nginx).
-- **shared (KMP)**: методы `FunnyEnglishApi` + модели для public content, multipart submit, my submissions.
+- **shared (KMP)**: методы `SoToSpeakApi` + модели для public content, multipart submit, my submissions.
 - Breaking changes: нет (существующие API не меняются; legacy-фичи остаются до Фазы 5).
 
 ## Capabilities
@@ -39,9 +39,9 @@ FunnyEnglish пивотируется в speaking-тренажёр (эпик bd 
 
 ## Impact
 
-- **bd**: эпик `FunnyEnglish-8tg`, задачи `FunnyEnglish-8tg.1` (BE-1…BE-13 = `8tg.1.1`–`8tg.1.13`).
+- **bd**: эпик `So to Speak-8tg`, задачи `So to Speak-8tg.1` (BE-1…BE-13 = `8tg.1.1`–`8tg.1.13`).
 - **Backend** (`backend/`): новые пакеты `entity/speaking`, `repository/speaking`, `service/speaking`, `controller/speaking`, `dto/SpeakingDtos.kt`; миграции V17/V18; изменения в `StorageService.kt`, `application.yml`.
 - **Infra**: `docker/nginx.conf` (`client_max_body_size 200m`); prod Caddy — без лимита тела (проверить при деплое).
 - **Shared** (`shared/`): новые методы и модели API.
-- **Тесты**: unit (mockk) + интеграционный `SpeakingFlowIntegrationTest`; обновление `api-tests/funnyenglish-api-collection.json`.
+- **Тесты**: unit (mockk) + интеграционный `SpeakingFlowIntegrationTest`; обновление `api-tests/sotospeak-api-collection.json`.
 - **Зависимые фазы**: разблокирует Фазу 2 (Android-клиент) и Фазу 3 (admin-web).

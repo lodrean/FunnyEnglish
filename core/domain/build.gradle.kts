@@ -17,5 +17,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.core.domain"
+    namespace = "com.sotospeak.core.domain"
 }

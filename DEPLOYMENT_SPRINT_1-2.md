@@ -57,7 +57,7 @@
 
 #### AUTH-FLOW-001: Регистрация и вход
 ```yaml
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 - launchApp
 - tapOn: "Get Started"
@@ -130,22 +130,22 @@ provider "yandex" {
 }
 
 # VPC Network
-resource "yandex_vpc_network" "funnyenglish" {
-  name = "funnyenglish-network"
+resource "yandex_vpc_network" "sotospeak" {
+  name = "sotospeak-network"
 }
 
 # Subnets
 resource "yandex_vpc_subnet" "subnet-a" {
   name           = "subnet-a"
   zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.funnyenglish.id
+  network_id     = yandex_vpc_network.sotospeak.id
   v4_cidr_blocks = ["10.0.1.0/24"]
 }
 
 # Managed Kubernetes
-resource "yandex_kubernetes_cluster" "funnyenglish" {
-  name       = "funnyenglish-k8s"
-  network_id = yandex_vpc_network.funnyenglish.id
+resource "yandex_kubernetes_cluster" "sotospeak" {
+  name       = "sotospeak-k8s"
+  network_id = yandex_vpc_network.sotospeak.id
   
   master {
     zonal {
@@ -163,7 +163,7 @@ resource "yandex_kubernetes_cluster" "funnyenglish" {
 
 # Node Group
 resource "yandex_kubernetes_node_group" "default" {
-  cluster_id = yandex_kubernetes_cluster.funnyenglish.id
+  cluster_id = yandex_kubernetes_cluster.sotospeak.id
   name       = "default-node-group"
   
   instance_template {
@@ -308,13 +308,13 @@ deploy:staging:
   image: bitnami/kubectl:latest
   script:
     - kubectl config use-context staging
-    - helm upgrade --install funnyenglish ./helm/funnyenglish 
+    - helm upgrade --install sotospeak ./helm/sotospeak 
         --namespace staging
         --set backend.image.tag=$CI_COMMIT_SHA
         --set admin.image.tag=$CI_COMMIT_SHA
   environment:
     name: staging
-    url: https://staging.funnyenglish.ru
+    url: https://staging.sotospeak.ru
   only:
     - develop
 ```
@@ -338,7 +338,7 @@ deploy:staging:
 ### Helm Chart Structure:
 
 ```yaml
-# helm/funnyenglish/values.yaml
+# helm/sotospeak/values.yaml
 backend:
   replicaCount: 2
   image:
@@ -358,7 +358,7 @@ backend:
     S3_ENDPOINT: "https://storage.yandexcloud.net"
   ingress:
     enabled: true
-    host: api.funnyenglish.ru
+    host: api.sotospeak.ru
     annotations:
       nginx.ingress.kubernetes.io/rate-limit: "100"
 
@@ -368,7 +368,7 @@ admin:
     repository: cr.yandex/<registry>/admin
     tag: latest
   ingress:
-    host: admin.funnyenglish.ru
+    host: admin.sotospeak.ru
 
 postgresql:
   enabled: false  # Using managed PostgreSQL
@@ -420,9 +420,9 @@ prometheus:
             requests:
               storage: 100Gi
     additionalScrapeConfigs:
-      - job_name: 'funnyenglish-backend'
+      - job_name: 'sotospeak-backend'
         static_configs:
-          - targets: ['funnyenglish-backend.monitoring.svc.cluster.local:8080']
+          - targets: ['sotospeak-backend.monitoring.svc.cluster.local:8080']
         metrics_path: /actuator/prometheus
 
 grafana:
@@ -431,7 +431,7 @@ grafana:
   ingress:
     enabled: true
     hosts:
-      - grafana.funnyenglish.ru
+      - grafana.sotospeak.ru
   dashboards:
     default:
       jvm-dashboard:
@@ -488,7 +488,7 @@ promtail:
 - [ ] Настроить бизнес-метрики в Grafana
 
 ### Deliverables:
-- [ ] Доступный Grafana (grafana.funnyenglish.ru)
+- [ ] Доступный Grafana (grafana.sotospeak.ru)
 - [ ] Работающие алерты в Telegram
 - [ ] Логи доступны в Grafana
 ```
@@ -498,12 +498,12 @@ promtail:
 
 ```markdown
 ### Tasks:
-- [ ] Купить домен funnyenglish.ru (или другой)
+- [ ] Купить домен sotospeak.ru (или другой)
 - [ ] Настроить Yandex Cloud DNS:
   ```
-  api.funnyenglish.ru → Ingress IP (A record)
-  admin.funnyenglish.ru → Ingress IP (A record)
-  grafana.funnyenglish.ru → Ingress IP (A record)
+  api.sotospeak.ru → Ingress IP (A record)
+  admin.sotospeak.ru → Ingress IP (A record)
+  grafana.sotospeak.ru → Ingress IP (A record)
   ```
 - [ ] Настроить cert-manager в K8s
 - [ ] Настроить ClusterIssuer для Let's Encrypt
@@ -520,7 +520,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@funnyenglish.ru
+    email: admin@sotospeak.ru
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:

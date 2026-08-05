@@ -68,7 +68,7 @@ flowchart LR
 flowchart TB
     subgraph Client[Android app: composeApp KMP]
         UI[Экраны MVI] --> VM[ViewModels]
-        VM --> API[FunnyEnglishApi: Ktor]
+        VM --> API[SoToSpeakApi: Ktor]
         VM --> REC[VoiceRecorder expect/actual]
         VM --> VID[VideoPlayer: ExoPlayer + VTT]
         VM --> LOC[(Локальные training-записи)]

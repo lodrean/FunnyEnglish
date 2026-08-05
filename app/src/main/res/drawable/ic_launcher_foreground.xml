@@ -4,7 +4,111 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!--
+      So to Speak adaptive icon foreground (Playful Coach v1.3).
+      Rounded microphone + admin-logo style waveform, kept inside 66dp safe circle.
+    -->
+
+    <!-- Microphone head -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M38,52 L42,52 L42,56 L38,56 Z M46,48 L50,48 L50,60 L46,60 Z M54,44 L58,44 L58,64 L54,64 Z M62,48 L66,48 L66,60 L62,60 Z" />
+        android:fillColor="#FF9F6B"
+        android:pathData="M48,35
+            A6,6 0 0 1 60,35
+            L60,47
+            A6,6 0 0 1 48,47
+            Z" />
+
+    <!-- U-shaped stand -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF9F6B"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M42,47 A12,12 0 0 0 66,47" />
+
+    <!-- Stand stem -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF9F6B"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M51,59 L51,64" />
+
+    <!-- Stand base -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF9F6B"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M45,64 L63,64" />
+
+    <!-- Waveform tail — left (primary blue) -->
+    <path
+        android:fillColor="#5B8DEF"
+        android:pathData="M33,76
+            L39,76
+            A3,3 0 0 1 39,79
+            L39,79
+            A3,3 0 0 1 36,82
+            L36,82
+            A3,3 0 0 1 33,79
+            L33,79
+            A3,3 0 0 1 33,76
+            Z" />
+
+    <!-- Waveform tail — second (secondary purple) -->
+    <path
+        android:fillColor="#9B7EDE"
+        android:pathData="M42,72
+            L48,72
+            A3,3 0 0 1 48,75
+            L48,79
+            A3,3 0 0 1 45,82
+            L45,82
+            A3,3 0 0 1 42,79
+            L42,75
+            A3,3 0 0 1 42,72
+            Z" />
+
+    <!-- Waveform tail — center (record orange) -->
+    <path
+        android:fillColor="#FF9F6B"
+        android:pathData="M51,68
+            L57,68
+            A3,3 0 0 1 57,71
+            L57,79
+            A3,3 0 0 1 54,82
+            L54,82
+            A3,3 0 0 1 51,79
+            L51,71
+            A3,3 0 0 1 51,68
+            Z" />
+
+    <!-- Waveform tail — fourth (secondary purple) -->
+    <path
+        android:fillColor="#9B7EDE"
+        android:pathData="M60,72
+            L66,72
+            A3,3 0 0 1 66,75
+            L66,79
+            A3,3 0 0 1 63,82
+            L63,82
+            A3,3 0 0 1 60,79
+            L60,75
+            A3,3 0 0 1 60,72
+            Z" />
+
+    <!-- Waveform tail — right (primary blue) -->
+    <path
+        android:fillColor="#5B8DEF"
+        android:pathData="M69,76
+            L75,76
+            A3,3 0 0 1 75,79
+            L75,79
+            A3,3 0 0 1 72,82
+            L72,82
+            A3,3 0 0 1 69,79
+            L69,79
+            A3,3 0 0 1 69,76
+            Z" />
 </vector>

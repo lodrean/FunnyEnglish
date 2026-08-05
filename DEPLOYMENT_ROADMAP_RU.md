@@ -1,4 +1,4 @@
-# 🚀 FunnyEnglish - Roadmap к Production Deploy (Российские ресурсы)
+# 🚀 So to Speak - Roadmap к Production Deploy (Российские ресурсы)
 
 ## 📋 Executive Summary
 
@@ -160,7 +160,7 @@ Networking:
 **Helm Charts структура:**
 ```
 helm/
-├── funnyenglish/
+├── sotospeak/
 │   ├── Chart.yaml
 │   ├── values.yaml
 │   ├── values-production.yaml

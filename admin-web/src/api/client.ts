@@ -1,11 +1,9 @@
 import axios from 'axios';
+import { logger } from '../utils/logger';
 import type {
   AuthResponse,
   LoginRequest,
   User,
-  Test,
-  Category,
-  CreateTestRequest,
   AdminUserSummary,
   AdminUserDetail,
   AdminAnalytics,
@@ -23,18 +21,6 @@ import type {
   GroupProgressSummary,
   // StudentProgress
 } from '../types';
-import type {
-  QuestionV2,
-  CreateQuestionRequest,
-  UpdateQuestionRequest,
-  ReorderQuestionsRequest,
-  QuestionTypeV2,
-  QuestionContentRequest,
-  AudioTestListItem,
-  AudioTest,
-  CreateAudioTestRequest,
-  UpdateAudioTestRequest,
-} from '../types/questions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -55,13 +41,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors
+// Handle 401 errors + remote-логирование ошибок API (OpenSpec add-client-logging)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
+    } else {
+      // Без тел ответов (приватность); 401 не логируем — это штатный редирект на логин
+      const method = (error.config?.method ?? '?').toUpperCase();
+      const url = error.config?.url ?? '?';
+      const status = error.response?.status ?? 'network';
+      logger.warn('ApiClient', `${method} ${url} -> ${status}`);
     }
     return Promise.reject(error);
   }
@@ -76,37 +68,6 @@ export const login = async (data: LoginRequest): Promise<AuthResponse> => {
 export const getCurrentUser = async (): Promise<User> => {
   const response = await api.get<User>('/users/me');
   return response.data;
-};
-
-// Categories
-export const getCategories = async (): Promise<Category[]> => {
-  const response = await api.get<Category[]>('/categories');
-  return response.data;
-};
-
-// Tests - Admin
-export const getAdminTests = async (): Promise<Test[]> => {
-  const response = await api.get<Test[]>('/admin/tests');
-  return response.data;
-};
-
-export const getAdminTest = async (id: string): Promise<Test> => {
-  const response = await api.get<Test>(`/admin/tests/${id}`);
-  return response.data;
-};
-
-export const createTest = async (data: CreateTestRequest): Promise<Test> => {
-  const response = await api.post<Test>('/admin/tests', data);
-  return response.data;
-};
-
-export const updateTest = async (id: string, data: Partial<CreateTestRequest>): Promise<Test> => {
-  const response = await api.put<Test>(`/admin/tests/${id}`, data);
-  return response.data;
-};
-
-export const deleteTest = async (id: string): Promise<void> => {
-  await api.delete(`/admin/tests/${id}`);
 };
 
 // Users - Admin
@@ -187,6 +148,45 @@ export const getGuestAnalytics = async (): Promise<GuestAnalytics> => {
   return response.data;
 };
 
+// ==================== Client Logs (OpenSpec add-client-logging) ====================
+
+export interface ClientLogEntry {
+  id: string;
+  anonymousId: string | null;
+  level: 'WARN' | 'ERROR';
+  tag: string;
+  message: string;
+  stackTrace: string | null;
+  platform: string;
+  appVersion: string | null;
+  clientTimestamp: string | null;
+  createdAt: string;
+}
+
+/** Spring Page JSON (как в admin submissions) */
+export interface ClientLogsPage {
+  content: ClientLogEntry[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export interface ClientLogsParams {
+  level?: string;
+  platform?: string;
+  from?: string; // ISO-8601
+  to?: string;   // ISO-8601
+  q?: string;
+  page?: number;
+  size?: number;
+}
+
+export const getClientLogs = async (params: ClientLogsParams = {}): Promise<ClientLogsPage> => {
+  const response = await api.get<ClientLogsPage>('/admin/logs', { params });
+  return response.data;
+};
+
 export const getAdminLevelDistribution = async (): Promise<LevelDistribution[]> => {
   const response = await api.get<LevelDistribution[]>('/admin/analytics/levels');
   return response.data;
@@ -228,76 +228,6 @@ export const uploadMedia = async (file: File, folder: string = 'media'): Promise
 
 export const deleteMedia = async (url: string): Promise<void> => {
   await api.delete('/admin/media', { params: { url } });
-};
-
-// Questions V2 API
-export const getQuestionsByTest = async (testId: string): Promise<QuestionV2[]> => {
-  // Используем /details endpoint для получения полных данных включая IMAGE_WORD_MATCH
-  const response = await api.get<QuestionV2[]>(`/questions/test/${testId}/details`);
-  return response.data;
-};
-
-export const getQuestionForAdmin = async (id: string): Promise<QuestionV2> => {
-  const response = await api.get<QuestionV2>(`/questions/${id}/admin`);
-  return response.data;
-};
-
-export const createQuestion = async (data: CreateQuestionRequest): Promise<QuestionV2> => {
-  const response = await api.post<QuestionV2>('/questions', data);
-  return response.data;
-};
-
-export const updateQuestion = async (id: string, data: UpdateQuestionRequest): Promise<QuestionV2> => {
-  const response = await api.put<QuestionV2>(`/questions/${id}`, data);
-  return response.data;
-};
-
-// Image Word Match specific endpoints
-export const createImageWordMatchQuestion = async (data: {
-  testId: string;
-  instruction: string;
-  imageUrl: string;
-  words: { id: string; text: string; translation?: string; audioUrl?: string }[];
-  hotspots: { id: string; x: number; y: number; width: number; height: number; shape: string; wordId: string }[];
-  points: number;
-}): Promise<QuestionV2> => {
-  const response = await api.post<QuestionV2>('/questions/image-word-match', data);
-  return response.data;
-};
-
-export const updateImageWordMatchQuestion = async (id: string, data: {
-  testId: string;
-  instruction: string;
-  imageUrl: string;
-  words: { id: string; text: string; translation?: string; audioUrl?: string }[];
-  hotspots: { id: string; x: number; y: number; width: number; height: number; shape: string; wordId: string }[];
-  points: number;
-}): Promise<QuestionV2> => {
-  const response = await api.put<QuestionV2>(`/questions/image-word-match/${id}`, data);
-  return response.data;
-};
-
-export const deleteQuestion = async (id: string): Promise<void> => {
-  await api.delete(`/questions/${id}`);
-};
-
-export const duplicateQuestion = async (id: string): Promise<QuestionV2> => {
-  const response = await api.post<QuestionV2>(`/questions/${id}/duplicate`);
-  return response.data;
-};
-
-export const reorderQuestions = async (data: ReorderQuestionsRequest): Promise<void> => {
-  await api.post('/questions/reorder', data);
-};
-
-export const validateQuestionContent = async (
-  type: QuestionTypeV2,
-  content: QuestionContentRequest
-): Promise<{ valid: boolean }> => {
-  const response = await api.post<{ valid: boolean }>('/admin/questions/validate', content, {
-    params: { type },
-  });
-  return response.data;
 };
 
 // ==================== Student Groups API ====================
@@ -345,38 +275,6 @@ export const processJoinRequest = async (
 
 export const getGroupProgress = async (groupId: string): Promise<GroupProgressSummary> => {
   const response = await api.get<GroupProgressSummary>(`/groups/${groupId}/progress`);
-  return response.data;
-};
-
-// apiClient export for other modules
-// ==================== Audio Tests API ====================
-
-export const getAudioTests = async (): Promise<AudioTestListItem[]> => {
-  const response = await api.get<AudioTestListItem[]>('/admin/audio-tests');
-  return response.data;
-};
-
-export const getAudioTest = async (id: string): Promise<AudioTest> => {
-  const response = await api.get<AudioTest>(`/admin/audio-tests/${id}`);
-  return response.data;
-};
-
-export const createAudioTest = async (data: CreateAudioTestRequest): Promise<AudioTest> => {
-  const response = await api.post<AudioTest>('/admin/audio-tests', data);
-  return response.data;
-};
-
-export const updateAudioTest = async (id: string, data: UpdateAudioTestRequest): Promise<AudioTest> => {
-  const response = await api.put<AudioTest>(`/admin/audio-tests/${id}`, data);
-  return response.data;
-};
-
-export const deleteAudioTest = async (id: string): Promise<void> => {
-  await api.delete(`/admin/audio-tests/${id}`);
-};
-
-export const publishAudioTest = async (id: string, isPublished: boolean): Promise<AudioTest> => {
-  const response = await api.patch<AudioTest>(`/admin/audio-tests/${id}/publish`, { isPublished });
   return response.data;
 };
 

@@ -10,7 +10,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TEST_TYPE="${1:-all}"
 
 echo "=========================================="
-echo "FunnyEnglish Test Runner"
+echo "So to Speak Test Runner"
 echo "Test type: $TEST_TYPE"
 echo "=========================================="
 

@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ==========================================
-echo   FunnyEnglish Web (WASM) - Local Server
+echo   So to Speak Web (WASM) - Local Server
 echo ==========================================
 echo.
 

@@ -1,4 +1,4 @@
-# FunnyEnglish Coding Conventions
+# So to Speak Coding Conventions
 
 ## General Principles
 
@@ -39,11 +39,11 @@ fun LoadingButton()
 ### File Structure
 ```kotlin
 // 1. Package declaration
-package com.funnyenglish.service
+package com.sotospeak.service
 
 // 2. Imports (sorted, no wildcards)
-import com.funnyenglish.dto.UserDto
-import com.funnyenglish.repository.UserRepository
+import com.sotospeak.dto.UserDto
+import com.sotospeak.repository.UserRepository
 import org.springframework.stereotype.Service
 
 // 3. Class declaration
@@ -127,7 +127,7 @@ private fun HomeScreenContent(
 
 // ViewModel pattern
 class HomeViewModel(
-    private val api: FunnyEnglishApi
+    private val api: SoToSpeakApi
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()

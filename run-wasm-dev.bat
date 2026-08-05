@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-echo 🚀 Запуск FunnyEnglish WASM Dev Server...
+echo 🚀 Запуск So to Speak WASM Dev Server...
 echo.
 
 :: Check if distribution exists

@@ -1,13 +1,10 @@
 /**
- * FunnyEnglish Admin Web - Navigation Items Configuration
+ * So to speak Admin Web - Navigation Items Configuration
  * Defines all navigation items for the admin sidebar
  */
 
 import {
   Dashboard as DashboardIcon,
-  Category as CategoryIcon,
-  Quiz as QuizIcon,
-  Help as HelpIcon,
   People as PeopleIcon,
   AdminPanelSettings as AdminIcon,
   Groups as GroupsIcon,
@@ -15,6 +12,11 @@ import {
   Assessment as AssessmentIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
+  RecordVoiceOver as RecordVoiceOverIcon,
+  RateReview as RateReviewIcon,
+  MenuBook as MenuBookIcon,
+  OndemandVideo as OndemandVideoIcon,
+  Article as ArticleIcon,
   SvgIconComponent,
 } from '@mui/icons-material';
 
@@ -50,30 +52,30 @@ export const navItems: NavItem[] = [
     icon: DashboardIcon,
   },
   {
-    id: 'content',
-    label: 'Content',
-    path: '/content',
-    icon: CategoryIcon,
+    id: 'speaking',
+    label: 'Speaking',
+    path: '/speaking',
+    icon: RecordVoiceOverIcon,
     children: [
       {
-        id: 'categories',
-        label: 'Categories',
-        path: '/content/categories',
-        icon: CategoryIcon,
+        id: 'speaking-libraries',
+        label: 'Libraries',
+        path: '/speaking/libraries',
+        icon: MenuBookIcon,
       },
       {
-        id: 'tests',
-        label: 'Tests',
-        path: '/content/tests',
-        icon: QuizIcon,
-      },
-      {
-        id: 'questions',
-        label: 'Questions',
-        path: '/content/questions',
-        icon: HelpIcon,
+        id: 'speaking-topics',
+        label: 'Topics',
+        path: '/speaking/topics',
+        icon: OndemandVideoIcon,
       },
     ],
+  },
+  {
+    id: 'grading',
+    label: 'Grading',
+    path: '/grading',
+    icon: RateReviewIcon,
   },
   {
     id: 'users',
@@ -121,6 +123,13 @@ export const navItems: NavItem[] = [
         icon: BarChartIcon,
       },
     ],
+  },
+  {
+    id: 'logs',
+    label: 'Logs',
+    path: '/logs',
+    icon: ArticleIcon,
+    requiresAdmin: true,
   },
   {
     id: 'settings',

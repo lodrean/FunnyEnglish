@@ -3,10 +3,10 @@
 
 spring:
   application:
-    name: funnyenglish-backend-integration-test
+    name: sotospeak-backend-integration-test
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:funnyenglish_integration}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sotospeak_integration}
     username: ${DB_USERNAME:test}
     password: ${DB_PASSWORD:test}
     driver-class-name: org.postgresql.Driver
@@ -39,19 +39,19 @@ app:
     public-url: ${S3_PUBLIC_URL:${S3_ENDPOINT:http://localhost:9000}}
     access-key: ${S3_ACCESS_KEY:minioadmin}
     secret-key: ${S3_SECRET_KEY:minioadmin}
-    bucket: ${S3_BUCKET:funnyenglish}
+    bucket: ${S3_BUCKET:sotospeak}
     region: ${S3_REGION:us-east-1}
 
   cors:
     allowed-origins: "*"
 
   admin:
-    email: ${ADMIN_EMAIL:admin@funnyenglish.com}
+    email: ${ADMIN_EMAIL:admin@sotospeak.com}
     password: ${ADMIN_PASSWORD:admin123}
     display-name: ${ADMIN_DISPLAY_NAME:TestAdmin}
 
 logging:
   level:
-    com.funnyenglish: DEBUG
+    com.sotospeak: DEBUG
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG

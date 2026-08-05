@@ -139,11 +139,11 @@ INSERT INTO categories (id, name, description, display_order) VALUES
     (gen_random_uuid(), 'Семья', 'Члены семьи', 5),
     (gen_random_uuid(), 'Одежда', 'Предметы одежды', 6);
 
--- Default demo user (email: demo@funnyenglish.app, password: demo123)
+-- Default demo user (email: demo@sotospeak.app, password: demo123)
 INSERT INTO users (id, email, password_hash, display_name, role, auth_provider)
 VALUES (
     gen_random_uuid(),
-    'demo@funnyenglish.app',
+    'demo@sotospeak.app',
     '$2b$12$QfOqjaz2o80LemjSz2mtQ.Q7vflyhczmzXOpkYUrN9oFTvfuvMVL6',
     'Demo',
     'USER',

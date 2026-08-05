@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# E2E Test Runner for FunnyEnglish Application
+# E2E Test Runner for So to Speak Application
 # Runs both Playwright (admin-web) and Maestro (mobile) tests
 
 param(

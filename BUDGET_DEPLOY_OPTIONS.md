@@ -1,4 +1,4 @@
-# 💰 FunnyEnglish - Бюджетные Варианты Размещения
+# 💰 So to Speak - Бюджетные Варианты Размещения
 
 ## 📊 Сравнение Вариантов
 
@@ -57,8 +57,8 @@
               │  └──────────────────┘    │
               └───────────┬───────────────┘
                           │
-              https://api.funnyenglish.ru
-              https://admin.funnyenglish.ru
+              https://api.sotospeak.ru
+              https://admin.sotospeak.ru
 ```
 
 ### Пошаговая Настройка
@@ -88,16 +88,16 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 #### 3. Docker Compose Конфигурация
 ```yaml
-# /opt/funnyenglish/docker-compose.yml
+# /opt/sotospeak/docker-compose.yml
 version: '3.8'
 
 services:
   # Database
   postgres:
     image: postgres:16-alpine
-    container_name: funnyenglish-postgres
+    container_name: sotospeak-postgres
     environment:
-      POSTGRES_DB: funnyenglish
+      POSTGRES_DB: sotospeak
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -115,7 +115,7 @@ services:
   # S3 Storage
   minio:
     image: minio/minio:latest
-    container_name: funnyenglish-minio
+    container_name: sotospeak-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -132,19 +132,19 @@ services:
     build:
       context: ../backend
       dockerfile: ../docker/Dockerfile.backend
-    container_name: funnyenglish-backend
+    container_name: sotospeak-backend
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: funnyenglish
+      DB_NAME: sotospeak
       DB_USERNAME: postgres
       DB_PASSWORD: ${DB_PASSWORD}
       S3_ENDPOINT: http://minio:9000
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: ${MINIO_PASSWORD}
-      S3_BUCKET: funnyenglish
+      S3_BUCKET: sotospeak
       JWT_SECRET: ${JWT_SECRET}
-      ADMIN_EMAIL: admin@funnyenglish.com
+      ADMIN_EMAIL: admin@sotospeak.com
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     ports:
       - "127.0.0.1:8080:8080"  # Только локально!
@@ -166,7 +166,7 @@ services:
     build:
       context: ../admin-web
       dockerfile: ../docker/Dockerfile.admin
-    container_name: funnyenglish-admin
+    container_name: sotospeak-admin
     environment:
       VITE_API_URL: /api
     ports:
@@ -176,7 +176,7 @@ services:
   # Reverse Proxy (Nginx)
   nginx:
     image: nginx:alpine
-    container_name: funnyenglish-nginx
+    container_name: sotospeak-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -193,7 +193,7 @@ services:
   # SSL Certificate Automation
   certbot:
     image: certbot/certbot
-    container_name: funnyenglish-certbot
+    container_name: sotospeak-certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
@@ -206,7 +206,7 @@ volumes:
 
 #### 4. Nginx Конфигурация
 ```nginx
-# /opt/funnyenglish/nginx/nginx.conf
+# /opt/sotospeak/nginx/nginx.conf
 events {
     worker_connections 1024;
 }
@@ -238,7 +238,7 @@ http {
     # Backend API
     server {
         listen 80;
-        server_name api.funnyenglish.ru;
+        server_name api.sotospeak.ru;
 
         # Certbot challenge
         location /.well-known/acme-challenge/ {
@@ -253,11 +253,11 @@ http {
 
     server {
         listen 443 ssl http2;
-        server_name api.funnyenglish.ru;
+        server_name api.sotospeak.ru;
 
-        ssl_certificate /etc/letsencrypt/live/api.funnyenglish.ru/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/api.funnyenglish.ru/privkey.pem;
-        ssl_trusted_certificate /etc/letsencrypt/live/api.funnyenglish.ru/chain.pem;
+        ssl_certificate /etc/letsencrypt/live/api.sotospeak.ru/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/api.sotospeak.ru/privkey.pem;
+        ssl_trusted_certificate /etc/letsencrypt/live/api.sotospeak.ru/chain.pem;
 
         # Security headers
         add_header X-Frame-Options "SAMEORIGIN" always;
@@ -287,7 +287,7 @@ http {
     # Admin Panel
     server {
         listen 80;
-        server_name admin.funnyenglish.ru;
+        server_name admin.sotospeak.ru;
 
         location /.well-known/acme-challenge/ {
             root /var/www/certbot;
@@ -300,10 +300,10 @@ http {
 
     server {
         listen 443 ssl http2;
-        server_name admin.funnyenglish.ru;
+        server_name admin.sotospeak.ru;
 
-        ssl_certificate /etc/letsencrypt/live/admin.funnyenglish.ru/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/admin.funnyenglish.ru/privkey.pem;
+        ssl_certificate /etc/letsencrypt/live/admin.sotospeak.ru/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/admin.sotospeak.ru/privkey.pem;
 
         # API proxy for admin
         location /api/ {
@@ -333,8 +333,8 @@ http {
 # - 443 → 443 на сервере
 
 # Настройка DNS
-# A-запись: api.funnyenglish.ru → YOUR_STATIC_IP
-# A-запись: admin.funnyenglish.ru → YOUR_STATIC_IP
+# A-запись: api.sotospeak.ru → YOUR_STATIC_IP
+# A-запись: admin.sotospeak.ru → YOUR_STATIC_IP
 ```
 
 ##### Вариант B: Динамический IP (DDNS)
@@ -344,9 +344,9 @@ sudo apt install ddclient
 
 # Конфигурация /etc/ddclient.conf
 protocol=cloudflare, \
-zone=funnyenglish.ru, \
+zone=sotospeak.ru, \
 password=YOUR_CLOUDFLARE_API_TOKEN \
-api.funnyenglish.ru,admin.funnyenglish.ru
+api.sotospeak.ru,admin.sotospeak.ru
 
 # Или использовать Yandex DDNS
 # https://dns.yandex.ru
@@ -365,21 +365,21 @@ sudo dpkg -i cloudflared-linux-amd64.deb
 cloudflared tunnel login
 
 # Создание туннеля
-cloudflared tunnel create funnyenglish
+cloudflared tunnel create sotospeak
 
 # Конфигурация ~/.cloudflared/config.yml
 tunnel: YOUR_TUNNEL_ID
 credentials-file: /home/user/.cloudflared/YOUR_TUNNEL_ID.json
 
 ingress:
-  - hostname: api.funnyenglish.ru
+  - hostname: api.sotospeak.ru
     service: http://localhost:8080
-  - hostname: admin.funnyenglish.ru
+  - hostname: admin.sotospeak.ru
     service: http://localhost:3000
   - service: http_status:404
 
 # Запуск
-cloudflared tunnel run funnyenglish
+cloudflared tunnel run sotospeak
 
 # Автозапуск
 sudo cloudflared service install
@@ -390,14 +390,14 @@ sudo systemctl start cloudflared
 ```bash
 # Получение сертификатов
 docker run -it --rm \
-  -v /opt/funnyenglish/certbot/conf:/etc/letsencrypt \
-  -v /opt/funnyenglish/certbot/www:/var/www/certbot \
+  -v /opt/sotospeak/certbot/conf:/etc/letsencrypt \
+  -v /opt/sotospeak/certbot/www:/var/www/certbot \
   certbot/certbot certonly \
   --standalone \
-  -d api.funnyenglish.ru \
-  -d admin.funnyenglish.ru \
+  -d api.sotospeak.ru \
+  -d admin.sotospeak.ru \
   --agree-tos \
-  -m admin@funnyenglish.ru
+  -m admin@sotospeak.ru
 
 # Автообновление уже настроено в docker-compose
 ```
@@ -432,7 +432,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 # Добавить в docker-compose.yml
   prometheus:
     image: prom/prometheus:latest
-    container_name: funnyenglish-prometheus
+    container_name: sotospeak-prometheus
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
@@ -442,7 +442,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 
   grafana:
     image: grafana/grafana:latest
-    container_name: funnyenglish-grafana
+    container_name: sotospeak-grafana
     ports:
       - "127.0.0.1:3001:3000"  # 3000 занят admin!
     volumes:
@@ -483,7 +483,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 └─────────────────────────────────────────┘
 ```
 
-**Для FunnyEnglish:**
+**Для So to Speak:**
 - Маловато RAM (1GB)
 - Нужен swap файл
 - Подходит только для начала
@@ -641,7 +641,7 @@ CDN (опционально):              400₽/мес
 
 set -e
 
-echo "🚀 FunnyEnglish Home Server Setup"
+echo "🚀 So to Speak Home Server Setup"
 
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -662,14 +662,14 @@ sudo systemctl enable fail2ban
 sudo systemctl start fail2ban
 
 # Create app directory
-sudo mkdir -p /opt/funnyenglish
-sudo chown $USER:$USER /opt/funnyenglish
+sudo mkdir -p /opt/sotospeak
+sudo chown $USER:$USER /opt/sotospeak
 
 # Clone repository
-git clone https://github.com/your/funnyenglish.git /opt/funnyenglish/app
+git clone https://github.com/your/sotospeak.git /opt/sotospeak/app
 
 # Create environment file
-cat > /opt/funnyenglish/.env << EOF
+cat > /opt/sotospeak/.env << EOF
 DB_PASSWORD=$(openssl rand -base64 32)
 MINIO_PASSWORD=$(openssl rand -base64 32)
 JWT_SECRET=$(openssl rand -base64 64)
@@ -678,7 +678,7 @@ GRAFANA_PASSWORD=$(openssl rand -base64 16)
 EOF
 
 # Start services
-cd /opt/funnyenglish
+cd /opt/sotospeak
 docker-compose up -d
 
 echo "✅ Installation complete!"
@@ -686,7 +686,7 @@ echo "📋 Next steps:"
 echo "   1. Configure DNS to point to this server"
 echo "   2. Get SSL certificates: docker-compose run --rm certbot certonly --standalone -d your-domain.com"
 echo "   3. Access admin at https://admin.your-domain.com"
-echo "   4. Default admin credentials: admin@funnyenglish.com / admin123"
+echo "   4. Default admin credentials: admin@sotospeak.com / admin123"
 ```
 
 ---

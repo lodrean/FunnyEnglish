@@ -1,7 +1,7 @@
 # Maestro E2E Test for Image Word Match Feature
 # Run with: maestro test .maestro/image-word-match-test.yaml
 
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 
 # Launch the app

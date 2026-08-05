@@ -1,0 +1,50 @@
+-- Выравнивание legacy-схемы Flyway под entity (Hibernate validate, prod-конфиг).
+-- Источник истины — dev-БД, выстроенная Hibernate из entity (pg_dump diff 2026-08-01).
+-- Обнаружено на staging: varchar length/enum/text дрейф + questions.grammar_note.
+
+ALTER TABLE achievements ALTER COLUMN code TYPE character varying(255) USING code::text;
+ALTER TABLE achievements ALTER COLUMN name TYPE character varying(255) USING name::text;
+ALTER TABLE achievements ALTER COLUMN description TYPE character varying(255) USING description::text;
+ALTER TABLE achievements ALTER COLUMN icon_url TYPE character varying(255) USING icon_url::text;
+ALTER TABLE achievements ALTER COLUMN category TYPE character varying(255) USING category::text;
+ALTER TABLE achievements ALTER COLUMN rarity TYPE character varying(255) USING rarity::text;
+ALTER TABLE achievements ALTER COLUMN condition_type TYPE character varying(255) USING condition_type::text;
+ALTER TABLE answers ALTER COLUMN text TYPE character varying(255) USING text::text;
+ALTER TABLE answers ALTER COLUMN image_url TYPE character varying(255) USING image_url::text;
+ALTER TABLE answers ALTER COLUMN audio_url TYPE character varying(255) USING audio_url::text;
+ALTER TABLE categories ALTER COLUMN name TYPE character varying(255) USING name::text;
+ALTER TABLE categories ALTER COLUMN description TYPE character varying(255) USING description::text;
+ALTER TABLE categories ALTER COLUMN icon_url TYPE character varying(255) USING icon_url::text;
+ALTER TABLE daily_task_templates ALTER COLUMN task_type TYPE character varying(255) USING task_type::text;
+ALTER TABLE daily_task_templates ALTER COLUMN description TYPE character varying(255) USING description::text;
+ALTER TABLE daily_tasks ALTER COLUMN task_type TYPE character varying(255) USING task_type::text;
+ALTER TABLE group_join_requests ALTER COLUMN status TYPE character varying(255) USING status::text;
+ALTER TABLE guest_events ALTER COLUMN type TYPE character varying(255) USING type::text;
+ALTER TABLE lessons ALTER COLUMN icon_url TYPE character varying(255) USING icon_url::text;
+ALTER TABLE media_files ALTER COLUMN type TYPE character varying(255) USING type::text;
+ALTER TABLE media_files ALTER COLUMN content_type TYPE character varying(255) USING content_type::text;
+ALTER TABLE media_files ALTER COLUMN folder TYPE character varying(255) USING folder::text;
+ALTER TABLE media_library_items ALTER COLUMN tag TYPE character varying(255) USING tag::text;
+ALTER TABLE messages ALTER COLUMN type TYPE character varying(255) USING type::text;
+ALTER TABLE questions ALTER COLUMN type TYPE character varying(255) USING type::text;
+ALTER TABLE questions ALTER COLUMN audio_url TYPE character varying(255) USING audio_url::text;
+ALTER TABLE questions ALTER COLUMN image_url TYPE character varying(255) USING image_url::text;
+ALTER TABLE questions ALTER COLUMN media_url TYPE character varying(255) USING media_url::text;
+ALTER TABLE questions ALTER COLUMN hint TYPE character varying(255) USING hint::text;
+ALTER TABLE questions ALTER COLUMN title TYPE character varying(255) USING title::text;
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS grammar_note text;
+ALTER TABLE student_groups ALTER COLUMN description TYPE character varying(255) USING description::text;
+ALTER TABLE student_groups ALTER COLUMN invite_code TYPE character varying(255) USING invite_code::text;
+ALTER TABLE tests ALTER COLUMN title TYPE character varying(255) USING title::text;
+ALTER TABLE tests ALTER COLUMN description TYPE character varying(255) USING description::text;
+ALTER TABLE tests ALTER COLUMN thumbnail_url TYPE character varying(255) USING thumbnail_url::text;
+ALTER TABLE tests ALTER COLUMN difficulty TYPE character varying(255) USING difficulty::text;
+ALTER TABLE user_achievements ALTER COLUMN achievement_id TYPE character varying(255) USING achievement_id::text;
+ALTER TABLE user_words ALTER COLUMN status TYPE character varying(255) USING status::text;
+ALTER TABLE users ALTER COLUMN display_name TYPE character varying(255) USING display_name::text;
+ALTER TABLE users ALTER COLUMN avatar_url TYPE character varying(255) USING avatar_url::text;
+ALTER TABLE users ALTER COLUMN auth_provider TYPE character varying(255) USING auth_provider::text;
+ALTER TABLE users ALTER COLUMN role TYPE character varying(255) USING role::text;
+ALTER TABLE words ALTER COLUMN part_of_speech TYPE character varying(255) USING part_of_speech::text;
+ALTER TABLE words ALTER COLUMN audio_url TYPE character varying(255) USING audio_url::text;
+ALTER TABLE words ALTER COLUMN difficulty TYPE character varying(255) USING difficulty::text;

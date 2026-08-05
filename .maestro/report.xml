@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="Pixel_7_API_34" tests="4" failures="3" time="72.0">
+    <testcase id="login" name="login" classname="login" file="flows\login.yaml" time="9.0" status="SUCCESS"/>
+    <testcase id="speaking_training" name="speaking_training" classname="speaking_training" file="flows\speaking_training.yaml" time="21.0" status="ERROR">
+      <failure>Assertion is false: "Разговорный английский" is visible</failure>
+    </testcase>
+    <testcase id="speaking_practice_auth" name="speaking_practice_auth" classname="speaking_practice_auth" file="flows\speaking_practice_auth.yaml" time="21.0" status="ERROR">
+      <failure>Assertion is false: "Библиотека" is visible</failure>
+    </testcase>
+    <testcase id="speaking_practice_guest_gating" name="speaking_practice_guest_gating" classname="speaking_practice_guest_gating" file="flows\speaking_practice_guest_gating.yaml" time="21.0" status="ERROR">
+      <failure>Assertion is false: "Разговорный английский" is visible</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,12 +1,12 @@
-# FunnyEnglish ProGuard Rules
+# So to Speak ProGuard Rules
 
 # Keep Compose entry points from composeApp module
--keep class com.funnyenglish.app.AppKt { *; }
--keep class com.funnyenglish.app.di.CoilInitializerKt { *; }
+-keep class com.sotospeak.app.AppKt { *; }
+-keep class com.sotospeak.app.di.CoilInitializerKt { *; }
 
 # Suppress warnings for missing classes referenced by generated code
--dontwarn com.funnyenglish.app.AppKt
--dontwarn com.funnyenglish.app.di.CoilInitializerKt
+-dontwarn com.sotospeak.app.AppKt
+-dontwarn com.sotospeak.app.di.CoilInitializerKt
 
 # Kotlin serialization
 -keepattributes *Annotation*, InnerClasses

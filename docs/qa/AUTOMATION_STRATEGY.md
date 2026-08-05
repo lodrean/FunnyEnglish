@@ -1,4 +1,4 @@
-# Стратегия автоматизации QA для FunnyEnglish
+# Стратегия автоматизации QA для So to Speak
 
 ## 🎯 Цели автоматизации
 
@@ -264,7 +264,7 @@ jobs:
 
 ```yaml
 # .maestro/flows/complete_lesson.yaml
-appId: com.funnyenglish.app
+appId: com.sotospeak.app
 ---
 # Flow: Пользователь проходит урок от начала до конца
 
@@ -500,7 +500,7 @@ jobs:
         run: |
           docker run --rm \
             -v $(pwd)/screenshots:/screenshots \
-            funnyenglish-qa-agent \
+            sotospeak-qa-agent \
             compare --baseline=/designs --current=/screenshots
       
       - name: Comment PR with Results
@@ -571,7 +571,7 @@ jobs:
 
 ---
 
-## 📱 Практический пример: QA агент для FunnyEnglish
+## 📱 Практический пример: QA агент для So to Speak
 
 ### Сценарий 1: Сравнение с дизайном
 

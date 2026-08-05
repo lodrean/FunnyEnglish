@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoToSpeak — Logo Transition Guide · Waveform Connected (vC)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF3FF;
+    --surface: #FFFFFF;
+    --surfaceWarm: #E5DCFF;
+    --surfaceVariant: #D8E2FA;
+    --primary: #5B8DEF;
+    --primaryStrong: #3B6FD4;
+    --secondary: #9B7EDE;
+    --record: #FF9F6B;
+    --text: #2D3561;
+    --textMuted: #58609A;
+    --outline: #B9C7EE;
+    --success: #43A047;
+    --error: #E53935;
+    --radiusCard: 22px;
+    --radiusButton: 16px;
+    --shadowCard: 0 1px 2px rgba(45,53,97,0.06), 0 2px 8px rgba(45,53,97,0.05);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --font: 'Nunito', -apple-system, sans-serif;
+    --fontMono: 'JetBrains Mono', monospace;
+  }
+
+  [data-theme="dark"] {
+    --bg: #161A2E;
+    --surface: #1F2440;
+    --surfaceWarm: #252B4A;
+    --surfaceVariant: #2B3152;
+    --text: #E8EAF6;
+    --textMuted: #9AA0C4;
+    --primary: #8FB3F5;
+    --shadowCard: 0 1px 2px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  }
+
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 56px 0 40px;
+    text-align: center;
+  }
+
+  .hero .brand {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .hero p {
+    color: var(--textMuted);
+    font-size: 1rem;
+  }
+
+  .hero .selected-logo {
+    margin-top: 32px;
+    display: inline-block;
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    padding: 32px 48px;
+  }
+
+  .hero .selected-logo img {
+    max-width: 420px;
+    width: 100%;
+    height: auto;
+  }
+
+  .hero .final-badge {
+    display: inline-block;
+    margin-top: 16px;
+    background: var(--record);
+    color: var(--text);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 16px;
+    border-radius: var(--radiusButton);
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--surface);
+    border: 1px solid var(--outline);
+    border-radius: var(--radiusButton);
+    padding: 8px 16px;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: var(--shadowCard);
+    z-index: 100;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 48px;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-desc {
+    color: var(--textMuted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    max-width: 600px;
+  }
+
+  .badge {
+    font-family: var(--fontMono);
+    font-size: 0.6rem;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--surfaceWarm);
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Comparison table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    overflow: hidden;
+    box-shadow: var(--shadowCard);
+    font-size: 0.85rem;
+  }
+
+  .compare-table th {
+    background: var(--surfaceWarm);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--textMuted);
+  }
+
+  .compare-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--surfaceVariant);
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .compare-table .yes {
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  .compare-table .no {
+    color: var(--error);
+    font-weight: 700;
+  }
+
+  /* Variations grid */
+  .var-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .var-card {
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    overflow: hidden;
+  }
+
+  .var-preview {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .var-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .var-info {
+    padding: 16px 20px 20px;
+  }
+
+  .var-info h4 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .var-info p {
+    font-size: 0.8rem;
+    color: var(--textMuted);
+  }
+
+  .var-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: var(--fontMono);
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surfaceWarm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Do/Don't */
+  .rule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .rule-card {
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    padding: 24px;
+  }
+
+  .rule-card h4 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rule-card.do h4 { color: var(--success); }
+  .rule-card.dont h4 { color: var(--error); }
+
+  .rule-card ul {
+    list-style: none;
+  }
+
+  .rule-card li {
+    font-size: 0.85rem;
+    color: var(--textMuted);
+    padding: 5px 0 5px 18px;
+    position: relative;
+  }
+
+  .rule-card.do li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  .rule-card.dont li::before {
+    content: '✕';
+    position: absolute;
+    left: 0;
+    color: var(--error);
+    font-weight: 700;
+  }
+
+  /* Size spec */
+  .size-demo {
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    padding: 28px;
+    text-align: center;
+  }
+
+  .size-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .size-item {
+    text-align: center;
+  }
+
+  .size-item img {
+    display: block;
+    margin: 0 auto 8px;
+  }
+
+  .size-label {
+    font-family: var(--fontMono);
+    font-size: 0.65rem;
+    color: var(--textMuted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Color context */
+  .context-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .context-card {
+    border-radius: var(--radiusCard);
+    overflow: hidden;
+    box-shadow: var(--shadowCard);
+    text-align: center;
+    padding: 32px 20px;
+  }
+
+  .context-card.light {
+    background: #EEF3FF;
+    color: #2D3561;
+  }
+
+  .context-card.dark {
+    background: #161A2E;
+    color: #E8EAF6;
+  }
+
+  .context-card.mono {
+    background: #FFFFFF;
+    color: #2D3561;
+    border: 1px solid var(--outline);
+  }
+
+  .context-card img {
+    max-width: 180px;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .context-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+  }
+
+  /* Clear space */
+  .space-demo {
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    padding: 32px;
+    text-align: center;
+  }
+
+  .space-box {
+    display: inline-block;
+    position: relative;
+    padding: 40px;
+    border: 2px dashed var(--outline);
+    border-radius: 8px;
+  }
+
+  .space-box img {
+    max-width: 280px;
+    width: 100%;
+  }
+
+  .space-annotation {
+    position: absolute;
+    font-family: var(--fontMono);
+    font-size: 0.6rem;
+    color: var(--textMuted);
+  }
+
+  .space-annotation.top {
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .space-annotation.bottom {
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .space-annotation.left {
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center;
+  }
+
+  .space-annotation.right {
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center;
+  }
+
+  /* Application examples */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .app-card {
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .app-screen {
+    aspect-ratio: 9/19;
+    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+  }
+
+  .app-screen.splash {
+    background: linear-gradient(180deg, #EEF3FF 0%, #DDE8FD 100%);
+  }
+
+  .app-screen.header {
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--outline);
+    justify-content: flex-start;
+    padding-top: 40px;
+    max-height: 120px;
+    aspect-ratio: auto;
+  }
+
+  .app-screen.icon {
+    background: #EEF3FF;
+    aspect-ratio: 1;
+    max-height: 200px;
+  }
+
+  .app-screen img {
+    max-width: 80%;
+    max-height: 60%;
+    object-fit: contain;
+  }
+
+  .app-screen.icon img {
+    max-width: 70%;
+    max-height: 70%;
+    border-radius: 22px;
+  }
+
+  .app-info {
+    padding: 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Migration checklist */
+  .checklist {
+    background: var(--surface);
+    border-radius: var(--radiusCard);
+    box-shadow: var(--shadowCard);
+    padding: 24px;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surfaceVariant);
+    font-size: 0.9rem;
+  }
+
+  .checklist-item:last-child { border-bottom: none; }
+
+  .check-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .check-text {
+    color: var(--text);
+  }
+
+  .check-note {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--textMuted);
+    margin-top: 2px;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--textMuted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--outline);
+    margin-top: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .hero .selected-logo { padding: 20px 28px; }
+    .size-row { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">🌙 Тёмная тема</button>
+
+<div class="hero">
+  <div class="container">
+    <div class="brand">FunnyEnglish · SoToSpeak</div>
+    <h1>Logo Transition Guide</h1>
+    <p>Финальный вариант: Waveform Connected (vC)</p>
+    <div class="selected-logo">
+      <img src="logo_ref_v3_mic_connected.png" alt="SoToSpeak Waveform Connected — final logo">
+    </div>
+    <div class="final-badge">✓ Выбран владельцем 2026-08-02</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- WHY THIS VERSION -->
+  <div class="section">
+    <div class="section-title">
+      Почему этот вариант
+      <span class="badge">Decision</span>
+    </div>
+    <p class="section-desc">
+      Из 8 сгенерированных вариантов выбран vC (Connected Mic Waveform) по следующим критериям:
+      сохранён ровный стиль оригинального Waveform v2, добавлен микрофон как якорный графический элемент,
+      волна плавно вытекает из микрофона создавая единый поток, нет лишнего слогана.
+    </p>
+
+    <table class="compare-table">
+      <tr>
+        <th>Критерий</th>
+        <th>Waveform v2 (оригинал)</th>
+        <th>Mic Left v1</th>
+        <th>Connected vC ✓</th>
+      </tr>
+      <tr>
+        <td>Ровная waveform</td>
+        <td class="yes">Да</td>
+        <td class="yes">Да</td>
+        <td class="yes">Да</td>
+      </tr>
+      <tr>
+        <td>Точки в буквах O</td>
+        <td class="yes">Да</td>
+        <td class="no">Нет</td>
+        <td class="yes">Да</td>
+      </tr>
+      <tr>
+        <td>Микрофон как элемент</td>
+        <td class="no">Нет</td>
+        <td class="yes">Да (раздельно)</td>
+        <td class="yes">Да (единый поток)</td>
+      </tr>
+      <tr>
+        <td>Нет лишнего слогана</td>
+        <td class="no">Есть</td>
+        <td class="yes">Нет</td>
+        <td class="yes">Нет</td>
+      </tr>
+      <tr>
+        <td>Цельная композиция</td>
+        <td class="yes">Да</td>
+        <td class="no">Разрознена</td>
+        <td class="yes">Да (волна из микрофона)</td>
+      </tr>
+      <tr>
+        <td>Читается как «речь»</td>
+        <td class="yes">Да</td>
+        <td class="yes">Да</td>
+        <td class="yes">Да (микрофон + волна)</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- VARIATIONS -->
+  <div class="section">
+    <div class="section-title">
+      Вариации логотипа
+      <span class="badge">4 шт</span>
+    </div>
+    <p class="section-desc">
+      Официальные вариации для разных сценариев использования. Все производятся от мастер-файла.
+    </p>
+    <div class="var-grid">
+      <div class="var-card">
+        <div class="var-preview" style="background:#EEF3FF">
+          <img src="logo_ref_v3_mic_connected.png" alt="Primary — full version">
+        </div>
+        <div class="var-info">
+          <h4>Primary Full</h4>
+          <p>Полная версия: микрофон → волна → текст. Основной логотип для сайта, презентаций, email.</p>
+          <span class="var-tag">default</span>
+        </div>
+      </div>
+      <div class="var-card">
+        <div class="var-preview" style="background:#EEF3FF">
+          <img src="logo_ref_v1_mic_text.png" alt="Horizontal — mic + text">
+        </div>
+        <div class="var-info">
+          <h4>Horizontal</h4>
+          <p>Микрофон и текст раздельно, волна под baseline. Для узких header-ов и мобильных экранов.</p>
+          <span class="var-tag">compact</span>
+        </div>
+      </div>
+      <div class="var-card">
+        <div class="var-preview" style="background:#EEF3FF">
+          <img src="logo_ref_v2_mic_only.png" alt="Icon — mic + wave only">
+        </div>
+        <div class="var-info">
+          <h4>Icon / Mascot</h4>
+          <p>Только микрофон с волной — без текста. Для favicon, app icon (512×512, 192×192), аватарок.</p>
+          <span class="var-tag">icon-only</span>
+        </div>
+      </div>
+      <div class="var-card">
+        <div class="var-preview" style="background:#FFFFFF">
+          <img src="logo_ref_v3_mic_connected.png" alt="Monochrome" style="filter: grayscale(100%) contrast(1.2)">
+        </div>
+        <div class="var-info">
+          <h4>Monochrome</h4>
+          <p>Одноцветная версия для печати, вышивки, гравировки, чёрно-белых документов.</p>
+          <span class="var-tag">print</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DO / DON'T -->
+  <div class="section">
+    <div class="section-title">
+      Правила использования
+      <span class="badge">Rules</span>
+    </div>
+    <div class="rule-grid">
+      <div class="rule-card do">
+        <h4>✓ Do</h4>
+        <ul>
+          <li>Использовать на фоне #EEF3FF или #FFFFFF — максимальная узнаваемость</li>
+          <li>Для app icon — Icon Only (микрофон + волна без текста)</li>
+          <li>Для шапки сайта — Primary Full или Horizontal</li>
+          <li>Сохранять пропорции: не растягивать, не сжимать</li>
+          <li>Минимальный clear space — высота буквы «o» со всех сторон</li>
+          <li>На тёмном фоне (#161A2E) — использовать светлую вариацию</li>
+        </ul>
+      </div>
+      <div class="rule-card dont">
+        <h4>✕ Don't</h4>
+        <ul>
+          <li>Не добавлять тени, glow, градиенты на сам логотип</li>
+          <li>Не менять цвета: только primary/secondary/record/text из DS</li>
+          <li>Не использовать на шумном или фотографическом фоне</li>
+          <li>Не заменять Nunito на системный шрифт</li>
+          <li>Не обрезать микрофон или волну — они единый элемент</li>
+          <li>Не поворачивать или зеркалить логотип</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MINIMUM SIZE -->
+  <div class="section">
+    <div class="section-title">
+      Минимальный размер
+      <span class="badge">Spec</span>
+    </div>
+    <div class="size-demo">
+      <div class="size-row">
+        <div class="size-item">
+          <img src="logo_ref_v3_mic_connected.png" style="width:120px;height:auto" alt="120px">
+          <div class="size-label">120px — min web</div>
+        </div>
+        <div class="size-item">
+          <img src="logo_ref_v3_mic_connected.png" style="width:80px;height:auto" alt="80px">
+          <div class="size-label">80px — min header</div>
+        </div>
+        <div class="size-item">
+          <img src="logo_ref_v2_mic_only.png" style="width:48px;height:auto" alt="48px">
+          <div class="size-label">48px — min icon</div>
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--textMuted)">
+        Меньше 80px для полной версии — переключаться на Horizontal.<br>
+        Меньше 48px для иконки — недопустимо, теряется читаемость микрофона.
+      </p>
+    </div>
+  </div>
+
+  <!-- CLEAR SPACE -->
+  <div class="section">
+    <div class="section-title">
+      Clear space
+      <span class="badge">Spacing</span>
+    </div>
+    <div class="space-demo">
+      <div class="space-box">
+        <img src="logo_ref_v3_mic_connected.png" alt="Logo with clear space">
+        <span class="space-annotation top">= height of «o»</span>
+        <span class="space-annotation bottom">= height of «o»</span>
+        <span class="space-annotation left">= height of «o»</span>
+        <span class="space-annotation right">= height of «o»</span>
+      </div>
+      <p style="font-size:0.8rem;color:var(--textMuted);margin-top:16px">
+        Минимальное свободное пространство вокруг логотипа — высота строчной буквы «o».<br>
+        Не размещать текст, иконки или другие элементы ближе этой границы.
+      </p>
+    </div>
+  </div>
+
+  <!-- COLOR CONTEXTS -->
+  <div class="section">
+    <div class="section-title">
+      Цветовые контексты
+      <span class="badge">Backgrounds</span>
+    </div>
+    <div class="context-grid">
+      <div class="context-card light">
+        <img src="logo_ref_v3_mic_connected.png" alt="On light periwinkle">
+        <div class="context-label">#EEF3FF — Primary background</div>
+      </div>
+      <div class="context-card dark">
+        <img src="logo_ref_v3_mic_connected.png" alt="On dark" style="filter: brightness(1.3)">
+        <div class="context-label">#161A2E — Dark mode</div>
+      </div>
+      <div class="context-card mono">
+        <img src="logo_ref_v3_mic_connected.png" alt="Monochrome" style="filter: grayscale(100%) contrast(1.1)">
+        <div class="context-label">#FFFFFF — Print / Mono</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATIONS -->
+  <div class="section">
+    <div class="section-title">
+      Применение
+      <span class="badge">Usage</span>
+    </div>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="app-screen splash">
+          <img src="logo_ref_v3_mic_connected.png" alt="Splash screen" style="max-width:70%">
+        </div>
+        <div class="app-info">Splash Screen<br><span style="font-size:0.75rem;color:var(--textMuted)">Primary Full · centered</span></div>
+      </div>
+      <div class="app-card">
+        <div class="app-screen header">
+          <img src="logo_ref_v1_mic_text.png" alt="App header" style="max-width:60%">
+        </div>
+        <div class="app-info">App Header<br><span style="font-size:0.75rem;color:var(--textMuted)">Horizontal · left-aligned</span></div>
+      </div>
+      <div class="app-card">
+        <div class="app-screen icon">
+          <img src="logo_ref_v2_mic_only.png" alt="App icon" style="border-radius:22px;background:#EEF3FF;padding:8px">
+        </div>
+        <div class="app-info">App Icon<br><span style="font-size:0.75rem;color:var(--textMuted)">Icon Only · 512×512</span></div>
+      </div>
+      <div class="app-card">
+        <div class="app-screen icon" style="background:#161A2E">
+          <img src="logo_ref_v2_mic_only.png" alt="Favicon dark" style="filter: brightness(1.3)">
+        </div>
+        <div class="app-info">Favicon (dark)<br><span style="font-size:0.75rem;color:var(--textMuted)">Icon Only · 32×32</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIGRATION CHECKLIST -->
+  <div class="section">
+    <div class="section-title">
+      Чек-лист внедрения
+      <span class="badge">Migration</span>
+    </div>
+    <div class="checklist">
+      <div class="checklist-item">
+        <span class="check-num">1</span>
+        <div class="check-text">
+          Заменить логотип в шапке админки (admin-web)
+          <span class="check-note">Путь: admin-web/src/components/Header.tsx или аналог</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <span class="check-num">2</span>
+        <div class="check-text">
+          Обновить favicon на всех платформах
+          <span class="check-note">favicon.ico 32×32, apple-touch-icon 180×180, manifest icon 192×192 + 512×512</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <span class="check-num">3</span>
+        <div class="check-text">
+          Добавить Splash Screen для Android/iOS
+          <span class="check-note">Primary Full · centered · background #EEF3FF</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <span class="check-num">4</span>
+        <div class="check-text">
+          Обновить email-шаблоны (header + signature)
+          <span class="check-note">Horizontal version · max-width 200px</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <span class="check-num">5</span>
+        <div class="check-text">
+          Экспортировать SVG-мастер для разработчиков
+          <span class="check-note">Сохранить слои: mic / waveform / text — для анимации waveform</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <span class="check-num">6</span>
+        <div class="check-text">
+          Обновить design-system документацию
+          <span class="check-note">Этот файл + ссылка из tokens.json/README.md</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN ADAPTATION -->
+  <div class="section">
+    <div class="section-title">
+      Адаптация админки
+      <span class="badge">Admin UI</span>
+    </div>
+    <p class="section-desc">
+      Админ-панель SoToSpeak использует ту же дизайн-систему, что и FunnyEnglish Speaking Trainer.
+      Логотип в шапке админки — Horizontal version (компактный, без волны под текстом).
+    </p>
+    <div class="rule-grid">
+      <div class="rule-card do">
+        <h4>✓ Header Logo</h4>
+        <ul>
+          <li>Horizontal version — микрофон слева, текст справа</li>
+          <li>Высота логотипа в header: 28–32px</li>
+          <li>Отступ от левого края: 16px (space-l)</li>
+          <li>Цвет фона header: #FFFFFF (surface)</li>
+        </ul>
+      </div>
+      <div class="rule-card do">
+        <h4>✓ App Icon (Admin PWA)</h4>
+        <ul>
+          <li>Icon Only — микрофон + волна без текста</li>
+          <li>Размер: 192×192 и 512×512 для manifest</li>
+          <li>Фон: #EEF3FF (periwinkle) или прозрачный</li>
+          <li>Maskable icon: отступ 10% от краёв</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    SoToSpeak Brand Guide · Waveform Connected vC · FunnyEnglish DS 1.1.0 · 2026-08-02
+  </div>
+</footer>
+
+<script>
+  function toggleTheme() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (dark) {
+      document.documentElement.removeAttribute('data-theme');
+      document.querySelector('.theme-toggle').textContent = '🌙 Тёмная тема';
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.querySelector('.theme-toggle').textContent = '☀️ Светлая тема';
+    }
+  }
+</script>
+
+</body>
+</html>

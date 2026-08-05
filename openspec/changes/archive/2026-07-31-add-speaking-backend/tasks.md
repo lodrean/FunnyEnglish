@@ -32,8 +32,8 @@
 
 ## 6. Shared и api-коллекция
 
-- [x] 6.1 BE-12 (bd `8tg.1.12`): shared — методы `FunnyEnglishApi` (public content, multipart submit через `submitFormWithBinaryData`, my submissions) + модели (kotlinx.serialization, имена = JSON-контракту, пути с `/api`). Зависимости: 3.1, 4.1
-- [x] 6.2 BE-13 (bd `8tg.1.13`): регрессия backend-тестов + новые эндпоинты в `api-tests/funnyenglish-api-collection.json`. Зависимости: 5.2
+- [x] 6.1 BE-12 (bd `8tg.1.12`): shared — методы `SoToSpeakApi` (public content, multipart submit через `submitFormWithBinaryData`, my submissions) + модели (kotlinx.serialization, имена = JSON-контракту, пути с `/api`). Зависимости: 3.1, 4.1
+- [x] 6.2 BE-13 (bd `8tg.1.13`): регрессия backend-тестов + новые эндпоинты в `api-tests/sotospeak-api-collection.json`. Зависимости: 5.2
 
 ## 7. Завершение
 

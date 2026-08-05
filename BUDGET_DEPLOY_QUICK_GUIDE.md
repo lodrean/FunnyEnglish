@@ -1,4 +1,4 @@
-# 🎯 FunnyEnglish - Быстрый Выбор Размещения
+# 🎯 So to Speak - Быстрый Выбор Размещения
 
 ## 💰 Варианты по Бюджету
 
@@ -39,7 +39,7 @@
                    │
            Cloudflare Tunnel
                    │
-    https://admin.funnyenglish.ru
+    https://admin.sotospeak.ru
 ```
 
 ### Быстрый старт (30 минут)
@@ -49,19 +49,19 @@
 # Скачать: https://ubuntu.com/download/server
 
 # 2. Запустить установочный скрипт
-curl -fsSL https://funnyenglish.ru/install.sh | bash
+curl -fsSL https://sotospeak.ru/install.sh | bash
 
 # 3. Установить Cloudflare Tunnel
 wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 sudo dpkg -i cloudflared-linux-amd64.deb
 cloudflared tunnel login
-cloudflared tunnel create funnyenglish
+cloudflared tunnel create sotospeak
 
 # 4. Настроить DNS в Cloudflare
-# A-записи: api.funnyenglish.ru, admin.funnyenglish.ru
+# A-записи: api.sotospeak.ru, admin.sotospeak.ru
 
 # 5. Запустить
-cd /opt/funnyenglish && docker-compose up -d
+cd /opt/sotospeak && docker-compose up -d
 ```
 
 ### Плюсы
@@ -107,8 +107,8 @@ cd /opt/funnyenglish && docker-compose up -d
 # 3. Подключиться по SSH
 ssh root@YOUR_SERVER_IP
 
-# 4. Установить FunnyEnglish
-curl -fsSL https://funnyenglish.ru/install.sh | bash
+# 4. Установить So to Speak
+curl -fsSL https://sotospeak.ru/install.sh | bash
 
 # 5. Настроить домен (A-записи → IP сервера)
 ```
@@ -156,8 +156,8 @@ curl -fsSL https://funnyenglish.ru/install.sh | bash
 │         │                      │           │
 │         └──────────┬───────────┘           │
 │                    │                       │
-│           api.funnyenglish.ru             │
-│           admin.funnyenglish.ru           │
+│           api.sotospeak.ru             │
+│           admin.sotospeak.ru           │
 │                                            │
 └────────────────────────────────────────────┘
 ```
@@ -237,11 +237,11 @@ Hybrid: Timeweb + Yandex Cloud (Object Storage)
 ### Шаг 3: Деплой (15-30 минут)
 ```bash
 # Все варианты используют один скрипт:
-curl -fsSL https://funnyenglish.ru/install.sh | bash
+curl -fsSL https://sotospeak.ru/install.sh | bash
 
 # Или вручную:
-git clone https://github.com/your/funnyenglish.git
-cd funnyenglish/docker
+git clone https://github.com/your/sotospeak.git
+cd sotospeak/docker
 ./deploy.sh --target=timeweb  # или --target=home
 ```
 
@@ -257,7 +257,7 @@ cd funnyenglish/docker
 ```bash
 # Let's Encrypt выдаётся автоматически
 # Или вручную:
-docker-compose run --rm certbot certonly --standalone -d api.funnyenglish.ru -d admin.funnyenglish.ru
+docker-compose run --rm certbot certonly --standalone -d api.sotospeak.ru -d admin.sotospeak.ru
 ```
 
 ---
@@ -284,7 +284,7 @@ docker-compose run --rm certbot certonly --standalone -d api.funnyenglish.ru -d 
 ```
 - .ru домен: 600₽/год (50₽/мес) на reg.ru
 - Иногда акции: 199₽/год
-- Альтернатива: бесплатный subdomain (funnyenglish.ddns.net)
+- Альтернатива: бесплатный subdomain (sotospeak.ddns.net)
 ```
 
 ### Экономия на SSL

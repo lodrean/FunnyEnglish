@@ -21,5 +21,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.funnyenglish.featureapi"
+    namespace = "com.sotospeak.featureapi"
 }

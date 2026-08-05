@@ -1,4 +1,4 @@
-# FunnyEnglish Mobile App - UI Design Prompt for Stitch
+# So to Speak Mobile App - UI Design Prompt for Stitch
 
 ## App Overview
 Educational mobile app for learning English through interactive tests and gamification. Target audience: Russian-speaking users learning English, all ages.
@@ -18,7 +18,7 @@ Educational mobile app for learning English through interactive tests and gamifi
 ## Screens to Design
 
 ### 1. Splash Screen
-- App logo "FunnyEnglish" with mascot character
+- App logo "So to speak" with mascot character
 - Tagline: "Learn English the fun way!"
 - Loading indicator
 

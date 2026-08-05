@@ -1,4 +1,4 @@
-# Дизайн-бриф: Speaking-тренажёр FunnyEnglish
+# Дизайн-бриф: Speaking-тренажёр So to Speak
 
 - **Дата**: 2026-07-30 (обновлено 2026-07-31)
 - **Статус**: ✅ Реализован — дизайн-система сгенерирована, выбран **вариант B «Playful Coach»** (владелец, 2026-07-31). Результат: `.docs/design-system/` (tokens.json v1.1, мокапы, icons.svg). Варианты A/C ниже — история выбора.
@@ -11,7 +11,7 @@
 
 ### 1.1. Описание продукта
 
-FunnyEnglish — мобильное приложение **тренажёр устной английской речи** (после пивота продукта, см. PRD SPEAKING-TRAINER-001). Ученик проходит флоу:
+So to Speak — мобильное приложение **тренажёр устной английской речи** (после пивота продукта, см. PRD SPEAKING-TRAINER-001). Ученик проходит флоу:
 
 **Library (темы) → Topics (топики) → Video (с/без субтитров) → Questions → Training | Practice**
 
@@ -30,11 +30,11 @@ FunnyEnglish — мобильное приложение **тренажёр ус
 
 **Вариант A — «Calm Studio» (рекомендуемый).**
 Спокойная «студия звукозаписи»: приглушённый синий/индиго как база (доверие, концентрация), тёплый акцент (коралловый/оранжевый) только на CTA и кнопке записи. Мягкие радиусы (16–20dp), минимум декора, внимание на waveform и таймер как главных элементах.
-*Rationale*: запись голоса — тревожный сценарий; спокойная палитра снижает стресс. Наследует текущий Primary `#4A90D9` (см. `design/src/commonMain/kotlin/com/funnyenglish/design/theme/Color.kt`) → меньше пересборки существующего UI.
+*Rationale*: запись голоса — тревожный сценарий; спокойная палитра снижает стресс. Наследует текущий Primary `#4A90D9` (см. `design/src/commonMain/kotlin/com/sotospeak/design/theme/Color.kt`) → меньше пересборки существующего UI.
 
 **Вариант B — «Playful Coach» (эволюция текущей DS 2.0).**
 Сохранить пастельную игровую палитру из `docs/DESIGN_SYSTEM_SPEC.md` (Calm Blue `#5B8DEF`, Playful Purple `#9B7EDE`, Energetic Orange `#FF9F6B`) и шрифт Nunito, но убавить геймификацию: прогресс-кольца и уровни таймера (80→50→30) вместо стриков и гемов.
-*Rationale*: максимальное переиспользование готового кита в `.docs/Kimi_Agent_FunnyEnglish Design System 2.0/` и модуля `:design`; риск — выглядит «детски» для взрослых учеников.
+*Rationale*: максимальное переиспользование готового кита в `.docs/Kimi_Agent_So_to_Speak_Design_System_2.0/` и модуля `:design`; риск — выглядит «детски» для взрослых учеников.
 
 **Вариант C — «Dark Mic» (болдинговый).**
 Тёмная тема как основная, неоновый акцент на recorder (красная «REC»-кнопка, светящаяся waveform), высокий контраст.
@@ -52,8 +52,8 @@ FunnyEnglish — мобильное приложение **тренажёр ус
 
 | Источник | Что взять |
 |---|---|
-| `.docs/Kimi_Agent_FunnyEnglish Design System 2.0/` | Готовый Kotlin-кит DS 2.0: `Color.kt`, `Type.kt`, `Shape.kt`, `Elevation.kt`, `Theme.kt`, компоненты (buttons, cards, feedback, inputs) — структура и нейминг уже совпадают с модулем `:design`. Анимации (`animation/PressEffects.kt`, `Loading.kt`) пригодятся для recorder-кнопки |
-| `.docs/Kimi_Agent_FunnyEnglish Design System 2.0/funnyenglish-design/components/gamification/` | `ProgressRing.kt` — основа для кругового таймера обратного отсчёта; `Badge.kt` — статусы NEW/REVIEWED |
+| `.docs/Kimi_Agent_So_to_Speak_Design_System_2.0/` | Готовый Kotlin-кит DS 2.0: `Color.kt`, `Type.kt`, `Shape.kt`, `Elevation.kt`, `Theme.kt`, компоненты (buttons, cards, feedback, inputs) — структура и нейминг уже совпадают с модулем `:design`. Анимации (`animation/PressEffects.kt`, `Loading.kt`) пригодятся для recorder-кнопки |
+| `.docs/Kimi_Agent_So_to_Speak_Design_System_2.0/sotospeak-design/components/gamification/` | `ProgressRing.kt` — основа для кругового таймера обратного отсчёта; `Badge.kt` — статусы NEW/REVIEWED |
 | `.docs/Kimi_Agent_Admin Panel Design (1)/` | Референсы админки (списки, формы) для Grading inbox |
 | `.docs/ADMIN_COMPONENTS_SPEC.md`, `.docs/ADMIN_WEB_DESIGN_SYSTEM_PLAN.md` | Существующие спеки админки — соблюдать консистентность с ними |
 | `docs/DESIGN_SYSTEM_SPEC.md` | Токены v1.0 (палитра, типографика, spacing 4dp-grid, elevation) — база, от которой отталкиваемся; принципы accessibility (§1) переносим как есть |
@@ -92,7 +92,7 @@ FunnyEnglish — мобильное приложение **тренажёр ус
 
 ### 3.1. Цвета (стартовая палитра, вариант A «Calm Studio»)
 
-Отталкиваемся от существующего `design/src/commonMain/kotlin/com/funnyenglish/design/theme/Color.kt` (Primary `#4A90D9` уже совпадает с брендом):
+Отталкиваемся от существующего `design/src/commonMain/kotlin/com/sotospeak/design/theme/Color.kt` (Primary `#4A90D9` уже совпадает с брендом):
 
 | Токен | Light | Назначение |
 |---|---|---|
@@ -128,10 +128,10 @@ Dark-тема: существующие `*Dark`-токены в `Color.kt` ка�
 
 | Figma-токены | Куда ложатся |
 |---|---|
-| Color styles → | `design/src/commonMain/kotlin/com/funnyenglish/design/theme/Color.kt` (Material 3 `ColorScheme`, light+dark) |
-| Text styles → | `design/src/commonMain/kotlin/com/funnyenglish/design/theme/Type.kt` (`Typography`) |
+| Color styles → | `design/src/commonMain/kotlin/com/sotospeak/design/theme/Color.kt` (Material 3 `ColorScheme`, light+dark) |
+| Text styles → | `design/src/commonMain/kotlin/com/sotospeak/design/theme/Type.kt` (`Typography`) |
 | Effects/radii → | `Shape.kt`, `Elevation.kt` |
-| Новые компоненты (RecorderButton, Waveform, TimerRing, SubmissionCard, RubricBadge) → | `design/src/commonMain/kotlin/com/funnyenglish/design/components/recorder/` (новый пакет), ProgressRing переиспользовать из `components/gamification/ProgressRing.kt` |
+| Новые компоненты (RecorderButton, Waveform, TimerRing, SubmissionCard, RubricBadge) → | `design/src/commonMain/kotlin/com/sotospeak/design/components/recorder/` (новый пакет), ProgressRing переиспользовать из `components/gamification/ProgressRing.kt` |
 | Admin (та же палитра!) → | `admin-web/src/theme/Theme.ts` — обновить `brandColors`/`semanticColors`; структура светлой/тёмной темы уже есть |
 
 **Принцип**: одна палитра — два таргета (Compose `ColorScheme` и MUI `palette`). HEX-значения обязаны совпадать; имена семантических токенов (record, timerLevel, statusNew/Reviewed) вводим в обоих местах.
@@ -142,7 +142,7 @@ Dark-тема: существующие `*Dark`-токены в `Color.kt` ка�
 
 | Ассет | Формат | Куда класть |
 |---|---|---|
-| Иконки: mic, mic-off, play, pause, stop, delete, refresh (перезапись), CC (субтитры), lock (гейт Practice), upload/cloud, check-circle | SVG → вектор (Compose `ImageVector` через CustomIcons, либо XML vector drawable) | Kotlin-иконки: `design/src/commonMain/kotlin/com/funnyenglish/design/icons/CustomIcons.kt`; растровые/векторные файлы: `composeApp/src/commonMain/composeResources/drawable/` (создать; зависимость `compose.components.resources` уже подключена в `composeApp/build.gradle.kts:74`) |
+| Иконки: mic, mic-off, play, pause, stop, delete, refresh (перезапись), CC (субтитры), lock (гейт Practice), upload/cloud, check-circle | SVG → вектор (Compose `ImageVector` через CustomIcons, либо XML vector drawable) | Kotlin-иконки: `design/src/commonMain/kotlin/com/sotospeak/design/icons/CustomIcons.kt`; растровые/векторные файлы: `composeApp/src/commonMain/composeResources/drawable/` (создать; зависимость `compose.components.resources` уже подключена в `composeApp/build.gradle.kts:74`) |
 | Иллюстрации empty states: пустая библиотека, «нет записей», «нет отправок», ошибка сети, permission denied (микрофон) | SVG (или PNG @1x/2x/3x для сложных) | `composeApp/src/commonMain/composeResources/drawable/` |
 | Обложки тем (placeholder) | JPG/WebP | контентные — через admin-web/MinIO; для макетов — `.docs/test_images/` |
 | Waveform-заглушка / паттерн | SVG | `composeResources/drawable/` |
@@ -184,9 +184,9 @@ Dark-тема: существующие `*Dark`-токены в `Color.kt` ка�
 
 - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md`
 - Текущая DS-спека: `docs/DESIGN_SYSTEM_SPEC.md`
-- Модуль дизайн-системы: `design/src/commonMain/kotlin/com/funnyenglish/design/` (theme/, components/, icons/CustomIcons.kt)
-- Дублированная DS в монолите: `composeApp/src/commonMain/kotlin/com/funnyenglish/designsystem/` (учесть при миграции токенов — источник истины `:design`)
+- Модуль дизайн-системы: `design/src/commonMain/kotlin/com/sotospeak/design/` (theme/, components/, icons/CustomIcons.kt)
+- Дублированная DS в монолите: `composeApp/src/commonMain/kotlin/com/sotospeak/designsystem/` (учесть при миграции токенов — источник истины `:design`)
 - Тема админки: `admin-web/src/theme/Theme.ts`, `admin-web/src/theme/ThemeProvider.tsx`
 - Ресурсы клиента: `composeApp/src/commonMain/composeResources/drawable/` (создать), `composeApp/src/androidMain/res/`
-- Референсы DS 2.0: `.docs/Kimi_Agent_FunnyEnglish Design System 2.0/`
+- Референсы DS 2.0: `.docs/Kimi_Agent_So_to_Speak_Design_System_2.0/`
 - MCP-конфиг: `.kimi-code/mcp.json`

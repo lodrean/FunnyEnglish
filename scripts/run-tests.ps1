@@ -11,7 +11,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "FunnyEnglish Test Runner" -ForegroundColor Cyan
+Write-Host "So to Speak Test Runner" -ForegroundColor Cyan
 Write-Host "Test type: $TestType" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 

@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo FunnyEnglish Quality Assurance Cycle
+echo So to Speak Quality Assurance Cycle
 echo ========================================
 echo.
 

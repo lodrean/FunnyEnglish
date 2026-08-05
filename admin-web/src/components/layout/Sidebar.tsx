@@ -1,5 +1,5 @@
 /**
- * FunnyEnglish Admin Web - Sidebar Component
+ * So to speak Admin Web - Sidebar Component
  * Collapsible navigation sidebar with logo, nav items, and responsive drawer
  */
 
@@ -27,9 +27,9 @@ import {
   ExpandMore,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
-  School as SchoolIcon,
 } from '@mui/icons-material';
 import { navItems, NavItem, isNavItemActive, hasActiveChild } from '../navigation/navItems';
+import GradingNavBadge from '../speaking/GradingNavBadge';
 
 // Sidebar dimensions
 const SIDEBAR_WIDTH = 240;
@@ -160,6 +160,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   fontWeight: isActive || isChildActive ? 600 : 500,
                 }}
               />
+              {/* G8: счётчик NEW-записей на пункте Grading (мокап «Grading 7 new») */}
+              {item.id === 'grading' && <GradingNavBadge />}
               {hasChildren && (
                 isExpanded ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />
               )}
@@ -228,17 +230,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           width: expanded ? 'auto' : 0,
         }}
       >
-        <SchoolIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-        <Typography
-          variant="h6"
+        <Box
+          component="img"
+          src="/logo-horizontal.png"
+          alt="So to speak"
           sx={{
-            fontWeight: 700,
-            color: 'text.primary',
-            whiteSpace: 'nowrap',
+            height: 28,
+            width: 'auto',
           }}
-        >
-          FunnyEnglish
-        </Typography>
+        />
       </Box>
 
       {/* Toggle button - only show on desktop when sidebar is open */}

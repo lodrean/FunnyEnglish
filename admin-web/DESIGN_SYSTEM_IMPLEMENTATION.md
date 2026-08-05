@@ -1,4 +1,4 @@
-# FunnyEnglish Admin Web - Design System 2.0 Implementation
+# So to Speak Admin Web - Design System 2.0 Implementation
 
 ## ✅ Реализовано
 

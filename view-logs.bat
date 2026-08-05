@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
 echo ===========================================
-echo   FunnyEnglish Desktop Logs Viewer
+echo   So to Speak Desktop Logs Viewer
 echo ===========================================
 echo.
 
-set LOG_DIR=%USERPROFILE%\.funnyenglish\logs
+set LOG_DIR=%USERPROFILE%\.sotospeak\logs
 
 if not exist "%LOG_DIR%" (
     echo [INFO] Log directory not found: %LOG_DIR%

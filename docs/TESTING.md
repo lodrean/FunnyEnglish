@@ -1,6 +1,6 @@
-# FunnyEnglish Testing Guide
+# So to Speak Testing Guide
 
-Руководство по тестированию приложения FunnyEnglish с использованием Docker.
+Руководство по тестированию приложения So to Speak с использованием Docker.
 
 ## Быстрый старт
 
@@ -48,6 +48,13 @@
 | `docker-compose.test.yml` | Запуск unit-тестов с H2 БД |
 | `docker-compose.integration-test.yml` | Запуск интеграционных тестов с PostgreSQL + MinIO |
 | `docker-compose.dev.yml` | Инфраструктура для разработки |
+| `docker-compose.staging.yml` | Изолированное тестовое окружение для приёмки MVP (свои БД/MinIO, Mailpit, ddl-auto=validate). Подробнее — секция «Staging» в `DOCKER.md`; seed-контент: `scripts/seed-speaking-content.sh` |
+
+## Приёмочное тестирование MVP
+
+Сценарий go/no-go владельца (ученик + учитель, прогон на staging) — `docs/qa/MVP_ACCEPTANCE.md`.
+Admin-креды для E2E против не-dev окружений: `TEST_ADMIN_EMAIL`/`TEST_ADMIN_PASSWORD`
+(admin-web e2e) и `--env-var admin_password=...` (Newman); staging — `docker/.env.staging`.
 
 ---
 
@@ -82,6 +89,68 @@ docker compose -f docker/docker-compose.integration-test.yml down -v
 
 ---
 
+## E2E: WASM-приложение (e2e-cmp)
+
+Playwright-тесты speaking-клиента (Compose Multiplatform, wasmJs). Подробнее — `e2e-cmp/README.md`.
+
+**Ключевая особенность — canvas-only:** CMP 1.7.1 (wasmJs) рендерит всё в единственный `<canvas>`,
+семантика и testTag'и в DOM **не экспонируются**. Поэтому:
+- тесты — **координатные клики** (калиброванные позиции в `e2e-cmp/tests/helpers.ts`, viewport 1280x720)
+  + pixel-diff скриншоты clipped-регионов + assertion'ы на отсутствие console.error и HTTP 5xx к `/api`;
+- на проекте **Mobile Chrome координатные тесты скипаются** (хелпер `skipOnMobile`).
+
+**Запуск** (dev-сервер уже поднят на 8081):
+
+```bash
+cd e2e-cmp
+npm install && npx playwright install
+
+# против уже запущенного dev-сервера (composeApp wasmJs на 8081)
+SKIP_WEB_SERVER=true npx playwright test
+
+# или пусть Playwright сам поднимет webServer (без SKIP_WEB_SERVER)
+npx playwright test
+```
+
+**Known issue:** gradle wasm-задачи (`wasmJsBrowserDevelopmentRun` и др.) требуют
+`--no-configuration-cache` — известная проблема сериализации config cache:
+
+```bash
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun --no-configuration-cache
+```
+
+## E2E: Admin-web (admin-web/e2e)
+
+**Грабля портов:** `vite.config.ts` — порт **3000**, а `playwright.config.ts` (webServer/baseURL)
+ожидает **5173**. Два рабочих варианта:
+
+```bash
+cd admin-web
+
+# Вариант 1: dev-сервер на 5173 (под конфиг Playwright)
+npm run dev -- --port 5173 --strictPort
+SKIP_WEB_SERVER=1 npx playwright test
+
+# Вариант 2: против docker-админки (порт 3000)
+ADMIN_URL=http://localhost:3000 SKIP_WEB_SERVER=1 npx playwright test
+```
+
+## API-коллекция (api-tests, Newman)
+
+Postman-коллекция `api-tests/sotospeak-api-collection.json` + раннер `run-tests.js`
+(окружения: `local` → :8080, `test` → :8081, `staging`):
+
+```bash
+cd api-tests
+npm install --no-save newman
+node run-tests.js                 # TEST_ENV=local (default)
+TEST_ENV=test node run-tests.js   # против test-окружения
+```
+
+Также в `api-tests/` — PowerShell-скрипты `integration-tests.ps1`, `e2e-backend-tests.ps1`.
+
+---
+
 ## Получение отчетов
 
 ### Автоматически
@@ -97,7 +166,7 @@ docker compose -f docker/docker-compose.integration-test.yml down -v
 mkdir -p test-reports
 
 # Извлечь отчеты из контейнера
-docker cp funnyenglish-test-runner:/app/backend/build/reports test-reports/
+docker cp sotospeak-test-runner:/app/backend/build/reports test-reports/
 
 # Открыть HTML отчет
 open test-reports/tests/test/index.html  # macOS
@@ -115,7 +184,7 @@ start test-reports/tests/test/index.html  # Windows
 - Flyway отключен
 
 ### Интеграционные тесты (PostgreSQL)
-- База данных: `funnyenglish_integration`
+- База данных: `sotospeak_integration`
 - Миграции Flyway применяются автоматически
 - Данные сохраняются между запусками (volume)
 
@@ -129,7 +198,7 @@ start test-reports/tests/test/index.html  # Windows
 |------------|----------------------|----------|
 | `DB_HOST` | postgres-test | Хост PostgreSQL |
 | `DB_PORT` | 5432 | Порт PostgreSQL |
-| `DB_NAME` | funnyenglish_test | Имя БД |
+| `DB_NAME` | sotospeak_test | Имя БД |
 | `JWT_SECRET` | test-jwt-secret... | JWT ключ |
 | `S3_ENDPOINT` | http://minio-test:9000 | MinIO endpoint |
 
@@ -182,7 +251,7 @@ curl http://localhost:8080/api/health
 # Login (Demo User)
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"demo@funnyenglish.app","password":"demo123"}'
+  -d '{"email":"demo@sotospeak.app","password":"demo123"}'
 ```
 
 ---
@@ -193,13 +262,13 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 ```bash
 # Логи контейнера с тестами
-docker logs -f funnyenglish-test-runner
+docker logs -f sotospeak-test-runner
 
 # Логи backend при интеграционных тестах
-docker logs -f funnyenglish-backend-integration
+docker logs -f sotospeak-backend-integration
 
 # Логи PostgreSQL
-docker logs -f funnyenglish-postgres-test
+docker logs -f sotospeak-postgres-test
 ```
 
 ### Интерактивный режим
@@ -285,7 +354,7 @@ netstat -ano | findstr 5433  # Windows
 ```bash
 # Очистить Gradle daemon
 ./gradlew --stop
-docker volume rm funnyenglish_test_gradle_cache
+docker volume rm sotospeak_test_gradle_cache
 ```
 
 ---

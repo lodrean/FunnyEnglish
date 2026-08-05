@@ -20,10 +20,10 @@ import {
 import {
   Visibility,
   VisibilityOff,
-  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
 import { login } from '../api/client';
+import { Logo } from '../components/common/Logo';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -85,27 +85,17 @@ export const Login: React.FC = () => {
       >
         {/* Logo / Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Box
+          <Logo
+            variant="full"
+            height={96}
             sx={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              backgroundColor: 'primary.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              maxWidth: 280,
+              width: '100%',
+              height: 'auto',
+              display: 'block',
               mx: 'auto',
-              mb: 2,
             }}
-          >
-            <AdminIcon sx={{ fontSize: 32, color: 'white' }} />
-          </Box>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
-            FunnyEnglish
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Admin Panel
-          </Typography>
+          />
         </Box>
 
         {/* Error Alert */}
@@ -128,7 +118,7 @@ export const Login: React.FC = () => {
             required
             autoFocus
             autoComplete="email"
-            placeholder="admin@funnyenglish.com"
+            placeholder="admin@sotospeak.com"
             inputProps={{ 'data-testid': 'login-email' }}
           />
           
@@ -189,7 +179,7 @@ export const Login: React.FC = () => {
             <strong>Demo credentials:</strong>
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block">
-            Email: admin@funnyenglish.com
+            Email: admin@sotospeak.com
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block">
             Password: admin123

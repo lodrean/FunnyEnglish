@@ -3,7 +3,7 @@ schema: spec-driven
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 context: |
-  Проект: FunnyEnglish → Speaking-тренажёр (пивот 2026-07-30, эпик bd FunnyEnglish-8tg).
+  Проект: So to Speak → Speaking-тренажёр (пивот 2026-07-30, эпик bd FunnyEnglish-8tg).
   Ученик: Library → Topic → видео (WebVTT-субтитры) → вопросы → Training (3 попытки голосом,
   локально, лимиты 80/50/30с) / Practice (30с одна запись, автоотправка учителю, гейтинг авторизацией).
   Учитель в admin-web оценивает по рубрике grammar/vocabulary/pronunciation/fluency (1–10) + комментарий.

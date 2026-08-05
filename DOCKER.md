@@ -1,4 +1,4 @@
-# FunnyEnglish Docker Setup
+# So to Speak Docker Setup
 
 ## 🚀 Быстрая шпаргалка
 
@@ -31,7 +31,7 @@ docker compose up -d --build
 | Сервис | URL | Credentials |
 |--------|-----|-------------|
 | Backend API | http://localhost:8080/api | - |
-| Admin Panel | http://localhost:3000 | `admin@funnyenglish.com` / `admin123` |
+| Admin Panel | http://localhost:3000 | `admin@sotospeak.com` / `admin123` |
 | MinIO Console | http://localhost:9001 | `minioadmin` / `minioadmin` |
 | PostgreSQL | localhost:5432 | `postgres` / `postgres` |
 
@@ -55,10 +55,10 @@ docker compose restart minio
 docker compose down
 
 # Подключиться к базе данных
-docker compose exec postgres psql -U postgres -d funnyenglish
+docker compose exec postgres psql -U postgres -d sotospeak
 
 # Выполнить SQL запрос
-docker compose exec postgres psql -U postgres -d funnyenglish -c "SELECT * FROM users;"
+docker compose exec postgres psql -U postgres -d sotospeak -c "SELECT * FROM users;"
 
 # Очистка неиспользуемых образов
 docker system prune -f
@@ -95,6 +95,39 @@ docker compose logs postgres
 docker compose exec backend nc -zv postgres 5432
 ```
 
+## ☁️ Object Storage (S3)
+
+Видео, субтитры (WebVTT), обложки и practice-аудио хранятся в S3-совместимом хранилище.
+Backend настраивается через env-переменные:
+
+| Переменная | Назначение | Дефолт (dev) |
+|---|---|---|
+| `S3_ENDPOINT` | Endpoint S3 API | `http://localhost:9000` (MinIO) |
+| `S3_REGION` | Регион | `us-east-1` |
+| `S3_ACCESS_KEY` / `S3_SECRET_KEY` | Ключи доступа (обязательны, дефолта нет) | — |
+| `S3_BUCKET` | Имя бакета | `sotospeak` |
+| `S3_PUBLIC_URL` | Публичный URL медиа (обычно CDN-домен перед бакетом) | `S3_ENDPOINT` |
+
+**Дефолт — MinIO** в compose-стеке (dev: `docker-compose.yml`, prod: `docker-compose.prod.yml`),
+наружу не проброшен — публикация файлов идёт через Caddy по `MEDIA_HOST` (`S3_PUBLIC_URL`).
+
+**Внешний российский S3** (Yandex Cloud / Selectel / VK Cloud) — раскомментируйте
+`S3_ENDPOINT`/`S3_REGION` в `.env` (примеры в `docker/.env.example`) и задайте
+`S3_PUBLIC_URL` на CDN-домен перед бакетом, например:
+
+```bash
+S3_ENDPOINT=https://storage.yandexcloud.net
+S3_REGION=ru-central1
+S3_PUBLIC_URL=https://cdn.yourdomain.com/sotospeak
+```
+
+`S3_PUBLIC_URL` важен (BUG-004): backend отдаёт клиентам именно публичные URL,
+доступные с устройств, а не внутренний endpoint контейнера.
+
+**Лимиты загрузки:** practice-аудио ≤ 5 МБ (валидация в backend);
+видео — до **200 МБ** (`client_max_body_size 200m` в `docker/nginx.conf` +
+`spring.servlet.multipart.max-file-size=200MB` в backend).
+
 ## 📦 Production (Prod)
 
 ### Пример docker-compose.prod.yml
@@ -104,7 +137,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: funnyenglish
+      POSTGRES_DB: sotospeak
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -128,15 +161,18 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: funnyenglish
+      DB_NAME: sotospeak
       DB_USERNAME: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_FLYWAY_ENABLED: true
       S3_ENDPOINT: http://minio:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY}
       S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_BUCKET: ${S3_BUCKET:-funnyenglish}
+      S3_BUCKET: ${S3_BUCKET:-sotospeak}
+      # Публичный URL медиа для клиентов (CDN-домен через Caddy → MinIO), см. раздел S3 выше
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
@@ -156,10 +192,13 @@ volumes:
 # Database
 DB_PASSWORD=your-strong-password-here-min-16-chars
 
-# S3/MinIO Storage
+# S3/MinIO Storage (подробности — раздел «Object Storage (S3)» выше)
+# Для внешнего S3 (Yandex/Selectel/VK) добавьте S3_ENDPOINT и S3_REGION
 S3_ACCESS_KEY=your-minio-access-key
 S3_SECRET_KEY=your-minio-secret-key
-S3_BUCKET=funnyenglish
+S3_BUCKET=sotospeak
+# Публичный URL медиа (CDN-домен перед бакетом)
+S3_PUBLIC_URL=https://cdn.yourdomain.com/sotospeak
 
 # JWT Secret (минимум 32 символа)
 JWT_SECRET=your-super-secret-jwt-key-change-in-production-min-32-chars
@@ -170,7 +209,23 @@ ADMIN_PASSWORD=your-secure-admin-password
 
 # CORS
 CORS_ORIGINS=https://admin.yourdomain.com
+
+# Email-верификация (OpenSpec add-email-verification)
+EMAIL_VERIFICATION_ENABLED=true
+# SMTP-провайдер (Yandex 360 для домена / Unisender / SendPulse)
+SPRING_MAIL_HOST=smtp.yandex.ru
+SPRING_MAIL_PORT=465
+SPRING_MAIL_USERNAME=noreply@yourdomain.com
+SPRING_MAIL_PASSWORD=your-smtp-password
+SPRING_MAIL_AUTH=true
+SPRING_MAIL_STARTTLS=true
+MAIL_FROM=noreply@yourdomain.com
+# Публичный base URL API для ссылок в письмах (БЕЗ /api)
+PUBLIC_APP_URL=https://api.yourdomain.com
 ```
+
+> Для доставляемости писем настройте SPF/DKIM домена у почтового провайдера,
+> иначе письма верификации будут падать в спам.
 
 ### Production Security Checklist
 
@@ -181,6 +236,70 @@ CORS_ORIGINS=https://admin.yourdomain.com
 - [ ] `.env` файл не в git (добавлен в .gitignore)
 - [ ] Регулярные бэкапы БД
 - [ ] `DDL_AUTO: validate` (не `create` или `update`)
+
+## 🧪 Staging (тестовое окружение)
+
+Изолированное окружение для приёмки MVP (`docker-compose.staging.yml`, проект
+`sotospeak-staging`): свои volume'ы PostgreSQL/MinIO (данные не пересекаются
+с dev/prod), `ddl-auto=validate` (как prod), **Mailpit** (SMTP-ловушка для
+email-верификации), `DEMO_USER_ENABLED=true`, ослабленные rate-limit'ы.
+
+```bash
+# Подготовка
+cp docker/.env.staging.example docker/.env.staging   # заполнить значения!
+./gradlew :backend:bootJar
+
+# Запуск
+docker compose -f docker-compose.staging.yml --env-file docker/.env.staging up -d --build
+
+# Статус / логи
+docker compose -f docker-compose.staging.yml ps
+docker compose -f docker-compose.staging.yml logs -f backend
+
+# Остановка / полный сброс данных staging
+docker compose -f docker-compose.staging.yml down
+docker compose -f docker-compose.staging.yml down -v
+```
+
+### URL и порты staging (не конфликтуют с dev/prod на той же машине)
+
+| Сервис | URL |
+|--------|-----|
+| Backend API | http://localhost:8180/api |
+| Admin Panel | http://localhost:3100 |
+| Mailpit UI (перехваченные письма) | http://localhost:8125 |
+| MinIO Console | http://localhost:9101 |
+| PostgreSQL | localhost:5433 |
+
+### Вариант с поддоменами через общий Caddy (на сервере)
+
+Если staging живёт на том же сервере, что и prod (Caddy держит 80/443),
+порты из `docker-compose.staging.yml` НЕ пробрасывать наружу, а в `docker/Caddyfile`
+добавить блоки staging-хостов (DNS A-записи на тот же сервер):
+
+```
+{$STAGING_ADMIN_HOST} {
+	reverse_proxy sotospeak-staging-admin:80
+}
+{$STAGING_API_HOST} {
+	reverse_proxy sotospeak-staging-backend:8080
+}
+{$STAGING_MEDIA_HOST} {
+	reverse_proxy sotospeak-staging-minio:9000
+}
+```
+
+Для этого staging-контейнеры должны быть в одной docker-сети с Caddy
+(external network), `S3_PUBLIC_URL=https://<STAGING_MEDIA_HOST>/sotospeak`.
+
+### APK под staging
+
+```bash
+# Эмулятор
+./gradlew :app:assembleDebug -PSOTOSPEAK_API_BASE_URL=http://10.0.2.2:8180/
+# Реальное устройство (LAN-IP сервера)
+./gradlew :app:assembleDebug -PSOTOSPEAK_API_BASE_URL=http://192.168.x.x:8180/
+```
 
 ## 🐛 Troubleshooting
 

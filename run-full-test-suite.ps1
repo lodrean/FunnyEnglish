@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Full Test Suite Runner for FunnyEnglish
+    Full Test Suite Runner for So to Speak
 .DESCRIPTION
     Automated testing of all features across all platforms
 #>
@@ -51,7 +51,7 @@ $Results = @{
     CMP = @{ Status = "SKIPPED"; Passed = 0; Failed = 0 }
 }
 
-Write-Header "FunnyEnglish Full Test Suite"
+Write-Header "So to Speak Full Test Suite"
 Write-Host "Mode: $(if($Quick){'QUICK'}else{'FULL'})"
 Write-Host "Started: $StartTime"
 Write-Host ""

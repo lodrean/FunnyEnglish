@@ -59,53 +59,6 @@ describe('API Client', () => {
     });
   });
 
-  describe('Categories', () => {
-    it('should fetch categories', async () => {
-      const { getCategories } = await importClient();
-      await getCategories();
-      expect(mockApi.get).toHaveBeenCalledWith('/categories');
-    });
-  });
-
-  describe('Tests', () => {
-    it('should fetch admin tests', async () => {
-      const { getAdminTests } = await importClient();
-      await getAdminTests();
-      expect(mockApi.get).toHaveBeenCalledWith('/admin/tests');
-    });
-
-    it('should fetch single test', async () => {
-      const { getAdminTest } = await importClient();
-      await getAdminTest('123');
-      expect(mockApi.get).toHaveBeenCalledWith('/admin/tests/123');
-    });
-
-    it('should create test', async () => {
-      const { createTest } = await importClient();
-      const testData = {
-        title: 'New Test',
-        categoryId: 'cat1',
-        difficulty: 'EASY',
-        questions: [],
-      };
-      await createTest(testData as any);
-      expect(mockApi.post).toHaveBeenCalledWith('/admin/tests', testData);
-    });
-
-    it('should update test', async () => {
-      const { updateTest } = await importClient();
-      const updateData = { title: 'Updated' };
-      await updateTest('123', updateData);
-      expect(mockApi.put).toHaveBeenCalledWith('/admin/tests/123', updateData);
-    });
-
-    it('should delete test', async () => {
-      const { deleteTest } = await importClient();
-      await deleteTest('123');
-      expect(mockApi.delete).toHaveBeenCalledWith('/admin/tests/123');
-    });
-  });
-
   describe('Users', () => {
     it('should fetch admin users', async () => {
       const { getAdminUsers } = await importClient();
@@ -183,53 +136,6 @@ describe('API Client', () => {
     });
   });
 
-  describe('Questions', () => {
-    it('should fetch questions by test', async () => {
-      const { getQuestionsByTest } = await importClient();
-      await getQuestionsByTest('test123');
-      expect(mockApi.get).toHaveBeenCalledWith('/questions/test/test123/details');
-    });
-
-    it('should fetch question for admin', async () => {
-      const { getQuestionForAdmin } = await importClient();
-      await getQuestionForAdmin('q123');
-      expect(mockApi.get).toHaveBeenCalledWith('/questions/q123/admin');
-    });
-
-    it('should create question', async () => {
-      const { createQuestion } = await importClient();
-      const questionData = { text: 'Q1', type: 'TEXT_SELECT' };
-      await createQuestion(questionData as any);
-      expect(mockApi.post).toHaveBeenCalledWith('/questions', questionData);
-    });
-
-    it('should update question', async () => {
-      const { updateQuestion } = await importClient();
-      const updateData = { text: 'Updated Q' };
-      await updateQuestion('q123', updateData as any);
-      expect(mockApi.put).toHaveBeenCalledWith('/questions/q123', updateData);
-    });
-
-    it('should delete question', async () => {
-      const { deleteQuestion } = await importClient();
-      await deleteQuestion('q123');
-      expect(mockApi.delete).toHaveBeenCalledWith('/questions/q123');
-    });
-
-    it('should duplicate question', async () => {
-      const { duplicateQuestion } = await importClient();
-      await duplicateQuestion('q123');
-      expect(mockApi.post).toHaveBeenCalledWith('/questions/q123/duplicate');
-    });
-
-    it('should reorder questions', async () => {
-      const { reorderQuestions } = await importClient();
-      const reorderData = { testId: 't1', questionIds: ['q1', 'q2'] };
-      await reorderQuestions(reorderData as any);
-      expect(mockApi.post).toHaveBeenCalledWith('/questions/reorder', reorderData);
-    });
-  });
-
   describe('Student Groups', () => {
     it('should fetch teacher groups', async () => {
       const { getTeacherGroups } = await importClient();
@@ -286,46 +192,6 @@ describe('API Client', () => {
       const { getGroupProgress } = await importClient();
       await getGroupProgress('g123');
       expect(mockApi.get).toHaveBeenCalledWith('/groups/g123/progress');
-    });
-  });
-
-  describe('Audio Tests', () => {
-    it('should fetch audio tests', async () => {
-      const { getAudioTests } = await importClient();
-      await getAudioTests();
-      expect(mockApi.get).toHaveBeenCalledWith('/admin/audio-tests');
-    });
-
-    it('should fetch single audio test', async () => {
-      const { getAudioTest } = await importClient();
-      await getAudioTest('at123');
-      expect(mockApi.get).toHaveBeenCalledWith('/admin/audio-tests/at123');
-    });
-
-    it('should create audio test', async () => {
-      const { createAudioTest } = await importClient();
-      const testData = { title: 'Audio Test', audioUrl: 'url' };
-      await createAudioTest(testData as any);
-      expect(mockApi.post).toHaveBeenCalledWith('/admin/audio-tests', testData);
-    });
-
-    it('should update audio test', async () => {
-      const { updateAudioTest } = await importClient();
-      const updateData = { title: 'Updated' };
-      await updateAudioTest('at123', updateData as any);
-      expect(mockApi.put).toHaveBeenCalledWith('/admin/audio-tests/at123', updateData);
-    });
-
-    it('should delete audio test', async () => {
-      const { deleteAudioTest } = await importClient();
-      await deleteAudioTest('at123');
-      expect(mockApi.delete).toHaveBeenCalledWith('/admin/audio-tests/at123');
-    });
-
-    it('should publish audio test', async () => {
-      const { publishAudioTest } = await importClient();
-      await publishAudioTest('at123', true);
-      expect(mockApi.patch).toHaveBeenCalledWith('/admin/audio-tests/at123/publish', { isPublished: true });
     });
   });
 });

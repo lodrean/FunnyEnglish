@@ -1,0 +1,168 @@
+# So to speak - Staging Environment
+# ==================================
+# Изолированное тестовое окружение для приёмки MVP: отдельный compose-проект
+# (sotospeak-staging) со СВОИМИ volume'ами PostgreSQL/MinIO — данные не
+# пересекаются ни с dev (docker-compose.yml), ни с prod (docker-compose.prod.yml).
+#
+# Отличия от dev:
+#   - ddl-auto=validate (схемой управляет Flyway, как в prod);
+#   - Mailpit (SMTP-ловушка) для приёмки email-верификации без реального провайдера;
+#   - DEMO_USER_ENABLED=true (тестовые пользователи);
+#   - свои порты (не конфликтуют с dev/prod на той же машине):
+#       Backend API:    http://localhost:8180/api
+#       Admin Panel:    http://localhost:3100
+#       Mailpit UI:     http://localhost:8125   (SMTP: localhost:1125)
+#       MinIO Console:  http://localhost:9101
+#       PostgreSQL:     localhost:5433
+#
+# Вариант с поддоменами (staging-api./staging-admin./staging-media. через общий
+# Caddy на сервере) — см. docs/DOCKER.md (секция Staging).
+#
+# Quick Start:
+#   ./gradlew :backend:bootJar
+#   docker compose -f docker-compose.staging.yml --env-file docker/.env.staging up -d --build
+
+name: sotospeak-staging
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sotospeak-staging-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sotospeak}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in docker/.env.staging}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: sotospeak-staging-minio
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in docker/.env.staging}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in docker/.env.staging}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: sotospeak-staging-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET:-sotospeak}
+    entrypoint: ["/bin/sh", "/init.sh"]
+    volumes:
+      - ./docker/minio-init.sh:/init.sh:ro
+    restart: "no"
+
+  # Mailpit — SMTP-ловушка: вся почта backend'а (email-верификация) перехватывается
+  # и доступна в web-UI. Реальный SMTP-провайдер на staging НЕ нужен.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sotospeak-staging-mailpit
+    ports:
+      - "1125:1025"   # SMTP
+      - "8125:8025"   # Web UI
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: sotospeak-staging-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-sotospeak}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate   # схемой управляет ТОЛЬКО Flyway (как prod)
+      SPRING_FLYWAY_ENABLED: "true"
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET:-sotospeak}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9100/sotospeak}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in docker/.env.staging (min 32 chars)}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@sotospeak.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in docker/.env.staging}
+      ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-Admin}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3100}
+      DEMO_USER_ENABLED: "true"   # demo@sotospeak.app/demo123 для приёмки
+      # Ослабленные rate-limit'ы для E2E/приёмки (грабля №23; в prod НЕ выставлять)
+      RATE_LIMIT_LOGIN_CAPACITY: ${RATE_LIMIT_LOGIN_CAPACITY:-100}
+      RATE_LIMIT_REGISTER_CAPACITY: ${RATE_LIMIT_REGISTER_CAPACITY:-50}
+      # Email-верификация через Mailpit (поддержка в backend — OpenSpec add-email-verification;
+      # до её реализации переменные безвредно игнорируются)
+      EMAIL_VERIFICATION_ENABLED: ${EMAIL_VERIFICATION_ENABLED:-false}
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+      MAIL_FROM: ${MAIL_FROM:-noreply@staging.sotospeak.local}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:8180}
+    ports:
+      - "8180:8080"
+    volumes:
+      # файловый лог backend переживает контейнер
+      - ./logs/backend-staging:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/api/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.admin
+    container_name: sotospeak-staging-admin
+    ports:
+      - "3100:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      # в nginx-контейнере localhost -> ::1, а nginx слушает IPv4 — используем 127.0.0.1
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  minio_data:

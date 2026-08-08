@@ -95,7 +95,7 @@ test.describe('CMP E2E - Environment Check', () => {
     console.log('Environment:');
     console.log(`  CI: ${process.env.CI || 'not set'}`);
     console.log(`  SKIP_WEB_SERVER: ${process.env.SKIP_WEB_SERVER || 'not set'}`);
-    console.log(`  CMP_URL: ${process.env.CMP_URL || 'http://localhost:8081 (default)'}`);
+    console.log(`  CMP_URL: ${process.env.CMP_URL || 'http://localhost:8082 (default)'}`);
     
     // Just info, always passes
     expect(true).toBe(true);

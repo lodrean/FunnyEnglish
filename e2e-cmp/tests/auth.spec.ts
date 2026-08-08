@@ -41,7 +41,7 @@ test.describe('CMP WASM - Authentication', () => {
     await passOnboarding(page);
 
     // Гостевой профиль → Register
-    await clickCanvas(page, POS.bottomNavProfile, 3000);
+    await clickCanvas(page, POS.railProfile, 3000);
     const guestProfile = await fullShot(page);
     await clickCanvas(page, POS.guestProfileRegister, 2500);
     const register = await fullShot(page);

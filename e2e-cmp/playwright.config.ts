@@ -31,10 +31,13 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report' }],
     ['list']
   ],
+
+  /* Гигиена dev-стека (purge E2E-библиотек) перед прогоном */
+  globalSetup: './global-setup.ts',
   
   /* Shared settings */
   use: {
-    baseURL: process.env.CMP_URL || 'http://localhost:8081',
+    baseURL: process.env.CMP_URL || 'http://localhost:8082',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
@@ -61,7 +64,7 @@ export default defineConfig({
     command: process.platform === 'win32'
       ? 'cd ..\\composeApp && ..\\gradlew.bat wasmJsBrowserDevelopmentRun --quiet'
       : 'cd ../composeApp && ../gradlew wasmJsBrowserDevelopmentRun --quiet',
-    url: 'http://localhost:8081',
+    url: 'http://localhost:8082',
     reuseExistingServer: !process.env.CI,
     timeout: 600 * 1000, // 10 minutes for WASM compilation
     env: {

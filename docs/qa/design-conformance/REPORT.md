@@ -139,3 +139,28 @@ node shoot-admin.js      # admin :3000, логин admin@sotospeak.com
 - Bottomnav-иконки `i-home`/`i-send`/`i-user` добавлены в icons.svg, мокапы и SpeakingIcons.kt (Home/Send/User); bottom nav приложения переведён на них.
 - ease-bounce для ✅ — уже был (CheckPopAppear на SpeakingMotion.tweenBounce).
 - desktopTest 83/83 после всех правок.
+
+---
+
+## M3-конформити (2026-08-07, эпик bd `FunnyEnglish-2mz`/`oyh`)
+
+**База сверки обновлена**: mockups.html v2.0 / styleguide.html v2.0 (M3) — см. DESIGN_SYSTEM_SPEC v3.0 §7.
+Компонентная база реализации переведена на Material 3 (реестр `docs/design/M3_REPLACEMENT_REGISTRY.md`,
+маппинг `docs/design/M3_IMPLEMENTATION_MAPPING.md`).
+
+**Гейты M3-реализации:**
+- composeApp: `desktopTest` 95/95, `compileKotlinWasmJs`, `:app:assembleDebug` ✅
+- admin-web: `vitest` 256/256, `lint` 0, `typecheck` 0, `build` ✅
+- Maestro (эмулятор, docker-стек): **4/4** ✅ (login, practice_auth, guest_gating, training — на M3-UI)
+- e2e-cmp (WASM): **51 passed / 11 skipped / 0 failed** ✅ — спеки перекалиброваны под M3
+  (NavigationRail на wide, Q4; `shoot-calibrate-m3.js`; global-setup purge E2E-библиотек)
+- admin-web Playwright smoke (theme-toggle + navigation, все проекты): **17/17** ✅
+
+Скриншоты M3-UI (1280x720): `e2e-cmp/test-results/calib-m3/` (library/topics/questions/training/profile/login,
+light). Полное визуальное ревью против mockups v2.0 — за владельцем (DSM-7, bd `FunnyEnglish-dmb`).
+
+### Спот-сверка app ↔ mockups v2.0 (2026-08-08)
+
+- **frame-library ↔ app Library** — структурно совпадает: ElevatedCard темы, chip НОВАЯ/ПРОЙДЕНО (container + тёмный текст), LinearProgressIndicator 4dp, nav pill-индикатор (bottom nav на compact / NavigationRail на wide). Скриншоты: `e2e-cmp/test-results/mockup-frame-library.png` vs `bg-audit/{light,dark}/library.png`.
+- **frame-questions ↔ app Questions** — ⚠️ **расхождение текстов CTA (вопрос Q5 владельцу, DSM-7)**: мокап v2.0 (новый фрейм DSM-4) — «Начать Training · 80 сек» / «Сразу Practice · 30 сек»; приложение — «Тренировка · 3 попытки» / «Практика · 30 сек» (тексты эпохи DC-2…DC-5, на них завязаны Maestro-флоу). Также структура: мокап — первая карточка вопроса укрупнённая + список остальных; приложение — однородные карточки. Решение (мокап править или приложение) — за владельцем; самостоятельно не меняем.
+- **Фоны экранов** — bg-аудит (`e2e-cmp/shoot-bg-audit.js`, pixel-сэмплы light+dark, 11 экранов × 2 темы): везде фирменный фон `#EEF3FF`/`#161A2E`; «дыр» нет. Замечание «нет заполненности» относилось к протухшему prod-бандлу (2026-08-03, до M3) — пересобран 2026-08-08.

@@ -71,7 +71,7 @@ test.describe('CMP WASM - Navigation (speaking flow)', () => {
     await continueAsGuest(page);
 
     const library = await clipShot(page);
-    await clickCanvas(page, POS.bottomNavMySubmissions, 3000);
+    await clickCanvas(page, POS.railMySubmissions, 3000);
     const locked = await clipShot(page);
     expectScreenChanged(library, locked, 'Library → MySubmissions (locked)');
     await page.screenshot({ path: 'test-results/cmp-nav-mysubmissions-locked.png' });

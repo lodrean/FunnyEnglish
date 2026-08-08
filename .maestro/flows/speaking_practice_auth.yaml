@@ -1,5 +1,7 @@
 # Flow: авторизованный пользователь — Practice: запись → ручной стоп → автоотправка → Sent → MySubmissions (спека §10.2)
 # Требует: docker-стек, demo@sotospeak.app/demo123 (DEMO_USER_ENABLED=true), seed-контент.
+# НЕ ИДЕМПОТЕНТЕН: backend-гейт DUPLICATE_SUBMISSION (409) — перед повторным прогоном
+# очистить: docker exec sotospeak-postgres psql -U postgres -d sotospeak -c "DELETE FROM grades; DELETE FROM practice_submissions;"
 
 appId: com.sotospeak.app
 ---

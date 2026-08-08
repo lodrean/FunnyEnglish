@@ -22,28 +22,29 @@ import { Page, expect } from '@playwright/test';
 
 export const VP = { width: 1280, height: 720 } as const;
 
-/** Калиброванные позиции кликов (viewport 1280x720) */
+/** Калиброванные позиции кликов (viewport 1280x720, M3-UI 2026-08-07, shoot-calibrate-m3.js) */
 export const POS = {
   onboardingNext: { x: 640, y: 648 },        // «Далее»/«Начать» на слайдах онбординга
-  guestProfileRegister: { x: 640, y: 399 },  // «Зарегистрироваться» в гостевом профиле
-  guestProfileLoginLink: { x: 705, y: 456 }, // «Уже есть аккаунт? Войти» (accent) в гостевом профиле
-  loginEmail: { x: 640, y: 175 },
-  loginPassword: { x: 640, y: 285 },
-  loginSubmit: { x: 640, y: 353 },
-  loginToRegisterLink: { x: 685, y: 449 },   // «Нет аккаунта? Регистрация» на Login
-  registerToLoginLink: { x: 705, y: 552 },   // «Уже есть аккаунт? Войти» на Register
-  firstLibrary: { x: 640, y: 240 },          // seed «Разговорный английский» (2-я карточка после E2E-библиотек)
+  guestProfileRegister: { x: 680, y: 439 },  // «Зарегистрироваться» в гостевом профиле (M3 gate card)
+  guestProfileLoginLink: { x: 743, y: 499 }, // «Уже есть аккаунт? Войти» (accent) в гостевом профиле
+  loginEmail: { x: 640, y: 152 },            // M3 OutlinedTextField (label в бордере)
+  loginPassword: { x: 640, y: 233 },
+  loginSubmit: { x: 640, y: 313 },
+  loginToRegisterLink: { x: 690, y: 413 },   // «Нет аккаунта? Регистрация» на Login
+  registerToLoginLink: { x: 703, y: 493 },   // «Уже есть аккаунт? Войти» на Register
+  firstLibrary: { x: 640, y: 140 },          // seed «Разговорный английский» — первая карточка (после purge E2E в global-setup)
   firstTopic: { x: 640, y: 115 },
   backArrow: { x: 26, y: 33 },
-  videoErrorToQuestions: { x: 707, y: 441 }, // «К вопросам» в error-стабе плеера (wasm)
-  questionsTrainingGuest: { x: 640, y: 340 },// «Тренировка · 3 попытки» (гость — выше, гейт снизу)
+  videoErrorToQuestions: { x: 711, y: 445 }, // «К вопросам» в error-стабе плеера (wasm, seed-топик)
+  questionsTrainingGuest: { x: 640, y: 285 },// «Тренировка · 3 попытки» (гость — выше гейта)
   questionsTrainingAuth: { x: 640, y: 607 }, // «Тренировка · 3 попытки» (авторизованный)
   questionsPracticeAuth: { x: 640, y: 676 }, // «Практика · 30 сек» (авторизованный)
-  gateRegister: { x: 640, y: 624 },          // «Зарегистрироваться» в SpeakingGate (Questions)
-  gateLogin: { x: 640, y: 680 },             // «Войти» в SpeakingGate (Questions)
-  bottomNavLibrary: { x: 210, y: 670 },
-  bottomNavMySubmissions: { x: 640, y: 670 },// «Отправки»
-  bottomNavProfile: { x: 1065, y: 670 },
+  gateRegister: { x: 640, y: 597 },          // «Зарегистрироваться» в SpeakingGate (Questions, M3 card)
+  gateLogin: { x: 640, y: 656 },             // «Войти» в SpeakingGate (Questions)
+  // Навигация wide (1280px) — M3 NavigationRail слева (Q4, спека §5); bottom nav — только compact
+  railLibrary: { x: 40, y: 300 },
+  railMySubmissions: { x: 40, y: 360 },      // «Отправки»
+  railProfile: { x: 40, y: 425 },
 } as const;
 
 /** Клип-регион заголовка экрана (для diff-assertion'ов): только текст заголовка,
@@ -126,17 +127,17 @@ export async function continueAsGuest(page: Page) {
   await passOnboarding(page);
 }
 
-/** Library → Профиль → гостевой профиль → «Войти» → Login */
+/** Library → Профиль (NavigationRail) → гостевой профиль → «Войти» → Login */
 export async function openLoginScreen(page: Page) {
   await passOnboarding(page);
-  await clickCanvas(page, POS.bottomNavProfile, 3000);      // гостевой профиль
+  await clickCanvas(page, POS.railProfile, 3000);           // гостевой профиль
   await clickCanvas(page, POS.guestProfileLoginLink, 2500); // «Войти»
 }
 
-/** Library → Профиль → «Зарегистрироваться» → Register */
+/** Library → Профиль (rail) → «Зарегистрироваться» → Register */
 export async function openRegisterScreen(page: Page) {
   await passOnboarding(page);
-  await clickCanvas(page, POS.bottomNavProfile, 3000);
+  await clickCanvas(page, POS.railProfile, 3000);
   await clickCanvas(page, POS.guestProfileRegister, 2500);
 }
 
@@ -159,5 +160,6 @@ export async function openFirstLibrary(page: Page) {
 /** Topics → первый топик → Video (error-стаб плеера на wasm) → «К вопросам» → Questions */
 export async function openQuestionsViaVideo(page: Page) {
   await clickCanvas(page, POS.firstTopic, 3000);
+  await page.waitForTimeout(5000); // seed-видео пробует грузиться, error-стаб появляется с задержкой
   await clickCanvas(page, POS.videoErrorToQuestions, 4000);
 }

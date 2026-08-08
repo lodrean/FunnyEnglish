@@ -245,3 +245,6 @@ tasks.register<Test>("uiTest") {
     classpath = dt.get().classpath
     include("**/tests/**")
 }
+
+// WASM distribution task (prod bundle → build/wasm-dist)
+apply(from = "build-wasm-distribution.gradle.kts")

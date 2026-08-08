@@ -151,7 +151,11 @@ jobs:
       
       - name: Run E2E Tests
         working-directory: ./admin-web
-        run: npm run test:e2e:headless
+        # Скрипта test:e2e:headless нет; прогон против docker-админки (3000), без webServer
+        run: npx playwright test
+        env:
+          SKIP_WEB_SERVER: "1"
+          ADMIN_URL: http://localhost:3000
       
       - name: Upload E2E Results
         uses: actions/upload-artifact@v4

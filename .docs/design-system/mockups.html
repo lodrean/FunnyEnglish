@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speaking Trainer — Эталонные мокапы (Playful Coach)</title>
+<title>Speaking Trainer — Эталонные мокапы v2.0 (Playful Coach × Material 3)</title>
 <link rel="stylesheet" href="tokens.css">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -11,24 +11,24 @@
   body {
     font-family: var(--font-brand);
     background: var(--color-surface-warm);
-    color: var(--color-text);
+    color: var(--color-text);про
     min-height: 100vh;
   }
   /* ---- Switcher ---- */
   .switcher {
     position: sticky; top: 0; z-index: 10;
-    display: flex; gap: var(--space-s); justify-content: center;
+    display: flex; gap: var(--space-s); justify-content: center; flex-wrap: wrap;
     padding: var(--space-m);
     background: var(--color-surface);
-    border-bottom: 1px solid var(--color-surface-variant);
+    border-bottom: 1px solid var(--color-outline-variant);
   }
   .switcher button {
     font-family: var(--font-brand); font-weight: var(--weight-bold); font-size: var(--text-body-small);
     padding: 10px 20px; border: none; border-radius: var(--radius-full);
     background: var(--color-surface-warm); color: var(--color-text-muted);
-    cursor: pointer; transition: all var(--duration-fast) var(--ease-standard);
+    cursor: pointer; transition: all var(--duration-m3-state) var(--ease-m3-standard);
   }
-  .switcher button.active { background: var(--color-primary); color: var(--color-on-primary); }
+  .switcher button.active { background: var(--color-primary-strong); color: var(--color-on-primary); }
   .switcher button:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .frame-wrap { display: none; padding: var(--space-xxl); justify-content: center; }
   .frame-wrap.active { display: flex; }
@@ -54,15 +54,66 @@
   .appbar h1 { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); }
   .appbar .sub { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
 
-  /* ---- Library ---- */
+  /* ===== M3 Buttons: Filled / Outlined / Text + state layers (оверлей цвета контента 8%/12%) ===== */
+  .btn {
+    position: relative; overflow: hidden;
+    font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-small);
+    border: none; border-radius: var(--radius-button); padding: 14px 28px; cursor: pointer;
+    min-height: var(--size-touch); transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .btn::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); pointer-events: none; }
+  .btn:hover::after { opacity: var(--state-hover); }
+  .btn:active::after { opacity: var(--state-pressed); }
+  .btn:active { transform: scale(.97); }
+  .btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .btn-primary { background: var(--color-primary-strong); color: #fff; } /* Filled: белый только на primaryStrong (4.76:1 AA) */
+  .btn-ghost { background: transparent; color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-outline); } /* M3 Outlined (ex-SpeakingGhostButton) */
+  .btn-danger-ghost { background: transparent; color: var(--color-error); box-shadow: inset 0 0 0 1px var(--color-error); } /* M3 Outlined error */
+  .link-btn {
+    position: relative; overflow: hidden;
+    font-family: var(--font-brand); font-size: var(--text-body-small); font-weight: var(--weight-bold);
+    color: var(--color-primary); background: none; border: none; cursor: pointer;
+    padding: 10px 16px; min-height: var(--size-touch); border-radius: var(--radius-button);
+  }
+  .link-btn::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); }
+  .link-btn:hover::after { opacity: var(--state-hover); }
+  .link-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .btn-wide { width: 100%; }
+
+  /* ===== M3 Outlined TextField (label в бордере, focused 2px, error + supporting text) ===== */
+  .field { position: relative; }
+  .field label {
+    position: absolute; left: 12px; top: -9px; padding: 0 4px; background: var(--color-background);
+    font-size: var(--text-label-small); font-weight: var(--weight-bold); color: var(--color-text-muted);
+    transition: color var(--duration-m3-state) var(--ease-m3-standard); z-index: 1;
+  }
+  .input {
+    font-family: var(--font-brand); font-size: var(--text-body-medium); color: var(--color-text);
+    background: transparent; border: 1px solid var(--color-outline);
+    border-radius: var(--radius-button); padding: 14px 16px; min-height: 56px; width: 100%;
+    transition: border-color var(--duration-m3-state) var(--ease-m3-standard), box-shadow var(--duration-m3-state) var(--ease-m3-standard);
+  }
+  .input::placeholder { color: var(--color-text-muted); }
+  .input:hover { border-color: var(--color-text); }
+  .input:focus-visible { outline: none; border: 2px solid var(--color-primary); padding: 13px 15px; }
+  .field:focus-within label { color: var(--color-primary); }
+  .field-error .input { border-color: var(--color-error); }
+  .field-error label { color: var(--color-error); }
+  /* Текст ошибки: #B3261E (6.4:1 на белом) — token --color-error #E53935 даёт только 4.29:1, ниже AA для мелкого текста */
+  .field-error-text { display: block; margin-top: 6px; font-size: var(--text-label-small); font-weight: var(--weight-bold); color: #B3261E; }
+
+  /* ---- Library: ElevatedCard темы ---- */
   .library-list { flex: 1; overflow-y: auto; padding: var(--space-s) var(--space-l) var(--space-l); display: flex; flex-direction: column; gap: var(--space-m); }
   .theme-card {
+    position: relative; overflow: hidden;
     display: flex; gap: var(--space-m); align-items: center;
-    background: var(--color-surface); border: none; border-radius: var(--radius-card);
-    padding: var(--space-m); box-shadow: var(--shadow-card);
-    cursor: pointer; text-align: left; width: 100%;
+    background: var(--color-surface-container-lowest); border: none; border-radius: var(--radius-card);
+    padding: var(--space-m); box-shadow: var(--shadow-card); /* M3 ElevatedCard · level1 */
+    cursor: pointer; text-align: left; width: 100%; font-family: var(--font-brand); color: var(--color-text);
     transition: transform var(--duration-fast) var(--ease-standard);
   }
+  .theme-card::after { content: ""; position: absolute; inset: 0; background: var(--color-text); opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); pointer-events: none; }
+  .theme-card:hover::after { opacity: var(--state-hover); }
   .theme-card:active { transform: scale(.98); }
   .theme-card:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .theme-cover {
@@ -73,28 +124,36 @@
   .theme-info { flex: 1; min-width: 0; }
   .theme-name { font-size: var(--text-body-medium); font-weight: var(--weight-bold); }
   .theme-meta { font-size: var(--text-label-small); color: var(--color-text-muted); margin-top: 2px; display: flex; gap: var(--space-s); align-items: center; }
-  .theme-progress { height: 4px; border-radius: 2px; background: var(--color-surface-variant); margin-top: var(--space-s); overflow: hidden; }
+  .theme-progress { height: 4px; border-radius: 2px; background: var(--color-surface-container-highest); margin-top: var(--space-s); overflow: hidden; } /* M3 LinearProgressIndicator 4dp */
   .theme-progress > div { height: 100%; border-radius: 2px; background: var(--color-primary); transition: width var(--duration-medium) var(--ease-standard); }
   .chip {
     font-size: 11px; font-weight: var(--weight-extrabold); letter-spacing: .04em;
-    padding: 3px 8px; border-radius: var(--radius-chip); text-transform: uppercase;
+    padding: 4px 10px; border-radius: var(--radius-chip); text-transform: uppercase;
   }
   .chip-done { background: var(--color-status-reviewed-container); color: #256629; }
   .chip-new  { background: var(--color-status-new-container); color: #8a5200; }
+  /* ===== M3 NavigationBar: tonal surface-container, pill-индикатор 56×28 ===== */
   .bottomnav {
-    display: flex; border-top: 1px solid var(--color-surface-variant);
-    background: var(--color-surface); padding: var(--space-s) 0 calc(var(--space-s) + 4px);
+    display: flex; background: var(--color-surface-container);
+    padding: var(--space-s) 0 calc(var(--space-s) + 4px);
   }
   .bottomnav a {
     flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
     font-size: 11px; font-weight: var(--weight-bold); color: var(--color-text-muted); text-decoration: none;
     min-height: var(--size-touch); justify-content: center;
   }
-  .bottomnav a.active { color: var(--color-primary-strong); }
+  .bottomnav a .pill {
+    display: flex; align-items: center; justify-content: center;
+    width: 56px; height: 28px; border-radius: var(--radius-full);
+    transition: background var(--duration-m3-state) var(--ease-m3-standard);
+  }
+  .bottomnav a.active { color: var(--color-text); }
+  .bottomnav a.active .pill { background: var(--color-primary-container); color: var(--color-on-primary-container); }
+  .bottomnav a:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
 
   /* ---- Training ---- */
   .training { flex: 1; display: flex; flex-direction: column; padding: 0 var(--space-l); overflow-y: auto; }
-  .level-row { display: flex; align-items: center; gap: var(--space-s); margin: var(--space-s) 0; }
+  .level-row { display: flex; align-items: center; gap: var(--space-s); margin: var(--space-s) 0; flex-wrap: wrap; }
   .level-chip {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: var(--text-label-small); font-weight: var(--weight-extrabold);
@@ -102,19 +161,19 @@
     background: var(--color-primary-container); color: var(--color-on-primary-container);
   }
   .level-steps { display: flex; gap: 4px; margin-left: auto; }
-  .level-steps i { width: 20px; height: 6px; border-radius: 3px; background: var(--color-surface-variant); }
+  .level-steps i { width: 20px; height: 6px; border-radius: 3px; background: var(--color-surface-container-highest); }
   .level-steps i.on { background: var(--color-primary); }
   .question-card {
-    background: var(--color-surface); border-radius: var(--radius-card-large);
-    padding: var(--space-xl) var(--space-l); box-shadow: var(--shadow-card); margin: var(--space-s) 0 var(--space-m);
+    background: var(--color-surface-container-high); border-radius: var(--radius-card-large); /* M3 FilledCard */
+    padding: var(--space-xl) var(--space-l); margin: var(--space-s) 0 var(--space-m);
   }
   .question-num { font-size: var(--text-label-small); font-weight: var(--weight-extrabold); color: var(--color-primary); letter-spacing: .08em; text-transform: uppercase; margin-bottom: var(--space-s); }
   .question-text { font-size: var(--text-question); line-height: 1.35; font-weight: var(--weight-semibold); }
   .rec-zone { display: flex; flex-direction: column; align-items: center; padding: var(--space-m) 0 var(--space-s); }
-  /* Timer ring */
+  /* Timer ring (brand; трек = surfaceContainerHighest) */
   .timer-ring { position: relative; width: 176px; height: 176px; }
   .timer-ring svg { transform: rotate(-90deg); }
-  .timer-ring .track { stroke: var(--color-surface-variant); }
+  .timer-ring .track { stroke: var(--color-surface-container-highest); }
   .timer-ring .bar { stroke: var(--color-timer-80); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke var(--duration-medium) var(--ease-standard); }
   .timer-label {
     position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -122,58 +181,61 @@
   }
   .timer-label .tnum { font-size: 44px; font-weight: 700; line-height: 1; }
   .timer-label .cap { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-bold); }
-  /* Waveform */
+  /* Waveform (brand) */
   .waveform { display: flex; align-items: center; gap: 3px; height: 48px; margin: var(--space-m) 0 var(--space-s); }
   .waveform i {
     width: 4px; border-radius: 2px; background: var(--color-record-active);
     animation: wave 1.1s var(--ease-standard) infinite alternate;
   }
   @keyframes wave { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
-  /* Record button */
+  /* Rec-кнопка (brand): squircle 22 + «оттопыренная» тень; состояния — M3 state layers (оверлей onRecord) */
   .rec-btn {
     width: var(--size-recorder); height: var(--size-recorder); border-radius: var(--radius-recorder);
     border: none; background: var(--color-record); color: var(--color-on-record); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: var(--shadow-fab); position: relative;
+    box-shadow: var(--shadow-fab); position: relative; overflow: hidden;
     transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
   }
-  .rec-btn:active { box-shadow: 0 1px 0 rgba(217,114,56,.55); }
-  .rec-btn:active { transform: scale(.94); }
+  .rec-btn::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--color-on-record); opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); pointer-events: none; }
+  .rec-btn:hover::after { opacity: var(--state-hover); }
+  .rec-btn:active::after { opacity: var(--state-pressed); }
+  .rec-btn:active { box-shadow: 0 1px 0 rgba(217,114,56,.55); transform: scale(.94); }
   .rec-btn:focus-visible { outline: none; box-shadow: var(--shadow-fab), var(--shadow-focus); }
+  .rec-btn:disabled { background: color-mix(in srgb, var(--color-text) 12%, transparent); color: color-mix(in srgb, var(--color-text) 38%, transparent); box-shadow: none; cursor: default; transform: none; }
+  .rec-btn:disabled::after { display: none; }
   .rec-btn .ic { width: 30px; height: 30px; }
   .rec-btn.recording::before {
-    content: ""; position: absolute; inset: -8px; border-radius: var(--radius-full);
-    border: 3px solid var(--color-record); opacity: 0;
+    content: ""; position: absolute; inset: -8px; border-radius: calc(var(--radius-recorder) + 8px);
+    border: 3px solid var(--color-record); opacity: 0; z-index: -1;
     animation: recPulse var(--duration-rec-pulse) var(--ease-standard) infinite;
   }
   @keyframes recPulse { 0% { transform: scale(.9); opacity: .7; } 100% { transform: scale(1.25); opacity: 0; } }
   .rec-hint { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); margin-top: var(--space-s); }
   .privacy-note {
     display: flex; gap: var(--space-s); align-items: center;
-    background: var(--color-surface-warm); border-radius: var(--radius-button);
+    background: var(--color-surface-container-low); border-radius: var(--radius-button); /* M3 FilledCard low */
     padding: var(--space-m); margin: var(--space-s) 0 var(--space-m);
     font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold);
   }
   .privacy-note .ic { color: var(--color-secondary); flex-shrink: 0; }
-  /* Recording rows */
+  /* Recording rows (M3 ListItem-стиль, ElevatedCard) */
   .rec-list { display: flex; flex-direction: column; gap: var(--space-s); padding-bottom: var(--space-l); }
   .rec-list h3 { font-size: var(--text-body-small); font-weight: var(--weight-extrabold); margin: var(--space-s) 0 2px; }
   .rec-row {
     display: flex; align-items: center; gap: var(--space-m);
-    background: var(--color-surface); border-radius: var(--radius-card);
+    background: var(--color-surface-container-lowest); border-radius: var(--radius-card);
     padding: var(--space-m); box-shadow: var(--shadow-card);
   }
   .rec-play {
     width: var(--size-touch); height: var(--size-touch); border-radius: var(--radius-full); flex-shrink: 0;
-    border: none; background: var(--color-primary-container); color: var(--color-on-primary-container);
+    border: none; background: var(--color-primary-container); color: var(--color-on-primary-container); /* M3 FilledTonal IconButton */
     display: flex; align-items: center; justify-content: center; cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-standard);
+    transition: background var(--duration-m3-state) var(--ease-m3-standard);
   }
   .rec-play:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .rec-info { flex: 1; min-width: 0; }
   .rec-name { font-size: var(--text-body-small); font-weight: var(--weight-bold); }
-  /* slim expanding progress bar (player craft) */
-  .rec-bar { height: 5px; border-radius: 3px; background: var(--color-surface-variant); margin-top: 6px; overflow: hidden; transition: transform var(--duration-fast) var(--ease-standard); transform-origin: center; cursor: pointer; }
+  .rec-bar { height: 5px; border-radius: 3px; background: var(--color-surface-container-highest); margin-top: 6px; overflow: hidden; transition: transform var(--duration-fast) var(--ease-standard); transform-origin: center; cursor: pointer; }
   .rec-row:hover .rec-bar { transform: scaleY(2); }
   .rec-bar > div { height: 100%; width: 38%; background: var(--color-waveform-playback); border-radius: 3px; }
   .rec-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
@@ -194,8 +256,7 @@
   }
   .admin-top {
     display: flex; align-items: center; gap: var(--space-l);
-    background: var(--color-surface); padding: 0 var(--space-xl); height: 56px; flex-shrink: 0;
-    border-bottom: 1px solid var(--color-surface-variant);
+    background: var(--color-surface-container); padding: 0 var(--space-xl); height: 56px; flex-shrink: 0;
   }
   .admin-top .logo { font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); color: var(--color-primary); }
   .admin-top nav { display: flex; gap: var(--space-s); margin-left: var(--space-xxl); height: 100%; }
@@ -209,17 +270,17 @@
   .admin-body { flex: 1; display: flex; gap: var(--space-xl); padding: var(--space-xl); overflow: hidden; }
   .admin-col-main { flex: 1.4; display: flex; flex-direction: column; gap: var(--space-l); min-width: 0; }
   .admin-col-side { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-  .panel { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-xl); }
+  .panel { background: var(--color-surface-container-lowest); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-xl); }
   .panel h2 { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); margin-bottom: var(--space-s); }
   .student-row { display: flex; align-items: center; gap: var(--space-m); }
   .student-row .avatar { width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--color-tertiary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: var(--weight-extrabold); }
   .student-name { font-weight: var(--weight-bold); font-size: var(--text-body-medium); }
   .student-meta { font-size: var(--text-label-small); color: var(--color-text-muted); }
-  /* Admin audio player */
+  /* Admin audio player (brand waveform) */
   .player { display: flex; align-items: center; gap: var(--space-l); }
   .player-play {
     width: 56px; height: 56px; border-radius: var(--radius-full); border: none; flex-shrink: 0;
-    background: var(--color-primary); color: #fff; cursor: pointer;
+    background: var(--color-primary-strong); color: #fff; cursor: pointer; /* M3 FilledIconButton */
     display: flex; align-items: center; justify-content: center;
     transition: transform var(--duration-fast) var(--ease-standard);
   }
@@ -227,14 +288,14 @@
   .player-play:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .player-track { flex: 1; }
   .player-wave { display: flex; align-items: center; gap: 2px; height: 40px; cursor: pointer; }
-  .player-wave i { flex: 1; border-radius: 2px; background: var(--color-surface-variant); transition: background var(--duration-fast); }
+  .player-wave i { flex: 1; border-radius: 2px; background: var(--color-surface-container-highest); transition: background var(--duration-fast); }
   .player-wave i.played { background: var(--color-waveform-playback); }
   .player-times { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
   .q-list { display: flex; flex-direction: column; }
-  .q-item { display: flex; gap: var(--space-m); padding: var(--space-m) 0; border-bottom: 1px solid var(--color-surface-warm); font-size: var(--text-body-small); line-height: 1.5; }
+  .q-item { display: flex; gap: var(--space-m); padding: var(--space-m) 0; border-bottom: 1px solid var(--color-outline-variant); font-size: var(--text-body-small); line-height: 1.5; }
   .q-item:last-child { border-bottom: none; }
   .q-item .qn { font-weight: var(--weight-extrabold); color: var(--color-primary); flex-shrink: 0; font-size: 13px; }
-  /* Rubric */
+  /* Rubric (M3 Slider-стиль) */
   .rubric { display: flex; flex-direction: column; gap: var(--space-l); flex: 1; }
   .rubric-row { display: flex; flex-direction: column; gap: var(--space-xs); }
   .rubric-head { display: flex; justify-content: space-between; align-items: baseline; }
@@ -242,12 +303,12 @@
   .rubric-head .val { font-size: var(--text-title-medium); font-weight: 700; color: var(--color-primary); }
   input[type="range"] {
     -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px;
-    background: linear-gradient(to right, var(--color-primary) var(--fill,50%), var(--color-surface-variant) var(--fill,50%));
+    background: linear-gradient(to right, var(--color-primary) var(--fill,50%), var(--color-surface-container-highest) var(--fill,50%));
     outline: none; cursor: pointer;
   }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
-    background: var(--color-surface); border: 3px solid var(--color-primary);
+    background: var(--color-primary); border: 3px solid var(--color-surface-container-lowest);
     box-shadow: var(--shadow-card); transition: transform var(--duration-fast) var(--ease-standard);
   }
   input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
@@ -255,26 +316,17 @@
   .rubric-scale { display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-muted); }
   .avg-box {
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--color-surface-warm); border-radius: var(--radius-button); padding: var(--space-m) var(--space-l);
+    background: var(--color-secondary-container); border-radius: var(--radius-button); padding: var(--space-m) var(--space-l); /* M3 FilledCard · secondaryContainer (#E5DCFF по DC-1 G3) */
   }
-  .avg-box .lbl { font-size: var(--text-body-small); font-weight: var(--weight-bold); }
-  .avg-box .val { font-size: var(--text-headline-small); font-weight: 700; color: var(--color-secondary); }
+  .avg-box .lbl { font-size: var(--text-body-small); font-weight: var(--weight-bold); color: var(--color-on-secondary-container); }
+  .avg-box .val { font-size: var(--text-headline-small); font-weight: 700; color: var(--color-on-secondary-container); }
   textarea {
     font-family: var(--font-brand); font-size: var(--text-body-small); line-height: 1.5;
     border: 1px solid var(--color-outline); border-radius: var(--radius-button);
     padding: var(--space-m); resize: none; min-height: 88px; color: var(--color-text);
-    background: var(--color-surface);
+    background: transparent; /* M3 Outlined TextField (multiline) */
   }
-  textarea:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
-  .btn {
-    font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-small);
-    border: none; border-radius: var(--radius-button); padding: 14px 28px; cursor: pointer;
-    min-height: var(--size-touch); transition: transform var(--duration-fast) var(--ease-standard);
-  }
-  .btn:active { transform: scale(.97); }
-  .btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
-  .btn-primary { background: var(--color-primary-strong); color: #fff; }
-  .btn-ghost { background: transparent; color: var(--color-primary); }
+  textarea:focus-visible { outline: none; border: 2px solid var(--color-primary); }
   .admin-actions { display: flex; gap: var(--space-m); justify-content: flex-end; margin-top: auto; }
 
   /* ---- Video player ---- */
@@ -282,12 +334,12 @@
   .mode-chips { display: flex; gap: var(--space-s); flex-wrap: nowrap; }
   .mode-chip {
     font-family: var(--font-brand); font-size: var(--text-label-small); font-weight: var(--weight-extrabold);
-    padding: 8px 14px; border-radius: var(--radius-full); border: none; cursor: pointer;
-    background: var(--color-surface-warm); color: var(--color-text-muted);
-    min-height: 48px; transition: all var(--duration-fast) var(--ease-standard);
+    padding: 8px 14px; border-radius: var(--radius-chip); border: none; cursor: pointer; /* M3 FilterChip */
+    background: transparent; box-shadow: inset 0 0 0 1px var(--color-outline); color: var(--color-text-muted);
+    min-height: 48px; transition: all var(--duration-m3-state) var(--ease-m3-standard);
     flex: 1; display: flex; align-items: center; justify-content: center; white-space: nowrap;
   }
-  .mode-chip.on { background: var(--color-primary-container); color: var(--color-on-primary-container); }
+  .mode-chip.on { background: var(--color-primary-container); color: var(--color-on-primary-container); box-shadow: none; }
   .mode-chip:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .video-box { position: relative; border-radius: var(--radius-card); overflow: hidden; background: #1A2E42; aspect-ratio: 16/9; box-shadow: var(--shadow-card); flex-shrink: 0; }
   .video-scene { position: absolute; inset: 0; background: linear-gradient(160deg, #2C4A6B 0%, #1A2E42 55%, #101E2E 100%); display: flex; align-items: center; justify-content: center; }
@@ -303,7 +355,7 @@
   .subtitle { text-align: center; min-height: 52px; display: flex; align-items: center; justify-content: center; background: var(--color-surface); border-radius: var(--radius-button); box-shadow: var(--shadow-card); padding: var(--space-s) var(--space-m); flex-shrink: 0; }
   .subtitle span { display: inline; color: var(--text-subtitle-color, var(--color-text)); font-size: var(--text-subtitle); line-height: 1.4; font-weight: var(--weight-semibold); }
   .video-controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: var(--space-s); padding: 10px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
-  .vc-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background var(--duration-fast); }
+  .vc-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background var(--duration-m3-state) var(--ease-m3-standard); } /* M3 IconButton: hover = state layer 8% белого */
   .vc-btn:hover { background: rgba(255,255,255,.15); }
   .vc-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #000, 0 0 0 4px #fff; }
   .vc-btn .ic { width: 20px; height: 20px; }
@@ -317,11 +369,14 @@
   .vc-seek > div { height: 100%; width: 0%; background: #fff; border-radius: 3px; }
   .vc-time { font-size: 11px; color: #fff; flex-shrink: 0; }
   .video-cta {
+    position: relative; overflow: hidden;
     font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-medium);
     border: none; border-radius: var(--radius-button); padding: 16px; min-height: var(--size-touch);
-    cursor: pointer; background: var(--color-primary-strong); color: #fff; flex-shrink: 0;
+    cursor: pointer; background: var(--color-primary-strong); color: #fff; flex-shrink: 0; /* M3 FilledButton */
     transition: transform var(--duration-fast) var(--ease-standard);
   }
+  .video-cta::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); }
+  .video-cta:hover::after { opacity: var(--state-hover); }
   .video-cta:active { transform: scale(.98); }
   .video-cta:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .video-hint { text-align: center; font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
@@ -343,61 +398,40 @@
   .attempt-check:disabled { cursor: default; }
   .attempt-check.confirmed {
     background: var(--color-success); border-color: var(--color-success); color: #fff; cursor: default;
-    animation: checkPop .5s var(--ease-standard);
+    animation: checkPop .5s var(--ease-standard); /* brand CheckPopAppear: overshoot 0.3→1.18→1.0, 500ms */
   }
   @keyframes checkPop { 0% { transform: scale(.3); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
   .attempt-row.pending { outline: 2px dashed var(--color-outline); outline-offset: -2px; }
 
   /* ---- Practice (30 сек, отправка учителю) ---- */
   .pq-list { display: flex; flex-direction: column; gap: var(--space-s); }
-  .pq-item { display: flex; gap: 10px; font-size: 13px; line-height: 1.45; background: var(--color-surface); border-radius: var(--radius-button); padding: 10px 12px; box-shadow: var(--shadow-card); }
+  .pq-item { display: flex; gap: 10px; font-size: 13px; line-height: 1.45; background: var(--color-surface-container-high); border-radius: var(--radius-button); padding: 10px 12px; } /* M3 FilledCard */
   .pq-item .qn { font-weight: var(--weight-extrabold); color: var(--color-primary); flex-shrink: 0; }
-  .state-panel { display: none; flex-direction: column; gap: var(--space-m); background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-l); margin: var(--space-s) 0; }
+  .state-panel { display: none; flex-direction: column; gap: var(--space-m); background: var(--color-surface-container-lowest); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-l); margin: var(--space-s) 0; }
   .state-panel.show { display: flex; }
   .state-title { font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); text-align: center; }
-  .upload-track { height: 8px; border-radius: 4px; background: var(--color-surface-variant); overflow: hidden; }
+  .upload-track { height: 8px; border-radius: 4px; background: var(--color-surface-container-highest); overflow: hidden; }
   .upload-track > div { height: 100%; width: 0%; background: var(--color-primary); border-radius: 4px; transition: width .18s linear; }
   .upload-row { display: flex; justify-content: space-between; font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); }
   .sent-badge { align-self: center; width: 64px; height: 64px; border-radius: 50%; background: var(--color-status-reviewed-container); color: var(--color-success); display: flex; align-items: center; justify-content: center; animation: checkPop .5s var(--ease-standard); }
   .sent-badge .ic { width: 32px; height: 32px; }
-  .practice-note { display: flex; gap: var(--space-s); align-items: center; background: var(--color-status-new-container); border-radius: var(--radius-button); padding: var(--space-m); font-size: var(--text-label-small); color: #8a5200; font-weight: var(--weight-semibold); }
+  .practice-note { display: flex; gap: var(--space-s); align-items: center; background: var(--color-status-new-container); border-radius: var(--radius-button); padding: var(--space-m); font-size: var(--text-label-small); color: #8a5200; font-weight: var(--weight-semibold); } /* жёлтая плашка автоотправки, внизу (DC-1 P4) */
   .practice-note .ic { flex-shrink: 0; }
   .final-cta { display: none; flex-direction: column; gap: var(--space-m); padding: var(--space-m) 0; }
   .final-cta.show { display: flex; }
   .final-msg { text-align: center; font-weight: var(--weight-extrabold); font-size: var(--text-body-medium); color: var(--color-secondary); padding: var(--space-s) 0; }
-  .btn-wide { width: 100%; }
+  /* M3 Snackbar (inverseSurface) — показывается при 409 «повторная отправка запрещена» */
+  .snackbar-demo { display: flex; align-items: center; gap: var(--space-l); background: var(--color-inverse-surface); color: var(--color-inverse-on-surface); border-radius: var(--radius-chip); padding: 12px 16px; font-size: var(--text-body-small); font-weight: var(--weight-semibold); margin: var(--space-s) 0; }
+  .snackbar-demo button { background: none; border: none; color: var(--color-inverse-primary); font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-small); cursor: pointer; padding: 6px 8px; border-radius: 8px; min-height: 40px; }
 
-  /* ================= AUTH & ONBOARDING (Playful Coach v1.1) ================= */
-  /* Input field: radius-button 16, surface bg, focus ring primary */
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: var(--text-label-small); font-weight: var(--weight-extrabold); letter-spacing: .04em; }
-  .input {
-    font-family: var(--font-brand); font-size: var(--text-body-medium); color: var(--color-text);
-    background: var(--color-surface); border: 2px solid var(--color-outline);
-    border-radius: var(--radius-button); padding: 12px 16px; min-height: var(--size-touch); width: 100%;
-    transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
-  }
-  .input::placeholder { color: var(--color-text-muted); }
-  .input:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
-  .field-error .input { border-color: var(--color-error); }
-  /* Текст ошибки: #B3261E (6.4:1 на белом) — token --color-error #E53935 даёт только 4.29:1, ниже AA для мелкого текста */
-  .field-error-text { font-size: var(--text-label-small); font-weight: var(--weight-bold); color: #B3261E; }
-  /* Buttons */
-  .btn-danger-ghost { background: transparent; color: #B3261E; }
-  .link-btn {
-    font-family: var(--font-brand); font-size: var(--text-body-small); font-weight: var(--weight-bold);
-    color: var(--color-primary); background: none; border: none; cursor: pointer;
-    padding: 10px 16px; min-height: var(--size-touch); border-radius: var(--radius-button);
-  }
-  .link-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  /* ================= AUTH & ONBOARDING ================= */
   .text-link {
     font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold);
     text-decoration: none; padding: 10px 4px; border-radius: var(--radius-button);
   }
   .text-link b { color: var(--color-primary); font-weight: var(--weight-extrabold); }
   .text-link:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
-  /* Auth layout */
-  .auth { flex: 1; display: flex; flex-direction: column; gap: var(--space-m); padding: var(--space-xl) var(--space-l) var(--space-l); overflow-y: auto; }
+  .auth { flex: 1; display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) var(--space-l) var(--space-l); overflow-y: auto; }
   .auth-title { font-size: var(--text-headline-small); font-weight: var(--weight-extrabold); }
   .auth-sub { font-size: var(--text-body-small); color: var(--color-text-muted); font-weight: var(--weight-semibold); line-height: 1.5; margin-top: var(--space-xs); }
   .auth-links { display: flex; flex-direction: column; align-items: center; margin-top: auto; padding-top: var(--space-m); }
@@ -410,7 +444,7 @@
     display: flex; align-items: center; justify-content: center; font-size: 88px;
   }
   .onb-dots { display: flex; gap: 8px; justify-content: center; padding: var(--space-m) 0 var(--space-l); }
-  .onb-dots i { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-surface-variant); transition: all var(--duration-medium) var(--ease-standard); }
+  .onb-dots i { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-surface-container-highest); transition: all var(--duration-medium) var(--ease-standard); }
   .onb-dots i.on { width: 24px; background: var(--color-primary); }
   .onb-copy { text-align: center; padding-bottom: var(--space-l); }
   .onb-copy h1 { font-size: var(--text-headline-small); font-weight: var(--weight-extrabold); }
@@ -444,27 +478,75 @@
   .stat-row { display: flex; gap: var(--space-m); }
   .stat-card {
     flex: 1; background: var(--color-surface); border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card); padding: var(--space-m);
+    box-shadow: inset 0 0 0 1px var(--color-outline-variant); padding: var(--space-m); /* M3 OutlinedCard · статистика */
     display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;
   }
   .stat-num { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); color: var(--color-primary); }
   .stat-lbl { font-size: var(--text-label-small); color: var(--color-text-muted); font-weight: var(--weight-bold); }
+  /* M3 ListItem (Topics / Submissions / Debug) */
+  .li-list { display: flex; flex-direction: column; gap: var(--space-s); }
+  .li {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; gap: var(--space-m);
+    background: var(--color-surface-container-lowest); border-radius: var(--radius-card);
+    padding: var(--space-m); box-shadow: var(--shadow-card); min-height: 56px;
+    cursor: pointer; text-align: left; width: 100%; border: none; font-family: var(--font-brand); color: var(--color-text);
+  }
+  .li::after { content: ""; position: absolute; inset: 0; background: var(--color-text); opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); pointer-events: none; }
+  .li:hover::after { opacity: var(--state-hover); }
+  .li:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+  .li .tt { font-size: var(--text-body-medium); font-weight: var(--weight-bold); }
+  .li .st { font-size: var(--text-body-small); color: var(--color-text-muted); margin-top: 2px; }
+  .li .grow { flex: 1; min-width: 0; }
+  .li .end { margin-left: auto; flex-shrink: 0; display: flex; align-items: center; gap: var(--space-s); }
+  .grade-chip { background: var(--color-secondary-container); color: var(--color-on-secondary-container); border-radius: var(--radius-full); padding: 4px 12px; font-size: 12px; font-weight: var(--weight-extrabold); }
 </style>
 </head>
 <body>
 
+<!--
+=====================================================================
+ПОВЕДЕНЧЕСКИЕ АННОТАЦИИ (§3.2 брифа docs/design/M3_REDESIGN_TASK.md) — ДОСЛОВНО:
+
+- **Training** = ровно 3 попытки на топик (лимиты 80→50→30 сек), без удаления записей —
+  только прослушивание, авто-✅ после записи, финальные CTA.
+- **Practice** = без Review-экрана; автостоп на 30с ИЛИ ручной стоп → автоотправка;
+  повторная отправка по топику запрещена (backend 409).
+- **Guest-first:** Splash → (первый запуск → Onboarding 3 слайда, «Начать») → Library;
+  регистрация/логин — гейт при входе в Practice и в гостевом профиле.
+- Запись голоса — центральная механика; **rec-кнопка — фирменный brand-компонент**
+  (squircle radius 22, «оттопыренная» тень `0 4px 0 rgba(217,114,56,.55)`) — остаётся,
+  но состояния hover/pressed/disabled оформить по M3 state layers.
+- **Таймер-кольцо** (SpeakingTimerRing) с уровнями цвета 80/50/30 — остаётся.
+
+Ченджлог:
+v1.0 · 2026-08-01 — 11 фреймов (5 исходных + auth/onboarding/profile из A0).
+v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (Filled/Outlined/Text buttons,
+  Outlined TextField label-в-бордере, Elevated/Filled/Outlined cards, FilterChip,
+  NavigationBar с pill-индикатором, state layers, tonal surfaceContainer*).
+  + 4 новых фрейма по §6: Topics, Questions, MySubmissions, Debug Menu.
+  Все экраны — light/dark через переключатель темы (tokens v1.3.0).
+  Поведение и аннотации — без изменений. Соответствие: docs/design/M3_REPLACEMENT_REGISTRY.md.
+=====================================================================
+-->
+
 <div class="switcher" role="tablist">
-  <button class="active" data-frame="library" role="tab">1 · Library (mobile)</button>
-  <button data-frame="video" role="tab">2 · Video — плеер (mobile)</button>
-  <button data-frame="training" role="tab">3 · Training — запись (mobile)</button>
-  <button data-frame="practice" role="tab">4 · Practice — сдача (mobile)</button>
-  <button data-frame="grading" role="tab">5 · Grading detail (admin)</button>
-  <button data-frame="onboarding" role="tab">6 · Onboarding</button>
-  <button data-frame="login" role="tab">7 · Login</button>
-  <button data-frame="register" role="tab">8 · Register</button>
-  <button data-frame="locked" role="tab">9 · Practice locked (гость)</button>
-  <button data-frame="profile" role="tab">10 · Профиль</button>
-  <button data-frame="profile-guest" role="tab">11 · Профиль (гость)</button>
+  <button class="active" data-frame="library" role="tab">1 · Library</button>
+  <button data-frame="topics" role="tab">2 · Topics</button>
+  <button data-frame="video" role="tab">3 · Video</button>
+  <button data-frame="questions" role="tab">4 · Questions</button>
+  <button data-frame="training" role="tab">5 · Training</button>
+  <button data-frame="practice" role="tab">6 · Practice</button>
+  <button data-frame="submissions" role="tab">7 · MySubmissions</button>
+  <button data-frame="onboarding" role="tab">8 · Onboarding</button>
+  <button data-frame="login" role="tab">9 · Login</button>
+  <button data-frame="register" role="tab">10 · Register</button>
+  <button data-frame="locked" role="tab">11 · Practice locked</button>
+  <button data-frame="profile" role="tab">12 · Профиль</button>
+  <button data-frame="profile-guest" role="tab">13 · Профиль (гость)</button>
+  <button data-frame="debug" role="tab">14 · Debug Menu</button>
+  <button data-frame="grading" role="tab">15 · Grading (admin)</button>
+  <button data-frame="__theme" role="tab" id="themeToggle" title="Переключить light/dark">◐ Тема</button>
 </div>
 
 <!-- ============ 1. LIBRARY ============ -->
@@ -516,14 +598,50 @@
       </button>
     </div>
     <nav class="bottomnav">
-      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-home"/></svg>Темы</a>
-      <a href="#"><svg class="ic"><use href="icons.svg#i-send"/></svg>Отправки</a>
-      <a href="#"><svg class="ic"><use href="icons.svg#i-user"/></svg>Профиль</a>
+      <a href="#" class="active"><span class="pill"><svg class="ic"><use href="icons.svg#i-home"/></svg></span>Темы</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-send"/></svg></span>Отправки</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-user"/></svg></span>Профиль</a>
     </nav>
   </div>
 </div>
 
-<!-- ============ 2. VIDEO (player + subtitles) ============ -->
+<!-- ============ 2. TOPICS (новый фрейм v2.0, реестр A6) ============ -->
+<div class="frame-wrap" id="frame-topics">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Travel &amp; Holidays</h1>
+        <div class="sub">6 топиков · выбери и начни говорить</div>
+      </div>
+    </div>
+    <div class="library-list li-list">
+      <button class="li">
+        <div class="grow"><div class="tt">At the airport</div><div class="st"><span class="tnum">5 вопросов</span> · видео <span class="tnum">1:35</span></div></div>
+        <span class="end"><span class="chip chip-done">пройден</span><svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg></span>
+      </button>
+      <button class="li">
+        <div class="grow"><div class="tt">Booking a hotel</div><div class="st"><span class="tnum">6 вопросов</span> · видео <span class="tnum">2:10</span></div></div>
+        <span class="end"><span class="chip chip-new">новый</span><svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg></span>
+      </button>
+      <button class="li">
+        <div class="grow"><div class="tt">At the beach</div><div class="st"><span class="tnum">4 вопроса</span> · видео <span class="tnum">1:48</span></div></div>
+        <span class="end"><svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg></span>
+      </button>
+      <button class="li">
+        <div class="grow"><div class="tt">City sightseeing</div><div class="st"><span class="tnum">5 вопросов</span> · видео <span class="tnum">2:02</span></div></div>
+        <span class="end"><svg class="ic" style="color:var(--color-text-muted)"><use href="icons.svg#i-chevron-right"/></svg></span>
+      </button>
+    </div>
+    <nav class="bottomnav">
+      <a href="#" class="active"><span class="pill"><svg class="ic"><use href="icons.svg#i-home"/></svg></span>Темы</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-send"/></svg></span>Отправки</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-user"/></svg></span>Профиль</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ 3. VIDEO (player + subtitles) ============ -->
 <div class="frame-wrap" id="frame-video">
   <div class="phone">
     <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
@@ -560,7 +678,40 @@
   </div>
 </div>
 
-<!-- ============ 3. TRAINING (recording) ============ -->
+<!-- ============ 4. QUESTIONS (новый фрейм v2.0, реестр A8) ============ -->
+<div class="frame-wrap" id="frame-questions">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Вопросы</h1>
+        <div class="sub">Travel &amp; Holidays · At the airport · <span class="tnum">5 вопросов</span></div>
+      </div>
+    </div>
+    <div class="training">
+      <div class="question-card">
+        <div class="question-num">Вопрос 1 из 5</div>
+        <div class="question-text">Where do you usually fly to on holidays?</div>
+      </div>
+      <div class="pq-list">
+        <div class="pq-item"><span class="qn tnum">2</span><span>What do you usually do while waiting for your flight?</span></div>
+        <div class="pq-item"><span class="qn tnum">3</span><span>Do you prefer window or aisle seats? Why?</span></div>
+        <div class="pq-item"><span class="qn tnum">4</span><span>What was your most memorable flight?</span></div>
+        <div class="pq-item"><span class="qn tnum">5</span><span>Would you like to work at an airport? Why / why not?</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-s);padding:var(--space-m) 0">
+        <button class="btn btn-primary btn-wide">Начать Training · 80 сек</button>
+        <button class="btn btn-ghost btn-wide">Сразу Practice · 30 сек</button>
+      </div>
+      <div class="privacy-note">
+        <svg class="ic"><use href="icons.svg#i-shield"/></svg>
+        Training — три попытки, записи только на устройстве. Practice — одна запись, сразу учителю
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5. TRAINING (recording) ============ -->
 <div class="frame-wrap" id="frame-training">
   <div class="phone">
     <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
@@ -620,7 +771,8 @@
   </div>
 </div>
 
-<!-- ============ 4. PRACTICE (30 сек, отправка учителю) ============ -->
+<!-- ============ 6. PRACTICE (30 сек, отправка учителю) ============ -->
+<!-- Повторная отправка по топику запрещена (backend 409) → M3 Snackbar (inverseSurface), см. .snackbar-demo -->
 <div class="frame-wrap" id="frame-practice">
   <div class="phone">
     <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
@@ -673,6 +825,7 @@
         <div class="rec-meta" style="justify-content:center;font-size:12px">Оценка и комментарий появятся в «Мои отправки»</div>
         <button class="btn btn-primary btn-wide" id="pSentBack">Вернуться в библиотеку</button>
       </div>
+      <div class="snackbar-demo" hidden aria-hidden="true" id="pConflict">Запись уже отправлялась по этому топику <button>Понятно</button></div>
       <div class="practice-note">
         <svg class="ic"><use href="icons.svg#i-upload"/></svg>
         В отличие от Training, эта запись уйдёт учителю автоматически сразу после остановки таймера — изменить её нельзя
@@ -681,7 +834,221 @@
   </div>
 </div>
 
-<!-- ============ 5. GRADING DETAIL (admin desktop) ============ -->
+<!-- ============ 7. MYSUBMISSIONS (новый фрейм v2.0, реестр A11) ============ -->
+<div class="frame-wrap" id="frame-submissions">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Отправки</h1>
+        <div class="sub">Записи, отправленные учителю</div>
+      </div>
+    </div>
+    <div class="library-list li-list">
+      <button class="li">
+        <div class="grow"><div class="tt">At the airport</div><div class="st">Travel &amp; Holidays · <span class="tnum">29.07.2026, 21:14</span> · <span class="tnum">0:30</span></div></div>
+        <span class="end"><span class="chip chip-new">NEW</span></span>
+      </button>
+      <button class="li">
+        <div class="grow"><div class="tt">Booking a hotel</div><div class="st">Travel &amp; Holidays · <span class="tnum">22.07.2026, 19:03</span> · <span class="tnum">0:28</span></div></div>
+        <span class="end"><span class="grade-chip tnum">7.0</span><span class="chip chip-done">REVIEWED</span></span>
+      </button>
+      <button class="li">
+        <div class="grow"><div class="tt">City sightseeing</div><div class="st">Travel &amp; Holidays · <span class="tnum">15.07.2026, 12:40</span> · <span class="tnum">0:30</span></div></div>
+        <span class="end"><span class="grade-chip tnum">6.5</span><span class="chip chip-done">REVIEWED</span></span>
+      </button>
+      <div class="rec-meta" style="font-size:12px;padding:var(--space-s) 4px">Повторная отправка по топику запрещена — после REVIEWED топик можно только переиграть в Training</div>
+    </div>
+    <nav class="bottomnav">
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-home"/></svg></span>Темы</a>
+      <a href="#" class="active"><span class="pill"><svg class="ic"><use href="icons.svg#i-send"/></svg></span>Отправки</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-user"/></svg></span>Профиль</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ 8. ONBOARDING (первый запуск, guest-first) ============ -->
+<!-- 3 слайда value-prop: 1 «Смотри видео» 🎬 → 2 «Тренируйся вслух» 🎙 (показан) → 3 «Отправь учителю» 📨.
+     Регистрации на онбординге НЕТ — гость сразу попадает в библиотеку. -->
+<section class="frame-wrap" id="frame-onboarding">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="onb">
+      <div class="onb-illu"><div class="onb-emoji" role="img" aria-label="Микрофон">🎙️</div></div>
+      <div class="onb-dots" aria-label="Слайд 2 из 3"><i></i><i class="on"></i><i></i></div>
+      <div class="onb-copy">
+        <h1>Тренируйся вслух</h1>
+        <p>Отвечай на вопросы голосом — три попытки, записи остаются только на твоём устройстве</p>
+      </div>
+      <button class="btn btn-primary btn-wide" style="margin-bottom:var(--space-l)">Начать</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. LOGIN ============ -->
+<section class="frame-wrap" id="frame-login">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="auth">
+      <div>
+        <h1 class="auth-title">С возвращением!</h1>
+        <p class="auth-sub">Войди, чтобы отправлять записи учителю и видеть оценки</p>
+      </div>
+      <div class="field">
+        <input class="input" id="loginEmail" type="email" placeholder="you@example.com" value="anna@smirnova.ru" autocomplete="email">
+        <label for="loginEmail">Email</label>
+      </div>
+      <div class="field field-error">
+        <input class="input" id="loginPass" type="password" value="123" aria-invalid="true" aria-describedby="loginPassErr" autocomplete="current-password" placeholder="••••••">
+        <label for="loginPass">Пароль</label>
+        <span class="field-error-text" id="loginPassErr" role="alert">Пароль должен быть не короче 6 символов</span>
+      </div>
+      <!-- Loading state: кнопка получает aria-busy="true" и disabled, текст меняется на «Входим…» + спиннер, поля формы disabled -->
+      <button class="btn btn-primary btn-wide">Войти</button>
+      <div class="auth-links">
+        <a class="text-link" href="#">Нет аккаунта? <b>Регистрация</b></a>
+        <button class="link-btn">Продолжить как гость</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. REGISTER ============ -->
+<section class="frame-wrap" id="frame-register">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="auth">
+      <div>
+        <h1 class="auth-title">Создай аккаунт</h1>
+        <p class="auth-sub">Чтобы отправлять записи учителю и получать оценки</p>
+      </div>
+      <div class="field">
+        <input class="input" id="regName" type="text" placeholder="Как тебя зовут?" autocomplete="name">
+        <label for="regName">Имя</label>
+      </div>
+      <div class="field">
+        <input class="input" id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+        <label for="regEmail">Email</label>
+      </div>
+      <div class="field">
+        <input class="input" id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+        <label for="regPass">Пароль</label>
+      </div>
+      <!-- Loading state: как на Login — aria-busy, «Создаём…», поля disabled -->
+      <button class="btn btn-primary btn-wide">Создать аккаунт</button>
+      <div class="auth-links">
+        <a class="text-link" href="#">Уже есть аккаунт? <b>Войти</b></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. PRACTICE LOCKED (гость-гейт) ============ -->
+<!-- Регистрация предлагается ТОЛЬКО здесь (и в гостевом профиле) — не на онбординге и не в библиотеке. -->
+<section class="frame-wrap" id="frame-locked">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Practice</h1>
+        <div class="sub">Travel &amp; Holidays · At the airport</div>
+      </div>
+    </div>
+    <div class="gate">
+      <div class="gate-illu"><svg class="ic"><use href="icons.svg#i-lock"/></svg></div>
+      <div class="gate-title">Ты почти у цели!</div>
+      <p class="gate-text">Отправка записи учителю доступна после регистрации</p>
+      <div class="gate-actions">
+        <button class="btn btn-primary btn-wide">Зарегистрироваться</button>
+        <button class="btn btn-ghost btn-wide">Войти</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. PROFILE ============ -->
+<section class="frame-wrap" id="frame-profile">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Профиль</h1>
+        <div class="sub">Твой прогресс и записи</div>
+      </div>
+    </div>
+    <div class="profile">
+      <div class="profile-head">
+        <div class="avatar-circle" role="img" aria-label="Аватар: Анна Смирнова">АС</div>
+        <div class="profile-name">Анна Смирнова</div>
+        <div class="profile-mail">anna@smirnova.ru</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-num tnum">3</span>
+          <span class="stat-lbl">записи отправлено</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num tnum">2</span>
+          <span class="stat-lbl">темы пройдено</span>
+        </div>
+      </div>
+      <button class="btn btn-danger-ghost btn-wide" style="margin-top:auto">Выйти</button>
+    </div>
+    <nav class="bottomnav">
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-home"/></svg></span>Темы</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-send"/></svg></span>Отправки</a>
+      <a href="#" class="active"><span class="pill"><svg class="ic"><use href="icons.svg#i-user"/></svg></span>Профиль</a>
+    </nav>
+  </div>
+</section>
+
+<!-- ============ 13. PROFILE (гость) — GuestProfileStub ============ -->
+<section class="frame-wrap" id="frame-profile-guest">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Профиль</h1>
+        <div class="sub">Гостевой режим</div>
+      </div>
+    </div>
+    <div class="gate">
+      <div class="gate-illu" role="img" aria-label="Почтовый ящик">📬</div>
+      <p class="gate-text">Зарегистрируйся, чтобы отправлять записи учителю и видеть оценки</p>
+      <div class="gate-actions">
+        <button class="btn btn-primary btn-wide">Зарегистрироваться</button>
+        <a class="text-link" href="#">Уже есть аккаунт? <b>Войти</b></a>
+      </div>
+    </div>
+    <nav class="bottomnav">
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-home"/></svg></span>Темы</a>
+      <a href="#"><span class="pill"><svg class="ic"><use href="icons.svg#i-send"/></svg></span>Отправки</a>
+      <a href="#" class="active"><span class="pill"><svg class="ic"><use href="icons.svg#i-user"/></svg></span>Профиль</a>
+    </nav>
+  </div>
+</section>
+
+<!-- ============ 14. DEBUG MENU (новый фрейм v2.0, реестр A15) ============ -->
+<section class="frame-wrap" id="frame-debug">
+  <div class="phone">
+    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
+    <div class="appbar">
+      <div>
+        <h1>Debug Menu</h1>
+        <div class="sub">Только debug-сборки · не входит в релиз</div>
+      </div>
+    </div>
+    <div class="library-list li-list">
+      <button class="li"><div class="grow"><div class="tt">Сбросить onboarding</div><div class="st">Показать 3 слайда при следующем запуске</div></div></button>
+      <button class="li"><div class="grow"><div class="tt">Очистить локальные записи</div><div class="st">Training-записи на устройстве · <span class="tnum">0 файлов</span></div></div></button>
+      <button class="li"><div class="grow"><div class="tt">Логи клиента</div><div class="st">Последняя отправка <span class="tnum">29.07.2026, 21:14</span></div></div></button>
+      <div class="li" style="cursor:default"><div class="grow"><div class="tt">Окружение</div><div class="st">API <span class="tnum">v1</span> · build <span class="tnum">debug-2.0.0</span></div></div></div>
+      <button class="btn btn-ghost btn-wide" style="margin-top:var(--space-s)">Сбросить всё</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. GRADING DETAIL (admin desktop) ============ -->
 <div class="frame-wrap" id="frame-grading">
   <div class="desktop">
     <div class="admin-top">
@@ -766,176 +1133,23 @@
   </div>
 </div>
 
-<!-- ============ 6. ONBOARDING (первый запуск, guest-first) ============ -->
-<!-- 3 слайда value-prop: 1 «Смотри видео» 🎬 → 2 «Тренируйся вслух» 🎙 (показан) → 3 «Отправь учителю» 📨.
-     Регистрации на онбординге НЕТ — гость сразу попадает в библиотеку. -->
-<section class="frame-wrap" id="frame-onboarding">
-  <div class="phone">
-    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
-    <div class="onb">
-      <div class="onb-illu"><div class="onb-emoji" role="img" aria-label="Микрофон">🎙️</div></div>
-      <div class="onb-dots" aria-label="Слайд 2 из 3"><i></i><i class="on"></i><i></i></div>
-      <div class="onb-copy">
-        <h1>Тренируйся вслух</h1>
-        <p>Отвечай на вопросы голосом — три попытки, записи остаются только на твоём устройстве</p>
-      </div>
-      <button class="btn btn-primary btn-wide" style="margin-bottom:var(--space-l)">Начать</button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 7. LOGIN ============ -->
-<section class="frame-wrap" id="frame-login">
-  <div class="phone">
-    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
-    <div class="auth">
-      <div>
-        <h1 class="auth-title">С возвращением!</h1>
-        <p class="auth-sub">Войди, чтобы отправлять записи учителю и видеть оценки</p>
-      </div>
-      <div class="field">
-        <label for="loginEmail">Email</label>
-        <input class="input" id="loginEmail" type="email" placeholder="you@example.com" value="anna@smirnova.ru" autocomplete="email">
-      </div>
-      <div class="field field-error">
-        <label for="loginPass">Пароль</label>
-        <input class="input" id="loginPass" type="password" value="123" aria-invalid="true" aria-describedby="loginPassErr" autocomplete="current-password">
-        <span class="field-error-text" id="loginPassErr" role="alert">Пароль должен быть не короче 6 символов</span>
-      </div>
-      <!-- Loading state: кнопка получает aria-busy="true" и disabled, текст меняется на «Входим…» + спиннер, поля формы disabled -->
-      <button class="btn btn-primary btn-wide">Войти</button>
-      <div class="auth-links">
-        <a class="text-link" href="#">Нет аккаунта? <b>Регистрация</b></a>
-        <button class="link-btn">Продолжить как гость</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 8. REGISTER ============ -->
-<section class="frame-wrap" id="frame-register">
-  <div class="phone">
-    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
-    <div class="auth">
-      <div>
-        <h1 class="auth-title">Создай аккаунт</h1>
-        <p class="auth-sub">Чтобы отправлять записи учителю и получать оценки</p>
-      </div>
-      <div class="field">
-        <label for="regName">Имя</label>
-        <input class="input" id="regName" type="text" placeholder="Как тебя зовут?" autocomplete="name">
-      </div>
-      <div class="field">
-        <label for="regEmail">Email</label>
-        <input class="input" id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label for="regPass">Пароль</label>
-        <input class="input" id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
-      </div>
-      <!-- Loading state: как на Login — aria-busy, «Создаём…», поля disabled -->
-      <button class="btn btn-primary btn-wide">Создать аккаунт</button>
-      <div class="auth-links">
-        <a class="text-link" href="#">Уже есть аккаунт? <b>Войти</b></a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 9. PRACTICE LOCKED (гость-гейт) ============ -->
-<!-- Регистрация предлагается ТОЛЬКО здесь (и в гостевом профиле) — не на онбординге и не в библиотеке. -->
-<section class="frame-wrap" id="frame-locked">
-  <div class="phone">
-    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
-    <div class="appbar">
-      <div>
-        <h1>Practice</h1>
-        <div class="sub">Travel &amp; Holidays · At the airport</div>
-      </div>
-    </div>
-    <div class="gate">
-      <div class="gate-illu"><svg class="ic"><use href="icons.svg#i-lock"/></svg></div>
-      <div class="gate-title">Ты почти у цели!</div>
-      <p class="gate-text">Отправка записи учителю доступна после регистрации</p>
-      <div class="gate-actions">
-        <button class="btn btn-primary btn-wide">Зарегистрироваться</button>
-        <button class="btn btn-ghost btn-wide">Войти</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 10. PROFILE ============ -->
-<section class="frame-wrap" id="frame-profile">
-  <div class="phone">
-    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
-    <div class="appbar">
-      <div>
-        <h1>Профиль</h1>
-        <div class="sub">Твой прогресс и записи</div>
-      </div>
-    </div>
-    <div class="profile">
-      <div class="profile-head">
-        <div class="avatar-circle" role="img" aria-label="Аватар: Анна Смирнова">АС</div>
-        <div class="profile-name">Анна Смирнова</div>
-        <div class="profile-mail">anna@smirnova.ru</div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-card">
-          <span class="stat-num tnum">3</span>
-          <span class="stat-lbl">записи отправлено</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-num tnum">2</span>
-          <span class="stat-lbl">темы пройдено</span>
-        </div>
-      </div>
-      <button class="btn btn-danger-ghost btn-wide" style="margin-top:auto">Выйти</button>
-    </div>
-    <nav class="bottomnav">
-      <a href="#"><svg class="ic"><use href="icons.svg#i-home"/></svg>Темы</a>
-      <a href="#"><svg class="ic"><use href="icons.svg#i-send"/></svg>Отправки</a>
-      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-user"/></svg>Профиль</a>
-    </nav>
-  </div>
-</section>
-
-<!-- ============ 11. PROFILE (гость) — GuestProfileStub ============ -->
-<section class="frame-wrap" id="frame-profile-guest">
-  <div class="phone">
-    <div class="statusbar"><span class="tnum">9:41</span><span>●●●○ ○ ▮</span></div>
-    <div class="appbar">
-      <div>
-        <h1>Профиль</h1>
-        <div class="sub">Гостевой режим</div>
-      </div>
-    </div>
-    <div class="gate">
-      <div class="gate-illu" role="img" aria-label="Почтовый ящик">📬</div>
-      <p class="gate-text">Зарегистрируйся, чтобы отправлять записи учителю и видеть оценки</p>
-      <div class="gate-actions">
-        <button class="btn btn-primary btn-wide">Зарегистрироваться</button>
-        <a class="text-link" href="#">Уже есть аккаунт? <b>Войти</b></a>
-      </div>
-    </div>
-    <nav class="bottomnav">
-      <a href="#"><svg class="ic"><use href="icons.svg#i-home"/></svg>Темы</a>
-      <a href="#"><svg class="ic"><use href="icons.svg#i-send"/></svg>Отправки</a>
-      <a href="#" class="active"><svg class="ic"><use href="icons.svg#i-user"/></svg>Профиль</a>
-    </nav>
-  </div>
-</section>
-
 <script>
   // Переключатель экранов
-  document.querySelectorAll('.switcher button').forEach(btn => {
+  document.querySelectorAll('.switcher button[data-frame]:not([data-frame="__theme"])').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.frame-wrap').forEach(f => f.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('frame-' + btn.dataset.frame).classList.add('active');
     });
+  });
+  // Light/dark (все экраны в двух темах — tokens v1.3.0)
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    if (document.documentElement.getAttribute('data-theme') === 'dark') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
   });
 
   // ============ VIDEO PLAYER ============

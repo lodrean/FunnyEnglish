@@ -1,6 +1,8 @@
 /* FunnyEnglish Speaking Trainer — Design Tokens (Playful Coach, Variant B)
    Источник: tokens.json (W3C DTCG draft). Одна палитра — два таргета (Compose + MUI).
-   v1.2.0 · 2026-08-01: аудит WCAG — primaryStrong, textMuted/timer затемнены, recordContainer. */
+   v1.2.0 · 2026-08-01: аудит WCAG — primaryStrong, textMuted/timer затемнены, recordContainer.
+   v1.3.0 · 2026-08-07: DSM-2 — M3-роли (surfaceContainer*, outlineVariant, inverse*, scrim,
+   surfaceTint, state layers, elevation levels, M3-easing). Цвета v1.2.0 не изменены. */
 
 :root {
   /* Brand */
@@ -34,7 +36,7 @@
   --color-timer-50: #8A68D6;
   --color-timer-30: #D97238;
 
-  /* Status */
+  /* Status (контейнеры общие для light/dark — текст на них тёмный, AA) */
   --color-status-new: #FB8C00;
   --color-status-new-container: #FFE0B2;
   --color-status-reviewed: #43A047;
@@ -51,6 +53,35 @@
   --color-text-muted: #58609A; /* 5.32:1 AA (был #6E76A8 = 3.92 fail) */
   --color-scrim-subtitle: rgba(0, 0, 0, 0.7);
   --color-scrim-video-controls: rgba(0, 0, 0, 0.5);
+
+  /* M3 roles (v1.3.0) — surface containers / outlines / inverse / scrim / tint */
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low: #F6F8FF;
+  --color-surface-container: #E9EFFE;
+  --color-surface-container-high: #E2E9FB;
+  --color-surface-container-highest: #D8E2FA; /* = surface-variant, трек кольца */
+  --color-outline-variant: #D4DDF5; /* мягкие разделители */
+  --color-inverse-surface: #2D3561; /* фон Snackbar */
+  --color-inverse-on-surface: #EEF3FF;
+  --color-inverse-primary: #8FB3F5;
+  --color-scrim: rgba(0, 0, 0, 0.5); /* scrim модалок/шторок */
+  --color-surface-tint: #5B8DEF; /* = primary, tonal elevation tint */
+
+  /* M3 state layers (v1.3.0) — alpha оверлея цвета контента на контейнере */
+  --state-hover: 0.08;
+  --state-focus: 0.12;
+  --state-pressed: 0.12;
+  --state-dragged: 0.16;
+  --state-disabled-content: 0.38;
+  --state-disabled-container: 0.12;
+
+  /* M3 tonal elevation (v1.3.0) */
+  --elevation-level-0: 0px;
+  --elevation-level-1: 1px;  /* ElevatedCard */
+  --elevation-level-2: 3px;  /* NavigationBar */
+  --elevation-level-3: 6px;  /* Dialog, FAB, bottom sheet */
+  --elevation-level-4: 8px;  /* Navigation drawer */
+  --elevation-level-5: 12px; /* Modal-поверхности */
 
   /* Typography */
   --font-brand: Nunito, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -99,9 +130,12 @@
   /* Motion */
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);  /* игровой overshoot для ✅ и появления кнопок */
+  --ease-m3-standard: cubic-bezier(0.2, 0, 0, 1);    /* v1.3.0 · M3 Standard */
+  --ease-m3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1); /* v1.3.0 · M3 Emphasized */
   --duration-fast: 150ms;
   --duration-medium: 300ms;
   --duration-slow: 500ms;
+  --duration-m3-state: 200ms; /* v1.3.0 · M3 state-layer переходы */
   --duration-rec-pulse: 1600ms;
 }
 
@@ -119,6 +153,24 @@
   --color-outline: #3D4568;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.25);
   --shadow-focus: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
+
+  /* M3 roles (v1.3.0) — dark */
+  --color-surface-container-lowest: #101424;
+  --color-surface-container-low: #181D36;
+  --color-surface-container: #1F2440; /* = surface */
+  --color-surface-container-high: #262B49;
+  --color-surface-container-highest: #2B3152; /* = surface-variant */
+  --color-outline-variant: #2E3556;
+  --color-primary-container: #2E3E6E;
+  --color-on-primary-container: #DDE8FD;
+  --color-secondary-container: #46366F;
+  --color-on-secondary-container: #E5DCFF;
+  --color-record-container: #59311C;
+  --color-on-record-container: #FFD9C2;
+  --color-inverse-surface: #E8EAF6;
+  --color-inverse-on-surface: #2D3561;
+  --color-inverse-primary: #3B6FD4;
+  --color-surface-tint: #8FB3F5;
 }
 
 /* Tabular numerals — таймер и длительности не прыгают по ширине */

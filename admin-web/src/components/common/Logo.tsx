@@ -6,14 +6,18 @@
  */
 
 import React from 'react';
-import { Box, BoxProps } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 
-interface LogoProps extends Omit<BoxProps, 'component'> {
+const SvgRoot = styled('svg')({});
+
+interface LogoProps extends React.SVGProps<SVGSVGElement> {
   /** Horizontal (header) or Primary Full (splash/login) composition */
   variant?: 'horizontal' | 'full';
   /** Logo height in px; width is derived from the viewBox aspect ratio */
   height?: number;
+  /** MUI sx prop (used by callers for layout) */
+  sx?: SxProps<Theme>;
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -28,8 +32,7 @@ export const Logo: React.FC<LogoProps> = ({
   if (variant === 'horizontal') {
     const width = height * (235 / 48);
     return (
-      <Box
-        component="svg"
+      <SvgRoot
         viewBox="0 0 235 48"
         height={height}
         width={width}
@@ -76,15 +79,14 @@ export const Logo: React.FC<LogoProps> = ({
         >
           SoToSpeak
         </text>
-      </Box>
+      </SvgRoot>
     );
   }
 
   // Primary Full
   const width = height * (320 / 96);
   return (
-    <Box
-      component="svg"
+    <SvgRoot
       viewBox="0 0 320 96"
       height={height}
       width={width}
@@ -131,7 +133,7 @@ export const Logo: React.FC<LogoProps> = ({
       >
         SoToSpeak
       </text>
-    </Box>
+    </SvgRoot>
   );
 };
 

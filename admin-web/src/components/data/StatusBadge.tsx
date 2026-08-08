@@ -25,7 +25,7 @@ export type StatusVariant =
   | 'inactive'
   | 'pending';
 
-export interface StatusBadgeProps extends Omit<ChipProps, 'color'> {
+export interface StatusBadgeProps extends Omit<ChipProps, 'color' | 'variant'> {
   status: StatusVariant;
   label?: string;
   size?: 'small' | 'medium';

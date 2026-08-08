@@ -1,4 +1,5 @@
-export { createAppTheme, defaultTheme, colors, customShadows } from './Theme'
+export { createAppTheme, lightTheme, darkTheme, chartColors } from './Theme'
+export { default } from './Theme'
 export { ThemeProvider, useTheme } from './ThemeProvider'
 export { GlobalStyles } from './GlobalStyles'
 export type { PaletteMode as AdminTheme } from '@mui/material'

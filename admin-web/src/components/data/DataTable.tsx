@@ -3,7 +3,7 @@
  * Design System 2.0
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -69,6 +69,7 @@ export interface DataTableProps<T> {
   keyExtractor: (row: T) => string;
   loading?: boolean;
   selectable?: boolean;
+  onSelectionChange?: (selectedIds: string[]) => void;
   pagination?: PaginationConfig;
   onRowClick?: (row: T) => void;
   rowActions?: RowAction<T>[];
@@ -173,6 +174,7 @@ export function DataTable<T>({
   keyExtractor,
   loading = false,
   selectable = false,
+  onSelectionChange,
   pagination,
   onRowClick,
   rowActions,
@@ -184,6 +186,12 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const theme = useTheme();
   const [selected, setSelected] = useState<string[]>([]);
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
+
+  useEffect(() => {
+    onSelectionChangeRef.current?.(selected);
+  }, [selected]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [actionRow, setActionRow] = useState<T | null>(null);
   const [sortConfig, setSortConfig] = useState<{

@@ -6,8 +6,13 @@ import React from 'react';
 
 describe('useToast', () => {
   const mockToastContext = {
-    showToast: vi.fn(),
-    hideToast: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    show: vi.fn(),
+    dismiss: vi.fn(),
+    dismissAll: vi.fn(),
   };
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -20,39 +25,36 @@ describe('useToast', () => {
 
   it('returns toast context when used within provider', () => {
     const { result } = renderHook(() => useToast(), { wrapper });
-    
+
     expect(result.current).toBe(mockToastContext);
-    expect(result.current.showToast).toBeDefined();
-    expect(result.current.hideToast).toBeDefined();
+    expect(result.current.success).toBeDefined();
+    expect(result.current.dismiss).toBeDefined();
   });
 
   it('throws error when used outside provider', () => {
     // Suppress console.error for this test
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     expect(() => {
       renderHook(() => useToast());
     }).toThrow('useToast must be used within a ToastProvider');
-    
+
     consoleSpy.mockRestore();
   });
 
-  it('can call showToast from context', () => {
+  it('can call success from context', () => {
     const { result } = renderHook(() => useToast(), { wrapper });
-    
-    result.current.showToast({ message: 'Test message', severity: 'success' });
-    
-    expect(mockToastContext.showToast).toHaveBeenCalledWith({ 
-      message: 'Test message', 
-      severity: 'success' 
-    });
+
+    result.current.success('Test message');
+
+    expect(mockToastContext.success).toHaveBeenCalledWith('Test message');
   });
 
-  it('can call hideToast from context', () => {
+  it('can call dismiss from context', () => {
     const { result } = renderHook(() => useToast(), { wrapper });
-    
-    result.current.hideToast();
-    
-    expect(mockToastContext.hideToast).toHaveBeenCalled();
+
+    result.current.dismiss('toast-1');
+
+    expect(mockToastContext.dismiss).toHaveBeenCalledWith('toast-1');
   });
 });

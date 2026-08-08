@@ -28,11 +28,12 @@ import {
 
   Download as DownloadIcon,
   Delete as DeleteIcon,
+  Edit as EditIcon,
   Close as CloseIcon,
   MailOutline as MessageIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DataTable, ColumnDef, StatusBadge } from '../components/data';
+import { DataTable, Column, StatusBadge } from '../components/data';
 import { getAdminUsers, getAdminUser, sendMessageToUser, getUserMessages } from '../api/client';
 import type { AdminUserSummary } from '../types';
 
@@ -363,7 +364,7 @@ const Users: React.FC = () => {
   };
 
   // Table columns definition with Design System
-  const columns: ColumnDef<UserListItem>[] = [
+  const columns: Column<UserListItem>[] = [
     {
       key: 'user',
       header: 'User',
@@ -586,11 +587,11 @@ const Users: React.FC = () => {
         selectable
         onSelectionChange={setSelectedUsers}
         onRowClick={(user) => handleOpenDrawer(user)}
-        onEdit={(user) => handleOpenDrawer(user)}
-        onDelete={(user) => handleDelete(user)}
-        emptyMessage="No users found"
-        defaultRowsPerPage={10}
-        rowsPerPageOptions={[5, 10, 25, 50]}
+        rowActions={[
+          { label: 'Edit', icon: <EditIcon fontSize="small" />, onClick: (user) => handleOpenDrawer(user) },
+          { label: 'Delete', icon: <DeleteIcon fontSize="small" />, onClick: (user) => handleDelete(user), danger: true },
+        ]}
+        emptyState={<Typography color="text.secondary">No users found</Typography>}
         stickyHeader
       />
 

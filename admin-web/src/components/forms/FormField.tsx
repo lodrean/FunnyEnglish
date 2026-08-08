@@ -228,7 +228,7 @@ export const FormField: React.FC<FormFieldProps> = ({
             disabled={disabled}
             required={required}
           >
-            <InputLabel size={size}>{label}</InputLabel>
+            <InputLabel size={size === 'medium' ? 'normal' : 'small'}>{label}</InputLabel>
             <Select
               {...field}
               label={label}
@@ -277,7 +277,7 @@ export const FormField: React.FC<FormFieldProps> = ({
             disabled={disabled}
             required={required}
           >
-            <InputLabel size={size}>{label}</InputLabel>
+            <InputLabel size={size === 'medium' ? 'normal' : 'small'}>{label}</InputLabel>
             <Select
               {...field}
               multiple

@@ -13,6 +13,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import {
   TrendingUp,
   TrendingDown,
@@ -53,7 +54,7 @@ export interface StatsCardProps {
 // COLOR MAPS
 // =============================================================================
 
-const getColors = (variant: StatsCardVariant, theme: ReturnType<typeof useTheme>) => {
+const getColors = (variant: StatsCardVariant, theme: Theme) => {
   const colors = {
     primary: {
       main: theme.palette.primary.main,

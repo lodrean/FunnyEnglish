@@ -9,6 +9,7 @@ import {
   CardContent,
   Skeleton,
   Box,
+  alpha,
   useTheme,
 } from '@mui/material';
 

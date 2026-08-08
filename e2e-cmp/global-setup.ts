@@ -4,7 +4,7 @@
 // клики canvas-only, поиск по тексту невозможен (грабля №54 для WASM).
 import { request } from '@playwright/test';
 
-const API = process.env.E2E_API_URL || 'http://192.168.1.148:8080/api';
+const API = process.env.E2E_API_URL || 'http://localhost:8080/api';
 const ADMIN_EMAIL = process.env.E2E_USER_EMAIL || 'admin@sotospeak.com';
 const ADMIN_PASSWORD = process.env.E2E_USER_PASSWORD || 'admin123';
 

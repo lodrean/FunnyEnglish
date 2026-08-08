@@ -4,7 +4,7 @@
   "values": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080",
+      "value": "http://localhost:8080/api",
       "type": "default",
       "enabled": true
     },
@@ -40,13 +40,13 @@
     },
     {
       "key": "categoryId",
-      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "value": "",
       "type": "default",
       "enabled": true
     },
     {
       "key": "testId",
-      "value": "550e8400-e29b-41d4-a716-446655440001",
+      "value": "",
       "type": "default",
       "enabled": true
     }

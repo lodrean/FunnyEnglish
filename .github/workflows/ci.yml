@@ -178,7 +178,8 @@ jobs:
       - name: Build admin image
         uses: docker/build-push-action@v5
         with:
-          context: admin-web
+          # Dockerfile.admin копирует admin-web/ и docker/nginx.conf — контекст = корень репо
+          context: .
           file: docker/Dockerfile.admin
           push: false
           tags: sotospeak-admin:latest

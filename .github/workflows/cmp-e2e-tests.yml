@@ -20,8 +20,36 @@ jobs:
   cmp-e2e-tests:
     name: CMP WASM E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sotospeak_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9010:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        command: server /data
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -68,12 +96,49 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    # Backend для e2e: seed-контент и API обязательны (global-setup purge, WASM идёт в API 8080)
+    - name: Start Backend
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: sotospeak_test
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        JWT_SECRET: test-secret-key-minimum-32-characters-long
+        S3_ENDPOINT: http://localhost:9010
+        S3_PUBLIC_URL: http://localhost:9010
+        S3_ACCESS_KEY: minioadmin
+        S3_SECRET_KEY: minioadmin
+        ADMIN_PASSWORD: admin123
+        DEMO_USER_ENABLED: "true"
+      run: |
+        ./gradlew -p backend bootRun --no-daemon > backend-bootrun.log 2>&1 &
+        for i in $(seq 1 60); do
+          if curl -sf http://localhost:8080/api/actuator/health > /dev/null 2>&1; then
+            echo "Backend is up after ~$((i*5))s"
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "::error::Backend did not start in 300s — bootRun log:"
+        tail -200 backend-bootrun.log
+        exit 1
+
+    - name: Create MinIO bucket
+      run: |
+        docker run --rm --network host minio/mc alias set local http://localhost:9010 minioadmin minioadmin
+        docker run --rm --network host minio/mc mb --ignore-existing local/sotospeak
+
+    - name: Seed speaking content
+      run: ./scripts/seed-speaking-content.sh http://localhost:8080/api admin@sotospeak.com admin123
+
     - name: Run CMP E2E tests
       run: |
         cd e2e-cmp
         npx playwright test --reporter=line
       env:
         CI: true
+        E2E_API_URL: http://localhost:8080/api
         GRADLE_OPTS: "-Xmx4g -Dorg.gradle.daemon=false"
         
     - name: Upload test results

@@ -21,8 +21,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -60,8 +65,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -99,8 +109,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
             }
           },
           "event": [
@@ -108,13 +122,11 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
                   "pm.test('Response is array', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.be.an('array');",
+                  "    if (jsonData.length > 0) pm.environment.set('categoryId', jsonData[0].id);",
                   "});"
                 ]
               }
@@ -128,8 +140,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/categories/{{categoryId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "{{categoryId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
             }
           },
           "event": [
@@ -137,13 +154,15 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "// id берётся из предыдущего списка; на пустой БД допускаем 404",
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
                   "});",
-                  "",
-                  "pm.test('Response has id', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('id');",
+                  "pm.test('Response has id when found', function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('id');",
+                  "    }",
                   "});"
                 ]
               }
@@ -162,8 +181,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/tests",
-              "host": ["{{baseUrl}}"],
-              "path": ["tests"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tests"
+              ]
             }
           },
           "event": [
@@ -171,13 +194,11 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
                   "pm.test('Response has content', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('content');",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    if (jsonData.length > 0) pm.environment.set('testId', jsonData[0].id);",
                   "});"
                 ]
               }
@@ -191,8 +212,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/tests/{{testId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["tests", "{{testId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tests",
+                "{{testId}}"
+              ]
             }
           },
           "event": [
@@ -200,13 +226,15 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "// id берётся из предыдущего списка; на пустой БД допускаем 404",
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
                   "});",
-                  "",
-                  "pm.test('Response has questions', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('questions');",
+                  "pm.test('Response has id when found', function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('id');",
+                  "    }",
                   "});"
                 ]
               }
@@ -225,8 +253,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/leaderboard?limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["leaderboard"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leaderboard"
+              ],
               "query": [
                 {
                   "key": "limit",

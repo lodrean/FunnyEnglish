@@ -31,7 +31,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test{{$timestamp}}@example.com\",\n  \"password\": \"Test123!\"\n}"
+              "raw": "{\n  \"displayName\": \"Test User\",\n  \"email\": \"test{{$timestamp}}@example.com\",\n  \"password\": \"Test123!\"\n}"
             }
           },
           "event": [
@@ -39,10 +39,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
                   "pm.test('Response has token', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('token');",
@@ -134,18 +131,19 @@
           ]
         },
         {
-          "name": "Get Category by ID",
+          "name": "Get Tests by Category",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "raw": "{{baseUrl}}/categories/{{categoryId}}/tests",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "categories",
-                "{{categoryId}}"
+                "{{categoryId}}",
+                "tests"
               ]
             }
           },
@@ -154,14 +152,12 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// id берётся из предыдущего списка; на пустой БД допускаем 404",
                   "pm.test('Status code is 200 or 404', function () {",
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
                   "});",
-                  "pm.test('Response has id when found', function () {",
+                  "pm.test('Response is array when found', function () {",
                   "    if (pm.response.code === 200) {",
-                  "        var jsonData = pm.response.json();",
-                  "        pm.expect(jsonData).to.have.property('id');",
+                  "        pm.expect(pm.response.json()).to.be.an('array');",
                   "    }",
                   "});"
                 ]
@@ -272,13 +268,11 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response is array', function () {",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response has entries array', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData).to.have.property('entries');",
+                  "    pm.expect(jsonData.entries).to.be.an('array');",
                   "});"
                 ]
               }

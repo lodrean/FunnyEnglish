@@ -135,7 +135,14 @@ jobs:
       - name: Install Playwright
         working-directory: ./admin-web
         run: npx playwright install --with-deps
-      
+
+      # docker-compose build копирует готовый backend jar — собираем заранее
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build backend jar
+        run: ./gradlew :backend:bootJar
+
       - name: Start Services
         run: docker compose up -d
       

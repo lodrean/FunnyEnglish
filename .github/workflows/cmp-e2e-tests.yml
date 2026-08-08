@@ -125,9 +125,8 @@ jobs:
         exit 1
 
     - name: Create MinIO bucket
-      run: |
-        docker run --rm --network host minio/mc alias set local http://localhost:9010 minioadmin minioadmin
-        docker run --rm --network host minio/mc mb --ignore-existing local/sotospeak
+      # один контейнер: alias через MC_HOST_ env (alias set не персистит между docker run)
+      run: docker run --rm --network host -e MC_HOST_local=http://minioadmin:minioadmin@localhost:9010 minio/mc mb --ignore-existing local/sotospeak
 
     - name: Seed speaking content
       run: ./scripts/seed-speaking-content.sh http://localhost:8080/api admin@sotospeak.com admin123

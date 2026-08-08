@@ -173,6 +173,15 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"email":"admin@sotospeak.com","password":"admin123"}' | head -c 120
           echo
+          echo "== via nginx WITH Origin header (browser-like) =="
+          curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -H "Origin: http://localhost:3000" \
+            -d '{"email":"admin@sotospeak.com","password":"admin123"}'
+          echo
+          echo "== effective CORS_ORIGINS =="
+          docker compose config | grep CORS_ORIGINS || true
+          docker exec sotospeak-backend sh -c 'echo $CORS_ORIGINS' || true
 
       - name: Run E2E Tests
         working-directory: ./admin-web

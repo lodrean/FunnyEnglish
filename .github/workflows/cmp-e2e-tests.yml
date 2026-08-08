@@ -130,7 +130,8 @@ jobs:
       run: docker run --rm --network host -e MC_HOST_local=http://minioadmin:minioadmin@localhost:9010 minio/mc mb --ignore-existing local/sotospeak
 
     - name: Seed speaking content
-      run: ./scripts/seed-speaking-content.sh http://localhost:8080/api admin@sotospeak.com admin123
+      # bash явно — Windows не хранит exec-bit в git
+      run: bash scripts/seed-speaking-content.sh http://localhost:8080/api admin@sotospeak.com admin123
 
     - name: Run CMP E2E tests
       run: |

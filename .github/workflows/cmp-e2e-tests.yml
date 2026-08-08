@@ -55,7 +55,7 @@ jobs:
         npx playwright install --with-deps chromium
         
     - name: Cache Gradle dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -74,7 +74,7 @@ jobs:
         
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cmp-e2e-results
         path: |
@@ -84,7 +84,7 @@ jobs:
         
     - name: Upload screenshots
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cmp-screenshots
         path: e2e-cmp/test-results/*.png

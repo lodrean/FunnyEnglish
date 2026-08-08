@@ -28,6 +28,9 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Build backend JAR
         run: ./gradlew backend:bootJar -x test
 

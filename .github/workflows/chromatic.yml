@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd admin-web
-          npm ci
+          npm ci --legacy-peer-deps
 
       - name: Build Storybook
         run: |

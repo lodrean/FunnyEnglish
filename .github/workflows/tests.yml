@@ -158,7 +158,7 @@ jobs:
       - name: Install Dependencies
         run: |
           cd admin-web
-          npm ci
+          npm ci --legacy-peer-deps
 
       - name: Install Playwright
         run: |

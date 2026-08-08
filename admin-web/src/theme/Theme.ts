@@ -84,9 +84,16 @@ const speakingLight = {
 };
 
 // Dark-вариант: record осветлён для контраста (tokens.json color.dark)
+// + dark-контейнеры v1.3.0 (M3): primaryContainer/secondaryContainer/recordContainer
 const speakingDark = {
   ...speakingLight,
   record: '#FFB27D',
+  recordContainer: '#59311C',
+  onRecordContainer: '#FFD9C2',
+  primaryContainer: '#2E3E6E',
+  onPrimaryContainer: '#DDE8FD',
+  secondaryContainer: '#46366F',
+  onSecondaryContainer: '#E5DCFF',
 };
 
 // Chart Colors for Data Visualization (первый = brand primary)
@@ -188,10 +195,13 @@ const typography: ThemeOptions['typography'] = {
     fontWeight: 700,
     lineHeight: 1.4,
     letterSpacing: '0em',
+    // DSM-5 §2: h3 = timerDisplay — моноширинные tabular-цифры (таймер/длительности)
+    fontFamily: '"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace',
+    fontVariantNumeric: 'tabular-nums',
   },
   h4: {
-    fontSize: '1.5rem',
-    fontWeight: 700,
+    fontSize: '1.9375rem', // 31px — headlineSmall (DSM-5 §2)
+    fontWeight: 800,
     lineHeight: 1.4,
     letterSpacing: '0.00735em',
   },
@@ -202,14 +212,14 @@ const typography: ThemeOptions['typography'] = {
     letterSpacing: '0em',
   },
   h6: {
-    fontSize: '1.125rem',
+    fontSize: '1.5625rem', // 25px — questionText (DSM-5 §2)
     fontWeight: 600,
     lineHeight: 1.5,
     letterSpacing: '0.0075em',
   },
   subtitle1: {
-    fontSize: '1rem',
-    fontWeight: 600,
+    fontSize: '1.25rem', // 20px — titleMedium (DSM-5 §2)
+    fontWeight: 800,
     lineHeight: 1.5,
     letterSpacing: '0.00938em',
   },
@@ -233,16 +243,17 @@ const typography: ThemeOptions['typography'] = {
   },
   button: {
     fontSize: '0.875rem',
-    fontWeight: 600,
+    fontWeight: 800, // DSM-5 §2/§5: Nunito 800 даёт акцент, uppercase не нужен
     lineHeight: 1.75,
     letterSpacing: '0.02857em',
     textTransform: 'none',
   },
   caption: {
     fontSize: '0.75rem',
-    fontWeight: 400,
+    fontWeight: 800, // DSM-5 §2: labelSmall 12 · 800 · caps
     lineHeight: 1.66,
-    letterSpacing: '0.03333em',
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
   },
   overline: {
     fontSize: '0.75rem',
@@ -250,6 +261,20 @@ const typography: ThemeOptions['typography'] = {
     lineHeight: 2.66,
     letterSpacing: '0.08333em',
     textTransform: 'uppercase',
+    // DSM-5 §2: timestamps — моноширинные tabular-цифры
+    fontFamily: '"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace',
+    fontVariantNumeric: 'tabular-nums',
+  },
+};
+
+// M3 motion (tokens v1.3.0 / DSM-5 §3): standard easing для UI, emphasized — экранные переходы
+const m3Transitions: ThemeOptions['transitions'] = {
+  easing: {
+    easeInOut: 'cubic-bezier(0.2, 0, 0, 1)', // M3 standard
+    sharp: 'cubic-bezier(0.05, 0.7, 0.1, 1)', // M3 emphasized
+  },
+  duration: {
+    short: 200, // M3 state duration
   },
 };
 
@@ -282,10 +307,10 @@ const lightThemeOptions: ThemeOptions = {
       secondary: '#58609A', // neutral.textMuted (5.32:1 AA, аудит 2026-08-01)
       disabled: alpha('#2D3561', 0.38),
     },
-    divider: '#B9C7EE', // neutral.outline
+    divider: '#D4DDF5', // m3.outlineVariant (v1.3.0) — мягкие разделители
     action: {
       active: alpha('#2D3561', 0.54),
-      hover: alpha(brandColors.primary[500], 0.06),
+      hover: alpha(brandColors.primary[500], 0.08), // M3 state layer hover 8%
       selected: alpha(brandColors.primary[500], 0.12),
       disabled: alpha('#2D3561', 0.26),
       disabledBackground: alpha('#2D3561', 0.12),
@@ -304,6 +329,7 @@ const lightThemeOptions: ThemeOptions = {
     speaking: speakingLight,
   },
   typography,
+  transitions: m3Transitions,
   shape: {
     borderRadius: 16, // radius.button — игровая мягкость
   },
@@ -315,24 +341,24 @@ const lightThemeOptions: ThemeOptions = {
         root: {
           borderRadius: 16,
           textTransform: 'none',
-          fontWeight: 600,
+          fontWeight: 800,
           padding: '8px 16px',
-          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-          '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: '0 4px 12px rgba(91, 141, 239, 0.3)',
-          },
+          transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)', // M3 standard easing
           '&:focus-visible': {
             boxShadow: focusRing,
           },
         },
         contained: {
-          boxShadow: cardShadow,
+          boxShadow: 'none', // M3 filled button — без resting-тени (tonal elevation)
+          '&:hover': {
+            boxShadow: 'none',
+          },
         },
         containedPrimary: {
-          background: brandColors.primary[500], // плоский brand, без градиента
+          backgroundColor: '#3B6FD4', // primaryStrong — правило §3 спеки (белый текст AA)
           '&:hover': {
-            background: brandColors.primary[600],
+            backgroundColor: '#3B6FD4',
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08))', // M3 hover state layer
           },
         },
         containedSecondary: {
@@ -407,7 +433,7 @@ const lightThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: alpha('#5B8DEF', 0.04),
+            backgroundColor: alpha('#5B8DEF', 0.08), // M3 state layer hover 8%
           },
         },
       },
@@ -415,7 +441,9 @@ const lightThemeOptions: ThemeOptions = {
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: cardShadow,
+          backgroundColor: '#E9EFFE', // m3.surfaceContainer (v1.3.0)
+          color: '#2D3561',
+          boxShadow: 'none', // M3 — без тени
         },
       },
     },
@@ -430,10 +458,10 @@ const lightThemeOptions: ThemeOptions = {
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 999, // M3 pill (навигационный индикатор)
           margin: '4px 8px',
           padding: '10px 16px',
-          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
           '&:hover': {
             backgroundColor: alpha(brandColors.primary[500], 0.08),
           },
@@ -473,7 +501,7 @@ const lightThemeOptions: ThemeOptions = {
             },
             '&.Mui-focused fieldset': {
               borderWidth: 2,
-              borderColor: brandColors.primary[500],
+              borderColor: '#3B6FD4', // primaryStrong (правило §3: primary-слот M3 в light)
             },
           },
         },
@@ -521,7 +549,8 @@ const lightThemeOptions: ThemeOptions = {
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: 22,
+          borderRadius: 28, // M3 dialog (shapes.extraLarge)
+          backgroundColor: '#E2E9FB', // m3.surfaceContainerHigh
           boxShadow: '0 24px 48px rgba(45,53,97,0.22)',
         },
       },
@@ -529,7 +558,37 @@ const lightThemeOptions: ThemeOptions = {
     MuiSkeleton: {
       styleOverrides: {
         root: {
+          backgroundColor: '#E2E9FB', // m3.surfaceContainerHigh
           borderRadius: 8,
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12, // DSM-5 E15
+        },
+      },
+    },
+    MuiSnackbar: {
+      defaultProps: {
+        anchorOrigin: { vertical: 'bottom', horizontal: 'center' }, // DSM-5 E15
+      },
+    },
+    MuiSlider: {
+      styleOverrides: {
+        root: {
+          height: 6, // DSM-5 E22: track 6px radius 3, thumb 22px primary
+        },
+        track: {
+          borderRadius: 3,
+        },
+        rail: {
+          borderRadius: 3,
+        },
+        thumb: {
+          width: 22,
+          height: 22,
         },
       },
     },
@@ -588,7 +647,7 @@ const darkThemeOptions: ThemeOptions = {
       secondary: '#9AA0C4', // dark.textMuted
       disabled: alpha('#E8EAF6', 0.38),
     },
-    divider: '#3D4568', // dark.outline
+    divider: '#2E3556', // m3 dark outlineVariant (v1.3.0)
     action: {
       active: alpha('#E8EAF6', 0.7),
       hover: alpha('#8FB3F5', 0.08),
@@ -609,6 +668,7 @@ const darkThemeOptions: ThemeOptions = {
     speaking: speakingDark,
   },
   typography,
+  transitions: m3Transitions,
   shape: lightThemeOptions.shape,
   shadows: darkShadows,
   spacing: 8,
@@ -619,19 +679,18 @@ const darkThemeOptions: ThemeOptions = {
         root: {
           borderRadius: 16,
           textTransform: 'none',
-          fontWeight: 600,
+          fontWeight: 800,
           padding: '8px 16px',
-          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-          '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: '0 4px 12px rgba(143, 179, 245, 0.3)',
-          },
+          transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)', // M3 standard easing
           '&:focus-visible': {
             boxShadow: '0 0 0 2px #161A2E, 0 0 0 4px #8FB3F5',
           },
         },
         contained: {
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          boxShadow: 'none', // M3 filled button — без resting-тени
+          '&:hover': {
+            boxShadow: 'none',
+          },
         },
         containedPrimary: {
           background: '#8FB3F5',
@@ -698,7 +757,7 @@ const darkThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: alpha('#8FB3F5', 0.06),
+            backgroundColor: alpha('#8FB3F5', 0.08), // M3 state layer hover 8%
           },
         },
       },
@@ -706,8 +765,8 @@ const darkThemeOptions: ThemeOptions = {
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#1F2440',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          backgroundColor: '#1F2440', // m3 dark surfaceContainer
+          boxShadow: 'none', // M3 — без тени
         },
       },
     },
@@ -723,21 +782,21 @@ const darkThemeOptions: ThemeOptions = {
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 999, // M3 pill (навигационный индикатор)
           margin: '4px 8px',
           padding: '10px 16px',
-          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
           '&:hover': {
             backgroundColor: alpha('#8FB3F5', 0.08),
           },
           '&.Mui-selected': {
-            backgroundColor: alpha('#8FB3F5', 0.16),
-            color: '#8FB3F5',
+            backgroundColor: '#2E3E6E', // m3 dark primaryContainer (v1.3.0)
+            color: '#DDE8FD', // m3 dark onPrimaryContainer
             '&:hover': {
-              backgroundColor: alpha('#8FB3F5', 0.24),
+              backgroundColor: alpha('#2E3E6E', 0.92),
             },
             '& .MuiListItemIcon-root': {
-              color: '#8FB3F5',
+              color: '#DDE8FD',
             },
           },
         },
@@ -793,7 +852,8 @@ const darkThemeOptions: ThemeOptions = {
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#1F2440',
+          borderRadius: 28, // M3 dialog (shapes.extraLarge)
+          backgroundColor: '#262B49', // m3 dark surfaceContainerHigh
           border: `1px solid ${alpha('#E8EAF6', 0.08)}`,
           boxShadow: '0 24px 48px rgba(0,0,0,0.4)',
         },
@@ -802,7 +862,7 @@ const darkThemeOptions: ThemeOptions = {
     MuiSkeleton: {
       styleOverrides: {
         root: {
-          backgroundColor: alpha('#E8EAF6', 0.1),
+          backgroundColor: '#262B49', // m3 dark surfaceContainerHigh
           borderRadius: 8,
         },
       },

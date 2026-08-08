@@ -1,5 +1,6 @@
 package com.sotospeak.app.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,12 +19,9 @@ import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingGate
-import com.sotospeak.app.components.SpeakingGhostButton
-import com.sotospeak.app.components.SpeakingPrimaryButton
 import com.sotospeak.app.viewmodel.QuestionsState
 import com.sotospeak.design.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
-import com.sotospeak.designsystem.theme.SpeakingShapes
 import com.sotospeak.designsystem.theme.SpeakingTextStyles
 
 /**
@@ -97,12 +95,15 @@ private fun QuestionsContent(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(state.questions, key = { _, q -> q.id }) { index, question ->
+                // M3 FilledCard (A8): container surfaceContainerHigh, shape large(22)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("question_item_$index"),
-                    shape = SpeakingShapes.Card,
-                    colors = CardDefaults.cardColors(containerColor = speaking.surface)
+                    shape = MaterialTheme.shapes.large,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    )
                 ) {
                     Text(
                         text = question.text,
@@ -141,16 +142,27 @@ private fun QuestionsContent(
                     text = "Отправка записи учителю доступна после регистрации",
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    SpeakingPrimaryButton(
-                        text = "Зарегистрироваться",
+                    Button(
                         onClick = onRegisterClick,
-                        modifier = Modifier.testTag("practice_locked_cta")
-                    )
-                    SpeakingGhostButton(
-                        text = "Войти",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp)
+                            .testTag("practice_locked_cta"),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Зарегистрироваться")
+                    }
+                    OutlinedButton(
                         onClick = onLoginClick,
-                        modifier = Modifier.testTag("practice_locked_login")
-                    )
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .testTag("practice_locked_login"),
+                        shape = MaterialTheme.shapes.medium,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Text("Войти")
+                    }
                 }
             } else if (state.hasSubmitted) {
                 Button(

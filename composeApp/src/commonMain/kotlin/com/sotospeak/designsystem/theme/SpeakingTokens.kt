@@ -97,7 +97,10 @@ val LightSpeakingColors = SpeakingColors(
 val DarkSpeakingColors = LightSpeakingColors.copy(
     primary = Color(0xFF8FB3F5),
     primaryStrong = Color(0xFF8FB3F5),
+    primaryContainer = Color(0xFF2E3E6E),     // v1.3.0 M3 dark
+    onPrimaryContainer = Color(0xFFDDE8FD),   // v1.3.0 M3 dark
     secondary = Color(0xFFB79EED),
+    secondaryContainer = Color(0xFF46366F),   // v1.3.0 M3 dark
     background = Color(0xFF161A2E),
     surface = Color(0xFF1F2440),
     surfaceVariant = Color(0xFF2B3152),
@@ -106,8 +109,8 @@ val DarkSpeakingColors = LightSpeakingColors.copy(
     outline = Color(0xFF3D4568),
     record = Color(0xFFFFB27D),
     onRecord = Color(0xFF161A2E),
-    recordContainer = Color(0xFF4A2A18),
-    onRecordContainer = Color(0xFFFFCCAA),
+    recordContainer = Color(0xFF59311C),      // v1.3.0 M3 dark (был #4A2A18)
+    onRecordContainer = Color(0xFFFFD9C2),    // v1.3.0 M3 dark (был #FFCCAA)
     statusNew = Color(0xFFFFB74D),
     statusNewContainer = Color(0xFF3D2A0A),
     statusReviewed = Color(0xFF81C784),
@@ -175,6 +178,14 @@ object SpeakingMotion {
     const val DurationSlow = 500
     /** Пульсация REC; при Reduce motion — статичный индикатор */
     const val RecPulseMs = 1600
+
+    // M3 motion (tokens v1.3.0 / DSM-5 §3)
+    /** M3 Standard: cubic-bezier(0.2, 0, 0, 1) — стандартные переходы */
+    val EasingM3Standard = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+    /** M3 Emphasized: cubic-bezier(0.05, 0.7, 0.1, 1) — экранные переходы */
+    val EasingM3Emphasized = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
+    /** M3 state-анимации (hover/press/смена цвета уровня таймера) */
+    const val DurationState = 200
 
     fun <T> tweenFast(): TweenSpec<T> = tween(DurationFast, easing = EasingStandard)
     fun <T> tweenMedium(): TweenSpec<T> = tween(DurationMedium, easing = EasingStandard)

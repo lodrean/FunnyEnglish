@@ -153,42 +153,48 @@ private fun PracticeContent(
         // Чипы режима (P5: «Контрольная · 30 сек» peach #FBEAE8/#B3261E + «1 ЗАПИСЬ…» chip-new)
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Surface(
-                    shape = SpeakingShapes.StatusPill,
-                    color = speaking.recordContainer
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Icon(
-                            imageVector = SpeakingIcons.Clock,
-                            contentDescription = null,
-                            tint = speaking.onRecordContainer,
-                            modifier = Modifier.size(14.dp)
-                        )
+                // M3 AssistChip (A10): record-контейнер (brand-роли LocalSpeakingColors)
+                AssistChip(
+                    onClick = {},
+                    label = {
                         Text(
                             "Контрольная · 30 сек",
-                            color = speaking.onRecordContainer,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold
                         )
-                    }
-                }
-                Surface(
-                    shape = SpeakingShapes.StatusPill,
-                    color = speaking.statusNewContainer
-                ) {
-                    Text(
-                        "1 ЗАПИСЬ НА ВСЕ ВОПРОСЫ",
-                        color = speaking.statusNew,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.4.sp,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                    )
-                }
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = SpeakingIcons.Clock,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = speaking.recordContainer,
+                        labelColor = speaking.onRecordContainer,
+                        leadingIconContentColor = speaking.onRecordContainer
+                    ),
+                    border = null
+                )
+                AssistChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            "1 ЗАПИСЬ НА ВСЕ ВОПРОСЫ",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 0.4.sp
+                        )
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = speaking.statusNewContainer,
+                        labelColor = speaking.statusNew
+                    ),
+                    border = null
+                )
             }
         }
 

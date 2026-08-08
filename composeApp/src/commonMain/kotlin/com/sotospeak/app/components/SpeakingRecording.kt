@@ -17,6 +17,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -93,6 +95,7 @@ fun SpeakingTimerRing(
 ) {
     val speaking = LocalSpeakingColors.current
     val reduceMotion = LocalReduceMotion.current
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
 
     val target = if (totalSeconds > 0) {
         (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
@@ -106,7 +109,7 @@ fun SpeakingTimerRing(
     )
     val ringColor by animateColorAsState(
         targetValue = arcColor,
-        animationSpec = if (reduceMotion) snap() else SpeakingMotion.tweenMedium(),
+        animationSpec = if (reduceMotion) snap() else tween(SpeakingMotion.DurationMedium, easing = SpeakingMotion.EasingM3Standard),
         label = "timer_ring_color"
     )
 
@@ -120,7 +123,7 @@ fun SpeakingTimerRing(
             )
             val arcSize = Size(diameter, diameter)
             drawCircle(
-                color = speaking.surfaceVariant,
+                color = trackColor,
                 radius = diameter / 2f,
                 style = Stroke(width = strokeWidth)
             )
@@ -377,6 +380,15 @@ fun SpeakingRecordButton(
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    // M3 state layers (tokens v1.3.0 state.*): оверлей onRecord 8% hover / 12% focus+pressed
+    val stateLayerAlpha = when {
+        !enabled -> 0f
+        isPressed || isFocused -> 0.12f
+        isHovered -> 0.08f
+        else -> 0f
+    }
     val shadowOffset by animateDpAsState(
         targetValue = if (isPressed && enabled) {
             SpeakingElevation.RecorderShadowPressedOffsetY
@@ -416,7 +428,7 @@ fun SpeakingRecordButton(
                     .border(3.dp, speaking.record, SpeakingShapes.Recorder)
             )
         }
-        // Тень (recordShadow), верхний круг (record)
+        // Тень (recordShadow), верхний squircle (record); disabled — M3: onSurface 12%/38%
         Box(
             modifier = Modifier
                 .size(72.dp)
@@ -425,14 +437,20 @@ fun SpeakingRecordButton(
                     scaleY = pressScale
                 }
                 .clip(SpeakingShapes.Recorder)
-                .background(if (enabled) speaking.recordShadow else speaking.surfaceVariant)
+                .background(
+                    if (enabled) speaking.recordShadow
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                )
         ) {
             Box(
                 modifier = Modifier
                     .padding(bottom = shadowOffset)
                     .fillMaxSize()
                     .clip(SpeakingShapes.Recorder)
-                    .background(if (enabled) speaking.record else speaking.outline)
+                    .background(
+                        if (enabled) speaking.record
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    )
                     .clickable(
                         interactionSource = interactionSource,
                         indication = ripple(bounded = true),
@@ -442,10 +460,19 @@ fun SpeakingRecordButton(
                     .testTag(testTag),
                 contentAlignment = Alignment.Center
             ) {
+                // M3 state layer (hover/focus/pressed) — оверлей onRecord поверх record
+                if (stateLayerAlpha > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(speaking.onRecord.copy(alpha = stateLayerAlpha))
+                    )
+                }
                 Icon(
                     imageVector = if (isRecording) SpeakingIcons.Stop else SpeakingIcons.Mic,
                     contentDescription = contentDescription,
-                    tint = speaking.onRecord,
+                    tint = if (enabled) speaking.onRecord
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                     modifier = Modifier.size(30.dp)
                 )
             }

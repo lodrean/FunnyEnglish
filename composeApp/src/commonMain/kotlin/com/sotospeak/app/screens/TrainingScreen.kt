@@ -155,30 +155,32 @@ private fun TrainingContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Surface(
-                    shape = SpeakingShapes.StatusPill,
-                    color = timerColor.copy(alpha = 0.15f),
-                    modifier = Modifier.testTag("level_chip")
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Icon(
-                            imageVector = SpeakingIcons.Clock,
-                            contentDescription = null,
-                            tint = timerColor,
-                            modifier = Modifier.size(14.dp)
-                        )
+                // M3 AssistChip (A9): timer-цвета из LocalSpeakingColors
+                AssistChip(
+                    onClick = {},
+                    modifier = Modifier.testTag("level_chip"),
+                    label = {
                         Text(
                             "Уровень ${state.attemptNumber} · $limit сек",
-                            color = timerColor,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold
                         )
-                    }
-                }
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = SpeakingIcons.Clock,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = timerColor.copy(alpha = 0.15f),
+                        labelColor = timerColor,
+                        leadingIconContentColor = timerColor
+                    ),
+                    border = null
+                )
                 repeat(TrainingViewModel.MAX_ATTEMPTS) { index ->
                     val done = index < state.attempts.size
                     Box(
@@ -350,24 +352,35 @@ private fun TrainingContent(
         }
 
         // Privacy-note (mockups.html .privacy-note — shield-иконка)
+        // M3 FilledCard (A9): container surfaceContainerLow
         item {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            Card(
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = SpeakingIcons.Shield,
-                    contentDescription = null,
-                    tint = speaking.secondary,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    "Записи хранятся только на твоём устройстве",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = speaking.textMuted,
-                    textAlign = TextAlign.Center
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Icon(
+                        imageVector = SpeakingIcons.Shield,
+                        contentDescription = null,
+                        tint = speaking.secondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        "Записи хранятся только на твоём устройстве",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = speaking.textMuted,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

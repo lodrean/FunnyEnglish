@@ -8,10 +8,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.accessibility.platformReduceMotionEnabled
-import com.sotospeak.designsystem.tokens.funnyDarkColorScheme
-import com.sotospeak.designsystem.tokens.funnyLightColorScheme
-import com.sotospeak.designsystem.tokens.funnyShapes
-import com.sotospeak.designsystem.tokens.funnyTypography
 
 /**
  * So to Speak Theme
@@ -62,31 +58,16 @@ fun FunnyTheme(
     textScale: Float = 1.0f,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        highContrast -> if (darkTheme) {
-            funnyDarkColorScheme().copy(
-                background = funnyDarkColorScheme().background,
-                surface = funnyDarkColorScheme().surface,
-                onBackground = funnyDarkColorScheme().onBackground,
-                onSurface = funnyDarkColorScheme().onSurface
-            )
-        } else {
-            funnyLightColorScheme().copy(
-                background = funnyLightColorScheme().background,
-                surface = funnyLightColorScheme().surface,
-                onBackground = funnyLightColorScheme().onBackground,
-                onSurface = funnyLightColorScheme().onSurface
-            )
-        }
-        darkTheme -> funnyDarkColorScheme()
-        else -> funnyLightColorScheme()
-    }
+    // M3 color scheme — Playful Coach (DSM-5 §1.1, tokens v1.3.0).
+    // Legacy DS 1.x funny*ColorScheme больше не провайдится в MaterialTheme;
+    // LocalFunnyColorScheme остаётся только для legacy-компонентов designsystem/components.
+    val colorScheme = if (darkTheme) speakingDarkColorScheme() else speakingLightColorScheme()
 
     val extendedColorScheme = if (darkTheme) DarkFunnyColorScheme else LightFunnyColorScheme
     val speakingColors = if (darkTheme) DarkSpeakingColors else LightSpeakingColors
 
-    val typography = funnyTypography()
-    val shapes = funnyShapes()
+    val typography = speakingTypography()
+    val shapes = speakingShapes()
 
     val themeConfig = FunnyThemeConfig(
         reduceMotion = reduceMotion,

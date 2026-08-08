@@ -9,11 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +36,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.SpeakingField
-import com.sotospeak.app.components.SpeakingPrimaryButton
-import com.sotospeak.app.components.SpeakingTextLink
 import com.sotospeak.app.viewmodel.AuthState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 
@@ -170,15 +173,20 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SpeakingPrimaryButton(
-            text = if (state.isLoading) "Создаём…" else "Создать аккаунт",
+        Button(
             onClick = { onRegister(email, password, displayName) },
             enabled = !state.isLoading &&
                 email.isNotBlank() &&
                 password.isNotBlank() &&
                 displayName.isNotBlank(),
-            modifier = Modifier.testTag("register_button")
-        )
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .testTag("register_button"),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text(if (state.isLoading) "Создаём…" else "Создать аккаунт")
+        }
 
         // weight в scrollable Column запрещён — фиксированный отступ вместо margin-top:auto
         Spacer(modifier = Modifier.height(48.dp))
@@ -187,12 +195,28 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SpeakingTextLink(
-                text = "Уже есть аккаунт?",
-                accent = "Войти",
+            TextButton(
                 onClick = onNavigateToLogin,
-                modifier = Modifier.testTag("login_link")
-            )
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .testTag("login_link"),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Row {
+                    Text(
+                        text = "Уже есть аккаунт? ",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = speaking.textMuted
+                    )
+                    Text(
+                        text = "Войти",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }
@@ -228,12 +252,17 @@ private fun CheckEmailContent(
             text = "Мы отправили письмо со ссылкой на $email. Перейдите по ней, чтобы подтвердить аккаунт и войти.",
             modifier = Modifier.fillMaxWidth()
         ) {
-            SpeakingPrimaryButton(
-                text = if (isLoading) "Отправляем…" else "Отправить письмо повторно",
+            Button(
                 onClick = onResend,
                 enabled = !isLoading,
-                modifier = Modifier.testTag("resend_verification_button")
-            )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .testTag("resend_verification_button"),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(if (isLoading) "Отправляем…" else "Отправить письмо повторно")
+            }
         }
         if (resent) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -246,11 +275,27 @@ private fun CheckEmailContent(
             )
         }
         Spacer(modifier = Modifier.height(48.dp))
-        SpeakingTextLink(
-            text = "Уже подтвердили?",
-            accent = "Войти",
+        TextButton(
             onClick = onNavigateToLogin,
-            modifier = Modifier.testTag("check_email_login_link")
-        )
+            modifier = Modifier
+                .heightIn(min = 48.dp)
+                .testTag("check_email_login_link"),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Row {
+                Text(
+                    text = "Уже подтвердили? ",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = speaking.textMuted
+                )
+                Text(
+                    text = "Войти",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
     }
 }

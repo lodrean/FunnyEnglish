@@ -25,8 +25,8 @@ actual fun provideAppConfig(): AppConfig {
 
     val baseUrl = overrideUrl ?: when {
         host.contains("localhost") || host.contains("127.0.0.1") -> "http://localhost:8080"
-        // Dev web server runs on :8081/:8082, backend is on :8080 on the same host
-        port == "8081" || port == "8082" -> "http://${hostname}:8080"
+        // Dev web server runs on :8081/:8082, static wasm-dist на :8085, backend on :8080 same host
+        port == "8081" || port == "8082" || port == "8085" -> "http://${hostname}:8080"
         else -> "${protocol}//${host}" // Same origin for production
     }
 

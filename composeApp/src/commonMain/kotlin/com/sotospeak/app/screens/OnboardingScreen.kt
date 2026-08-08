@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import com.sotospeak.design.icons.SpeakingIcons
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.sotospeak.app.components.SpeakingPrimaryButton
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
 
@@ -122,7 +124,9 @@ fun OnboardingScreen(
                         .width(if (active) 24.dp else 8.dp)
                         .height(8.dp)
                         .background(
-                            color = if (active) speaking.primary else speaking.surfaceVariant,
+                            // M3 page indicator (A2): активная точка primary, неактивные outlineVariant
+                            color = if (active) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.outlineVariant,
                             shape = CircleShape
                         )
                 )
@@ -156,14 +160,18 @@ fun OnboardingScreen(
             )
         }
 
-        SpeakingPrimaryButton(
-            text = if (isLast) "Начать" else "Далее",
+        Button(
             onClick = {
                 if (isLast) onFinish() else page++
             },
             modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
                 .padding(bottom = 24.dp)
-                .testTag("onboarding_next_button")
-        )
+                .testTag("onboarding_next_button"),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text(if (isLast) "Начать" else "Далее")
+        }
     }
 }

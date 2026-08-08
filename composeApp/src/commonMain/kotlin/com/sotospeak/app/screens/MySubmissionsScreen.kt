@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -100,37 +101,35 @@ private fun SubmissionsList(
                 )
             }
             items(state.pendingUploads, key = { it.filePath }) { pending ->
+                // M3: Card + ListItem (A11, как TopicsScreen)
                 Card(
-                    shape = SpeakingShapes.Card,
+                    shape = MaterialTheme.shapes.large,
                     colors = CardDefaults.cardColors(containerColor = speaking.statusNewContainer),
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("pending_upload_item")
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.CloudUpload,
-                            contentDescription = null,
-                            tint = speaking.statusNew
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            "Запись ждёт отправки",
-                            modifier = Modifier.weight(1f),
-                            color = speaking.text
-                        )
-                        TextButton(
-                            onClick = { onRetryPending(pending.filePath) },
-                            colors = ButtonDefaults.textButtonColors(contentColor = speaking.primary)
-                        ) {
-                            Text("Повторить")
-                        }
-                    }
+                    ListItem(
+                        headlineContent = {
+                            Text("Запись ждёт отправки", color = speaking.text)
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.CloudUpload,
+                                contentDescription = null,
+                                tint = speaking.statusNew
+                            )
+                        },
+                        trailingContent = {
+                            TextButton(
+                                onClick = { onRetryPending(pending.filePath) },
+                                colors = ButtonDefaults.textButtonColors(contentColor = speaking.primary)
+                            ) {
+                                Text("Повторить")
+                            }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
                 }
             }
         }
@@ -157,61 +156,87 @@ private fun SubmissionCard(
     val speaking = LocalSpeakingColors.current
     val isReviewed = submission.status == "REVIEWED"
 
+    // M3: Card + ListItem (A11, как TopicsScreen)
     Card(
-        shape = SpeakingShapes.Card,
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = speaking.surface),
         modifier = Modifier
             .fillMaxWidth()
             .testTag("submission_item_${submission.id}")
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onPlay,
-                    modifier = Modifier.testTag("play_submission_${submission.id}")
-                ) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                        contentDescription = if (isPlaying) "Стоп" else "Прослушать",
-                        tint = speaking.waveformPlayback
-                    )
-                }
-                Column(modifier = Modifier.weight(1f)) {
+        Column {
+            ListItem(
+                headlineContent = {
                     Text(
                         submission.topicTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = speaking.text
                     )
+                },
+                supportingContent = {
                     Text(
                         "${formatTimer(submission.durationSec)} · ${submission.createdAt?.take(10).orEmpty()}",
                         style = MaterialTheme.typography.bodySmall,
                         color = speaking.textMuted
                     )
-                }
-                // Статус-чип
-                Surface(
-                    shape = SpeakingShapes.StatusPill,
-                    color = if (isReviewed) speaking.statusReviewedContainer
-                    else speaking.statusNewContainer,
-                    modifier = Modifier.testTag("submission_status_${submission.id}")
-                ) {
-                    Text(
-                        if (isReviewed) "Проверено" else "На проверке",
-                        color = if (isReviewed) speaking.statusReviewed else speaking.statusNew,
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                },
+                leadingContent = {
+                    IconButton(
+                        onClick = onPlay,
+                        modifier = Modifier.testTag("play_submission_${submission.id}")
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                            contentDescription = if (isPlaying) "Стоп" else "Прослушать",
+                            tint = speaking.waveformPlayback
+                        )
+                    }
+                },
+                trailingContent = {
+                    SubmissionStatusChip(
+                        isReviewed = isReviewed,
+                        modifier = Modifier.testTag("submission_status_${submission.id}")
                     )
-                }
-            }
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+            )
 
             submission.grade?.let { grade ->
-                Spacer(modifier = Modifier.height(12.dp))
-                GradeCard(grade = grade, submissionId = submission.id)
+                Box(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+                    GradeCard(grade = grade, submissionId = submission.id)
+                }
             }
         }
     }
 }
+
+/** Статус-чип NEW/REVIEWED — M3 AssistChip (A11): container + тёмный текст (AA, цвета мокапа). */
+@Composable
+private fun SubmissionStatusChip(isReviewed: Boolean, modifier: Modifier = Modifier) {
+    val speaking = LocalSpeakingColors.current
+    AssistChip(
+        onClick = {},
+        modifier = modifier,
+        label = {
+            Text(
+                if (isReviewed) "Проверено" else "На проверке",
+                style = MaterialTheme.typography.labelMedium
+            )
+        },
+        shape = MaterialTheme.shapes.small,
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = if (isReviewed) speaking.statusReviewedContainer
+            else speaking.statusNewContainer,
+            labelColor = if (isReviewed) STATUS_REVIEWED_TEXT else STATUS_NEW_TEXT
+        ),
+        border = null
+    )
+}
+
+/** Текст статус-чипов мокапа (.chip-done/.chip-new — тёмный текст на container, WCAG AA). */
+private val STATUS_REVIEWED_TEXT = Color(0xFF256629)
+private val STATUS_NEW_TEXT = Color(0xFF8A5200)
 
 @Composable
 private fun GradeCard(grade: SpeakingGrade, submissionId: String) {

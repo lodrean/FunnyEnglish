@@ -1,6 +1,7 @@
 package com.sotospeak.app.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,20 +12,24 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -42,13 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
-import com.sotospeak.app.components.SpeakingDangerGhostButton
 import com.sotospeak.app.components.SpeakingGate
-import com.sotospeak.app.components.SpeakingPrimaryButton
-import com.sotospeak.app.components.SpeakingTextLink
 import com.sotospeak.app.viewmodel.ProfileState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
-import com.sotospeak.designsystem.theme.SpeakingShapes
 import kotlinx.coroutines.delay
 
 /**
@@ -190,12 +191,21 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // .btn-danger-ghost: transparent bg, текст #B3261E
-            SpeakingDangerGhostButton(
-                text = "Выйти",
+            // M3 OutlinedButton с error-цветами (бывш. SpeakingDangerGhostButton, C3)
+            OutlinedButton(
                 onClick = onLogout,
-                modifier = Modifier.testTag("profile_logout_button")
-            )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .testTag("profile_logout_button"),
+                shape = MaterialTheme.shapes.medium,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Выйти")
+            }
 
             // Версия приложения (debug/qa): 7 тапов — скрытое debug-меню
             if (versionLabel != null) {
@@ -205,7 +215,7 @@ fun ProfileScreen(
     }
 }
 
-/** .stat-card: surface, radius-card, number primary titleMedium / label muted labelSmall. */
+/** .stat-card: M3 OutlinedCard (A12, border outlineVariant), number primary / label muted. */
 @Composable
 private fun StatCard(
     number: Int,
@@ -214,11 +224,11 @@ private fun StatCard(
 ) {
     val speaking = LocalSpeakingColors.current
 
-    Card(
+    OutlinedCard(
         modifier = modifier,
-        shape = SpeakingShapes.Card,
-        colors = CardDefaults.cardColors(containerColor = speaking.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = speaking.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier
@@ -276,20 +286,40 @@ private fun GuestProfileStub(
                 text = "Зарегистрируйся, чтобы отправлять записи учителю и видеть оценки",
                 modifier = Modifier.fillMaxWidth()
             ) {
-                SpeakingPrimaryButton(
-                    text = "Зарегистрироваться",
+                Button(
                     onClick = onRegisterClick,
-                    modifier = Modifier.testTag("guest_profile_register_button")
-                )
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp)
+                        .testTag("guest_profile_register_button"),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Зарегистрироваться")
+                }
                 onLoginClick?.let {
-                    SpeakingTextLink(
-                        text = "Уже есть аккаунт?",
-                        accent = "Войти",
+                    TextButton(
                         onClick = it,
                         modifier = Modifier
+                            .heightIn(min = 48.dp)
                             .align(Alignment.CenterHorizontally)
-                            .testTag("guest_profile_login_link")
-                    )
+                            .testTag("guest_profile_login_link"),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Row {
+                            Text(
+                                text = "Уже есть аккаунт? ",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = speaking.textMuted
+                            )
+                            Text(
+                                text = "Войти",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
             }
 

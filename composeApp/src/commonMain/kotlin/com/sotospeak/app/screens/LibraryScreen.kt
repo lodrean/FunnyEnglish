@@ -125,15 +125,16 @@ private fun ThemeCard(
         label = "theme_progress"
     )
 
-    Card(
+    ElevatedCard(
         onClick = onClick,
         interactionSource = interactionSource,
         modifier = Modifier
             .fillMaxWidth()
             .speakingPressable(interactionSource, pressedScale = 0.98f)   // H: :active scale(.98) из мокапа
             .testTag("library_card_${library.id}"),
-        shape = SpeakingShapes.Card,
-        colors = CardDefaults.cardColors(containerColor = speaking.surface)
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
     ) {
         Row(
             modifier = Modifier
@@ -205,45 +206,43 @@ private fun ThemeCover(title: String, seed: String, modifier: Modifier = Modifie
     }
 }
 
-/** Бейдж статуса темы: «N ПРОЙДЕНО» (зелёный) или «НОВАЯ» (оранжевый) — цвета мокапа (WCAG AA). */
+/** Бейдж статуса темы — M3 AssistChip (A5): «N ПРОЙДЕНО» (зелёный) / «НОВАЯ» (оранжевый),
+ *  container-фон + тёмный текст (WCAG AA, цвета мокапа). */
 @Composable
 private fun ThemeStatusChip(completedTopics: Int, libraryId: String) {
     val speaking = LocalSpeakingColors.current
     val isDone = completedTopics > 0
-    Surface(
-        shape = SpeakingShapes.Chip,
-        color = if (isDone) speaking.statusReviewedContainer else speaking.statusNewContainer,
-        modifier = Modifier.testTag("theme_chip_${libraryId}")
-    ) {
-        Text(
-            text = if (isDone) "$completedTopics ПРОЙДЕНО" else "НОВАЯ",
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.4.sp,
-            color = if (isDone) CHIP_DONE_TEXT else CHIP_NEW_TEXT,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-        )
-    }
+    AssistChip(
+        onClick = {},
+        modifier = Modifier.testTag("theme_chip_${libraryId}"),
+        label = {
+            Text(
+                text = if (isDone) "$completedTopics ПРОЙДЕНО" else "НОВАЯ",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.4.sp
+            )
+        },
+        shape = MaterialTheme.shapes.small,
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = if (isDone) speaking.statusReviewedContainer else speaking.statusNewContainer,
+            labelColor = if (isDone) CHIP_DONE_TEXT else CHIP_NEW_TEXT
+        ),
+        border = null
+    )
 }
 
-/** Прогресс-бар темы 4dp (мокап .theme-progress). */
+/** Прогресс-бар темы — M3 LinearProgressIndicator 4dp (A5, трек surfaceContainerHighest). */
 @Composable
 private fun ThemeProgressBar(progress: Float, modifier: Modifier = Modifier) {
-    val speaking = LocalSpeakingColors.current
-    Box(
+    LinearProgressIndicator(
+        progress = { progress.coerceIn(0f, 1f) },
         modifier = modifier
             .fillMaxWidth()
-            .height(4.dp)
-            .clip(SpeakingShapes.StatusPill)
-            .background(speaking.surfaceVariant)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(progress.coerceIn(0f, 1f))
-                .background(speaking.primary)
-        )
-    }
+            .height(4.dp),
+        color = LocalSpeakingColors.current.primary,
+        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    )
 }
 
 /**

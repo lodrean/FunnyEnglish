@@ -1,5 +1,6 @@
 package com.sotospeak.app.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -131,6 +132,14 @@ private fun VideoContent(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // M3 FilterChip (A7): selected → primaryContainer/onPrimaryContainer,
+                // unselected → outline outlineVariant (DSM-5 §4)
+                val chipColors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                val chipBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 FilterChip(
                     selected = state.subtitlesEnabled,
                     onClick = { if (!state.subtitlesEnabled) onToggleSubtitles() },
@@ -142,12 +151,16 @@ private fun VideoContent(
                             modifier = Modifier.size(18.dp)
                         )
                     },
+                    colors = chipColors,
+                    border = if (state.subtitlesEnabled) null else chipBorder,
                     modifier = Modifier.testTag("subtitles_toggle")
                 )
                 FilterChip(
                     selected = !state.subtitlesEnabled,
                     onClick = { if (state.subtitlesEnabled) onToggleSubtitles() },
-                    label = { Text("Без субтитров") }
+                    label = { Text("Без субтитров") },
+                    colors = chipColors,
+                    border = if (!state.subtitlesEnabled) null else chipBorder
                 )
             }
         }
@@ -220,6 +233,7 @@ private fun VideoContent(
         Spacer(modifier = Modifier.weight(1f))
 
         // CTA доступен всегда — смотреть всё видео необязательно
+        // M3 FilledButton (A7/DSM-5 C1): shape medium(16), container primary (=primaryStrong)
         Button(
             onClick = onGoToQuestions,
             modifier = Modifier
@@ -227,8 +241,8 @@ private fun VideoContent(
                 .padding(horizontal = 16.dp)
                 .height(56.dp)
                 .testTag("go_to_questions_button"),
-            shape = SpeakingShapes.Card,
-            colors = ButtonDefaults.buttonColors(containerColor = speaking.primaryStrong)
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text("Перейти к вопросам", fontWeight = FontWeight.SemiBold)
         }

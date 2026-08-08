@@ -96,51 +96,56 @@ private fun TopicsList(
                 shape = SpeakingShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = speaking.surface)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        tint = speaking.primary,
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                // M3 ListItem (A6): leading — play, headline — название,
+                // supporting — длительность/субтитры, trailing — статусы
+                ListItem(
+                    headlineContent = {
                         Text(
                             text = topic.title,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = speaking.text
                         )
+                    },
+                    supportingContent = {
                         Text(
                             text = formatDuration(topic.durationSeconds) +
                                 if (topic.hasSubtitles) " · субтитры" else "",
                             style = MaterialTheme.typography.bodySmall,
                             color = speaking.textMuted
                         )
-                    }
-                    if (topic.isWatched) {
+                    },
+                    leadingContent = {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Просмотрено",
-                            tint = speaking.success,
-                            modifier = Modifier.size(20.dp)
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = speaking.primary,
+                            modifier = Modifier.size(36.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    if (topic.hasLocalRecordings) {
-                        Icon(
-                            imageVector = Icons.Default.Mic,
-                            contentDescription = "Есть записи",
-                            tint = speaking.secondary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+                    },
+                    trailingContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (topic.isWatched) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Просмотрено",
+                                    tint = speaking.success,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+                            if (topic.hasLocalRecordings) {
+                                Icon(
+                                    imageVector = Icons.Default.Mic,
+                                    contentDescription = "Есть записи",
+                                    tint = speaking.secondary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    },
+                    colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                )
             }
         }
     }

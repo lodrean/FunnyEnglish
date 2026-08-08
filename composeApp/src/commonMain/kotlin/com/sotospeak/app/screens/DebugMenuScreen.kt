@@ -1,5 +1,6 @@
 package com.sotospeak.app.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -39,7 +42,6 @@ import com.sotospeak.app.di.API_BASE_URL_OVERRIDE_KEY
 import com.sotospeak.app.di.AppConfig
 import com.sotospeak.app.util.LogUploader
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
-import com.sotospeak.designsystem.theme.SpeakingShapes
 import com.sotospeak.shared.platform.Settings
 import com.sotospeak.shared.platform.getPlatformName
 import io.ktor.client.HttpClient
@@ -99,15 +101,12 @@ fun DebugMenuScreen(
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Информация о сборке
+            // Информация о сборке — M3: Card + ListItem (A15)
             Card(
-                shape = SpeakingShapes.Card,
+                shape = MaterialTheme.shapes.large,
                 colors = CardDefaults.cardColors(containerColor = speaking.surface)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                Column {
                     DebugRow("Версия", appConfig.appVersion)
                     DebugRow("Платформа", getPlatformName())
                     DebugRow("Effective base URL", appConfig.baseUrl)
@@ -126,13 +125,16 @@ fun DebugMenuScreen(
                     .testTag("debug_url_input")
             )
 
+            // Действия — M3 OutlinedButton (A15, border outlineVariant)
+            val actionBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
+                OutlinedButton(
                     onClick = {
                         settings.putString(API_BASE_URL_OVERRIDE_KEY, inputUrl.trim())
                         savedOverride = inputUrl.trim()
                         status = "Сохранено. Следующий запрос пойдёт на новый URL."
                     },
+                    border = actionBorder,
                     modifier = Modifier.testTag("debug_save_button")
                 ) { Text("Сохранить") }
 
@@ -143,12 +145,13 @@ fun DebugMenuScreen(
                         inputUrl = appConfig.baseUrl
                         status = "Override сброшен. Следующий запрос пойдёт на URL из BuildConfig."
                     },
+                    border = actionBorder,
                     modifier = Modifier.testTag("debug_reset_button")
                 ) { Text("Сбросить") }
             }
 
             // Проверка соединения — ad-hoc клиент (НЕ DI-single: проверяем ВВЕДЁННЫЙ url)
-            Button(
+            OutlinedButton(
                 onClick = {
                     checking = true
                     status = null
@@ -158,6 +161,7 @@ fun DebugMenuScreen(
                     }
                 },
                 enabled = !checking,
+                border = actionBorder,
                 modifier = Modifier.testTag("debug_check_button")
             ) { Text(if (checking) "Проверка…" else "Проверить соединение") }
 
@@ -170,6 +174,7 @@ fun DebugMenuScreen(
                         status = "Логи отправлены (осталось в очереди: $pendingLogs)"
                     }
                 },
+                border = actionBorder,
                 modifier = Modifier.testTag("debug_flush_logs_button")
             ) { Text("Отправить логи (в очереди: $pendingLogs)") }
 
@@ -188,22 +193,30 @@ fun DebugMenuScreen(
     }
 }
 
+/** Строка «параметр: значение» — M3 ListItem (A15). */
 @Composable
 private fun DebugRow(label: String, value: String) {
     val speaking = LocalSpeakingColors.current
-    Row {
-        Text(
-            text = "$label: ",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = speaking.text
+    ListItem(
+        headlineContent = {
+            Text(
+                text = value,
+                fontSize = 13.sp,
+                color = speaking.textMuted
+            )
+        },
+        overlineContent = {
+            Text(
+                text = label,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = speaking.text
+            )
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent
         )
-        Text(
-            text = value,
-            fontSize = 13.sp,
-            color = speaking.textMuted
-        )
-    }
+    )
 }
 
 /** GET {url}/api/actuator/health временным клиентом; человеческий результат */

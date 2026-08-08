@@ -2,6 +2,8 @@ package com.sotospeak.app
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,9 +13,13 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -255,16 +261,29 @@ private fun MainAppContent(
         currentScreen is AppScreen.MySubmissions ||
         currentScreen is AppScreen.Profile
 
-    androidx.compose.material3.Scaffold(
-        bottomBar = {
-            if (showBottomNav) {
-                BottomNavigationBar(
+    // M3-адаптивность (спека §5, Q4): compact → NavigationBar, medium/expanded → NavigationRail
+    androidx.compose.foundation.layout.BoxWithConstraints {
+        val useRail = showBottomNav &&
+            com.sotospeak.designsystem.layout.calculateWindowWidthSizeClass(maxWidth) !=
+            com.sotospeak.designsystem.layout.WindowWidthSizeClass.COMPACT
+
+        Row(modifier = Modifier.fillMaxSize()) {
+            if (useRail) {
+                SpeakingNavigationRail(
                     currentScreen = currentScreen,
                     onNavigate = onNavigate
                 )
             }
-        }
-    ) { padding ->
+            androidx.compose.material3.Scaffold(
+                bottomBar = {
+                    if (showBottomNav && !useRail) {
+                        BottomNavigationBar(
+                            currentScreen = currentScreen,
+                            onNavigate = onNavigate
+                        )
+                    }
+                }
+            ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding),
             contentAlignment = Alignment.Center
@@ -476,8 +495,10 @@ private fun MainAppContent(
             }
         }
     }
-}
-}
+                }
+            }
+        }
+    }
 
 private data class BottomNavItem(
     val screen: AppScreen,
@@ -485,32 +506,68 @@ private data class BottomNavItem(
     val icon: ImageVector
 )
 
+// Лейблы и иконки по мокапу Playful Coach v1.1 (bottomnav: home/send/user, аудит 2026-08-01)
+private val mainNavItems = listOf(
+    BottomNavItem(AppScreen.Library, "Темы", com.sotospeak.design.icons.SpeakingIcons.Home),
+    BottomNavItem(AppScreen.MySubmissions, "Отправки", com.sotospeak.design.icons.SpeakingIcons.Send),
+    BottomNavItem(AppScreen.Profile, "Профиль", com.sotospeak.design.icons.SpeakingIcons.User)
+)
+
 @Composable
 internal fun BottomNavigationBar(
     currentScreen: AppScreen,
     onNavigate: (AppScreen) -> Unit
 ) {
-    // Лейблы и иконки по мокапу Playful Coach v1.1 (bottomnav: home/send/user, аудит 2026-08-01)
-    val items = listOf(
-        BottomNavItem(AppScreen.Library, "Темы", com.sotospeak.design.icons.SpeakingIcons.Home),
-        BottomNavItem(AppScreen.MySubmissions, "Отправки", com.sotospeak.design.icons.SpeakingIcons.Send),
-        BottomNavItem(AppScreen.Profile, "Профиль", com.sotospeak.design.icons.SpeakingIcons.User)
-    )
-
-    NavigationBar {
-        items.forEach { item ->
+    // M3-дефолты (DSM-5 §4 «Навигация»): container surfaceContainer, pill-индикатор
+    // primaryContainer, selected icon onPrimaryContainer, текст активного onSurface,
+    // неактивные — onSurfaceVariant
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        mainNavItems.forEach { item ->
             NavigationBarItem(
                 selected = currentScreen == item.screen,
                 onClick = { onNavigate(item.screen) },
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = com.sotospeak.designsystem.theme.LocalSpeakingColors.current.primaryStrong,
-                    selectedTextColor = com.sotospeak.designsystem.theme.LocalSpeakingColors.current.primaryStrong,
-                    indicatorColor = com.sotospeak.designsystem.theme.LocalSpeakingColors.current.primaryContainer
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
         }
+    }
+}
+
+/** M3 NavigationRail для wide/desktop (medium/expanded) — те же пункты, что у bottom nav */
+@Composable
+private fun SpeakingNavigationRail(
+    currentScreen: AppScreen,
+    onNavigate: (AppScreen) -> Unit
+) {
+    NavigationRail(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Spacer(modifier = Modifier.weight(1f))
+        mainNavItems.forEach { item ->
+            NavigationRailItem(
+                selected = currentScreen == item.screen,
+                onClick = { onNavigate(item.screen) },
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+                colors = NavigationRailItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 

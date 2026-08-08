@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -171,8 +170,9 @@ fun SettingsScreen(
             }
 
             item {
+                // M3 (A13): shape large(22) по DSM-5 §2
                 Card(
-                    shape = RoundedCornerShape(16.dp)
+                    shape = MaterialTheme.shapes.large
                 ) {
                     Column(
                         modifier = Modifier
@@ -203,7 +203,7 @@ private fun SettingsSection(
     title: String,
     content: @Composable () -> Unit
 ) {
-    Card(shape = RoundedCornerShape(16.dp)) {
+    Card(shape = MaterialTheme.shapes.large) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = title,

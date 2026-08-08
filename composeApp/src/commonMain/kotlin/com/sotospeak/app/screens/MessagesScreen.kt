@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -129,11 +130,12 @@ private fun MessageCard(
         if (isUnread) onMarkAsRead()
     }
 
+    // M3 (A14): Card + ListItem (avatar + 2 строки), непрочитанное — Badge
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("message_card_${message.id}"),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = if (isUnread) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
@@ -142,56 +144,92 @@ private fun MessageCard(
             }
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        ListItem(
+            headlineContent = {
                 Text(
                     text = message.senderName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = if (message.type == MessageType.COMMENT) {
-                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
-                    } else {
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    }
-                ) {
+            },
+            supportingContent = {
+                Column {
                     Text(
-                        text = if (message.type == MessageType.COMMENT) "Комментарий" else "Сообщение",
+                        text = message.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatMessageDate(message.createdAt),
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (message.type == MessageType.COMMENT) {
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            leadingContent = {
+                BadgedBox(badge = { if (isUnread) Badge() }) {
+                    MessageAvatar(senderName = message.senderName)
+                }
+            },
+            trailingContent = {
+                val isComment = message.type == MessageType.COMMENT
+                AssistChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            text = if (isComment) "Комментарий" else "Сообщение",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = if (isComment) {
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        },
+                        labelColor = if (isComment) {
                             MaterialTheme.colorScheme.tertiary
                         } else {
                             MaterialTheme.colorScheme.primary
-                        },
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = message.text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                        }
+                    ),
+                    border = null
+                )
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = androidx.compose.ui.graphics.Color.Transparent
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = formatMessageDate(message.createdAt),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        )
     }
 }
+
+/** Аватар отправителя: круг primaryContainer с инициалами. */
+@Composable
+private fun MessageAvatar(senderName: String) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = messageInitials(senderName),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}
+
+/** Инициалы аватара: первые буквы первых двух слов. */
+private fun messageInitials(name: String): String =
+    name.split(" ")
+        .filter { it.isNotBlank() }
+        .take(2)
+        .joinToString("") { it.first().uppercase() }
+        .ifBlank { "?" }
 
 /** createdAt приходит в ISO-формате; показываем дату и время коротко */
 private fun formatMessageDate(iso: String): String {

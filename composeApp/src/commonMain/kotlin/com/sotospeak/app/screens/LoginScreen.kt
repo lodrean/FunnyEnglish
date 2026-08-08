@@ -8,13 +8,20 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,9 +40,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.SpeakingField
-import com.sotospeak.app.components.SpeakingGhostButton
-import com.sotospeak.app.components.SpeakingPrimaryButton
-import com.sotospeak.app.components.SpeakingTextLink
 import com.sotospeak.app.viewmodel.AuthState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 
@@ -139,12 +143,17 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .testTag("email_not_verified_panel")
             ) {
-                com.sotospeak.app.components.SpeakingPrimaryButton(
-                    text = if (state.isLoading) "Отправляем…" else "Отправить письмо повторно",
+                Button(
                     onClick = { onResendVerification(email) },
                     enabled = !state.isLoading && email.isNotBlank(),
-                    modifier = Modifier.testTag("login_resend_verification_button")
-                )
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp)
+                        .testTag("login_resend_verification_button"),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(if (state.isLoading) "Отправляем…" else "Отправить письмо повторно")
+                }
             }
             if (state.verificationResent) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -175,12 +184,17 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SpeakingPrimaryButton(
-            text = if (state.isLoading) "Входим…" else "Войти",
+        Button(
             onClick = { onLogin(email, password) },
             enabled = !state.isLoading && email.isNotBlank() && password.isNotBlank(),
-            modifier = Modifier.testTag("login_button")
-        )
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .testTag("login_button"),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text(if (state.isLoading) "Входим…" else "Войти")
+        }
 
         // weight в scrollable Column запрещён — фиксированный отступ вместо margin-top:auto
         Spacer(modifier = Modifier.height(48.dp))
@@ -191,18 +205,40 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            SpeakingTextLink(
-                text = "Нет аккаунта?",
-                accent = "Регистрация",
+            TextButton(
                 onClick = onNavigateToRegister,
-                modifier = Modifier.testTag("register_link")
-            )
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .testTag("register_link"),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Row {
+                    Text(
+                        text = "Нет аккаунта? ",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = speaking.textMuted
+                    )
+                    Text(
+                        text = "Регистрация",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             onContinueAsGuest?.let {
-                SpeakingGhostButton(
-                    text = "Продолжить как гость",
+                OutlinedButton(
                     onClick = it,
-                    modifier = Modifier.testTag("login_guest_button")
-                )
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .testTag("login_guest_button"),
+                    shape = MaterialTheme.shapes.medium,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                ) {
+                    Text("Продолжить как гость")
+                }
             }
         }
     }

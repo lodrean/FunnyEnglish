@@ -85,7 +85,9 @@ services:
       ADMIN_EMAIL: admin@sotospeak.com
       ADMIN_PASSWORD: admin123
       ADMIN_DISPLAY_NAME: Admin
-      CORS_ORIGINS: ${CORS_ORIGINS:-"http://localhost:3000,http://localhost:5173,http://localhost:8081,http://localhost:8082,http://localhost:8085,http://192.168.1.148:3000,http://192.168.1.148:8081,http://192.168.1.148:8082,http://192.168.1.148:8085"}
+      # Кавычки внутри ${VAR:-default} НЕ снимаются compose — попадают в значение
+      # (грабля: CI без .env получал CORS_ORIGINS с буквальными " → CORS 403 на POST из браузера)
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8081,http://localhost:8082,http://localhost:8085,http://192.168.1.148:3000,http://192.168.1.148:8081,http://192.168.1.148:8082,http://192.168.1.148:8085}
       DEMO_USER_ENABLED: "true"   # dev only: demo@sotospeak.app/demo123
       # dev only: высокие лимиты для E2E-прогонов (в prod env не выставлять — дефолт 5/мин на login)
       RATE_LIMIT_LOGIN_CAPACITY: "100"

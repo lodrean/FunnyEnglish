@@ -128,8 +128,11 @@ jobs:
         exit 1
 
     - name: Create MinIO bucket
-      # один контейнер: alias через MC_HOST_ env (alias set не персистит между docker run)
-      run: docker run --rm --network host -e MC_HOST_local=http://minioadmin:minioadmin@localhost:9010 minio/mc mb --ignore-existing local/sotospeak
+      # один контейнер: alias через MC_HOST_ env (alias set не персистит между docker run);
+      # anonymous public read — медиа-URL отдаётся браузеру без подписи (как minio-init.sh в dev)
+      run: |
+        docker run --rm --network host -e MC_HOST_local=http://minioadmin:minioadmin@localhost:9010 minio/mc mb --ignore-existing local/sotospeak
+        docker run --rm --network host -e MC_HOST_local=http://minioadmin:minioadmin@localhost:9010 minio/mc anonymous set public local/sotospeak
 
     - name: Seed speaking content
       # bash явно — Windows не хранит exec-bit в git

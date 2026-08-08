@@ -22,6 +22,7 @@ import com.sotospeak.app.components.SpeakingGate
 import com.sotospeak.app.viewmodel.QuestionsState
 import com.sotospeak.design.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
+import com.sotospeak.designsystem.animations.speakingPressable
 import com.sotospeak.designsystem.theme.SpeakingTextStyles
 
 /**
@@ -123,13 +124,16 @@ private fun QuestionsContent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            val trainingIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
             Button(
                 onClick = onStartTraining,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .speakingPressable(trainingIsrc)
                     .testTag("mode_training_button"),
-                colors = ButtonDefaults.buttonColors(containerColor = speaking.primaryStrong)
+                colors = ButtonDefaults.buttonColors(containerColor = speaking.primaryStrong),
+                interactionSource = trainingIsrc
             ) {
                 Text("Тренировка · 3 попытки", fontWeight = FontWeight.SemiBold)
             }
@@ -187,13 +191,16 @@ private fun QuestionsContent(
                     )
                 }
             } else {
+                val practiceIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                 Button(
                     onClick = onStartPractice,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
+                        .speakingPressable(practiceIsrc)
                         .testTag("mode_practice_button"),
-                    colors = ButtonDefaults.buttonColors(containerColor = speaking.record)
+                    colors = ButtonDefaults.buttonColors(containerColor = speaking.record),
+                    interactionSource = practiceIsrc
                 ) {
                     Icon(
                         imageVector = Icons.Default.Mic,

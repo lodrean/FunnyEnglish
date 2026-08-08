@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.SpeakingField
 import com.sotospeak.app.viewmodel.AuthState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
+import com.sotospeak.designsystem.animations.speakingPressable
 
 /**
  * Экран логина по мокапу frame-login (Playful Coach v1.1).
@@ -184,14 +185,17 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        val loginIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
         Button(
             onClick = { onLogin(email, password) },
             enabled = !state.isLoading && email.isNotBlank() && password.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
+                .speakingPressable(loginIsrc)
                 .testTag("login_button"),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            interactionSource = loginIsrc
         ) {
             Text(if (state.isLoading) "Входим…" else "Войти")
         }

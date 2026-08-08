@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.SpeakingField
 import com.sotospeak.app.viewmodel.AuthState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
+import com.sotospeak.designsystem.animations.speakingPressable
 
 /**
  * Экран регистрации по мокапу frame-register (Playful Coach v1.1).
@@ -173,6 +174,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        val registerIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
         Button(
             onClick = { onRegister(email, password, displayName) },
             enabled = !state.isLoading &&
@@ -182,8 +184,10 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
+                .speakingPressable(registerIsrc)
                 .testTag("register_button"),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            interactionSource = registerIsrc
         ) {
             Text(if (state.isLoading) "Создаём…" else "Создать аккаунт")
         }

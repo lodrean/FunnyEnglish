@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
+import com.sotospeak.designsystem.animations.speakingPressable
 import com.sotospeak.designsystem.theme.SpeakingShapes
 
 private data class OnboardingSlide(
@@ -160,6 +161,7 @@ fun OnboardingScreen(
             )
         }
 
+        val nextIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
         Button(
             onClick = {
                 if (isLast) onFinish() else page++
@@ -168,8 +170,10 @@ fun OnboardingScreen(
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
                 .padding(bottom = 24.dp)
+                .speakingPressable(nextIsrc)
                 .testTag("onboarding_next_button"),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            interactionSource = nextIsrc
         ) {
             Text(if (isLast) "Начать" else "Далее")
         }

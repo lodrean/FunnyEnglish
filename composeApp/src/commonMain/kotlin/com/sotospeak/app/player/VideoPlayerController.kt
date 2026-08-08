@@ -10,6 +10,8 @@ data class VideoPlayerState(
     val isReady: Boolean = false,
     val isPlaying: Boolean = false,
     val isBuffering: Boolean = false,
+    /** Воспроизведение дошло до конца — показать «Начать заново» */
+    val isEnded: Boolean = false,
     val positionMs: Long = 0,
     val durationMs: Long = 0,
     val error: String? = null

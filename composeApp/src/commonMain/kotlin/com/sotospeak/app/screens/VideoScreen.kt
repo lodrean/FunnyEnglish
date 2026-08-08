@@ -275,10 +275,47 @@ private fun MockupVideoControls(
     onToggleCc: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
+        // «Начать заново» после окончания воспроизведения (STATE_ENDED)
+        if (playerState.isEnded) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    onClick = {
+                        onSeek(0f)
+                        onPlayPause()
+                    },
+                    shape = CircleShape,
+                    color = Color.White.copy(alpha = 0.92f),
+                    shadowElevation = 6.dp,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .testTag("replay_button")
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = SpeakingIcons.Refresh,
+                            contentDescription = "Начать заново",
+                            tint = Color(0xFF1A2E42),
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+                Text(
+                    text = "Начать заново",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.testTag("replay_label")
+                )
+            }
+        }
+
         // Big-play (mockups .big-play): круг 64dp, белый 92%, тень;
         // H: появление/исчезание fade+scale tweenFast
         androidx.compose.animation.AnimatedVisibility(
-            visible = !playerState.isPlaying,
+            visible = !playerState.isPlaying && !playerState.isEnded,
             enter = androidx.compose.animation.fadeIn(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()) +
                 androidx.compose.animation.scaleIn(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()),
             exit = androidx.compose.animation.fadeOut(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()) +

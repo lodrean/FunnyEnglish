@@ -74,11 +74,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     }
   }, [isMobile]);
 
-  // Calculate content margins based on sidebar state
-  const getContentMarginLeft = () => {
-    if (isMobile) return 0;
-    return sidebarOpen ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_COLLAPSED;
-  };
 
   return (
     <Box
@@ -111,11 +106,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0, // иначе flex-item не сжимается ниже min-content → горизонтальный overflow
           pt: `${HEADER_HEIGHT + (showBreadcrumbs && !isMobile ? 56 : 0)}px`,
           pb: 3,
           px: { xs: 2, sm: 3, md: 4 },
-          ml: { md: `${getContentMarginLeft()}px` },
-          transition: 'margin-left 0.3s ease-in-out',
           minHeight: '100vh',
           backgroundColor: 'background.default',
         }}
@@ -149,7 +143,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         sx={{
           position: 'fixed',
           bottom: 0,
-          left: { md: `${getContentMarginLeft()}px` },
+          left: { md: sidebarOpen ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_COLLAPSED },
           right: 0,
           py: 1.5,
           px: 3,

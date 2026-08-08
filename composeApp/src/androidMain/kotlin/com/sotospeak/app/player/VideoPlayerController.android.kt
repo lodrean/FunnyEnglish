@@ -41,6 +41,7 @@ actual class VideoPlayerController {
             _state.value = _state.value.copy(
                 isBuffering = playbackState == Player.STATE_BUFFERING,
                 isReady = playbackState == Player.STATE_READY,
+                isEnded = playbackState == Player.STATE_ENDED,
                 durationMs = player?.duration?.coerceAtLeast(0) ?: 0
             )
         }

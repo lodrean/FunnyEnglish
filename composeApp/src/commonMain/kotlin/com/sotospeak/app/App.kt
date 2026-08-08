@@ -21,6 +21,7 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,7 +126,33 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
 
     var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Splash) }
 
-    when (currentScreen) {
+    // M3 Emphasized-переходы между экранами верхнего уровня (спека §2 motion);
+    // при Reduce motion — мгновенная смена без анимации
+    val reduceMotion = com.sotospeak.designsystem.accessibility.LocalReduceMotion.current
+    val screenTransition: androidx.compose.animation.AnimatedContentTransitionScope<AppScreen>.() -> androidx.compose.animation.ContentTransform = {
+        if (reduceMotion) {
+            androidx.compose.animation.ContentTransform(
+                androidx.compose.animation.EnterTransition.None,
+                androidx.compose.animation.ExitTransition.None
+            )
+        } else {
+            androidx.compose.animation.fadeIn(
+                androidx.compose.animation.core.tween(300, easing = com.sotospeak.designsystem.theme.SpeakingMotion.EasingM3Emphasized)
+            ) + androidx.compose.animation.scaleIn(
+                initialScale = 0.96f,
+                animationSpec = androidx.compose.animation.core.tween(300, easing = com.sotospeak.designsystem.theme.SpeakingMotion.EasingM3Emphasized)
+            ) togetherWith androidx.compose.animation.fadeOut(
+                androidx.compose.animation.core.tween(200, easing = com.sotospeak.designsystem.theme.SpeakingMotion.EasingM3Standard)
+            )
+        }
+    }
+
+    androidx.compose.animation.AnimatedContent(
+        targetState = currentScreen,
+        transitionSpec = screenTransition,
+        label = "app_screen_transition"
+    ) { screen ->
+    when (screen) {
         is AppScreen.Splash -> {
             SplashScreen(isLoading = authState.isLoading, isDarkTheme = useDarkTheme)
             LaunchedEffect(authState.isLoading, authState.mode) {
@@ -216,7 +243,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                 }
                 AuthMode.GUEST, AuthMode.AUTHENTICATED -> {
                     MainAppContent(
-                        currentScreen = currentScreen,
+                        currentScreen = screen,
                         onNavigate = { currentScreen = it },
                         settingsViewModel = settingsViewModel,
                         authMode = authState.mode,
@@ -243,6 +270,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
             }
         }
     }
+}
 }
 
 @Composable
@@ -291,6 +319,30 @@ private fun MainAppContent(
             Box(
                 modifier = Modifier.fillMaxSize().widthIn(max = MaxContentWidth)
             ) {
+            // M3 Emphasized-переходы между экранами внутри основного контента
+            val reduceMotion = com.sotospeak.designsystem.accessibility.LocalReduceMotion.current
+            val innerTransition: androidx.compose.animation.AnimatedContentTransitionScope<AppScreen>.() -> androidx.compose.animation.ContentTransform = {
+                if (reduceMotion) {
+                    androidx.compose.animation.ContentTransform(
+                        androidx.compose.animation.EnterTransition.None,
+                        androidx.compose.animation.ExitTransition.None
+                    )
+                } else {
+                    androidx.compose.animation.fadeIn(
+                        androidx.compose.animation.core.tween(300, easing = com.sotospeak.designsystem.theme.SpeakingMotion.EasingM3Emphasized)
+                    ) + androidx.compose.animation.scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = androidx.compose.animation.core.tween(300, easing = com.sotospeak.designsystem.theme.SpeakingMotion.EasingM3Emphasized)
+                    ) togetherWith androidx.compose.animation.fadeOut(
+                        androidx.compose.animation.core.tween(200, easing = com.sotospeak.designsystem.theme.SpeakingMotion.EasingM3Standard)
+                    )
+                }
+            }
+            androidx.compose.animation.AnimatedContent(
+                targetState = currentScreen,
+                transitionSpec = innerTransition,
+                label = "main_screen_transition"
+            ) { currentScreen ->
             when (currentScreen) {
                 is AppScreen.Profile -> {
                     val state by profileViewModel.profileState.collectAsState()
@@ -499,6 +551,7 @@ private fun MainAppContent(
             }
         }
     }
+}
 
 private data class BottomNavItem(
     val screen: AppScreen,

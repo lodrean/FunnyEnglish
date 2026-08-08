@@ -1,0 +1,22 @@
+const { chromium } = require('@playwright/test');
+const fs = require('fs');
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  fs.mkdirSync('test-results/mobile-audit', { recursive: true });
+  const canvas = page.locator('canvas');
+  const click = async (x, y, s = 1200) => { await canvas.click({ position: { x, y } }); await page.waitForTimeout(s); };
+  const shot = async (n) => { await page.mouse.move(195, 60); await page.waitForTimeout(150); await page.screenshot({ path: 'test-results/mobile-audit/' + n + '.png' }); console.log('shot', n); };
+  await page.goto('http://192.168.1.148:8082', { waitUntil: 'load', timeout: 60000 });
+  await canvas.waitFor({ state: 'visible', timeout: 60000 });
+  await page.waitForTimeout(10000);
+  await shot('01-onboarding');
+  await click(195, 774, 800); await click(195, 774, 800); await click(195, 774, 5000);
+  await shot('02-library');
+  await click(195, 190, 3500); await shot('03-topics');
+  await click(195, 160, 8000); await shot('04-video');
+  await click(255, 550, 5000); await shot('05-questions');
+  await click(195, 330, 4000); await shot('06-training');
+  await click(370, 780, 3000); await shot('07-profile-guest');
+  await browser.close();
+})();

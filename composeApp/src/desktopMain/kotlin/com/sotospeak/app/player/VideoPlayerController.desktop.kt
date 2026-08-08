@@ -17,6 +17,8 @@ actual class VideoPlayerController {
     private val _state = MutableStateFlow(VideoPlayerState(error = "unsupported"))
     actual val state: StateFlow<VideoPlayerState> = _state.asStateFlow()
 
+    actual val supportsOverlayControls: Boolean = false
+
     actual fun prepare(url: String) = Unit
     actual fun play() = Unit
     actual fun pause() = Unit

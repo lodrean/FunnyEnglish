@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.kover)
 }
 
 kotlin {
@@ -234,6 +235,18 @@ compose.desktop {
 // UI tests configuration
 tasks.withType<Test>().configureEach {
     // All tests run by default
+}
+
+// Kover запускает ВСЕ test-задачи проекта при генерации репорта (by design).
+// testDebugUnitTest/testReleaseUnitTest гоняют commonTest UI-тесты без desktop-окружения
+// и падают (гейт тестов — desktopTest); uiTest дублирует desktopTest. Исключаем их
+// из авто-запуска и замера покрытия.
+kover {
+    currentProject {
+        instrumentation {
+            disabledForTestTasks.addAll("testDebugUnitTest", "testReleaseUnitTest", "uiTest")
+        }
+    }
 }
 
 // Separate task for UI tests (делегирует конфигурацию desktopTest с фильтром **/tests/**)

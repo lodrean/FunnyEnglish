@@ -34,8 +34,8 @@ export const POS = {
   registerToLoginLink: { x: 703, y: 493 },   // «Уже есть аккаунт? Войти» на Register
   firstLibrary: { x: 640, y: 140 },          // seed «Разговорный английский» — первая карточка (после purge E2E в global-setup)
   firstTopic: { x: 640, y: 115 },
-  backArrow: { x: 26, y: 33 },
-  videoErrorToQuestions: { x: 711, y: 445 }, // «К вопросам» в error-стабе плеера (wasm, seed-топик)
+  // Аппбары без стрелки «назад» (мокап, 2026-08-08) — «назад» = клавиша Escape (см. pressBack)
+  videoGoToQuestions: { x: 640, y: 665 },    // CTA «Перейти к вопросам» внизу экрана видео
   questionsTrainingGuest: { x: 640, y: 285 },// «Тренировка · 3 попытки» (гость — выше гейта)
   questionsTrainingAuth: { x: 640, y: 607 }, // «Тренировка · 3 попытки» (авторизованный)
   questionsPracticeAuth: { x: 640, y: 676 }, // «Практика · 30 сек» (авторизованный)
@@ -157,9 +157,15 @@ export async function openFirstLibrary(page: Page) {
   await clickCanvas(page, POS.firstLibrary, 4000);
 }
 
-/** Topics → первый топик → Video (error-стаб плеера на wasm) → «К вопросам» → Questions */
+/** Системный «назад» на wasm — клавиша Escape (аппбары без стрелки, мокап 2026-08-08) */
+export async function pressBack(page: Page) {
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(800);
+}
+
+/** Topics → первый топик → Video (на wasm — HTML5-плеер) → CTA «Перейти к вопросам» → Questions */
 export async function openQuestionsViaVideo(page: Page) {
   await clickCanvas(page, POS.firstTopic, 3000);
-  await page.waitForTimeout(5000); // seed-видео пробует грузиться, error-стаб появляется с задержкой
-  await clickCanvas(page, POS.videoErrorToQuestions, 4000);
+  await page.waitForTimeout(3000); // видео/транскрипт загружаются
+  await clickCanvas(page, POS.videoGoToQuestions, 4000);
 }

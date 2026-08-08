@@ -18,7 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
+import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.components.SpeakingGate
+import com.sotospeak.app.components.questionsCountText
 import com.sotospeak.app.viewmodel.QuestionsState
 import com.sotospeak.design.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
@@ -39,26 +41,25 @@ fun QuestionsScreen(
     onRegisterClick: () -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
+
+    // Стрелки в аппбаре нет (мокап frame-questions) — системная кнопка/жест «назад»
+    com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = state.topicTitle.ifBlank { "Вопросы" },
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
+            // Мокап frame-questions: h1 «Вопросы», sub — «Тема · Топик · N вопросов», без стрелки
+            SpeakingAppBar(
+                title = "Вопросы",
+                subtitle = listOfNotNull(
+                    libraryTitle.ifBlank { null },
+                    state.topicTitle.ifBlank { null },
+                    if (state.questions.isNotEmpty()) questionsCountText(state.questions.size) else null
+                ).joinToString(" · ").ifBlank { null }
             )
         },
         modifier = modifier.testTag("questions_screen")

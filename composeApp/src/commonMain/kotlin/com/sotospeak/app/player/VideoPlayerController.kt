@@ -23,6 +23,13 @@ data class VideoPlayerState(
  */
 expect class VideoPlayerController() {
     val state: StateFlow<VideoPlayerState>
+    /**
+     * true — видео рендерится внутри canvas/иерархии Compose и поверх него можно
+     * рисовать Compose-оверлей контролы (Android/Media3).
+     * false — видео живёт вне canvas (WASM: DOM <video> поверх canvas), overlay-контролы
+     * были бы перекрыты видео → контролы рисуются ПОД плеером.
+     */
+    val supportsOverlayControls: Boolean
     fun prepare(url: String)
     fun play()
     fun pause()

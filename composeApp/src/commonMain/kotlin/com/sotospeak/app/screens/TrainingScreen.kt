@@ -31,6 +31,7 @@ import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.PlaybackWaveform
 import com.sotospeak.app.components.RecIndicator
 import com.sotospeak.app.components.RecordingWaveform
+import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.components.SpeakingRecordButton
 import com.sotospeak.app.components.SpeakingTimerRing
 import com.sotospeak.app.recorder.MicPermissionState
@@ -70,27 +71,24 @@ fun TrainingScreen(
     onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
+
+    // Стрелки в аппбаре нет (мокап frame-training) — системная кнопка/жест «назад»
+    com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        state.topicTitle.ifBlank { "Тренировка" },
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
+            // Мокап frame-training: h1 «Training», sub — «Тема · Топик», без стрелки назад
+            SpeakingAppBar(
+                title = "Training",
+                subtitle = listOfNotNull(
+                    libraryTitle.ifBlank { null },
+                    state.topicTitle.ifBlank { null }
+                ).joinToString(" · ").ifBlank { null }
             )
         },
         modifier = modifier.testTag("training_screen")
@@ -575,6 +573,7 @@ internal fun formatTimer(totalSeconds: Int): String {
 @Composable
 fun TrainingRoute(
     topicId: String,
+    libraryTitle: String,
     onNavigateToPractice: () -> Unit,
     onNavigateToLibrary: () -> Unit,
     onNavigateBack: () -> Unit
@@ -656,6 +655,7 @@ fun TrainingRoute(
         TrainingScreen(
             state = state,
             topicId = topicId,
+            libraryTitle = libraryTitle,
             recorderState = recorderState,
             micPermission = micPermission,
             onStartRecording = {

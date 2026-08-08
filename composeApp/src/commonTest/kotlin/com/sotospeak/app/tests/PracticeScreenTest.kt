@@ -196,12 +196,12 @@ class PracticeScreenTest : BaseUiTest() {
     fun backInRecordingPhaseShowsConfirmDialog() = runTest(
         content = {
             PracticeScreenForTest(
-                state = mockPracticeState(phase = PracticePhase.Recording, remainingSeconds = 20)
+                state = mockPracticeState(phase = PracticePhase.Recording, remainingSeconds = 20),
+                // Стрелки «назад» в UI больше нет (мокап) — открываем диалог через test hook
+                initialShowBackConfirm = true
             )
         }
     ) {
-        onNodeWithContentDescription("Назад").performClick()
-        waitForIdle()
         // Диалог подтверждения вместо мгновенного выхода
         onNodeWithText("Прервать запись?").assertIsDisplayed()
         // Подтверждение «Выйти» → onBack
@@ -211,12 +211,11 @@ class PracticeScreenTest : BaseUiTest() {
     }
 
     @Test
-    fun backInReadyPhaseCallsOnBackDirectly() = runTest(
-        content = { PracticeScreenForTest() }
-    ) {
-        onNodeWithContentDescription("Назад").performClick()
-        waitForIdle()
-        assertTrue(PracticeClicks.back, "onBack в фазе Ready вызывается без диалога")
+    fun backConfirmPredicateMatchesSpec() {
+        // §6.1: подтверждение только в фазах Recording/Uploading; Ready — выход сразу
+        assertTrue(com.sotospeak.app.screens.practiceBackNeedsConfirm(PracticePhase.Recording))
+        assertTrue(com.sotospeak.app.screens.practiceBackNeedsConfirm(PracticePhase.Uploading))
+        assertTrue(!com.sotospeak.app.screens.practiceBackNeedsConfirm(PracticePhase.Ready))
     }
 }
 
@@ -250,7 +249,10 @@ private fun mockPracticeState(
 )
 
 @androidx.compose.runtime.Composable
-private fun PracticeScreenForTest(state: PracticeState = mockPracticeState()) {
+private fun PracticeScreenForTest(
+    state: PracticeState = mockPracticeState(),
+    initialShowBackConfirm: Boolean = false
+) {
     FunnyTheme {
         PracticeScreen(
             state = state,
@@ -259,7 +261,8 @@ private fun PracticeScreenForTest(state: PracticeState = mockPracticeState()) {
             onRetryUpload = { PracticeClicks.retryUpload = true },
             onBackToLibrary = { PracticeClicks.backToLibrary = true },
             onRetry = {},
-            onBack = { PracticeClicks.back = true }
+            onBack = { PracticeClicks.back = true },
+            initialShowBackConfirm = initialShowBackConfirm
         )
     }
 }

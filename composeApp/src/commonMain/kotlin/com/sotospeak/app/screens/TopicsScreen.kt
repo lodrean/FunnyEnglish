@@ -18,10 +18,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
+import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.viewmodel.TopicUiModel
 import com.sotospeak.app.viewmodel.TopicsState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
+import com.sotospeak.design.icons.SpeakingIcons
 
 /**
  * Экран топиков внутри темы (спека Part 2 §2.2).
@@ -35,26 +37,24 @@ fun TopicsScreen(
     onTopicClick: (String) -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
+
+    // Стрелки в аппбаре нет (мокап) — системная кнопка/жест «назад»
+    com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = state.libraryTitle.ifBlank { "Топики" },
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
+            // Мокап frame-topics: h1 — название темы, sub — «N топиков · выбери и начни говорить»,
+            // БЕЗ стрелки «назад» (назад — системная кнопка/жест)
+            SpeakingAppBar(
+                title = libraryTitle.ifBlank { state.libraryTitle }.ifBlank { "Топики" },
+                subtitle = if (state.topics.isNotEmpty()) {
+                    "${topicsCountText(state.topics.size)} · выбери и начни говорить"
+                } else null
             )
         },
         modifier = modifier.testTag("topics_screen")
@@ -96,21 +96,22 @@ private fun TopicsList(
                 shape = SpeakingShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = speaking.surface)
             ) {
-                // M3 ListItem (A6): leading — play, headline — название,
-                // supporting — длительность/субтитры, trailing — статусы
+                // M3 ListItem (A6) по мокапу frame-topics (.li): leading — play,
+                // headline — название (fade вместо ellipsis), supporting — «N вопросов · видео m:ss»,
+                // trailing — чип статуса + chevron
                 ListItem(
                     headlineContent = {
-                        Text(
+                        com.sotospeak.app.components.FadingEdgeText(
                             text = topic.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = speaking.text
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = speaking.text,
+                            maxLines = 3,
+                            fadeColor = speaking.surface
                         )
                     },
                     supportingContent = {
                         Text(
-                            text = formatDuration(topic.durationSeconds) +
-                                if (topic.hasSubtitles) " · субтитры" else "",
+                            text = "${com.sotospeak.app.components.questionsCountText(topic.questionCount)} · видео ${formatDuration(topic.durationSeconds)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = speaking.textMuted
                         )
@@ -125,23 +126,33 @@ private fun TopicsList(
                     },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (topic.isWatched) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Просмотрено",
-                                    tint = speaking.success,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                            }
-                            if (topic.hasLocalRecordings) {
-                                Icon(
-                                    imageVector = Icons.Default.Mic,
-                                    contentDescription = "Есть записи",
-                                    tint = speaking.secondary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            // Чип статуса по мокапу (.chip-done/.chip-new), токены status* — dark-safe
+                            val done = topic.isWatched || topic.hasLocalRecordings
+                            AssistChip(
+                                onClick = {},
+                                label = {
+                                    Text(
+                                        text = if (done) "пройден" else "новый",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                },
+                                shape = MaterialTheme.shapes.small,
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = if (done) speaking.statusReviewedContainer
+                                    else speaking.statusNewContainer,
+                                    labelColor = if (done) speaking.statusReviewed else speaking.statusNew
+                                ),
+                                border = null,
+                                modifier = Modifier.testTag("topic_chip_${topic.id}")
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = SpeakingIcons.ChevronRight,
+                                contentDescription = null,
+                                tint = speaking.textMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
                     colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)

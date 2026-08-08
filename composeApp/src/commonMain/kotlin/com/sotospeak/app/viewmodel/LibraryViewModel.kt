@@ -32,7 +32,7 @@ sealed interface LibraryAction {
 }
 
 sealed interface LibraryEvent {
-    data class NavigateToTopics(val libraryId: String) : LibraryEvent
+    data class NavigateToTopics(val libraryId: String, val libraryTitle: String) : LibraryEvent
 }
 
 class LibraryViewModel(
@@ -49,8 +49,10 @@ class LibraryViewModel(
     fun onAction(action: LibraryAction) {
         when (action) {
             is LibraryAction.OnRefresh -> load()
-            is LibraryAction.OnLibraryClick ->
-                _events.trySend(LibraryEvent.NavigateToTopics(action.libraryId))
+            is LibraryAction.OnLibraryClick -> {
+                val title = _state.value.libraries.firstOrNull { it.id == action.libraryId }?.title.orEmpty()
+                _events.trySend(LibraryEvent.NavigateToTopics(action.libraryId, title))
+            }
             is LibraryAction.OnClearError ->
                 _state.value = _state.value.copy(error = null)
         }

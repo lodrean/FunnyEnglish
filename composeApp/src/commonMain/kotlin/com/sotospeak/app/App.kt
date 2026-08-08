@@ -413,7 +413,7 @@ private fun MainAppContent(
                     ObserveAsEvents(vm.events) { event ->
                         when (event) {
                             is LibraryEvent.NavigateToTopics ->
-                                onNavigate(AppScreen.Topics(event.libraryId))
+                                onNavigate(AppScreen.Topics(event.libraryId, event.libraryTitle))
                         }
                     }
                     LibraryScreen(
@@ -431,14 +431,28 @@ private fun MainAppContent(
                     ObserveAsEvents(vm.events) { event ->
                         when (event) {
                             is TopicsEvent.NavigateToVideo ->
-                                onNavigate(AppScreen.Video(event.topicId, currentScreen.libraryId, event.withSubtitles))
+                                onNavigate(
+                                    AppScreen.Video(
+                                        event.topicId,
+                                        currentScreen.libraryId,
+                                        event.withSubtitles,
+                                        currentScreen.libraryTitle
+                                    )
+                                )
                             is TopicsEvent.NavigateToQuestions ->
-                                onNavigate(AppScreen.Questions(event.topicId, currentScreen.libraryId))
+                                onNavigate(
+                                    AppScreen.Questions(
+                                        event.topicId,
+                                        currentScreen.libraryId,
+                                        currentScreen.libraryTitle
+                                    )
+                                )
                             is TopicsEvent.NavigateBack -> onNavigate(AppScreen.Library)
                         }
                     }
                     TopicsScreen(
                         state = state,
+                        libraryTitle = currentScreen.libraryTitle,
                         onTopicClick = { id -> vm.onAction(TopicsAction.OnTopicClick(id)) },
                         onRetry = { vm.onAction(TopicsAction.OnRefresh) },
                         onBack = { vm.onAction(TopicsAction.OnBack) }
@@ -448,10 +462,19 @@ private fun MainAppContent(
                     VideoRoute(
                         topicId = currentScreen.topicId,
                         withSubtitles = currentScreen.withSubtitles,
+                        libraryTitle = currentScreen.libraryTitle,
                         onNavigateToQuestions = {
-                            onNavigate(AppScreen.Questions(currentScreen.topicId, currentScreen.libraryId))
+                            onNavigate(
+                                AppScreen.Questions(
+                                    currentScreen.topicId,
+                                    currentScreen.libraryId,
+                                    currentScreen.libraryTitle
+                                )
+                            )
                         },
-                        onNavigateBack = { onNavigate(AppScreen.Topics(currentScreen.libraryId)) }
+                        onNavigateBack = {
+                            onNavigate(AppScreen.Topics(currentScreen.libraryId, currentScreen.libraryTitle))
+                        }
                     )
                 }
                 is AppScreen.Questions -> {
@@ -464,18 +487,31 @@ private fun MainAppContent(
                     ObserveAsEvents(vm.events) { event ->
                         when (event) {
                             is QuestionsEvent.NavigateToTraining ->
-                                onNavigate(AppScreen.Training(event.topicId, currentScreen.libraryId))
+                                onNavigate(
+                                    AppScreen.Training(
+                                        event.topicId,
+                                        currentScreen.libraryId,
+                                        currentScreen.libraryTitle
+                                    )
+                                )
                             is QuestionsEvent.NavigateToPractice ->
-                                onNavigate(AppScreen.Practice(event.topicId, currentScreen.libraryId))
+                                onNavigate(
+                                    AppScreen.Practice(
+                                        event.topicId,
+                                        currentScreen.libraryId,
+                                        currentScreen.libraryTitle
+                                    )
+                                )
                             is QuestionsEvent.ShowLoginCta -> onNavigate(AppScreen.Login)
                             is QuestionsEvent.NavigateToMySubmissions ->
                                 onNavigate(AppScreen.MySubmissions)
                             is QuestionsEvent.NavigateBack ->
-                                onNavigate(AppScreen.Topics(currentScreen.libraryId))
+                                onNavigate(AppScreen.Topics(currentScreen.libraryId, currentScreen.libraryTitle))
                         }
                     }
                     QuestionsScreen(
                         state = state,
+                        libraryTitle = currentScreen.libraryTitle,
                         onStartTraining = { vm.onAction(QuestionsAction.OnStartTraining) },
                         onStartPractice = { vm.onAction(QuestionsAction.OnStartPractice) },
                         onLoginClick = { onNavigate(AppScreen.Login) },
@@ -487,22 +523,42 @@ private fun MainAppContent(
                 is AppScreen.Training -> {
                     TrainingRoute(
                         topicId = currentScreen.topicId,
+                        libraryTitle = currentScreen.libraryTitle,
                         onNavigateToPractice = {
-                            onNavigate(AppScreen.Practice(currentScreen.topicId, currentScreen.libraryId))
+                            onNavigate(
+                                AppScreen.Practice(
+                                    currentScreen.topicId,
+                                    currentScreen.libraryId,
+                                    currentScreen.libraryTitle
+                                )
+                            )
                         },
                         onNavigateToLibrary = { onNavigate(AppScreen.Library) },
                         onNavigateBack = {
-                            onNavigate(AppScreen.Questions(currentScreen.topicId, currentScreen.libraryId))
+                            onNavigate(
+                                AppScreen.Questions(
+                                    currentScreen.topicId,
+                                    currentScreen.libraryId,
+                                    currentScreen.libraryTitle
+                                )
+                            )
                         }
                     )
                 }
                 is AppScreen.Practice -> {
                     PracticeRoute(
                         topicId = currentScreen.topicId,
+                        libraryTitle = currentScreen.libraryTitle,
                         onNavigateToMySubmissions = { onNavigate(AppScreen.MySubmissions) },
                         onNavigateToLibrary = { onNavigate(AppScreen.Library) },
                         onNavigateBack = {
-                            onNavigate(AppScreen.Questions(currentScreen.topicId, currentScreen.libraryId))
+                            onNavigate(
+                                AppScreen.Questions(
+                                    currentScreen.topicId,
+                                    currentScreen.libraryId,
+                                    currentScreen.libraryTitle
+                                )
+                            )
                         }
                     )
                 }
@@ -637,12 +693,30 @@ sealed class AppScreen {
 
     // Speaking-тренажёр (спека Part 2 §1.2).
     // libraryId пробрасывается по цепочке — back stack отсутствует, onBack явный.
+    // libraryTitle — для breadcrumb-подзаголовка аппбара (мокап .appbar .sub).
     data object Library : AppScreen()
-    data class Topics(val libraryId: String) : AppScreen()
-    data class Video(val topicId: String, val libraryId: String, val withSubtitles: Boolean) : AppScreen()
-    data class Questions(val topicId: String, val libraryId: String) : AppScreen()
-    data class Training(val topicId: String, val libraryId: String) : AppScreen()
-    data class Practice(val topicId: String, val libraryId: String) : AppScreen()
+    data class Topics(val libraryId: String, val libraryTitle: String = "") : AppScreen()
+    data class Video(
+        val topicId: String,
+        val libraryId: String,
+        val withSubtitles: Boolean,
+        val libraryTitle: String = ""
+    ) : AppScreen()
+    data class Questions(
+        val topicId: String,
+        val libraryId: String,
+        val libraryTitle: String = ""
+    ) : AppScreen()
+    data class Training(
+        val topicId: String,
+        val libraryId: String,
+        val libraryTitle: String = ""
+    ) : AppScreen()
+    data class Practice(
+        val topicId: String,
+        val libraryId: String,
+        val libraryTitle: String = ""
+    ) : AppScreen()
     data object MySubmissions : AppScreen()
 
     /** Скрытое debug-меню (QA/debug-сборки): вход — 7 тапов по версии в профиле */

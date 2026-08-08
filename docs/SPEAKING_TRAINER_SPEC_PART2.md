@@ -2,8 +2,8 @@
 ## Клиент: composeApp (Android-first)
 
 **Feature ID:** SPEAKING-TRAINER-001
-**Version:** 1.5 (2026-08-02: онбординг-иллюстрации заменены на векторные иконки `SpeakingIcons.*` для совместимости с WASM canvas; default темы — `system`; рантайм-override `api_base_url_override` применяется без перезапуска; v1.4 — guest-first старт и онбординг по мокапам Playful Coach v1.1 — 3 слайда без экрана выбора режима «Как начнём?»; Practice-гейт — SpeakingGate; bottom nav «Темы/Отправки/Профиль»; профиль по frame-profile/profile-guest; bottom-sheet выбора субтитров удалён (DC-5) — mode-chips на экране видео; §10.2 Maestro-флоу синхронизированы с реальными текстами; v1.3 — §8.2/§8.3 синхронизированы с контрактом Part 1; v1.2 — попытка Training = одна запись на ВСЕ вопросы; v1.1 — Playful Coach: Training 3 попытки без удаления, Practice без Review)
-**Date:** 2026-08-02
+**Version:** 1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
+**Date:** 2026-08-08
 **Estimated Effort:** 8–12 дней
 **Связанные документы:**
 - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md`
@@ -398,7 +398,7 @@ composeApp/src/
 ├── desktopMain/kotlin/com/sotospeak/app/player/
 │   └── VideoPlayerController.desktop.kt   # СТАБ
 ├── iosMain/...  # СТАБ
-└── wasmJsMain/... # СТАБ
+└── wasmJsMain/... # HTML5-плеер (v1.6): DOM `<video>` поверх canvas, см. §3.2
 ```
 
 `composeApp/build.gradle.kts`, `androidMain.dependencies` — добавить:
@@ -514,25 +514,23 @@ object WebVttParser {
 
 Загрузка субтитров: обычный GET через существующий Ktor-клиент (`client.get(subtitlesUrl).bodyAsText()`) — добавить в `VideoViewModel`, не в `SoToSpeakApi` (файл лежит в MinIO по публичному URL, не API-эндпоинт; URL приходит в `SpeakingTopicDetail.video?.subtitleUrl`). Юнит-тесты парсера в `commonTest` (минимум: тайминги обоих форматов, NOTE, многострочный cue, мусорные строки).
 
-### 3.4 Панель субтитров под плеером
+### 3.4 Транскрипт: полный текст с пословной подсветкой (v1.6, заменяет SubtitlePanel)
 
-Дизайн-система v1.0: субтитры отображаются **под плеером** (отдельная панель на scrim-подложке 70%, `subtitleText` 17sp), а не оверлеем поверх видео. Переключение — mode-chips «С субтитрами / Без субтитров» над плеером + CC-кнопка в контролах плеера.
+Под плеером — **TranscriptPanel**: весь текст видео сразу (LazyColumn по cue-абзацам), скроллится независимо; CTA «Перейти к вопросам» доступен всегда. Источник текста — существующий WebVTT-файл (отдельного поля/файла транскрипта НЕ вводится).
 
-```kotlin
-// composeApp/src/commonMain/kotlin/com/sotospeak/app/subtitles/SubtitlePanel.kt
-@Composable
-fun SubtitlePanel(
-    cues: List<SubtitleCue>,
-    positionMs: Long,
-    modifier: Modifier = Modifier
-) {
-    val current = cues.firstOrNull { positionMs in it.startMs until it.endMs }
-    // панель под плеером: тёмная подложка scrimSubtitle (70%), текст 17sp
-    // testTag("subtitle_text") — для desktopTest/Maestro; пустой cue → placeholder-строка
-}
-```
+Подсветка по `positionMs`: произнесённые слова — `speaking.text`, непроизнесённые — `speaking.textMuted`, текущее слово — плавный `lerp(textMuted→text)` по доле прогресса внутри слова + полужирный; автоскролл к активному cue. Reduce-motion платформы — мгновенное переключение без заливки.
 
-Компоновка в VideoScreen: `Column { ModeChips(...); NativeVideoSurface(...); if (state.subtitlesEnabled) SubtitlePanel(...) }`. Тоггл субтитров — mode-chips + CC в контролах (`testTag("subtitles_toggle")`); выбор начального режима — bottom sheet на TopicsScreen (`OnSubtitleChoice`). CTA «Перейти к вопросам» доступен в любой момент (смотреть всё видео необязательно). Если `topic.video?.subtitleUrl == null` — выбор и тоггл скрыты (PRD Edge Cases).
+Пословные тайминги (`SubtitleWord(text, startMs, endMs)` в `SubtitleCue.words`):
+- karaoke-таймкоды `<mm:ss.mmm>` внутри cue — точная синхронизация (файлы готовятся внешними инструментами, напр. Whisper); karaoke-теги вычищаются из текста отдельным regex (tagRegex их не покрывает — грабля №89);
+- иначе интерполяция: слова делят окно cue пропорционально длине слова.
+
+Переключение — mode-chips «С субтитрами / Без субтитров» + CC (`testTag("subtitles_toggle")`); панель видна только в режиме «С субтитрами» при наличии cue. Если `topic.video?.subtitleUrl == null` — выбор и панель скрыты (PRD Edge Cases).
+
+**WASM (v1.6)**: видео воспроизводится через HTML5 `<video>` в DOM поверх canvas (canvas-only CMP; позиционирование по `onGloballyPositioned` области плеера, координаты в CSS px = layout px / density — грабля №90). Compose-оверлей контролы поверх видео невозможны (DOM выше canvas) → `VideoPlayerController.supportsOverlayControls=false`: control-bar рисуется ПОД плеером (те же элементы/testTag'и), big-play/replay — только когда DOM-video скрыт (до старта/после конца), клик по видео — play/pause. Android — overlay-контролы как раньше (`supportsOverlayControls=true`). Desktop/iOS — стабы.
+
+**Высота видео**: бокс 16:9 ограничен 45% высоты экрана (heightIn до aspectRatio — иначе на низких viewport CTA/транскрипт вытесняются за экран, грабля №91).
+
+**Аппбары (v1.6)**: экраны §2.2–2.6 — `SpeakingAppBar` без стрелки «назад» (мокап), с breadcrumb-подзаголовком: Topics — «{тема} / N топиков · выбери и начни говорить», Video — «{топик} / {тема} · видео m:ss», Questions — «Вопросы / {тема} · {топик} · N вопросов», Training/Practice — «Training|Practice / {тема} · {топик}» (`libraryTitle` пробрасывается по AppScreen-роутам). «Назад» — системный: expect/actual `PlatformBackHandler` (Android — activity BackHandler, wasm — Escape/BrowserBack, desktop/iOS — no-op); подтверждение выхода в Practice (§6.1) сохраняется через `handleBack`.
 
 ---
 

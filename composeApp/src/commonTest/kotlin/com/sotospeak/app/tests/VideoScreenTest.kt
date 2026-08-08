@@ -49,9 +49,28 @@ class VideoScreenTest : BaseUiTest() {
         onNodeWithTag("video_error", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithTag("video_control_bar", useUnmergedTree = true).assertDoesNotExist()
     }
+
+    @Test
+    fun transcriptPanelShowsFullText() = runTest(
+        content = { VideoScreenForTest(state = mockVideoState(withCues = true)) }
+    ) {
+        // assertExists (не IsDisplayed): в маленьком тестовом окне панель с weight(1f)
+        // может получить 0 высоту — семантически нода и текст присутствуют
+        onNodeWithTag("transcript_panel", useUnmergedTree = true).assertExists()
+        // текст cue виден (слова склеены пробелами в один Text); при нулевой высоте
+        // LazyColumn компонует только первые item'ы — проверяем первый cue
+        onNodeWithText("Hello brave world", substring = true).assertExists()
+    }
+
+    @Test
+    fun transcriptPanelHiddenWithoutSubtitles() = runTest(
+        content = { VideoScreenForTest(state = mockVideoState()) }
+    ) {
+        onNodeWithTag("transcript_panel", useUnmergedTree = true).assertDoesNotExist()
+    }
 }
 
-private fun mockVideoState(videoError: Boolean = false) = VideoState(
+private fun mockVideoState(videoError: Boolean = false, withCues: Boolean = false) = VideoState(
     topic = SpeakingTopicDetail(
         id = "topic-1",
         libraryId = "lib-1",
@@ -64,6 +83,24 @@ private fun mockVideoState(videoError: Boolean = false) = VideoState(
         questions = emptyList()
     ),
     subtitlesEnabled = true,
+    subtitleCues = if (withCues) listOf(
+        com.sotospeak.app.subtitles.SubtitleCue(
+            startMs = 0, endMs = 3000, text = "Hello brave world",
+            words = listOf(
+                com.sotospeak.app.subtitles.SubtitleWord("Hello", 0, 1000),
+                com.sotospeak.app.subtitles.SubtitleWord("brave", 1000, 2000),
+                com.sotospeak.app.subtitles.SubtitleWord("world", 2000, 3000)
+            )
+        ),
+        com.sotospeak.app.subtitles.SubtitleCue(
+            startMs = 3000, endMs = 6000, text = "Second cue line",
+            words = listOf(
+                com.sotospeak.app.subtitles.SubtitleWord("Second", 3000, 4000),
+                com.sotospeak.app.subtitles.SubtitleWord("cue", 4000, 5000),
+                com.sotospeak.app.subtitles.SubtitleWord("line", 5000, 6000)
+            )
+        )
+    ) else emptyList(),
     videoError = videoError
 )
 

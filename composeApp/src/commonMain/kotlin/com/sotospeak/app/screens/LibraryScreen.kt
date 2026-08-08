@@ -149,11 +149,13 @@ private fun ThemeCard(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                // Fade-обрезка вместо ellipsis (мокап/ДС: перенос по словам, ≤3 строк)
+                com.sotospeak.app.components.FadingEdgeText(
                     text = library.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = speaking.text
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = speaking.text,
+                    maxLines = 3,
+                    fadeColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -226,7 +228,9 @@ private fun ThemeStatusChip(completedTopics: Int, libraryId: String) {
         shape = MaterialTheme.shapes.small,
         colors = AssistChipDefaults.assistChipColors(
             containerColor = if (isDone) speaking.statusReviewedContainer else speaking.statusNewContainer,
-            labelColor = if (isDone) CHIP_DONE_TEXT else CHIP_NEW_TEXT
+            // Токены status* имеют dark-варианты (hardcoded #256629/#8A5200 были нечитаемы
+            // на тёмных контейнерах в dark theme)
+            labelColor = if (isDone) speaking.statusReviewed else speaking.statusNew
         ),
         border = null
     )
@@ -280,10 +284,6 @@ private val THEME_GRADIENTS = listOf(
     listOf(Color(0xFF5C6BC0), Color(0xFF3F51B5)),
     listOf(Color(0xFFFB8C00), Color(0xFFE65100))
 )
-
-/** Текст бейджей мокапа (.chip-done/.chip-new — тёмный текст на container, WCAG AA). */
-private val CHIP_DONE_TEXT = Color(0xFF256629)
-private val CHIP_NEW_TEXT = Color(0xFF8A5200)
 
 @Composable
 private fun LibraryEmptyState() {

@@ -17,6 +17,7 @@ import {
 import { CloudUpload, Delete, Refresh, InsertDriveFile } from '@mui/icons-material';
 import { useMutation } from '@tanstack/react-query';
 import { uploadMedia, deleteMedia } from '../api/client';
+import { extractVttTranscript } from '../utils/vtt';
 
 type MediaKind = 'image' | 'audio' | 'video' | 'file';
 
@@ -64,19 +65,26 @@ const defaultHint = (kind: MediaKind, accept: string): string => {
   }
 };
 
-/** Превью первых строк текстового файла (.vtt) — чтобы учитель проверил субтитры */
+/** Превью текстового файла (.vtt): полный текст транскрипта — его видит ученик в приложении */
 function FilePreview({ url }: { url: string }) {
   const [head, setHead] = useState<string[] | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
+  const isVtt = url.split('?')[0].toLowerCase().endsWith('.vtt');
 
   useEffect(() => {
     let cancelled = false;
     fetch(url)
       .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
       .then((text) => {
-        if (!cancelled) setHead(text.split('\n').slice(0, 3));
+        if (cancelled) return;
+        setHead(text.split('\n').slice(0, 3));
+        setTranscript(extractVttTranscript(text));
       })
       .catch(() => {
-        if (!cancelled) setHead(null);
+        if (!cancelled) {
+          setHead(null);
+          setTranscript(null);
+        }
       });
     return () => {
       cancelled = true;
@@ -86,19 +94,44 @@ function FilePreview({ url }: { url: string }) {
   return (
     <Box sx={{ p: 2, pt: 5, display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
       <InsertDriveFile color="action" />
-      <Box sx={{ minWidth: 0 }}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
         <Link href={url} target="_blank" rel="noopener" underline="hover">
           {url.split('/').pop()}
         </Link>
-        {head && (
-          <Typography
-            variant="caption"
-            component="pre"
-            color="text.secondary"
-            sx={{ mt: 0.5, whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0 }}
-          >
-            {head.join('\n')}
-          </Typography>
+        {isVtt && transcript ? (
+          <>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              Полный текст видео (из субтитров — показывается ученику):
+            </Typography>
+            <Typography
+              variant="caption"
+              component="pre"
+              color="text.secondary"
+              data-testid="vtt-transcript-preview"
+              sx={{
+                mt: 0.5,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                m: 0,
+                maxHeight: 140,
+                overflowY: 'auto',
+                display: 'block',
+              }}
+            >
+              {transcript}
+            </Typography>
+          </>
+        ) : (
+          head && (
+            <Typography
+              variant="caption"
+              component="pre"
+              color="text.secondary"
+              sx={{ mt: 0.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word', m: 0 }}
+            >
+              {head.join('\n')}
+            </Typography>
+          )
         )}
       </Box>
     </Box>

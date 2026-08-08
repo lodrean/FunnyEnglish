@@ -288,7 +288,7 @@ export default function SpeakingTopicEditor() {
                 accept=".vtt"
                 mediaKind="file"
                 label="Субтитры (WebVTT)"
-                hint="WebVTT (.vtt)"
+                hint="WebVTT (.vtt) — из субтитров автоматически формируется полный текст видео с пословной подсветкой, отдельный транскрипт не нужен"
               />
               {subtitlesUrl && (
                 <Button

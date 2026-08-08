@@ -228,15 +228,12 @@ private fun SubmissionStatusChip(isReviewed: Boolean, modifier: Modifier = Modif
         colors = AssistChipDefaults.assistChipColors(
             containerColor = if (isReviewed) speaking.statusReviewedContainer
             else speaking.statusNewContainer,
-            labelColor = if (isReviewed) STATUS_REVIEWED_TEXT else STATUS_NEW_TEXT
+            labelColor = if (isReviewed) speaking.statusReviewed
+            else speaking.statusNew
         ),
         border = null
     )
 }
-
-/** Текст статус-чипов мокапа (.chip-done/.chip-new — тёмный текст на container, WCAG AA). */
-private val STATUS_REVIEWED_TEXT = Color(0xFF256629)
-private val STATUS_NEW_TEXT = Color(0xFF8A5200)
 
 @Composable
 private fun GradeCard(grade: SpeakingGrade, submissionId: String) {

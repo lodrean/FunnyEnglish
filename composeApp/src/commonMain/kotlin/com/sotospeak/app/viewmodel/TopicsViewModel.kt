@@ -25,6 +25,7 @@ data class TopicUiModel(
     val id: String,
     val title: String,
     val durationSeconds: Int,
+    val questionCount: Int,
     val hasSubtitles: Boolean,          // из DTO — иначе выбор «с субтитрами» скрыт
     val isWatched: Boolean,             // локальный флаг (Settings, ключ topic_watched_<id>)
     val hasLocalRecordings: Boolean     // есть training-записи в RecordingStore
@@ -88,6 +89,7 @@ class TopicsViewModel(
                                 id = dto.id,
                                 title = dto.title,
                                 durationSeconds = dto.durationSeconds ?: 0,
+                                questionCount = dto.questionCount,
                                 hasSubtitles = dto.hasSubtitles,
                                 isWatched = settings.getString("topic_watched_${dto.id}", null) == "true",
                                 hasLocalRecordings = recordingStore.list(dto.id).isNotEmpty()

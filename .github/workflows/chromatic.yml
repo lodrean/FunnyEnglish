@@ -32,7 +32,20 @@ jobs:
           cd admin-web
           npm run build-storybook
 
+      # Секреты нельзя использовать в if: напрямую — проверка через step output.
+      # Для реальной публикации нужен секрет CHROMATIC_TOKEN (docs/CHROMATIC_PLAYWRIGHT.md).
+      - name: Check Chromatic token
+        id: token-check
+        run: |
+          if [ -n "${{ secrets.CHROMATIC_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CHROMATIC_TOKEN secret is not set — skipping Chromatic publish"
+          fi
+
       - name: Publish to Chromatic
+        if: steps.token-check.outputs.present == 'true'
         uses: chromaui/action@latest
         with:
           projectToken: ${{ secrets.CHROMATIC_TOKEN }}

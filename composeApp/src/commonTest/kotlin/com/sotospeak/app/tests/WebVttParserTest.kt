@@ -121,4 +121,81 @@ class WebVttParserTest {
         assertEquals(1, cues.size)
         assertEquals("CRLF", cues[0].text)
     }
+
+    // ---------- Пословные тайминги (транскрипт с подсветкой) ----------
+
+    @Test
+    fun interpolatesWordTimingsProportionallyToLength() {
+        val vtt = """
+            WEBVTT
+
+            00:00.000 --> 00:04.000
+            I go home now
+        """.trimIndent()
+
+        val words = WebVttParser.parse(vtt).single().words
+        assertEquals(listOf("I", "go", "home", "now"), words.map { it.text })
+        // веса 1+2+4+3=10 → I: 0-400, go: 400-1200, home: 1200-2800, now: 2800-4000
+        assertEquals(0L, words[0].startMs)
+        assertEquals(400L, words[0].endMs)
+        assertEquals(400L, words[1].startMs)
+        assertEquals(1200L, words[1].endMs)
+        assertEquals(1200L, words[2].startMs)
+        assertEquals(2800L, words[2].endMs)
+        assertEquals(2800L, words[3].startMs)
+        assertEquals(4000L, words[3].endMs)
+        // непрерывность и покрытие всего окна cue
+        words.zipWithNext().forEach { (a, b) -> assertEquals(a.endMs, b.startMs) }
+    }
+
+    @Test
+    fun parsesKaraokeTimestamps() {
+        val vtt = """
+            WEBVTT
+
+            00:00.000 --> 00:03.000
+            <00:00.000>Hello <00:01.000>brave <00:02.000>world
+        """.trimIndent()
+
+        val cue = WebVttParser.parse(vtt).single()
+        assertEquals("Hello brave world", cue.text)
+        val words = cue.words
+        assertEquals(listOf("Hello", "brave", "world"), words.map { it.text })
+        assertEquals(0L to 1000L, words[0].startMs to words[0].endMs)
+        assertEquals(1000L to 2000L, words[1].startMs to words[1].endMs)
+        assertEquals(2000L to 3000L, words[2].startMs to words[2].endMs)
+    }
+
+    @Test
+    fun karaokeWordsBeforeFirstTimestampStartAtCueStart() {
+        val vtt = """
+            WEBVTT
+
+            00:00.500 --> 00:02.500
+            Hey <00:01.000>there
+        """.trimIndent()
+
+        val words = WebVttParser.parse(vtt).single().words
+        assertEquals(listOf("Hey", "there"), words.map { it.text })
+        assertEquals(500L, words[0].startMs)
+        assertEquals(1000L, words[0].endMs)
+        assertEquals(1000L, words[1].startMs)
+        assertEquals(2500L, words[1].endMs)
+    }
+
+    @Test
+    fun multilineCueWordsAreInterpolatedAcrossJoinedText() {
+        val vtt = """
+            WEBVTT
+
+            00:00.000 --> 00:02.000
+            first
+            line
+        """.trimIndent()
+
+        val cue = WebVttParser.parse(vtt).single()
+        assertEquals(listOf("first", "line"), cue.words.map { it.text })
+        assertEquals(0L, cue.words.first().startMs)
+        assertEquals(2000L, cue.words.last().endMs)
+    }
 }

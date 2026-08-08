@@ -19,10 +19,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
+import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.player.NativeVideoSurface
 import com.sotospeak.app.player.VideoPlayerController
 import com.sotospeak.app.player.VideoPlayerState
-import com.sotospeak.app.subtitles.SubtitlePanel
+import com.sotospeak.app.subtitles.TranscriptPanel
 import com.sotospeak.app.viewmodel.VideoState
 import com.sotospeak.design.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
@@ -30,7 +31,8 @@ import com.sotospeak.designsystem.theme.SpeakingShapes
 
 /**
  * Экран видео топика (спека Part 2 §2.3, §3.4).
- * Mode-chips «С субтитрами/Без субтитров» + плеер + SubtitlePanel под плеером.
+ * Mode-chips «С субтитрами/Без субтитров» + плеер + TranscriptPanel (полный
+ * транскрипт с пословной подсветкой) под плеером.
  * CTA «Перейти к вопросам» доступен всегда (PRD Story 2).
  *
  * Контроллер плеера — remember + DisposableEffect (НЕ в Koin, спека §8.1).
@@ -46,7 +48,8 @@ fun VideoScreen(
     onRetryVideo: () -> Unit,
     onGoToQuestions: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
     val playerState by controller.state.collectAsState()
@@ -69,23 +72,20 @@ fun VideoScreen(
         }
     }
 
+    // Стрелки в аппбаре нет (мокап frame-video) — системная кнопка/жест «назад»
+    com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
+
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = state.topic?.title.orEmpty(),
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
+            // Мокап frame-video: h1 — название топика, sub — «Тема · видео m:ss», БЕЗ стрелки назад
+            val durationSec = state.topic?.video?.durationSeconds
+            SpeakingAppBar(
+                title = state.topic?.title.orEmpty(),
+                subtitle = listOfNotNull(
+                    libraryTitle.ifBlank { null },
+                    durationSec?.let { "видео ${formatTimer(it)}" }
+                ).joinToString(" · ").ifBlank { null }
             )
         },
         modifier = modifier.testTag("video_screen")
@@ -123,7 +123,12 @@ private fun VideoContent(
     val speaking = LocalSpeakingColors.current
     val hasSubtitles = state.topic?.video?.subtitleUrl != null
 
-    Column(modifier = modifier.fillMaxSize()) {
+    // BoxWithConstraints: высота видео ограничена долей экрана — на низких viewport'ах
+    // (1280x720, landscape) полноширинный 16:9 вытеснял транскрипт и CTA за экран
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val videoMaxHeight = maxHeight * 0.45f
+
+        Column(modifier = Modifier.fillMaxSize()) {
         // Mode-chips (видны только если у топика есть субтитры)
         if (hasSubtitles) {
             Row(
@@ -165,10 +170,11 @@ private fun VideoContent(
             }
         }
 
-        // Плеер
+        // Плеер: 16:9, но не выше 45% высоты экрана (на широких/низких — letterbox по центру)
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+                .heightIn(max = videoMaxHeight)
                 .aspectRatio(16f / 9f)
                 .background(androidx.compose.ui.graphics.Color.Black)
                 .testTag("video_surface")
@@ -180,17 +186,37 @@ private fun VideoContent(
 
             // V1: кастомные контролы мокапа (big-play + control-bar), нативные выключены
             if (!state.videoError) {
-                MockupVideoControls(
-                    playerState = playerState,
-                    subtitlesOn = state.subtitlesEnabled && hasSubtitles,
-                    onPlayPause = { if (playerState.isPlaying) controller.pause() else controller.play() },
-                    onSeek = { fraction ->
-                        if (playerState.durationMs > 0) {
-                            controller.seekTo((playerState.durationMs * fraction).toLong())
-                        }
-                    },
-                    onToggleCc = onToggleSubtitles
-                )
+                if (controller.supportsOverlayControls) {
+                    MockupVideoControls(
+                        playerState = playerState,
+                        subtitlesOn = state.subtitlesEnabled && hasSubtitles,
+                        onPlayPause = { if (playerState.isPlaying) controller.pause() else controller.play() },
+                        onSeek = { fraction ->
+                            if (playerState.durationMs > 0) {
+                                controller.seekTo((playerState.durationMs * fraction).toLong())
+                            }
+                        },
+                        onToggleCc = onToggleSubtitles
+                    )
+                } else {
+                    // WASM: DOM-video поверх canvas — Compose-оверлеи показываем только
+                    // в состояниях, где video-элемент скрыт (до старта / после конца)
+                    if (!playerState.isPlaying && playerState.positionMs == 0L && !playerState.isEnded) {
+                        BigPlayOverlay(
+                            onPlay = { controller.play() },
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    if (playerState.isEnded) {
+                        ReplayOverlay(
+                            onReplay = {
+                                controller.seekTo(0)
+                                controller.play()
+                            },
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
             }
 
             // Плашка ошибки видео: retry + «К вопросам» (переход без видео разрешён)
@@ -222,15 +248,31 @@ private fun VideoContent(
             }
         }
 
-        // Субтитры ПОД плеером
-        if (state.subtitlesEnabled && state.subtitleCues.isNotEmpty()) {
-            SubtitlePanel(
-                cues = state.subtitleCues,
-                positionMs = playerState.positionMs
+        // WASM: control-bar ПОД плеером (DOM-video перекрывает canvas, overlay невозможен)
+        if (!controller.supportsOverlayControls && !state.videoError) {
+            BelowVideoControls(
+                playerState = playerState,
+                subtitlesOn = state.subtitlesEnabled && hasSubtitles,
+                onPlayPause = { if (playerState.isPlaying) controller.pause() else controller.play() },
+                onSeek = { fraction ->
+                    if (playerState.durationMs > 0) {
+                        controller.seekTo((playerState.durationMs * fraction).toLong())
+                    }
+                },
+                onToggleCc = onToggleSubtitles
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        // Полный транскрипт видео с пословной подсветкой (скроллится внутри панели)
+        if (state.subtitlesEnabled && state.subtitleCues.isNotEmpty()) {
+            TranscriptPanel(
+                cues = state.subtitleCues,
+                positionMs = playerState.positionMs,
+                modifier = Modifier.weight(1f)
+            )
+        } else {
+            Spacer(modifier = Modifier.weight(1f))
+        }
 
         // CTA доступен всегда — смотреть всё видео необязательно
         // M3 FilledButton (A7/DSM-5 C1): shape medium(16), container primary (=primaryStrong)
@@ -258,6 +300,7 @@ private fun VideoContent(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .testTag("video_hint")
         )
+        }
     }
 }
 
@@ -277,43 +320,16 @@ private fun MockupVideoControls(
     Box(modifier = Modifier.fillMaxSize()) {
         // «Начать заново» после окончания воспроизведения (STATE_ENDED)
         if (playerState.isEnded) {
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Surface(
-                    onClick = {
-                        onSeek(0f)
-                        onPlayPause()
-                    },
-                    shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.92f),
-                    shadowElevation = 6.dp,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .testTag("replay_button")
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = SpeakingIcons.Refresh,
-                            contentDescription = "Начать заново",
-                            tint = Color(0xFF1A2E42),
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = "Начать заново",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.testTag("replay_label")
-                )
-            }
+            ReplayOverlay(
+                onReplay = {
+                    onSeek(0f)
+                    onPlayPause()
+                },
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
 
-        // Big-play (mockups .big-play): круг 64dp, белый 92%, тень;
-        // H: появление/исчезание fade+scale tweenFast
+        // Big-play (mockups .big-play): появление/исчезание fade+scale tweenFast
         androidx.compose.animation.AnimatedVisibility(
             visible = !playerState.isPlaying && !playerState.isEnded,
             enter = androidx.compose.animation.fadeIn(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()) +
@@ -322,24 +338,7 @@ private fun MockupVideoControls(
                 androidx.compose.animation.scaleOut(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()),
             modifier = Modifier.align(Alignment.Center)
         ) {
-            Surface(
-                onClick = onPlayPause,
-                shape = CircleShape,
-                color = Color.White.copy(alpha = 0.92f),
-                shadowElevation = 6.dp,
-                modifier = Modifier
-                    .size(64.dp)
-                    .testTag("big_play_button")
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = SpeakingIcons.Play,
-                        contentDescription = "Смотреть видео",
-                        tint = Color(0xFF1A2E42),
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-            }
+            BigPlayOverlay(onPlay = onPlayPause)
         }
 
         // Control-bar (mockups .video-controls): градиентная подложка снизу
@@ -357,72 +356,184 @@ private fun MockupVideoControls(
                 .padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
                 .testTag("video_control_bar")
         ) {
-            IconButton(
-                onClick = onPlayPause,
-                modifier = Modifier
-                    .size(48.dp)   // аудит: touch target 48
-                    .testTag("vc_play_pause")
-            ) {
+            ControlBarContent(
+                playerState = playerState,
+                subtitlesOn = subtitlesOn,
+                onPlayPause = onPlayPause,
+                onSeek = onSeek,
+                onToggleCc = onToggleCc,
+                contentColor = Color.White,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+/** Big-play 64dp по центру (мокап .big-play): круг, белый 92%, тень. */
+@Composable
+private fun BigPlayOverlay(onPlay: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = onPlay,
+        shape = CircleShape,
+        color = Color.White.copy(alpha = 0.92f),
+        shadowElevation = 6.dp,
+        modifier = modifier
+            .size(64.dp)
+            .testTag("big_play_button")
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = SpeakingIcons.Play,
+                contentDescription = "Смотреть видео",
+                tint = Color(0xFF1A2E42),
+                modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+/** «Начать заново» после окончания воспроизведения (мокап replay). */
+@Composable
+private fun ReplayOverlay(onReplay: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Surface(
+            onClick = onReplay,
+            shape = CircleShape,
+            color = Color.White.copy(alpha = 0.92f),
+            shadowElevation = 6.dp,
+            modifier = Modifier
+                .size(64.dp)
+                .testTag("replay_button")
+        ) {
+            Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = if (playerState.isPlaying) SpeakingIcons.Pause else SpeakingIcons.Play,
-                    contentDescription = if (playerState.isPlaying) "Пауза" else "Продолжить",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    imageVector = SpeakingIcons.Refresh,
+                    contentDescription = "Начать заново",
+                    tint = Color(0xFF1A2E42),
+                    modifier = Modifier.size(28.dp)
                 )
             }
-            // Seek (mockups .vc-seek)
-            val fraction = if (playerState.durationMs > 0) {
-                (playerState.positionMs.toFloat() / playerState.durationMs).coerceIn(0f, 1f)
-            } else 0f
-            Slider(
-                value = fraction,
-                onValueChange = onSeek,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(20.dp)
-                    .testTag("vc_seek"),
-                colors = SliderDefaults.colors(
-                    thumbColor = Color.White,
-                    activeTrackColor = Color.White,
-                    inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                )
-            )
+        }
+        Text(
+            text = "Начать заново",
+            color = Color.White,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.testTag("replay_label")
+        )
+    }
+}
+
+/**
+ * Control-bar ПОД плеером для платформ без in-canvas видео (WASM: DOM-video
+ * поверх canvas). Те же элементы и testTag'и, что у overlay control-bar,
+ * но на светлом фоне приложения.
+ */
+@Composable
+private fun BelowVideoControls(
+    playerState: VideoPlayerState,
+    subtitlesOn: Boolean,
+    onPlayPause: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onToggleCc: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .testTag("video_control_bar")
+    ) {
+        ControlBarContent(
+            playerState = playerState,
+            subtitlesOn = subtitlesOn,
+            onPlayPause = onPlayPause,
+            onSeek = onSeek,
+            onToggleCc = onToggleCc,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+/** Общее содержимое control-bar: play/pause, seek, время, CC. */
+@Composable
+private fun ControlBarContent(
+    playerState: VideoPlayerState,
+    subtitlesOn: Boolean,
+    onPlayPause: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onToggleCc: () -> Unit,
+    contentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = onPlayPause,
+        modifier = Modifier
+            .size(48.dp)   // аудит: touch target 48
+            .testTag("vc_play_pause")
+    ) {
+        Icon(
+            imageVector = if (playerState.isPlaying) SpeakingIcons.Pause else SpeakingIcons.Play,
+            contentDescription = if (playerState.isPlaying) "Пауза" else "Продолжить",
+            tint = contentColor,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+    // Seek (mockups .vc-seek)
+    val fraction = if (playerState.durationMs > 0) {
+        (playerState.positionMs.toFloat() / playerState.durationMs).coerceIn(0f, 1f)
+    } else 0f
+    Slider(
+        value = fraction,
+        onValueChange = onSeek,
+        modifier = modifier
+            .height(20.dp)
+            .testTag("vc_seek"),
+        colors = SliderDefaults.colors(
+            thumbColor = contentColor,
+            activeTrackColor = contentColor,
+            inactiveTrackColor = contentColor.copy(alpha = 0.3f)
+        )
+    )
+    Text(
+        "${formatTimer((playerState.positionMs / 1000).toInt())} / ${formatTimer((playerState.durationMs / 1000).toInt())}",
+        color = contentColor,
+        style = MaterialTheme.typography.labelSmall,
+        modifier = Modifier.testTag("vc_time")
+    )
+    // CC (mockups .vc-btn.cc.on — подсветка #FFD666 снизу)
+    Surface(
+        onClick = onToggleCc,
+        shape = SpeakingShapes.Chip,
+        color = if (subtitlesOn) contentColor.copy(alpha = 0.12f) else Color.Transparent,
+        modifier = Modifier
+            .height(48.dp)   // аудит: touch target 48
+            .testTag("vc_cc")
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
             Text(
-                "${formatTimer((playerState.positionMs / 1000).toInt())} / ${formatTimer((playerState.durationMs / 1000).toInt())}",
-                color = Color.White,
+                "CC",
+                color = contentColor,
                 style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.testTag("vc_time")
+                fontWeight = FontWeight.ExtraBold
             )
-            // CC (mockups .vc-btn.cc.on — подсветка #FFD666 снизу)
-            Surface(
-                onClick = onToggleCc,
-                shape = SpeakingShapes.Chip,
-                color = if (subtitlesOn) Color.White.copy(alpha = 0.22f) else Color.Transparent,
-                modifier = Modifier
-                    .height(48.dp)   // аудит: touch target 48
-                    .testTag("vc_cc")
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Text(
-                        "CC",
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                    if (subtitlesOn) {
-                        Box(
-                            modifier = Modifier
-                                .width(20.dp)
-                                .height(3.dp)
-                                .clip(SpeakingShapes.StatusPill)
-                                .background(Color(0xFFFFD666))
-                        )
-                    }
-                }
+            if (subtitlesOn) {
+                Box(
+                    modifier = Modifier
+                        .width(20.dp)
+                        .height(3.dp)
+                        .clip(SpeakingShapes.StatusPill)
+                        .background(Color(0xFFFFD666))
+                )
             }
         }
     }
@@ -438,6 +549,7 @@ private fun MockupVideoControls(
 fun VideoRoute(
     topicId: String,
     withSubtitles: Boolean,
+    libraryTitle: String,
     onNavigateToQuestions: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -468,6 +580,7 @@ fun VideoRoute(
         onVideoError = { vm.onVideoError() },
         onRetryVideo = { vm.onAction(com.sotospeak.app.viewmodel.VideoAction.OnRetryVideo) },
         onGoToQuestions = { vm.onAction(com.sotospeak.app.viewmodel.VideoAction.OnGoToQuestions) },
-        onBack = { vm.onAction(com.sotospeak.app.viewmodel.VideoAction.OnBack) }
+        onBack = { vm.onAction(com.sotospeak.app.viewmodel.VideoAction.OnBack) },
+        libraryTitle = libraryTitle
     )
 }

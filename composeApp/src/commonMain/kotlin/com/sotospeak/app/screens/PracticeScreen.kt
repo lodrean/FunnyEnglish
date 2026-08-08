@@ -52,44 +52,38 @@ fun PracticeScreen(
     onBackToLibrary: () -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    libraryTitle: String = "",
+    /** Test hook: диалог «Прервать запись?» открыт сразу (стрелки «назад» в UI больше нет,
+     *  системный back на desktop-тестах не эмулируется) */
+    initialShowBackConfirm: Boolean = false
 ) {
     val speaking = LocalSpeakingColors.current
 
     // «Назад» в фазах Recording/Uploading — диалог-подтверждение (спека §6.1)
-    var showBackConfirm by remember { mutableStateOf(false) }
+    var showBackConfirm by remember { mutableStateOf(initialShowBackConfirm) }
     val handleBack = {
-        if (state.phase == PracticePhase.Recording || state.phase == PracticePhase.Uploading) {
+        if (practiceBackNeedsConfirm(state.phase)) {
             showBackConfirm = true
         } else {
             onBack()
         }
     }
 
+    // Стрелки в аппбаре нет (мокап frame-practice) — системная кнопка/жест «назад»
+    // проходит через тот же handleBack с диалогом-подтверждением (спека §6.1)
+    com.sotospeak.app.components.PlatformBackHandler(onBack = handleBack)
+
     Scaffold(
         containerColor = speaking.background,
-        // P1: заголовок «Practice» + тема подзаголовком (мокап appbar)
+        // Мокап frame-practice: h1 «Practice», sub — «Тема · Топик», без стрелки назад
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("Practice", fontWeight = FontWeight.Bold, maxLines = 1)
-                        if (state.topicTitle.isNotBlank()) {
-                            Text(
-                                state.topicTitle,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = speaking.textMuted,
-                                maxLines = 1
-                            )
-                        }
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = handleBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
+            com.sotospeak.app.components.SpeakingAppBar(
+                title = "Practice",
+                subtitle = listOfNotNull(
+                    libraryTitle.ifBlank { null },
+                    state.topicTitle.ifBlank { null }
+                ).joinToString(" · ").ifBlank { null }
             )
         },
         modifier = modifier.testTag("practice_screen")
@@ -503,6 +497,10 @@ private fun SentPhase(onBackToLibrary: () -> Unit) {
 
 // ==================== Route (связка VM + VoiceRecorder + permission + lifecycle) ====================
 
+/** «Назад» требует диалога-подтверждения в фазах записи/загрузки (спека §6.1). */
+internal fun practiceBackNeedsConfirm(phase: PracticePhase): Boolean =
+    phase == PracticePhase.Recording || phase == PracticePhase.Uploading
+
 /**
  * Обёртка Practice-экрана (спека §4.4, §6, §8.1).
  * Гейтинг гостя — двойной: QuestionsScreen (CTA) + проверка токена в VM (§6.2).
@@ -510,6 +508,7 @@ private fun SentPhase(onBackToLibrary: () -> Unit) {
 @Composable
 fun PracticeRoute(
     topicId: String,
+    libraryTitle: String,
     onNavigateToMySubmissions: () -> Unit,
     onNavigateToLibrary: () -> Unit,
     onNavigateBack: () -> Unit
@@ -589,6 +588,7 @@ fun PracticeRoute(
     Box(modifier = Modifier.fillMaxSize()) {
         PracticeScreen(
             state = state,
+            libraryTitle = libraryTitle,
             onStart = {
                 vm.onAction(com.sotospeak.app.viewmodel.PracticeAction.OnStart)
                 if (micPermission == com.sotospeak.app.recorder.MicPermissionState.Granted &&

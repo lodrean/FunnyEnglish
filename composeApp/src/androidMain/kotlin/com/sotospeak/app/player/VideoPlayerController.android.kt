@@ -30,6 +30,8 @@ actual class VideoPlayerController {
     private val _state = MutableStateFlow(VideoPlayerState())
     actual val state: StateFlow<VideoPlayerState> = _state.asStateFlow()
 
+    actual val supportsOverlayControls: Boolean = true
+
     private var player: ExoPlayer? = null
 
     // Скоуп для тикера позиции; живёт до release()

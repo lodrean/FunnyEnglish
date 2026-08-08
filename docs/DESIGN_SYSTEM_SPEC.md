@@ -1,9 +1,9 @@
 # So to Speak Design System Specification
 
-## Version 3.0 — Playful Coach × Material 3
-**Date:** 2026-08-07
+## Version 3.1 — Playful Coach × Material 3
+**Date:** 2026-08-08
 **Target:** Android (Compose Multiplatform) + Admin-web (React/MUI)
-**Причина major-версии:** компонентная база переведена на **Material 3** (M3-редизайн, эпик bd `FunnyEnglish-dmb`). Палитра Playful Coach, шрифты, UX-флоу и поведение экранов — без изменений. Дифф утверждён владельцем 2026-08-07 (`docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md`, ADR-007).
+**Причина minor-версии:** новые компоненты `SpeakingAppBar` и `FadingEdgeText`, правило токенов статус-чипов (dark theme), список топиков по frame-topics. Дифф утверждён владельцем 2026-08-08 (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v3.0 — M3-редизайн (`docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md`).
 
 ---
 
@@ -99,7 +99,9 @@
 - B3 — waveform (RecordingWaveform/PlaybackWaveform);
 - B4 — ThemeCover (градиент по хешу id + инициалы);
 - B5/B6 — CheckPopAppear / recPulse (brand-моушен);
-- B7 — REC-индикатор.
+- B7 — REC-индикатор;
+- B8 — `SpeakingAppBar` (v3.1): заголовок (titleMedium, ExtraBold) + breadcrumb-подзаголовок (labelSmall, textMuted, SemiBold), БЕЗ navigationIcon (мокап); «назад» — системный (`PlatformBackHandler`);
+- B9 — `FadingEdgeText` (v3.1): перенос по словам (без разрыва слов), максимум 3 строки, при переполнении — затухание градиентом в цвет фона вместо многоточия; применяется в списках тем/топиков.
 
 | Платформа | Файлы |
 |---|---|
@@ -122,7 +124,7 @@
 
 ## 6. Доступность (WCAG)
 
-- Чипы статусов — только container-фон + тёмный текст (9.2/8.7:1 AA).
+- Чипы статусов — только container-фон + текст из токенов `statusNew`/`statusReviewed` (v3.1: dark-варианты `#FFB74D`/`#81C784` на контейнерах `#3D2A0A`/`#1B4D1F`; hardcoded `#256629`/`#8A5200` запрещены — нечитаемы в dark theme).
 - record `#FF9F6B` ≠ error `#E53935` — не путать.
 - Мелкий текст ошибок — `errorText #B3261E`.
 - Белый текст на кнопках — только на `primaryStrong` и темнее (правило §3: light M3 `primary` = primaryStrong).

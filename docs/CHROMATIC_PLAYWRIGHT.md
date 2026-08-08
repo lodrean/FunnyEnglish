@@ -246,6 +246,15 @@ npx playwright show-report
 npx chromatic --playwright --project-token=YOUR_TOKEN
 ```
 
+### CI: публикация пропускается с notice "CHROMATIC_TOKEN secret is not set"
+
+**Причина:** В репозитории не задан секрет `CHROMATIC_TOKEN` — workflow `.github/workflows/chromatic.yml`
+пропускает шаг публикации (job при этом зелёный), чтобы отсутствие секрета не роняло CI.
+
+**Решение (для включения реальной публикации):** владелец добавляет секрет
+`Settings → Secrets and variables → Actions → CHROMATIC_TOKEN` (токен со страницы Manage проекта
+на chromatic.com). После этого шаг `Publish to Chromatic` начнёт выполняться автоматически.
+
 ## Полезные ссылки
 
 - [Chromatic Playwright Docs](https://www.chromatic.com/docs/playwright/)

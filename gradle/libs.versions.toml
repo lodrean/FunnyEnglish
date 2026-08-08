@@ -27,6 +27,7 @@ h2 = "2.3.232"
 
 # Static Analysis
 detekt = "1.23.7"
+kover = "0.9.1"
 
 # Testing
 junit = "5.11.4"
@@ -138,3 +139,4 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
 springDependencyManagement = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

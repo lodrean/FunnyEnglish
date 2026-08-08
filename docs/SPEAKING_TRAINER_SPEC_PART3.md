@@ -2,8 +2,8 @@
 
 > **Ticket**: SPEAKING-TRAINER-001
 > **Статус**: Draft
-> **Version**: 1.2 (2026-08-02: добавлен §2.5 «Переключатель темы» и E2E-проверка; v1.1 — контрактная адаптация к реализованному backend — §3.4 «Адаптер speakingApi.ts»; v1.0 — первоначальная спека)
-> **Дата**: 2026-08-02
+> **Version**: 1.3 (2026-08-08: §4.1 — превью .vtt показывает полный текст транскрипта (склейка cue без таймингов/тегов, `utils/vtt.ts`) + подпись «отдельный транскрипт не нужен»; транскрипт как сущность НЕ вводится — клиент извлекает текст из WebVTT. Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.2 — §2.5 переключатель темы; v1.1 — адаптер speakingApi.ts; v1.0 — первоначальная спека)
+> **Дата**: 2026-08-08
 > **Связанные документы**:
 > - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md` (Story 6 — администрирование контента, Story 7 — Grading)
 > - Backend: `docs/SPEAKING_TRAINER_SPEC_PART1.md` (эндпоинты, сущности, Flyway V17+)
@@ -536,7 +536,7 @@ interface MediaUploaderProps {
 ```
 
 - Маппинг accept для react-dropzone: `video/*` → `{ 'video/*': [] }`, `.vtt` → `{ 'text/vtt': ['.vtt'] }`. Старые строковые значения (`image/*`, `audio/*`) маппить как сейчас — существующие вызовы остаются рабочими.
-- Превью по `mediaKind`: `image` → `<img>` (как сейчас), `audio` → `<audio controls>`, `video` → `<video controls preload="metadata" style={{ width: '100%', maxHeight: 240 }}>` (без autoplay, `preload="metadata"` — не тянуть 50+ МБ при открытии редактора), `file` → имя файла + ссылка «Открыть» (для `.vtt` опционально показать первые 3 строки содержимого — fetch текстом — чтобы учитель проверил субтитры).
+- Превью по `mediaKind`: `image` → `<img>` (как сейчас), `audio` → `<audio controls>`, `video` → `<video controls preload="metadata" style={{ width: '100%', maxHeight: 240 }}>` (без autoplay, `preload="metadata"` — не тянуть 50+ МБ при открытии редактора), `file` → имя файла + ссылка «Открыть»; для `.vtt` (v1.3) — **полный текст транскрипта** (склейка cue без таймингов/тегов, `src/utils/vtt.ts` `extractVttTranscript`, скролл-превью) с подписью «Полный текст видео (из субтитров — показывается ученику)»: отдельный файл/поле транскрипта НЕ вводится, клиент извлекает текст из WebVTT.
 - `handleReplace`: `input.accept = accept` напрямую (сейчас хардкод двух вариантов).
 
 Папки загрузки (параметр `folder`, backend кладёт в MinIO): `speaking/covers`, `speaking/videos`, `speaking/subtitles`.

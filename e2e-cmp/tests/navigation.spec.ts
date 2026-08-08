@@ -2,14 +2,15 @@ import { test, expect } from '@playwright/test';
 import {
   launchApp, clickCanvas, clipShot, expectScreenChanged, neutralMouse,
   collectCriticalErrors, collectServerErrors, skipOnMobile,
-  continueAsGuest, openFirstLibrary, openQuestionsViaVideo,
+  continueAsGuest, openFirstLibrary, openQuestionsViaVideo, pressBack,
   POS,
 } from './helpers';
 
 /**
- * CMP WASM Navigation Tests — speaking-флоу (guest-first, 2026-08-01):
- * Library (старт) → Topics → Video (error-стаб на wasm) → Questions → Training/Practice.
+ * CMP WASM Navigation Tests — speaking-флоу (guest-first, 2026-08-01; обновлено 2026-08-08):
+ * Library (старт) → Topics → Video (HTML5-плеер на wasm) → Questions → Training/Practice.
  * Bottom-sheet выбора субтитров удалён (DC-5) — переход сразу на Video.
+ * Аппбары без стрелки «назад» (мокап) — «назад» через клавишу Escape (pressBack).
  * Координатные клики (canvas-only), assertion'ы по смене пикселей.
  * Требуется backend с seed-контентом («Разговорный английский»).
  */
@@ -84,10 +85,10 @@ test.describe('CMP WASM - Navigation (speaking flow)', () => {
     await continueAsGuest(page);
     const library = await clipShot(page);
 
-    // Library → Topics → back → Library
+    // Library → Topics → back → Library (без стрелки в аппбаре — Escape)
     await openFirstLibrary(page);
-    await clickCanvas(page, POS.backArrow, 300);
-    await neutralMouse(page); // снять hover со стрелки «назад»
+    await pressBack(page);
+    await neutralMouse(page);
     await page.waitForTimeout(2000);
     const backToLibrary = await clipShot(page);
     expect(backToLibrary.equals(library), 'Back из Topics не вернул в Library').toBe(true);
@@ -97,7 +98,7 @@ test.describe('CMP WASM - Navigation (speaking flow)', () => {
     await openQuestionsViaVideo(page);
     const questions = await clipShot(page);
     await clickCanvas(page, POS.questionsTrainingGuest, 4000);
-    await clickCanvas(page, POS.backArrow, 300);
+    await pressBack(page);
     await neutralMouse(page);
     await page.waitForTimeout(2000);
     const backToQuestions = await clipShot(page);

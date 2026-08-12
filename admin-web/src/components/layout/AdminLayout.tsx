@@ -24,6 +24,10 @@ interface AdminLayoutProps {
   title?: string;
   /** Whether to show breadcrumbs in header */
   showBreadcrumbs?: boolean;
+  /** Force show back button regardless of route */
+  showBackButton?: boolean;
+  /** Explicit back navigation target. Falls back to parent route when omitted. */
+  backTo?: string;
   /** Optional children to render instead of Outlet */
   children?: React.ReactNode;
 }
@@ -41,6 +45,8 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   title,
   showBreadcrumbs = true,
+  showBackButton,
+  backTo,
   children,
 }) => {
   const muiTheme = useMuiTheme();
@@ -91,6 +97,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         onMenuToggle={handleSidebarToggle}
         title={title}
         showBreadcrumbs={showBreadcrumbs}
+        showBackButton={showBackButton}
+        backTo={backTo}
       />
 
       {/* Sidebar */}

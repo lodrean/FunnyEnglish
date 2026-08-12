@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
@@ -27,7 +27,7 @@ import {
   Menu as MenuIcon,
   Search as SearchIcon,
   Notifications as NotificationsIcon,
-
+  ArrowBack as ArrowBackIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   DarkMode as DarkModeIcon,
@@ -38,6 +38,7 @@ import { useTheme } from '../../theme/ThemeProvider';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useAuthStore } from '../../store/authStore';
 import { Logo } from '../common/Logo';
+import { matchNestedRoute } from '../navigation/nestedRoutes';
 
 // Header height constant
 export const HEADER_HEIGHT = 64;
@@ -52,6 +53,10 @@ interface HeaderProps {
   title?: string;
   /** Whether to show breadcrumbs */
   showBreadcrumbs?: boolean;
+  /** Force show back button regardless of route */
+  showBackButton?: boolean;
+  /** Explicit back navigation target. Falls back to parent route when omitted. */
+  backTo?: string;
 }
 
 /**
@@ -62,8 +67,11 @@ export const Header: React.FC<HeaderProps> = ({
   onMenuToggle,
   title,
   showBreadcrumbs = true,
+  showBackButton,
+  backTo,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const muiTheme = useMuiTheme();
   const { /* mode, */ toggleTheme, isDarkMode } = useTheme();
   const { user, logout } = useAuthStore();
@@ -123,6 +131,12 @@ export const Header: React.FC<HeaderProps> = ({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Determine back button visibility and target based on current route
+  const matchedRoute = matchNestedRoute(location.pathname);
+  const effectiveShowBack = showBackButton ?? Boolean(matchedRoute);
+  const effectiveBackTo = backTo ?? matchedRoute?.parentPath;
+  const effectiveTitle = title ?? matchedRoute?.title;
+
   return (
     <>
       <AppBar
@@ -170,19 +184,60 @@ export const Header: React.FC<HeaderProps> = ({
             }}
           />
 
-          {/* Page title (mobile only) */}
-          {isMobile && title && (
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
+          {/* Page title with optional back button */}
+          {effectiveShowBack && effectiveTitle ? (
+            <Box
               sx={{
-                flexGrow: 1,
-                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                flexGrow: isMobile ? 1 : 0,
+                minWidth: 0,
+                mr: 2,
               }}
             >
-              {title}
-            </Typography>
+              <IconButton
+                color="inherit"
+                aria-label="go back"
+                onClick={() => effectiveBackTo && navigate(effectiveBackTo)}
+                data-testid="header-back-button"
+                sx={{
+                  mr: 1,
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'primary.main',
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography
+                variant="h6"
+                noWrap
+                component="div"
+                sx={{
+                  fontWeight: 600,
+                  color: 'text.primary',
+                }}
+              >
+                {effectiveTitle}
+              </Typography>
+            </Box>
+          ) : (
+            isMobile &&
+            effectiveTitle && (
+              <Typography
+                variant="h6"
+                noWrap
+                component="div"
+                sx={{
+                  flexGrow: 1,
+                  fontWeight: 600,
+                }}
+              >
+                {effectiveTitle}
+              </Typography>
+            )
           )}
 
           {/* Search bar */}

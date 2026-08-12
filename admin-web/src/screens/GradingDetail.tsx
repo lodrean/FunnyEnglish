@@ -6,7 +6,6 @@ import {
   Alert,
   Avatar,
   Box,
-  Button,
   Chip,
   Grid,
   List,
@@ -17,7 +16,6 @@ import {
   useTheme,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -121,15 +119,6 @@ export default function GradingDetail() {
 
   return (
     <Box>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(-1)}
-        sx={{ mb: 2 }}
-        data-testid="back-to-inbox"
-      >
-        Back to inbox
-      </Button>
-
       {/* .student-row (мокап frame-grading): аватар + имя + мета + чип статуса */}
       <Paper sx={{ p: 2, mb: 3 }} data-testid="student-card">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>

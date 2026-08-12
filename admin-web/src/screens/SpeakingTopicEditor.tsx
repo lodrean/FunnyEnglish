@@ -16,7 +16,6 @@ import {
   Tabs,
   TextField,
   Tooltip,
-  Typography,
 } from '@mui/material';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -190,10 +189,6 @@ export default function SpeakingTopicEditor() {
 
   return (
     <Box sx={{ maxWidth: 860 }}>
-      <Typography variant="h4" data-testid="page-title" sx={{ mb: 2 }}>
-        {isEdit ? `Edit Topic: ${topic?.name ?? ''}` : 'New Topic'}
-      </Typography>
-
       <Tabs
         value={tab}
         onChange={(_, v) => setTab(v)}

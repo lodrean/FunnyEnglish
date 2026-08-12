@@ -21,7 +21,7 @@ export class GradingDetailPage {
     this.comment = page.locator('[data-testid="rubric-comment"] textarea').first();
     this.saveButton = page.locator('[data-testid="save-grade-button"]');
     this.editButton = page.locator('[data-testid="edit-grade-button"]');
-    this.backButton = page.locator('[data-testid="back-to-inbox"]');
+    this.backButton = page.locator('[data-testid="header-back-button"]');
   }
 
   async expectLoaded() {

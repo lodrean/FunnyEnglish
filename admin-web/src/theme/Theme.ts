@@ -606,13 +606,13 @@ const darkThemeOptions: ThemeOptions = {
       main: '#8FB3F5', // dark.primary
       light: '#BBD0FA',
       dark: '#5B8DEF',
-      contrastText: '#161A2E',
+      contrastText: '#1A2F5E', // dark.onPrimary (errata DSM-5 §1.1, утв. 2026-08-08)
     },
     secondary: {
       main: '#B79EED', // dark.secondary
       light: '#D5C5F5',
       dark: '#9B7EDE',
-      contrastText: '#161A2E',
+      contrastText: '#1A2F5E', // dark.onSecondary (errata DSM-5 §1.1, утв. 2026-08-08)
     },
     success: {
       light: '#81C784',

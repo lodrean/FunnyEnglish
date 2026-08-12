@@ -7,7 +7,6 @@ import {
   Paper,
   Switch,
   TextField,
-  Typography,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -120,10 +119,6 @@ export default function SpeakingLibraryEditor() {
 
   return (
     <Box sx={{ maxWidth: 720 }}>
-      <Typography variant="h4" data-testid="page-title" sx={{ mb: 3 }}>
-        {isEdit ? 'Edit Library' : 'New Library'}
-      </Typography>
-
       <Paper sx={{ p: 3 }}>
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <TextField

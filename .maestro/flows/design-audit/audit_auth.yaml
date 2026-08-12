@@ -1,0 +1,134 @@
+# Flow: design-audit — AUTH (demo@sotospeak.app/demo123). Скриншоты auth-экранов для pixel-diff vs мокапов.
+# Экраны: library-auth, topics, video, questions, training-idle, practice-ready, practice-sent,
+#         submissions, profile-auth, debug.
+# Требует: docker-стек, DEMO_USER_ENABLED=true, seed-контент, микрофон (запись ~3 сек для submissions).
+# НЕ ИДЕМПОТЕНТЕН: backend-гейт DUPLICATE_SUBMISSION (409) — перед повторным прогоном:
+#   docker exec sotospeak-postgres psql -U postgres -d sotospeak -c "DELETE FROM grades; DELETE FROM practice_submissions;"
+# Скриншоты: ~/.maestro/tests/<run>/audit_auth/takeScreenshot/*.png
+appId: com.sotospeak.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      android.permission.RECORD_AUDIO: allow
+
+# Онбординг → гость (затем логин через Профиль)
+- runFlow:
+    when:
+      visible: "Смотри видео"
+    file: ../../subflows/onboarding_guest.yaml
+
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+
+# Профиль → «Войти»
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: ".*Уже есть аккаунт.*"
+    timeout: 10000
+- tapOn: "Войти"
+
+# Логин demo-юзером (тапы по полям координатами — label-тап не переносит фокус в SpeakingField)
+- extendedWaitUntil:
+    visible: "С возвращением!"
+    timeout: 10000
+- tapOn:
+    point: "50%,23%"
+- inputText: "demo@sotospeak.app"
+- hideKeyboard
+- tapOn:
+    point: "50%,31%"
+- inputText: "demo123"
+- hideKeyboard
+- tapOn: "Войти"
+
+# --- Library (auth) ---
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
+- takeScreenshot: library-auth
+
+# --- Topics ---
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- takeScreenshot: topics-auth
+
+# --- Video ---
+- tapOn: "Знакомство"
+- extendedWaitUntil:
+    visible: "Перейти к вопросам"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: video-auth
+
+# --- Questions (auth: кнопка Practice доступна) ---
+- tapOn: "Перейти к вопросам"
+- extendedWaitUntil:
+    visible: "Практика · 30 сек"
+    timeout: 15000
+- takeScreenshot: questions-auth
+
+# --- Training (idle) ---
+- tapOn: "Тренировка · 3 попытки"
+- extendedWaitUntil:
+    visible: "Уровень 1 · 80 сек"
+    timeout: 15000
+- takeScreenshot: training-idle
+- back
+
+# --- Practice (ready) ---
+- extendedWaitUntil:
+    visible: "Практика · 30 сек"
+    timeout: 10000
+- tapOn: "Практика · 30 сек"
+- extendedWaitUntil:
+    visible: "Начать запись"
+    timeout: 15000
+- takeScreenshot: practice-ready
+
+# --- Practice: запись ~3 сек → стоп → автоотправка → Sent ---
+- tapOn: "Начать запись"
+- extendedWaitUntil:
+    visible: "0:27"
+    timeout: 15000
+- tapOn: "Остановить запись"
+- extendedWaitUntil:
+    visible: "Запись отправлена!"
+    timeout: 20000
+- takeScreenshot: practice-sent
+- tapOn: "Вернуться в библиотеку"
+
+# --- MySubmissions ---
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 10000
+- tapOn: "Отправки"
+- extendedWaitUntil:
+    visible: "На проверке"
+    timeout: 15000
+- takeScreenshot: submissions
+
+# --- Profile (auth) ---
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: ".*So to speak v.*"
+    timeout: 10000
+- takeScreenshot: profile-auth
+
+# --- Debug menu (7 тапов по версии) ---
+- repeat:
+    times: 7
+    commands:
+      - tapOn: ".*So to speak v.*"
+- extendedWaitUntil:
+    notVisible: ".*So to speak v.*"
+    timeout: 10000
+- takeScreenshot: debug

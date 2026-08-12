@@ -1,0 +1,63 @@
+# Flow: design-audit — AUTH доводка. Экраны: submissions (с записью NEW), profile-auth, debug.
+# Требует: demo-логин; сабмит создан заранее через API (см. REPORT / план).
+appId: com.sotospeak.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      android.permission.RECORD_AUDIO: allow
+
+- runFlow:
+    when:
+      visible: "Смотри видео"
+    file: ../../subflows/onboarding_guest.yaml
+
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+
+# Профиль → «Войти» → demo-логин
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: ".*Уже есть аккаунт.*"
+    timeout: 10000
+- tapOn: "Войти"
+- extendedWaitUntil:
+    visible: "С возвращением!"
+    timeout: 10000
+- tapOn:
+    point: "50%,23%"
+- inputText: "demo@sotospeak.app"
+- hideKeyboard
+- tapOn:
+    point: "50%,31%"
+- inputText: "demo123"
+- hideKeyboard
+- tapOn: "Войти"
+
+# --- MySubmissions ---
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+- tapOn: "Отправки"
+- extendedWaitUntil:
+    visible: "На проверке"
+    timeout: 15000
+- takeScreenshot: submissions
+
+# --- Profile (auth) ---
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: ".*So to speak v.*"
+    timeout: 10000
+- takeScreenshot: profile-auth
+
+# --- Debug menu (7 тапов по версии) ---
+- repeat:
+    times: 7
+    commands:
+      - tapOn: ".*So to speak v.*"
+- extendedWaitUntil:
+    notVisible: ".*So to speak v.*"
+    timeout: 10000
+- takeScreenshot: debug

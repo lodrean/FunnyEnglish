@@ -1,0 +1,55 @@
+# Flow: capture Training states (idle/recording/recorded) for pixel-polish audit.
+# Requires: docker-стек с seed-контентом, Android-эмулятор, debug APK.
+appId: com.sotospeak.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      android.permission.RECORD_AUDIO: allow
+
+- runFlow:
+    when:
+      visible: "Смотри видео"
+    file: ../subflows/onboarding_guest.yaml
+
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- tapOn: "Знакомство"
+- extendedWaitUntil:
+    visible: "Перейти к вопросам"
+    timeout: 15000
+- tapOn: "Перейти к вопросам"
+- extendedWaitUntil:
+    visible: "What is your name?"
+    timeout: 15000
+- tapOn: "Тренировка · 3 попытки"
+- extendedWaitUntil:
+    visible: "Уровень 1 · 80 сек"
+    timeout: 15000
+
+# Idle state
+- takeScreenshot: training-idle
+
+# Recording state (~3 сек)
+- tapOn: "Начать запись"
+- extendedWaitUntil:
+    visible: "1:17"
+    timeout: 15000
+- takeScreenshot: training-recording
+
+# Recorded-after-attempt state
+- tapOn: "Остановить запись"
+- extendedWaitUntil:
+    visible: "Попытка 1"
+    timeout: 10000
+- takeScreenshot: training-recorded

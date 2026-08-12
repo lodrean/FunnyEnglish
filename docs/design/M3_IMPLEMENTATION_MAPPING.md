@@ -1,6 +1,8 @@
 # DSM-5: Маппинг реализации — Material 3 (Compose M3 + MUI 6)
 
-**Версия:** 1.0 · **Дата:** 2026-08-07 · **Тикет:** bd `FunnyEnglish-dmb` (P2) · **Этап:** DSM-5 по `docs/design/M3_REDESIGN_TASK.md`
+**Версия:** 1.1 · **Дата:** 2026-08-10 · **Тикет:** bd `FunnyEnglish-dmb` (P2) · **Этап:** DSM-5 по `docs/design/M3_REDESIGN_TASK.md`
+
+**Changelog v1.1 (2026-08-10):** errata §1.1 по решению владельца (M3_PIXEL_REPORT, 2026-08-08): dark `onPrimary`/`onSecondary` `#FFFFFF` → `#1A2F5E` — белый на dark primary `#8FB3F5` / secondary `#B79EED` не проходит WCAG AA.
 
 **Назначение:** реализация по этому документу — механическая, без дизайн-решений в коде. Каждая строка реестра `docs/design/M3_REPLACEMENT_REGISTRY.md` (DSM-1) получает конкретный компонент **Compose Material3** (`androidx.compose.material3.*`) и **MUI 6** (+ точку настройки в `admin-web/src/theme/Theme.ts`).
 
@@ -19,11 +21,11 @@
 | M3 colorScheme-роль | Light (HEX) | Dark (HEX) | Токен |
 |---|---|---|---|
 | `primary` | `#3B6FD4` ⚠️ | `#8FB3F5` | brand.primaryStrong / dark.primary |
-| `onPrimary` | `#FFFFFF` | `#FFFFFF` | brand.onPrimary |
+| `onPrimary` | `#FFFFFF` | `#1A2F5E` (v1.1 errata, утв. 2026-08-08) | brand.onPrimary |
 | `primaryContainer` | `#DDE8FD` | `#2E3E6E` | brand.primaryContainer / dark.* |
 | `onPrimaryContainer` | `#1A2F5E` | `#DDE8FD` | brand.onPrimaryContainer / dark.* |
 | `secondary` | `#9B7EDE` | `#B79EED` | brand.secondary / dark.secondary |
-| `onSecondary` | `#FFFFFF` | `#FFFFFF` | brand.onSecondary |
+| `onSecondary` | `#FFFFFF` | `#1A2F5E` (v1.1 errata, утв. 2026-08-08) | brand.onSecondary |
 | `secondaryContainer` | `#E5DCFF` | `#46366F` | brand.secondaryContainer / dark.* |
 | `onSecondaryContainer` | `#5B3FA8` | `#E5DCFF` | brand.onSecondaryContainer / dark.* |
 | `tertiary` | `#006C4C` | `#006C4C` | brand.tertiary (dark-override не требуется: белый на нём 5.9:1) |

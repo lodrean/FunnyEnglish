@@ -1,0 +1,81 @@
+# Flow: design-audit — ГОСТЬ. Скриншоты guest-экранов для pixel-diff vs мокапов (mockups-light-phone).
+# Экраны: onboarding-1/2/3, library-guest, profile-guest, topics, video, questions-guest-locked, login, register.
+# Требует: debug APK с LAN-IP backend, docker-стек с seed-контентом.
+# Скриншоты: ~/.maestro/tests/<run>/audit_guest/takeScreenshot/*.png
+appId: com.sotospeak.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      android.permission.RECORD_AUDIO: allow
+
+# --- Onboarding (3 слайда) ---
+- extendedWaitUntil:
+    visible: "Смотри видео"
+    timeout: 20000
+- takeScreenshot: onboarding-1
+- tapOn: "Далее"
+- waitForAnimationToEnd
+- takeScreenshot: onboarding-2
+- tapOn: "Далее"
+- waitForAnimationToEnd
+- takeScreenshot: onboarding-3
+- tapOn: "Начать"
+
+# --- Library (guest) ---
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+- takeScreenshot: library-guest
+
+# --- Profile (guest) ---
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: ".*Уже есть аккаунт.*"
+    timeout: 10000
+- takeScreenshot: profile-guest
+- tapOn: "Темы"
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 10000
+
+# --- Topics ---
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- takeScreenshot: topics-guest
+
+# --- Video (на физ. устройстве ожидаем error-state из-за BUG-004: minio-URL недоступен) ---
+- tapOn: "Знакомство"
+- extendedWaitUntil:
+    visible: "Перейти к вопросам"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: video-guest
+
+# --- Questions (guest → SpeakingGate = frame-locked) ---
+- tapOn: "Перейти к вопросам"
+- extendedWaitUntil:
+    visible: "Ты почти у цели!"
+    timeout: 15000
+- takeScreenshot: questions-guest-locked
+
+# --- Login ---
+- tapOn: "Войти"
+- extendedWaitUntil:
+    visible: "С возвращением!"
+    timeout: 10000
+- takeScreenshot: login
+
+# --- Register ---
+- tapOn: "Регистрация"
+- extendedWaitUntil:
+    visible: "Создай аккаунт"
+    timeout: 10000
+- takeScreenshot: register

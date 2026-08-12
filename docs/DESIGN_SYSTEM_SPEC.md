@@ -1,7 +1,8 @@
 # So to Speak Design System Specification
 
-## Version 3.1 — Playful Coach × Material 3
-**Date:** 2026-08-08
+## Version 3.1.1 — Playful Coach × Material 3
+**Date:** 2026-08-10
+**Причина patch-версии:** errata DSM-5 §1.1 (утверждена владельцем 2026-08-08, M3_PIXEL_REPORT): dark `onPrimary`/`onSecondary` `#FFFFFF` → `#1A2F5E` (WCAG FAIL на `#8FB3F5`/`#B79EED`); ссылки на токены v1.3.0 → v1.3.1.
 **Target:** Android (Compose Multiplatform) + Admin-web (React/MUI)
 **Причина minor-версии:** новые компоненты `SpeakingAppBar` и `FadingEdgeText`, правило токенов статус-чипов (dark theme), список топиков по frame-topics. Дифф утверждён владельцем 2026-08-08 (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v3.0 — M3-редизайн (`docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md`).
 
@@ -11,7 +12,7 @@
 
 | Артефакт | Роль |
 |---|---|
-| `.docs/design-system/tokens.json` **v1.3.0** | **Канонические токены** (HEX 1:1 обязателен во всех реализациях) |
+| `.docs/design-system/tokens.json` **v1.3.1** | **Канонические токены** (HEX 1:1 обязателен во всех реализациях) |
 | `.docs/design-system/mockups.html` **v2.0** | Эталонные мокапы экранов (15 фреймов, light+dark) — **поведенческие требования авторитетны** |
 | `.docs/design-system/styleguide.html` **v2.0** | M3-компоненты в фирменной теме + brand-блок (rec-кнопка, таймер-кольцо, waveform) |
 | `.docs/design-system/icons.svg` | Иконки (stroke 2 round / fill) |
@@ -145,6 +146,7 @@
 - **Gamification-компоненты DS 1.x** — удалены из кодовой базы 2026-08-07 (M3-редизайн, Q2); архив — git-история.
 
 **Changelog:**
+- v3.1.1 (2026-08-10): errata DSM-5 §1.1 (утв. владельцем 2026-08-08): dark `onPrimary`/`onSecondary` = `#1A2F5E`; токены v1.3.1; mockups v2.1 (тексты CTA frame-questions эталонно из приложения по Q5, replay-оверлей frame-video).
 - v3.0 (2026-08-07): компонентная база Material 3; токены v1.3.0 (M3-роли, state layers, tonal elevation, M3-motion); правило light primary=primaryStrong; brand-кастом B1–B7; NavigationRail на wide (Q4); архивация legacy-геймификации (Q2) и дубликатов Common.kt (Q3). Дифф: `docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md` (утверждён владельцем).
 - v2.1 (2026-08-02): добавлен §3 «Светлая/тёмная тема» — behavior для admin-web (`sotospeak-theme-mode`, toggle в Header) и приложения (`theme_mode`=`system`/`light`/`dark`, default `system`).
 - v2.0 (2026-08-01): полная замена на Playful Coach v1.1/v1.2.0 (пивот в speaking-тренажёр; утверждено владельцем, bd `So to Speak-hxd`).

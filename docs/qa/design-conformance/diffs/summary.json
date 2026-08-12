@@ -1,0 +1,167 @@
+[
+  {
+    "screen": "Library (auth)",
+    "mockup": "frame-library.png",
+    "app": "android-library-auth.png",
+    "diff_image": "diffs\\diff-Library_(auth).png",
+    "diff_ratio": 0.1631,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Topics list",
+    "mockup": "frame-topics.png",
+    "app": "android-topics.png",
+    "diff_image": "diffs\\diff-Topics_list.png",
+    "diff_ratio": 0.0665,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Video player",
+    "mockup": "frame-video.png",
+    "app": "android-video.png",
+    "diff_image": "diffs\\diff-Video_player.png",
+    "diff_ratio": 0.4152,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Questions + guest CTA",
+    "mockup": "frame-questions.png",
+    "app": "android-questions-guest-locked.png",
+    "diff_image": "diffs\\diff-Questions_plus_guest_CTA.png",
+    "diff_ratio": 0.2396,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Training idle",
+    "mockup": "frame-training.png",
+    "app": "android-training.png",
+    "diff_image": "diffs\\diff-Training_idle.png",
+    "diff_ratio": 0.2293,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Practice idle",
+    "mockup": "frame-practice.png",
+    "app": "android-practice-ready-auth.png",
+    "diff_image": "diffs\\diff-Practice_idle.png",
+    "diff_ratio": 0.3193,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Guest lock gate",
+    "mockup": "frame-locked.png",
+    "app": "android-questions-guest-locked.png",
+    "diff_image": "diffs\\diff-Guest_lock_gate.png",
+    "diff_ratio": 0.2163,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Login screen",
+    "mockup": "frame-login.png",
+    "app": "android-login-before.png",
+    "diff_image": "diffs\\diff-Login_screen.png",
+    "diff_ratio": 0.1562,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Profile auth",
+    "mockup": "frame-profile.png",
+    "app": "android-profile-auth.png",
+    "diff_image": "diffs\\diff-Profile_auth.png",
+    "diff_ratio": 0.0869,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "Profile guest",
+    "mockup": "frame-profile-guest.png",
+    "app": "android-profile-guest.png",
+    "diff_image": "diffs\\diff-Profile_guest.png",
+    "diff_ratio": 0.1411,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  },
+  {
+    "screen": "My submissions",
+    "mockup": "frame-submissions.png",
+    "app": "android-mysubmissions.png",
+    "diff_image": "diffs\\diff-My_submissions.png",
+    "diff_ratio": 0.2488,
+    "mockup_size": [
+      360,
+      800
+    ],
+    "app_size": [
+      1080,
+      2400
+    ]
+  }
+]

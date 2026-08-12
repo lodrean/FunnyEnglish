@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speaking Trainer — Эталонные мокапы v2.0 (Playful Coach × Material 3)</title>
+<title>Speaking Trainer — Эталонные мокапы v2.1 (Playful Coach × Material 3)</title>
 <link rel="stylesheet" href="tokens.css">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -11,9 +11,9 @@
   body {
     font-family: var(--font-brand);
     background: var(--color-surface-warm);
-    color: var(--color-text);про
+    color: var(--color-text);
     min-height: 100vh;
-  }
+  }НУ
   /* ---- Switcher ---- */
   .switcher {
     position: sticky; top: 0; z-index: 10;
@@ -352,6 +352,22 @@
   .big-play:active { transform: scale(.92); }
   .big-play.hidden { opacity: 0; pointer-events: none; }
   .big-play .ic { width: 28px; height: 28px; }
+  /* Replay-оверлей (v2.1, владелец 2026-08-08): «Начать заново» после окончания — как в приложении (ReplayOverlay) */
+  .replay-overlay {
+    position: absolute; inset: 0; z-index: 4; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  }
+  .replay-overlay.on { display: flex; }
+  .replay-btn {
+    width: 64px; height: 64px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,.92); color: #1A2E42;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.35);
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .replay-btn:active { transform: scale(.92); }
+  .replay-btn .ic { width: 28px; height: 28px; }
+  .replay-label { color: #fff; font-size: var(--text-label-small); font-weight: var(--weight-bold); }
   .subtitle { text-align: center; min-height: 52px; display: flex; align-items: center; justify-content: center; background: var(--color-surface); border-radius: var(--radius-button); box-shadow: var(--shadow-card); padding: var(--space-s) var(--space-m); flex-shrink: 0; }
   .subtitle span { display: inline; color: var(--text-subtitle-color, var(--color-text)); font-size: var(--text-subtitle); line-height: 1.4; font-weight: var(--weight-semibold); }
   .video-controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: var(--space-s); padding: 10px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
@@ -527,6 +543,12 @@ v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (
   + 4 новых фрейма по §6: Topics, Questions, MySubmissions, Debug Menu.
   Все экраны — light/dark через переключатель темы (tokens v1.3.0).
   Поведение и аннотации — без изменений. Соответствие: docs/design/M3_REPLACEMENT_REGISTRY.md.
+v2.1 · 2026-08-10 — решения владельца по DSM-7 (M3_PIXEL_REPORT, 2026-08-08):
+  frame-questions — тексты CTA эталонно из приложения («Тренировка · 3 попытки» /
+  «Практика · 30 сек» вместо «Начать Training · 80 сек» / «Сразу Practice · 30 сек»);
+  frame-video — replay-оверлей «Начать заново» после окончания воспроизведения
+  (круглая белая кнопка 64px + i-refresh + подпись, как ReplayOverlay в приложении);
+  fix: stray-текст в body CSS.
 =====================================================================
 -->
 
@@ -661,6 +683,13 @@ v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (
         <button class="big-play" id="bigPlay" aria-label="Смотреть видео">
           <svg class="ic"><use href="icons.svg#i-play"/></svg>
         </button>
+        <!-- v2.1: replay-состояние после окончания воспроизведения -->
+        <div class="replay-overlay" id="replayOverlay">
+          <button class="replay-btn" id="replayBtn" aria-label="Начать заново">
+            <svg class="ic"><use href="icons.svg#i-refresh"/></svg>
+          </button>
+          <span class="replay-label">Начать заново</span>
+        </div>
         <div class="video-controls">
           <button class="vc-btn" id="vcPlay" aria-label="Пауза / продолжить">
             <svg class="ic ic-play"><use href="icons.svg#i-play"/></svg>
@@ -700,8 +729,9 @@ v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (
         <div class="pq-item"><span class="qn tnum">5</span><span>Would you like to work at an airport? Why / why not?</span></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:var(--space-s);padding:var(--space-m) 0">
-        <button class="btn btn-primary btn-wide">Начать Training · 80 сек</button>
-        <button class="btn btn-ghost btn-wide">Сразу Practice · 30 сек</button>
+        <!-- v2.1 (Q5, владелец 2026-08-08): тексты CTA эталонно из приложения -->
+        <button class="btn btn-primary btn-wide">Тренировка · 3 попытки</button>
+        <button class="btn btn-ghost btn-wide">Практика · 30 сек</button>
       </div>
       <div class="privacy-note">
         <svg class="ic"><use href="icons.svg#i-shield"/></svg>
@@ -1182,7 +1212,9 @@ v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (
     for (const [t, txt] of cues) if (vt >= t) cue = txt;
     subtitleText.textContent = cue;
     subtitleBox.style.display = (ccOn && cue) ? '' : 'none';
-    bigPlay.classList.toggle('hidden', vplaying);
+    const ended = vt >= VDUR && !vplaying;
+    bigPlay.classList.toggle('hidden', vplaying || ended);
+    document.getElementById('replayOverlay').classList.toggle('on', ended);
     vcPlay.classList.toggle('playing', vplaying);
   }
   function setPlaying(p) {
@@ -1196,6 +1228,7 @@ v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (
     renderVideo();
   }
   bigPlay.addEventListener('click', () => { if (vt >= VDUR) vt = 0; setPlaying(true); });
+  document.getElementById('replayBtn').addEventListener('click', () => { vt = 0; setPlaying(true); });
   vcPlay.addEventListener('click', () => setPlaying(!vplaying));
   document.getElementById('vcSeek').addEventListener('click', e => {
     const r = e.currentTarget.getBoundingClientRect();

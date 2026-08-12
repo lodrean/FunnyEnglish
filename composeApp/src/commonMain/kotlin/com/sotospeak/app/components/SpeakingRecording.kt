@@ -143,7 +143,8 @@ fun SpeakingTimerRing(
             Text(
                 text = timeText,
                 style = timerTextStyle,
-                color = ringColor,
+                // Мокап .timer-label .tnum: цифры — основной текст (НЕ цвет дуги)
+                color = speaking.text,
                 modifier = if (timerTestTag != null) Modifier.testTag(timerTestTag) else Modifier
             )
             if (caption != null) {

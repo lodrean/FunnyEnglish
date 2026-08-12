@@ -32,6 +32,13 @@ class QuestionsScreenTest : BaseUiTest() {
     // ============================================
 
     @Test
+    fun activeQuestionShowsEyebrow() = runTest(
+        content = { QuestionsScreenForTest() }
+    ) {
+        onNodeWithText("ВОПРОС 1 ИЗ 3", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
     fun questionItemsAreVisible() = runTest(
         content = { QuestionsScreenForTest() }
     ) {

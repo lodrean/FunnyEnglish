@@ -179,17 +179,14 @@ private fun TrainingContent(
                     ),
                     border = null
                 )
-                repeat(TrainingViewModel.MAX_ATTEMPTS) { index ->
-                    val done = index < state.attempts.size
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (done) speaking.success else speaking.surfaceVariant
-                            )
-                    )
-                }
+                AttemptProgressBar(
+                    completedCount = state.attempts.size,
+                    currentIndex = state.attemptNumber - 1,
+                    total = TrainingViewModel.MAX_ATTEMPTS,
+                    completedColor = speaking.success,
+                    currentColor = timerColor,
+                    upcomingColor = speaking.surfaceVariant
+                )
             }
         }
 
@@ -307,23 +304,19 @@ private fun TrainingContent(
         }
 
         // Список попыток: только прослушивание, ✅ автоматически, удаления нет
-        // Заголовок по мокапу: «Попытки · N из 3» (всегда, даже при 0 — с подсказкой)
-        item {
-            Text(
-                "Попытки · ${state.attempts.size} из ${TrainingViewModel.MAX_ATTEMPTS}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = speaking.text,
-                modifier = Modifier.testTag("attempts_title")
-            )
-            if (state.attempts.isEmpty()) {
+        // Мокап frame-training не показывает пустой блок; показываем только при наличии записей.
+        if (state.attempts.isNotEmpty()) {
+            item {
                 Text(
-                    "Записей пока нет — начни с попытки 1. Удалять записи нельзя, только прослушать.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = speaking.textMuted
+                    "Попытки · ${state.attempts.size} из ${TrainingViewModel.MAX_ATTEMPTS}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = speaking.text,
+                    modifier = Modifier.testTag("attempts_title")
                 )
             }
         }
+
         if (state.attempts.isNotEmpty()) {
             itemsIndexed(state.attempts, key = { _, a -> a.filePath }) { index, attempt ->
                 AttemptCard(
@@ -558,6 +551,38 @@ internal fun formatTimer(totalSeconds: Int): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return "$minutes:${seconds.toString().padStart(2, '0')}"
+}
+
+@Composable
+private fun AttemptProgressBar(
+    completedCount: Int,
+    currentIndex: Int,
+    total: Int,
+    completedColor: androidx.compose.ui.graphics.Color,
+    currentColor: androidx.compose.ui.graphics.Color,
+    upcomingColor: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(total) { index ->
+            val color = when {
+                index < completedCount -> completedColor
+                index == currentIndex -> currentColor
+                else -> upcomingColor
+            }
+            Box(
+                modifier = Modifier
+                    .width(22.dp)
+                    .height(6.dp)
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
+                    .background(color)
+            )
+        }
+    }
 }
 
 // ==================== Route (связка VM + VoiceRecorder + permission + lifecycle) ====================

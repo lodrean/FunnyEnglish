@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingAppBar
@@ -94,24 +95,22 @@ private fun QuestionsContent(
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(state.questions, key = { _, q -> q.id }) { index, question ->
-                // M3 FilledCard (A8): container surfaceContainerHigh, shape large(22)
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("question_item_$index"),
-                    shape = MaterialTheme.shapes.large,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                val isActive = index == 0
+                // Мокап frame-questions: активный вопрос — hero-карточка с eyebrow-лейблом,
+                // остальные — компактные строки с номером.
+                if (isActive) {
+                    ActiveQuestionCard(
+                        index = index,
+                        total = state.questions.size,
+                        text = question.text
                     )
-                ) {
-                    Text(
-                        text = question.text,
-                        style = SpeakingTextStyles.QuestionText,
-                        color = speaking.text,
-                        modifier = Modifier.padding(20.dp)
+                } else {
+                    CompactQuestionCard(
+                        index = index,
+                        text = question.text
                     )
                 }
             }
@@ -217,6 +216,77 @@ private fun QuestionsContent(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ActiveQuestionCard(
+    index: Int,
+    total: Int,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    val speaking = LocalSpeakingColors.current
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("question_item_$index"),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)) {
+            Text(
+                text = "ВОПРОС ${index + 1} ИЗ $total",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.08.em,
+                color = speaking.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = text,
+                style = SpeakingTextStyles.QuestionText,
+                color = speaking.text
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactQuestionCard(
+    index: Int,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    val speaking = LocalSpeakingColors.current
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("question_item_$index"),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "${index + 1}",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = speaking.primary
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = speaking.text
+            )
         }
     }
 }

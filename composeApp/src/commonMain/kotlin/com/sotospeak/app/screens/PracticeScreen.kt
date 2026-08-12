@@ -340,6 +340,14 @@ private fun ReadyPhase(
             onClick = onStart,
             testTag = "practice_start_button"
         )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            "Ответь на все вопросы подряд одной записью",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold,
+            color = speaking.textMuted,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

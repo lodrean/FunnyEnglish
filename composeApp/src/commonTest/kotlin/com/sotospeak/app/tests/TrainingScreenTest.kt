@@ -68,8 +68,8 @@ class TrainingScreenTest : BaseUiTest() {
         onNodeWithTag("training_timer_idle", useUnmergedTree = true).assertExists()
         // T5: подпись попытки
         onNodeWithTag("attempt_hint", useUnmergedTree = true).assertExists()
-        // Заголовок «Попытки · 0 из 3»
-        onNodeWithTag("attempts_title", useUnmergedTree = true).assertExists()
+        // При 0 попыток заголовок и пустой блок не показываются (mockups v2.0)
+        onNodeWithTag("attempts_title", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
@@ -163,6 +163,7 @@ class TrainingScreenTest : BaseUiTest() {
         } catch (e: Throwable) { /* уже виден */ }
         onNodeWithTag("recording_item_0", useUnmergedTree = true).assertExists()
         onNodeWithTag("attempt_check_0", useUnmergedTree = true).assertExists()
+        onNodeWithTag("attempts_title", useUnmergedTree = true).assertExists()
         try {
             onNodeWithTag("recording_item_1", useUnmergedTree = true).performScrollTo()
         } catch (e: Throwable) { /* уже виден */ }

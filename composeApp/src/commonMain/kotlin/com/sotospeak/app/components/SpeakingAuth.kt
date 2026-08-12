@@ -95,12 +95,18 @@ fun SpeakingField(
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                 errorBorderColor = speaking.error,
                 disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                errorContainerColor = MaterialTheme.colorScheme.surface,
-                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                errorContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                disabledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
                 cursorColor = MaterialTheme.colorScheme.primary,
-                errorCursorColor = speaking.error
+                errorCursorColor = speaking.error,
+                focusedLabelColor = speaking.primary,
+                unfocusedLabelColor = speaking.textMuted,
+                disabledLabelColor = speaking.textMuted,
+                focusedPlaceholderColor = speaking.textMuted,
+                unfocusedPlaceholderColor = speaking.textMuted,
+                disabledPlaceholderColor = speaking.textMuted
             )
         )
     }

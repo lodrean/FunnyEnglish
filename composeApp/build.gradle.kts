@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kover)
+    alias(libs.plugins.dropshots)
 }
 
 kotlin {
@@ -150,6 +151,17 @@ kotlin {
             implementation("io.kotest:kotest-framework-engine:5.8.0")
             implementation("io.kotest:kotest-assertions-core:5.8.0")
         }
+
+        // Скриншот-тесты (Dropshots, golden-эталоны в src/androidInstrumentedTest/screenshots)
+        val androidInstrumentedTest by getting
+        androidInstrumentedTest.dependencies {
+            implementation(libs.dropshots)
+            implementation(libs.junit4)
+            implementation(libs.androidx.ui.test.junit4)
+            implementation(libs.androidx.ui.test.manifest)
+            implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.activity.compose)
+        }
     }
     
     // Exclude dependencies not supported on WASM
@@ -167,6 +179,7 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     
     testOptions {

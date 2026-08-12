@@ -663,4 +663,89 @@ object SpeakingIcons {
                 reflectiveCurveToRelative(6f, 1.5f, 7.5f, 5f)
             }
         }.build()
+
+    // ==================== FULLSCREEN ====================
+
+    /**
+     * Fullscreen icon (развернуть видео) - stroke variant, углы наружу.
+     * Используется в control-bar видеоплеера (спека Part 2 §2.3, v1.7).
+     */
+    val Fullscreen: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingFullscreen",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // M8 3H5a2 2 0 0 0-2 2v3
+                moveTo(8f, 3f)
+                horizontalLineTo(5f)
+                arcTo(2f, 2f, 0f, false, false, 3f, 5f)
+                verticalLineTo(8f)
+                // M21 8V5a2 2 0 0 0-2-2h-3
+                moveTo(21f, 8f)
+                verticalLineTo(5f)
+                arcTo(2f, 2f, 0f, false, false, 19f, 3f)
+                horizontalLineTo(16f)
+                // M16 21h3a2 2 0 0 0 2-2v-3
+                moveTo(16f, 21f)
+                horizontalLineTo(19f)
+                arcTo(2f, 2f, 0f, false, false, 21f, 19f)
+                verticalLineTo(16f)
+                // M3 16v3a2 2 0 0 0 2 2h3
+                moveTo(3f, 16f)
+                verticalLineTo(19f)
+                arcTo(2f, 2f, 0f, false, false, 5f, 21f)
+                horizontalLineTo(8f)
+            }
+        }.build()
+
+    /**
+     * Fullscreen-exit icon (свернуть видео) - stroke variant, углы внутрь.
+     */
+    val FullscreenExit: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingFullscreenExit",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // M8 3v3a2 2 0 0 1-2 2H3
+                moveTo(8f, 3f)
+                verticalLineTo(6f)
+                arcTo(2f, 2f, 0f, false, true, 6f, 8f)
+                horizontalLineTo(3f)
+                // M21 8h-3a2 2 0 0 1-2-2V3
+                moveTo(21f, 8f)
+                horizontalLineTo(18f)
+                arcTo(2f, 2f, 0f, false, true, 16f, 6f)
+                verticalLineTo(3f)
+                // M16 21v-3a2 2 0 0 1 2-2h3
+                moveTo(16f, 21f)
+                verticalLineTo(18f)
+                arcTo(2f, 2f, 0f, false, true, 18f, 16f)
+                horizontalLineTo(21f)
+                // M3 16h3a2 2 0 0 1 2 2v3
+                moveTo(3f, 16f)
+                horizontalLineTo(6f)
+                arcTo(2f, 2f, 0f, false, true, 8f, 18f)
+                verticalLineTo(21f)
+            }
+        }.build()
 }

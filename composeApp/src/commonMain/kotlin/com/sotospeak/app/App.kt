@@ -312,8 +312,16 @@ private fun MainAppContent(
                     }
                 }
             ) { padding ->
+        // Экран видео сам управляет своими insets (свой Scaffold; fullscreen — edge-to-edge
+        // под вырез камеры, спека Part 2 §2.3 v1.7) — внешний padding для него не применяем,
+        // иначе в landscape-immersive остаётся светлая полоса шириной с display-cutout
+        val isVideoScreen = currentScreen is AppScreen.Video
         Box(
-            modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding),
+            modifier = if (isVideoScreen) {
+                Modifier.fillMaxSize()
+            } else {
+                Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
+            },
             contentAlignment = Alignment.Center
         ) {
             Box(

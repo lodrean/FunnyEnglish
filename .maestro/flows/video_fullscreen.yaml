@@ -1,0 +1,54 @@
+# Flow: видео — полноэкранный режим (спека Part 2 §2.3, v1.7, bd FunnyEnglish-did)
+# Требует: docker-стек с seed-контентом («Разговорный английский» / «Знакомство»),
+# APK с LAN base URL и медиа по S3_PUBLIC_URL (LAN IP) — иначе видео не грузится
+# и control-bar с кнопкой fullscreen не рендерится (error-плашка).
+
+appId: com.sotospeak.app
+---
+- launchApp:
+    clearState: true
+
+# Онбординг → гость
+- runFlow:
+    when:
+      visible: "Смотри видео"
+    file: ../subflows/onboarding_guest.yaml
+
+# Library → Topics → Video
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- tapOn: "Знакомство"
+
+# Плеер загрузился: control-bar с кнопкой fullscreen (contentDescription)
+- extendedWaitUntil:
+    visible: "На весь экран"
+    timeout: 25000
+- assertVisible: "С субтитрами"
+- assertVisible: "Перейти к вопросам"
+
+# Вход в fullscreen: аппбар/чипы/CTA скрываются, кнопка меняется на «Свернуть видео»
+- tapOn: "На весь экран"
+- assertVisible: "Свернуть видео"
+- assertNotVisible: "Перейти к вопросам"
+- assertNotVisible: "С субтитрами"
+
+# Выход по кнопке — хром возвращается
+- tapOn: "Свернуть видео"
+- assertVisible: "Перейти к вопросам"
+- assertVisible: "С субтитрами"
+
+# Повторный вход — выход системным «назад»
+- tapOn: "На весь экран"
+- assertNotVisible: "Перейти к вопросам"
+- back
+- assertVisible: "Перейти к вопросам"

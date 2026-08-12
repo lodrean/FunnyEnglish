@@ -29,8 +29,11 @@ actual class VideoPlayerController {
 @Composable
 actual fun NativeVideoSurface(
     controller: VideoPlayerController,
-    modifier: Modifier
+    modifier: Modifier,
+    centerControls: (@Composable () -> Unit)?,
+    bottomControls: (@Composable () -> Unit)?
 ) {
+    // Слоты контролов игнорируются: видео на этой платформе недоступно
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Text(
             text = "Видео недоступно на этой платформе",

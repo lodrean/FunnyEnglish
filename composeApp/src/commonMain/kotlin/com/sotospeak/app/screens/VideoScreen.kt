@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,6 +22,7 @@ import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.player.NativeVideoSurface
+import com.sotospeak.app.player.VideoFullscreenEffect
 import com.sotospeak.app.player.VideoPlayerController
 import com.sotospeak.app.player.VideoPlayerState
 import com.sotospeak.app.subtitles.TranscriptPanel
@@ -72,21 +74,31 @@ fun VideoScreen(
         }
     }
 
-    // Стрелки в аппбаре нет (мокап frame-video) — системная кнопка/жест «назад»
-    com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
+    // Полноэкранный режим (спека §2.3, v1.7) — состояние локально для экрана, НЕ в VM
+    var isFullscreen by rememberSaveable { mutableStateOf(false) }
+    VideoFullscreenEffect(enabled = isFullscreen)
+
+    // Стрелки в аппбаре нет (мокап frame-video) — системная кнопка/жест «назад»;
+    // в fullscreen «назад» сначала выходит из полноэкранного режима
+    com.sotospeak.app.components.PlatformBackHandler(
+        onBack = { if (isFullscreen) isFullscreen = false else onBack() }
+    )
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            // Мокап frame-video: h1 — название топика, sub — «Тема · видео m:ss», БЕЗ стрелки назад
-            val durationSec = state.topic?.video?.durationSeconds
-            SpeakingAppBar(
-                title = state.topic?.title.orEmpty(),
-                subtitle = listOfNotNull(
-                    libraryTitle.ifBlank { null },
-                    durationSec?.let { "видео ${formatTimer(it)}" }
-                ).joinToString(" · ").ifBlank { null }
-            )
+            // Мокап frame-video: h1 — название топика, sub — «Тема · видео m:ss», БЕЗ стрелки назад;
+            // в fullscreen аппбар скрывается
+            if (!isFullscreen) {
+                val durationSec = state.topic?.video?.durationSeconds
+                SpeakingAppBar(
+                    title = state.topic?.title.orEmpty(),
+                    subtitle = listOfNotNull(
+                        libraryTitle.ifBlank { null },
+                        durationSec?.let { "видео ${formatTimer(it)}" }
+                    ).joinToString(" · ").ifBlank { null }
+                )
+            }
         },
         modifier = modifier.testTag("video_screen")
     ) { padding ->
@@ -101,10 +113,13 @@ fun VideoScreen(
                 state = state,
                 playerState = playerState,
                 controller = controller,
+                isFullscreen = isFullscreen,
+                onToggleFullscreen = { isFullscreen = !isFullscreen },
                 onToggleSubtitles = onToggleSubtitles,
                 onRetryVideo = onRetryVideo,
                 onGoToQuestions = onGoToQuestions,
-                modifier = Modifier.padding(padding)
+                // В fullscreen Scaffold-insets игнорируем — видео edge-to-edge
+                modifier = if (isFullscreen) Modifier else Modifier.padding(padding)
             )
         }
     }
@@ -115,6 +130,8 @@ private fun VideoContent(
     state: VideoState,
     playerState: VideoPlayerState,
     controller: VideoPlayerController,
+    isFullscreen: Boolean,
+    onToggleFullscreen: () -> Unit,
     onToggleSubtitles: () -> Unit,
     onRetryVideo: () -> Unit,
     onGoToQuestions: () -> Unit,
@@ -129,8 +146,8 @@ private fun VideoContent(
         val videoMaxHeight = maxHeight * 0.45f
 
         Column(modifier = Modifier.fillMaxSize()) {
-        // Mode-chips (видны только если у топика есть субтитры)
-        if (hasSubtitles) {
+        // Mode-chips (видны только если у топика есть субтитры; в fullscreen скрыты)
+        if (!isFullscreen && hasSubtitles) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,52 +187,102 @@ private fun VideoContent(
             }
         }
 
-        // Плеер: 16:9, но не выше 45% высоты экрана (на широких/низких — letterbox по центру)
+        // Плеер: обычный режим — 16:9, но не выше 45% высоты экрана (letterbox по центру);
+        // fullscreen — на весь экран (Android) / всё свободное место окна (остальные).
+        // Box не покидает композицию при переключении — плеер и позиция сохраняются
         Box(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .heightIn(max = videoMaxHeight)
-                .aspectRatio(16f / 9f)
+                .then(
+                    when {
+                        isFullscreen && controller.supportsOverlayControls -> Modifier.fillMaxSize()
+                        isFullscreen -> Modifier.fillMaxWidth().weight(1f)
+                        else -> Modifier.heightIn(max = videoMaxHeight).aspectRatio(16f / 9f)
+                    }
+                )
                 .background(androidx.compose.ui.graphics.Color.Black)
                 .testTag("video_surface")
         ) {
+            val onPlayPause = { if (playerState.isPlaying) controller.pause() else controller.play() }
+            val onSeek = { fraction: Float ->
+                if (playerState.durationMs > 0) {
+                    controller.seekTo((playerState.durationMs * fraction).toLong())
+                }
+            }
+            // V1/DC-5: кастомные контролы мокапа; на Android — слоты media3 Player
+            // (center: big-play/replay, bottom: control-bar), нативные контролы не используются
+            val overlayControls = controller.supportsOverlayControls && !state.videoError
             NativeVideoSurface(
                 controller = controller,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // V1: кастомные контролы мокапа (big-play + control-bar), нативные выключены
-            if (!state.videoError) {
-                if (controller.supportsOverlayControls) {
-                    MockupVideoControls(
-                        playerState = playerState,
-                        subtitlesOn = state.subtitlesEnabled && hasSubtitles,
-                        onPlayPause = { if (playerState.isPlaying) controller.pause() else controller.play() },
-                        onSeek = { fraction ->
-                            if (playerState.durationMs > 0) {
-                                controller.seekTo((playerState.durationMs * fraction).toLong())
-                            }
-                        },
-                        onToggleCc = onToggleSubtitles
-                    )
-                } else {
-                    // WASM: DOM-video поверх canvas — Compose-оверлеи показываем только
-                    // в состояниях, где video-элемент скрыт (до старта / после конца)
-                    if (!playerState.isPlaying && playerState.positionMs == 0L && !playerState.isEnded) {
-                        BigPlayOverlay(
-                            onPlay = { controller.play() },
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    if (playerState.isEnded) {
-                        ReplayOverlay(
+                modifier = Modifier.fillMaxSize(),
+                centerControls = if (overlayControls) {
+                    {
+                        MockupCenterControls(
+                            playerState = playerState,
+                            onPlayPause = onPlayPause,
                             onReplay = {
                                 controller.seekTo(0)
                                 controller.play()
-                            },
-                            modifier = Modifier.align(Alignment.Center)
+                            }
                         )
                     }
+                } else null,
+                bottomControls = if (overlayControls) {
+                    {
+                        MockupBottomControls(
+                            playerState = playerState,
+                            subtitlesOn = state.subtitlesEnabled && hasSubtitles,
+                            onPlayPause = onPlayPause,
+                            onSeek = onSeek,
+                            onToggleCc = onToggleSubtitles,
+                            isFullscreen = isFullscreen,
+                            onToggleFullscreen = onToggleFullscreen
+                        )
+                    }
+                } else null
+            )
+
+            // WASM: DOM-video поверх canvas — Compose-оверлеи показываем только
+            // в состояниях, где video-элемент скрыт (до старта / после конца)
+            if (!state.videoError && !controller.supportsOverlayControls) {
+                if (!playerState.isPlaying && playerState.positionMs == 0L && !playerState.isEnded) {
+                    BigPlayOverlay(
+                        onPlay = { controller.play() },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                if (playerState.isEnded) {
+                    ReplayOverlay(
+                        onReplay = {
+                            controller.seekTo(0)
+                            controller.play()
+                        },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+
+            // Субтитры поверх видео в fullscreen (спека §2.3, v1.8): активный cue
+            // в нижней части экрана над control-bar. На WASM overlay невидим
+            // (DOM-video перекрывает canvas) — рендер безвреден
+            if (isFullscreen && state.subtitlesEnabled && !state.videoError) {
+                val activeCue = state.subtitleCues.firstOrNull { cue ->
+                    playerState.positionMs >= cue.startMs && playerState.positionMs < cue.endMs
+                }
+                if (activeCue != null) {
+                    Text(
+                        text = activeCue.text,
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(start = 32.dp, end = 32.dp, bottom = 88.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), SpeakingShapes.Chip)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .testTag("video_subtitle_overlay")
+                    )
                 }
             }
 
@@ -248,7 +315,8 @@ private fun VideoContent(
             }
         }
 
-        // WASM: control-bar ПОД плеером (DOM-video перекрывает canvas, overlay невозможен)
+        // WASM/desktop: control-bar ПОД плеером (DOM-video перекрывает canvas, overlay невозможен);
+        // остаётся видимым и в fullscreen — там это единственный способ выйти кнопкой
         if (!controller.supportsOverlayControls && !state.videoError) {
             BelowVideoControls(
                 playerState = playerState,
@@ -259,10 +327,14 @@ private fun VideoContent(
                         controller.seekTo((playerState.durationMs * fraction).toLong())
                     }
                 },
-                onToggleCc = onToggleSubtitles
+                onToggleCc = onToggleSubtitles,
+                isFullscreen = isFullscreen,
+                onToggleFullscreen = onToggleFullscreen
             )
         }
 
+        // В fullscreen транскрипт, CTA и hint скрываются — только видео
+        if (!isFullscreen) {
         // Полный транскрипт видео с пословной подсветкой (скроллится внутри панели)
         if (state.subtitlesEnabled && state.subtitleCues.isNotEmpty()) {
             TranscriptPanel(
@@ -300,33 +372,27 @@ private fun VideoContent(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .testTag("video_hint")
         )
+        } // !isFullscreen
         }
     }
 }
 
 /**
- * Контролы плеера по мокапу frame-video:
- * big-play 64dp по центру (скрывается при воспроизведении),
- * control-bar внизу (play/pause, seek, время 0:00 / 1:35, CC с подсветкой #FFD666).
+ * Центральный слот контролов плеера по мокапу frame-video:
+ * big-play 64dp (fade+scale tweenFast, скрывается при воспроизведении),
+ * «Начать заново» после окончания (STATE_ENDED).
+ * На Android размещается в centerControls-слоте media3 Player.
  */
 @Composable
-private fun MockupVideoControls(
+private fun MockupCenterControls(
     playerState: VideoPlayerState,
-    subtitlesOn: Boolean,
     onPlayPause: () -> Unit,
-    onSeek: (Float) -> Unit,
-    onToggleCc: () -> Unit
+    onReplay: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(contentAlignment = Alignment.Center) {
         // «Начать заново» после окончания воспроизведения (STATE_ENDED)
         if (playerState.isEnded) {
-            ReplayOverlay(
-                onReplay = {
-                    onSeek(0f)
-                    onPlayPause()
-                },
-                modifier = Modifier.align(Alignment.Center)
-            )
+            ReplayOverlay(onReplay = onReplay)
         }
 
         // Big-play (mockups .big-play): появление/исчезание fade+scale tweenFast
@@ -335,37 +401,52 @@ private fun MockupVideoControls(
             enter = androidx.compose.animation.fadeIn(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()) +
                 androidx.compose.animation.scaleIn(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()),
             exit = androidx.compose.animation.fadeOut(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()) +
-                androidx.compose.animation.scaleOut(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast()),
-            modifier = Modifier.align(Alignment.Center)
+                androidx.compose.animation.scaleOut(com.sotospeak.designsystem.theme.SpeakingMotion.tweenFast())
         ) {
             BigPlayOverlay(onPlay = onPlayPause)
         }
+    }
+}
 
-        // Control-bar (mockups .video-controls): градиентная подложка снизу
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
-                    )
+/**
+ * Нижний слот контролов (mockups .video-controls): градиентная подложка +
+ * control-bar (play/pause, seek, время, CC, fullscreen).
+ * На Android размещается в bottomControls-слоте media3 Player.
+ */
+@Composable
+private fun MockupBottomControls(
+    playerState: VideoPlayerState,
+    subtitlesOn: Boolean,
+    onPlayPause: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onToggleCc: () -> Unit,
+    isFullscreen: Boolean,
+    onToggleFullscreen: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
                 )
-                .padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
-                .testTag("video_control_bar")
-        ) {
-            ControlBarContent(
-                playerState = playerState,
-                subtitlesOn = subtitlesOn,
-                onPlayPause = onPlayPause,
-                onSeek = onSeek,
-                onToggleCc = onToggleCc,
-                contentColor = Color.White,
-                modifier = Modifier.weight(1f)
             )
-        }
+            .padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
+            .testTag("video_control_bar")
+    ) {
+        ControlBarContent(
+            playerState = playerState,
+            subtitlesOn = subtitlesOn,
+            onPlayPause = onPlayPause,
+            onSeek = onSeek,
+            onToggleCc = onToggleCc,
+            isFullscreen = isFullscreen,
+            onToggleFullscreen = onToggleFullscreen,
+            contentColor = Color.White,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -438,7 +519,9 @@ private fun BelowVideoControls(
     subtitlesOn: Boolean,
     onPlayPause: () -> Unit,
     onSeek: (Float) -> Unit,
-    onToggleCc: () -> Unit
+    onToggleCc: () -> Unit,
+    isFullscreen: Boolean,
+    onToggleFullscreen: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -454,13 +537,15 @@ private fun BelowVideoControls(
             onPlayPause = onPlayPause,
             onSeek = onSeek,
             onToggleCc = onToggleCc,
+            isFullscreen = isFullscreen,
+            onToggleFullscreen = onToggleFullscreen,
             contentColor = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
     }
 }
 
-/** Общее содержимое control-bar: play/pause, seek, время, CC. */
+/** Общее содержимое control-bar: play/pause, seek, время, CC, fullscreen. */
 @Composable
 private fun ControlBarContent(
     playerState: VideoPlayerState,
@@ -468,6 +553,8 @@ private fun ControlBarContent(
     onPlayPause: () -> Unit,
     onSeek: (Float) -> Unit,
     onToggleCc: () -> Unit,
+    isFullscreen: Boolean,
+    onToggleFullscreen: () -> Unit,
     contentColor: Color,
     modifier: Modifier = Modifier
 ) {
@@ -536,6 +623,20 @@ private fun ControlBarContent(
                 )
             }
         }
+    }
+    // Fullscreen (спека §2.3, v1.7): на Android — ландшафт + immersive
+    IconButton(
+        onClick = onToggleFullscreen,
+        modifier = Modifier
+            .size(48.dp)   // аудит: touch target 48
+            .testTag("vc_fullscreen")
+    ) {
+        Icon(
+            imageVector = if (isFullscreen) SpeakingIcons.FullscreenExit else SpeakingIcons.Fullscreen,
+            contentDescription = if (isFullscreen) "Свернуть видео" else "На весь экран",
+            tint = contentColor,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 

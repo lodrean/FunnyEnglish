@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import com.sotospeak.app.player.VideoPlayerController
 import com.sotospeak.app.screens.VideoScreen
 import com.sotospeak.app.viewmodel.VideoState
@@ -33,6 +34,8 @@ class VideoScreenTest : BaseUiTest() {
         onNodeWithTag("vc_seek", useUnmergedTree = true).assertExists()
         onNodeWithTag("vc_time", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithTag("vc_cc", useUnmergedTree = true).assertIsDisplayed()
+        // Fullscreen-кнопка control-bar (спека §2.3, v1.7)
+        onNodeWithTag("vc_fullscreen", useUnmergedTree = true).assertIsDisplayed()
         // V5: CTA
         onNodeWithTag("go_to_questions_button", useUnmergedTree = true).assertIsDisplayed()
         // V4: подсказка мокапа
@@ -67,6 +70,44 @@ class VideoScreenTest : BaseUiTest() {
         content = { VideoScreenForTest(state = mockVideoState()) }
     ) {
         onNodeWithTag("transcript_panel", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    /**
+     * Fullscreen (v1.7): клик по vc_fullscreen скрывает аппбар/чипы/транскрипт/CTA,
+     * control-bar остаётся (desktop-стаб — BelowVideoControls); повторный клик возвращает layout.
+     */
+    @Test
+    fun fullscreenToggleHidesAndRestoresChrome() = runTest(
+        content = { VideoScreenForTest(state = mockVideoState(withCues = true)) }
+    ) {
+        // Вход в fullscreen
+        onNodeWithTag("vc_fullscreen", useUnmergedTree = true).performClick()
+        onNodeWithTag("go_to_questions_button", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithTag("transcript_panel", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithTag("subtitles_toggle", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithTag("video_hint", useUnmergedTree = true).assertDoesNotExist()
+        // Плеер и control-bar на месте
+        onNodeWithTag("video_surface", useUnmergedTree = true).assertExists()
+        onNodeWithTag("video_control_bar", useUnmergedTree = true).assertExists()
+        // Выход из fullscreen
+        onNodeWithTag("vc_fullscreen", useUnmergedTree = true).performClick()
+        onNodeWithTag("go_to_questions_button", useUnmergedTree = true).assertExists()
+        onNodeWithTag("transcript_panel", useUnmergedTree = true).assertExists()
+    }
+
+    /**
+     * v1.8: в fullscreen активный cue показывается overlay'ем поверх видео (снизу),
+     * в обычном режиме overlay нет (там TranscriptPanel). Desktop-стаб: positionMs=0
+     * → активен первый cue (0..3000).
+     */
+    @Test
+    fun fullscreenShowsSubtitleOverlay() = runTest(
+        content = { VideoScreenForTest(state = mockVideoState(withCues = true)) }
+    ) {
+        onNodeWithTag("video_subtitle_overlay", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithTag("vc_fullscreen", useUnmergedTree = true).performClick()
+        onNodeWithTag("video_subtitle_overlay", useUnmergedTree = true).assertExists()
+        onNodeWithText("Hello brave world", substring = true).assertExists()
     }
 }
 

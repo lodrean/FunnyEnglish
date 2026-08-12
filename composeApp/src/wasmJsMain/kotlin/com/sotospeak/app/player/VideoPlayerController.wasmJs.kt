@@ -160,8 +160,12 @@ actual class VideoPlayerController {
 @Composable
 actual fun NativeVideoSurface(
     controller: VideoPlayerController,
-    modifier: Modifier
+    modifier: Modifier,
+    centerControls: (@Composable () -> Unit)?,
+    bottomControls: (@Composable () -> Unit)?
 ) {
+    // Слоты контролов не поддерживаются: DOM-video поверх canvas перекрывает любой
+    // Compose-оверлей (контролы рисуются ПОД плеером, см. BelowVideoControls)
     val state by controller.state.collectAsState()
     // positionInRoot — в физических px (density = devicePixelRatio); DOM — в CSS px
     val density = LocalDensity.current.density

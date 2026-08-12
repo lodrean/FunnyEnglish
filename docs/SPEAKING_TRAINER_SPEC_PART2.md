@@ -2,8 +2,8 @@
 ## Клиент: composeApp (Android-first)
 
 **Feature ID:** SPEAKING-TRAINER-001
-**Version:** 1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
-**Date:** 2026-08-08
+**Version:** 1.8 (2026-08-12: §2.3 — overlay-субтитры в fullscreen: активный cue поверх видео в нижней части экрана над control-bar (при субтитрах включены; WASM — невидим под DOM-video). По запросу владельца. v1.7 (2026-08-12: §2.3 — полноэкранный режим видео (кнопка `vc_fullscreen` в control-bar; Android: ландшафт + immersive; выход — кнопка/«назад»; плеер и позиция сохраняются); §3.1/§3.2 — Android-плеер мигрирован на media3-ui-compose/material3 1.11.0: `Player` (ContentFrame + слоты top/center/bottom) вместо AndroidView+PlayerView, кастомные контролы мокапа сохранены в слотах; MainActivity получил `configChanges`. Дифф утверждён владельцем (план `~/.kimi/plans/nebula-psylocke-atom.md`, bd `FunnyEnglish-did`, ADR-007). v1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
+**Date:** 2026-08-12
 **Estimated Effort:** 8–12 дней
 **Связанные документы:**
 - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md`
@@ -248,6 +248,8 @@ sealed interface VideoEvent {
 
 При успешном досмотре (или нажатии «К вопросам» после старта воспроизведения) VM ставит локальный флаг `topic_watched_<id>` в `Settings`.
 
+**Полноэкранный режим (v1.7, Android-first).** В control-bar плеера — кнопка fullscreen (`testTag vc_fullscreen`, иконки `SpeakingIcons.Fullscreen`/`FullscreenExit`). Состояние `isFullscreen` — локальное для экрана (`rememberSaveable` в `VideoScreen`, НЕ в VM). Вход: видео занимает весь экран — скрываются аппбар, mode-chips, TranscriptPanel, CTA и hint; на Android дополнительно ландшафтная ориентация (`SCREEN_ORIENTATION_SENSOR_LANDSCAPE`) и immersive-режим (скрытие system bars, swipe для временного показа). Выход: повторное нажатие кнопки или системный «назад» (перехватывается раньше навигационного `PlatformBackHandler`). Инстанс плеера и позиция воспроизведения сохраняются: видеоповерхность не покидает композицию (условный layout без Dialog/Popup), Activity не пересоздаётся благодаря `configChanges` (см. §3.2). На не-Android платформах fullscreen = «максимизированное видео» в окне (без платформенных эффектов), control-bar остаётся доступен. **Overlay-субтитры (v1.8)**: в fullscreen при включённых субтитрах активный cue (`positionMs ∈ [startMs, endMs)`) рисуется поверх видео внизу по центру над control-bar (`testTag video_subtitle_overlay`, белый SemiBold текст на чёрной подложке 60%, отступ снизу 88dp); в обычном режиме overlay не показывается — там TranscriptPanel.
+
 ### 2.4 QuestionsScreen
 
 ```kotlin
@@ -401,15 +403,18 @@ composeApp/src/
 └── wasmJsMain/... # HTML5-плеер (v1.6): DOM `<video>` поверх canvas, см. §3.2
 ```
 
-`composeApp/build.gradle.kts`, `androidMain.dependencies` — добавить:
+`composeApp/build.gradle.kts`, `androidMain.dependencies` — видеоплеер (v1.7: media3 1.11.0 + Compose-модули):
 
 ```kotlin
 androidMain.dependencies {
     // ... существующие ...
-    implementation(libs.androidx.media3.exoplayer)   // 1.5.1, уже в libs.versions.toml:108
-    implementation(libs.androidx.media3.ui)          // уже в libs.versions.toml:109 (PlayerView)
+    implementation(libs.androidx.media3.exoplayer)              // 1.11.0
+    implementation(libs.androidx.media3.ui.compose)             // PlayerSurface/ContentFrame (v1.7)
+    implementation(libs.androidx.media3.ui.compose.material3)   // Player со слотами + PlayerDefaults (v1.7)
 }
 ```
+
+`media3-ui` (PlayerView) видеоэкрану больше не нужен — запись в каталоге оставлена на случай отката; `media3-session` по-прежнему не используется.
 
 ### 3.2 Контракт
 
@@ -437,15 +442,24 @@ expect class VideoPlayerController() {
     fun release()
 }
 
-// VideoPlayerView.kt
+// VideoPlayerView.kt (v1.7: слоты контролов; на не-Android игнорируются)
 @Composable
 expect fun NativeVideoSurface(
     controller: VideoPlayerController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    centerControls: (@Composable () -> Unit)? = null,   // big-play / replay (Android)
+    bottomControls: (@Composable () -> Unit)? = null    // control-bar (Android)
 )
+
+// VideoFullscreen.kt (v1.7): платформенные эффекты полноэкранного режима
+@Composable
+expect fun VideoFullscreenEffect(enabled: Boolean)
+// androidMain: SENSOR_LANDSCAPE + скрытие systemBars (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+//              выход/dispose: SCREEN_ORIENTATION_UNSPECIFIED + показ systemBars.
+// wasmJs/desktop/ios: no-op.
 ```
 
-Android actual:
+Android actual (v1.7: Compose-first, media3-ui-compose-material3 `Player` — ContentFrame (PlayerSurface + shutter) + слоты; кастомные контролы мокапа §2.3/мокапа frame-video передаются в слоты, визуально НЕ меняются):
 
 ```kotlin
 // composeApp/src/androidMain/kotlin/com/sotospeak/app/player/VideoPlayerController.android.kt
@@ -467,15 +481,15 @@ actual class VideoPlayerController {
 }
 
 @Composable
-actual fun NativeVideoSurface(controller: VideoPlayerController, modifier: Modifier) {
-    AndroidView(
+actual fun NativeVideoSurface(controller, modifier, centerControls, bottomControls) {
+    Media3Player(              // androidx.media3.ui.compose.material3.Player
+        player = controller.exoPlayer(),
         modifier = modifier,
-        factory = { ctx ->
-            PlayerView(ctx).apply {
-                useController = true                     // play/pause/seek из коробки (PRD Story 2)
-                player = (controller as VideoPlayerController).player
-            }
-        }
+        showControls = true,   // видимостью управляем сами внутри слотов
+        topControls = null,
+        centerControls = centerControls?.let { slot -> { _, _ -> slot() } },
+        bottomControls = bottomControls?.let { slot -> { _, _ -> slot() } },
+        errorOverlay = null    // плашка ошибки — своя, снаружи (§2.3)
     )
 }
 ```
@@ -483,7 +497,7 @@ actual fun NativeVideoSurface(controller: VideoPlayerController, modifier: Modif
 Примечания реализации:
 - Контекст: как в `Platform.android.kt` для AudioPlayer — через тот же механизм (проверить, как shared получает Context; вариант — передавать `PlatformContext`/`Context` в фабрику Koin android-модуля; НЕ хранить Activity-context).
 - `release()` вызывать из `DisposableEffect(Unit)` в VideoScreen и из `VideoViewModel.onCleared()`.
-- Поворот экрана: VM переживает конфигурацию; контроллер пересоздаёт `PlayerView`, позицию восстанавливаем из `state.positionMs` (`seekTo` после `prepare`).
+- Поворот экрана (v1.7): у `MainActivity` выставлен `android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"` — Activity и композиция НЕ пересоздаются при повороте, позиция и буфер плеера сохраняются без seekTo-восстановления; Compose пересчитывает layout сам. Fullscreen входит в ландшафт программно (см. `VideoFullscreenEffect` выше).
 - Десктоп/iOS/WASM-стабы: `NativeVideoSurface` рендерит заглушку «Видео недоступно на этой платформе» + кнопку «К вопросам»; контроллер — no-op с `state.error = "unsupported"`.
 
 ### 3.3 Парсер WebVTT (commonMain, свой)

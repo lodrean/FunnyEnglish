@@ -77,9 +77,10 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.napier)
-            // Видеоплеер Speaking-тренажёра (спека Part 2 §3.1)
+            // Видеоплеер Speaking-тренажёра (спека Part 2 §3.1, v1.7: Compose-first)
             implementation(libs.androidx.media3.exoplayer)
-            implementation(libs.androidx.media3.ui)
+            implementation(libs.androidx.media3.ui.compose)
+            implementation(libs.androidx.media3.ui.compose.material3)
         }
 
         commonMain.dependencies {

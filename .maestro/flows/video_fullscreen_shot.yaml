@@ -1,0 +1,29 @@
+# Flow: скриншот fullscreen-режима видео (визуальная проверка ландшафта + immersive)
+appId: com.sotospeak.app
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      visible: "Смотри видео"
+    file: ../subflows/onboarding_guest.yaml
+- extendedWaitUntil:
+    visible: ".*Библиотека тем.*"
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Разговорный английский"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Разговорный английский"
+- extendedWaitUntil:
+    visible: "Знакомство"
+    timeout: 15000
+- tapOn: "Знакомство"
+- extendedWaitUntil:
+    visible: "На весь экран"
+    timeout: 25000
+# Старт воспроизведения, чтобы на скриншоте был кадр видео, а не shutter
+- tapOn: "Смотреть видео"
+- tapOn: "На весь экран"
+- takeScreenshot: /tmp/video_fullscreen.png

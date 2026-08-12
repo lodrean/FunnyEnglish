@@ -9,7 +9,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.compose")
 
 android {
     namespace = "com.sotospeak.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.sotospeak.app"

@@ -1,13 +1,15 @@
 package com.sotospeak.app.player
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
+import androidx.media3.ui.compose.material3.Player as Media3Player
 import com.sotospeak.shared.platform.AndroidContextHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -138,24 +140,29 @@ actual class VideoPlayerController {
 }
 
 /**
- * AndroidView-обёртка над Media3 PlayerView; стандартные контролы включены (PRD Story 2).
+ * Compose-first поверхность видео: media3-ui-compose-material3 `Player`
+ * (ContentFrame = PlayerSurface + shutter + aspect-ratio) со слотами под кастомные
+ * контролы мокапа frame-video (спека Part 2 §3.2, v1.7; AndroidView+PlayerView удалены).
  */
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 actual fun NativeVideoSurface(
     controller: VideoPlayerController,
-    modifier: Modifier
+    modifier: Modifier,
+    centerControls: (@Composable () -> Unit)?,
+    bottomControls: (@Composable () -> Unit)?
 ) {
-    AndroidView(
+    // Подписка на state гарантирует рекомпозицию после prepare() (плеер создаётся лениво)
+    @Suppress("UNUSED_VARIABLE") val playerState by controller.state.collectAsState()
+    Media3Player(
+        player = controller.exoPlayer(),
         modifier = modifier,
-        factory = { ctx ->
-            PlayerView(ctx).apply {
-                // DC-5: кастомные контролы мокапа (Compose overlay), нативные отключены
-                useController = false
-            }
-        },
-        update = { view ->
-            // Привязываем/перепривязываем player (поворот экрана пересоздаёт PlayerView)
-            view.player = controller.exoPlayer()
-        }
+        // Видимостью контролов управляем сами внутри слотов (мокап: bar всегда виден)
+        showControls = true,
+        topControls = null,
+        centerControls = centerControls?.let { slot -> { _, _ -> slot() } },
+        bottomControls = bottomControls?.let { slot -> { _, _ -> slot() } },
+        // Плашка ошибки — своя, рисуется снаружи поверх Box (спека §2.3)
+        errorOverlay = null
     )
 }

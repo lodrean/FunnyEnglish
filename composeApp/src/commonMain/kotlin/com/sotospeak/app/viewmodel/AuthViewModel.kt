@@ -2,6 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.di.SessionEvents
 import com.sotospeak.app.util.GuestAnalytics
 import com.sotospeak.shared.api.ApiException
 import com.sotospeak.shared.api.SoToSpeakApi
@@ -40,14 +41,31 @@ class AuthViewModel(
     private val api: SoToSpeakApi,
     private val tokenProvider: TokenProvider,
     private val guestRepo: GuestProgressRepository,
-    private val guestAnalytics: GuestAnalytics
+    private val guestAnalytics: GuestAnalytics,
+    private val sessionEvents: SessionEvents
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
     init {
+        sessionEvents.listener = { onSessionExpired() }
         checkAuthStatus()
+    }
+
+    override fun onCleared() {
+        if (sessionEvents.listener != null) sessionEvents.listener = null
+        super.onCleared()
+    }
+
+    /**
+     * Refresh токена не удался (окно истекло) — SoToSpeakApi уже очистил токен.
+     * Приводим UI к гостевому режиму: публичный контент работает, Practice-гейт предложит войти.
+     * Гостевую сессию НЕ чистим (в отличие от logout).
+     */
+    fun onSessionExpired() {
+        val mode = if (guestRepo.getSession() != null) AuthMode.GUEST else AuthMode.UNKNOWN
+        _state.value = AuthState(mode = mode)
     }
 
     private fun checkAuthStatus() {

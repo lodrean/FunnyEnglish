@@ -34,17 +34,22 @@ val appModule = module {
         com.sotospeak.app.util.LogUploader(get()) { logs -> api.sendLogs(logs).isSuccess }
     }
 
+    // Событие «сессия истекла» (refresh не удался): API (single) → AuthViewModel (viewModel), без циклической зависимости
+    single { SessionEvents() }
+
     // API
     single {
+        val sessionEvents = get<SessionEvents>()
         SoToSpeakApi(
             baseUrlProvider = { appConfig.baseUrl },
             tokenProvider = get(),
-            enableNetworkLogs = appConfig.enableNetworkLogs
+            enableNetworkLogs = appConfig.enableNetworkLogs,
+            onSessionExpired = { sessionEvents.listener?.invoke() }
         )
     }
 
     // ViewModels
-    viewModel { AuthViewModel(get(), get(), get(), get()) }
+    viewModel { AuthViewModel(get(), get(), get(), get(), get()) }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { SettingsViewModel(get()) }
     viewModel { GroupsViewModel(get()) }
@@ -61,6 +66,11 @@ val appModule = module {
     viewModel { TrainingViewModel(get(), get(), get()) } // api + RecordingStore + AudioPlayer
     viewModel { PracticeViewModel(get(), get(), get(), get()) } // + RecordingFileStorage + TokenProvider
     viewModel { MySubmissionsViewModel(get(), get(), get(), get()) }
+}
+
+/** Лёгкий мост SoToSpeakApi (single) → AuthViewModel (viewModel) для события «сессия истекла». */
+class SessionEvents {
+    var listener: (() -> Unit)? = null
 }
 
 class PersistentTokenProvider(private val settings: Settings) : TokenProvider {

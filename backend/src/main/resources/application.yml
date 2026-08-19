@@ -71,6 +71,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:} # REQUIRED: min 32 chars, set via env variable
     expiration: 86400000 # 24 hours
+    # Окно, в течение которого ИСТЁКШИЙ access-токен можно обменять на новый через /auth/refresh.
+    refresh-window: ${JWT_REFRESH_WINDOW:604800000} # 7 days
 
   s3:
     endpoint: ${S3_ENDPOINT:http://localhost:9000}

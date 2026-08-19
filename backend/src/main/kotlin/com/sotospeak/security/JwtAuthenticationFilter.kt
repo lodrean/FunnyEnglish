@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -16,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 class JwtAuthenticationFilter(
     private val jwtService: JwtService
 ) : OncePerRequestFilter() {
-    
+
     private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
 
     override fun doFilterInternal(
@@ -26,10 +25,10 @@ class JwtAuthenticationFilter(
     ) {
         val authHeader = request.getHeader("Authorization")
         val requestUri = request.requestURI
-        
+
         logger.debug("JWT Filter: Processing request to $requestUri")
         logger.debug("JWT Filter: Authorization header present: ${authHeader != null}")
-        
+
         if (authHeader != null) {
             logger.debug("JWT Filter: Authorization header starts with Bearer: ${authHeader.startsWith("Bearer ")}")
             logger.debug("JWT Filter: Authorization header length: ${authHeader.length}")
@@ -44,13 +43,14 @@ class JwtAuthenticationFilter(
         val token = authHeader.substring(7)
         logger.debug("JWT Filter: Token extracted, validating...")
 
-        // Check if token is expired first
-        val isExpired = jwtService.isTokenExpired(token)
-        if (isExpired) {
-            logger.warn("JWT Filter: Token expired for $requestUri, returning 401")
-            response.status = HttpStatus.UNAUTHORIZED.value()
-            response.writer.write("{\"error\":\"Token expired\",\"code\":\"TOKEN_EXPIRED\"}")
-            response.contentType = "application/json"
+        // Истёкший токен НЕ роняет запрос 401 на уровне фильтра: продолжаем как аноним,
+        // публичные эндпоинты (permitAll) обязаны работать с протухшим токеном.
+        // Для защищённых путей 401 отдаст authorization-слой (entry point в SecurityConfig),
+        // а attribute TOKEN_EXPIRED позволяет ему вернуть машиночитаемый код для клиентского refresh.
+        if (jwtService.isTokenExpired(token)) {
+            logger.warn("JWT Filter: Token expired for $requestUri, continuing as anonymous")
+            request.setAttribute(ATTR_TOKEN_EXPIRED, true)
+            filterChain.doFilter(request, response)
             return
         }
 
@@ -81,15 +81,16 @@ class JwtAuthenticationFilter(
                 logger.warn("JWT Filter: Token validation failed for $requestUri")
             }
         } catch (e: ExpiredJwtException) {
-            logger.warn("JWT Filter: Token expired for $requestUri")
-            // Return 401 to trigger token refresh on client
-            response.status = HttpStatus.UNAUTHORIZED.value()
-            response.writer.write("{\"error\":\"Token expired\",\"code\":\"TOKEN_EXPIRED\"}")
-            response.contentType = "application/json"
-            return
+            logger.warn("JWT Filter: Token expired for $requestUri, continuing as anonymous")
+            request.setAttribute(ATTR_TOKEN_EXPIRED, true)
         }
 
         filterChain.doFilter(request, response)
+    }
+
+    companion object {
+        /** Request attribute: токен был, но истёк — entry point отдаёт 401 с code=TOKEN_EXPIRED. */
+        const val ATTR_TOKEN_EXPIRED = "com.sotospeak.TOKEN_EXPIRED"
     }
 }
 

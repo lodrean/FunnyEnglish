@@ -45,6 +45,20 @@ class SecurityConfig(
                     // All other endpoints require authentication
                     .anyRequest().authenticated()
             }
+            .exceptionHandling { ex ->
+                // Истёкший токен (attribute ставит JwtAuthenticationFilter) на защищённом пути →
+                // 401 с code=TOKEN_EXPIRED — сигнал клиенту сделать refresh.
+                // Без токена — прежний дефолт Spring (403), чтобы не ломать существующие контракты/тесты.
+                ex.authenticationEntryPoint { request, response, _ ->
+                    if (request.getAttribute(JwtAuthenticationFilter.ATTR_TOKEN_EXPIRED) == true) {
+                        response.status = jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED
+                        response.contentType = "application/json"
+                        response.writer.write("""{"error":"Token expired","code":"TOKEN_EXPIRED"}""")
+                    } else {
+                        response.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN)
+                    }
+                }
+            }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }

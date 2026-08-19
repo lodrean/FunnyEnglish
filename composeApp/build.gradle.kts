@@ -148,6 +148,7 @@ kotlin {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.koin.test)
+            implementation(libs.ktor.client.mock)
             implementation("io.kotest:kotest-framework-engine:5.8.0")
             implementation("io.kotest:kotest-assertions-core:5.8.0")
         }

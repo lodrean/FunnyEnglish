@@ -50,7 +50,16 @@ fun FadingEdgeText(
         if (overflowed) {
             // Градиентная «вуаль» поверх последней строки (~1.2 строки высотой)
             val fadeHeight = with(androidx.compose.ui.platform.LocalDensity.current) {
-                (style.lineHeight.toDp() * 1.2f).coerceAtLeast(18.dp)
+                // lineHeight в типографии задан в Sp → toDp() на Sp крашится
+                // («Only Sp can convert to Px») — конвертируем через toPx().toDp().
+                val lh = style.lineHeight
+                // TextUnit бывает только Sp/Em/Unspecified (Dp — не TextUnit)
+                val lineDp = if (lh.type == androidx.compose.ui.unit.TextUnitType.Sp) {
+                    lh.toPx().toDp()
+                } else {
+                    18.dp // Em/Unspecified — fallback
+                }
+                (lineDp * 1.2f).coerceAtLeast(18.dp)
             }
             Box(
                 modifier = Modifier

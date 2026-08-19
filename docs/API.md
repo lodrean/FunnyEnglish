@@ -500,7 +500,7 @@ context-path `/api`.
 ---
 
 ### POST /auth/refresh
-Обновить access-токен по refresh-токену.
+Обновить access-токен. Отдельных refresh-токенов нет: принимается access-токен (в т.ч. истёкший) — обмен возможен в пределах окна `app.jwt.refresh-window` (по умолчанию 7 дней после `exp`, env `JWT_REFRESH_WINDOW`). KMP-клиент вызывает автоматически при 401 и повторяет исходный запрос.
 
 **Request:**
 ```json

@@ -5,6 +5,7 @@ import com.sotospeak.entity.AuthProvider
 import com.sotospeak.entity.User
 import com.sotospeak.repository.UserRepository
 import com.sotospeak.security.JwtService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,7 +16,9 @@ class AuthService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
-    private val emailVerificationService: EmailVerificationService
+    private val emailVerificationService: EmailVerificationService,
+    @Value("\${app.jwt.refresh-window:604800000}")
+    private val refreshWindowMs: Long
 ) {
     @Transactional
     fun register(request: RegisterRequest): RegisterResponse {
@@ -117,6 +120,13 @@ class AuthService(
     fun refreshToken(request: RefreshTokenRequest): AuthResponse {
         val claims = jwtService.extractClaimsAllowExpired(request.refreshToken)
             ?: throw IllegalArgumentException("Invalid refresh token")
+        // Истёкший access-токен можно обменять только в пределах refresh-окна (по умолчанию 7 дней) —
+        // иначе украденный токен продлевался бы бесконечно.
+        val expiration = claims.expiration?.toInstant()
+            ?: throw IllegalArgumentException("Invalid refresh token")
+        if (expiration.isBefore(java.time.Instant.now().minusMillis(refreshWindowMs))) {
+            throw IllegalArgumentException("Refresh window expired")
+        }
         val userId = claims.subject ?: throw IllegalArgumentException("Invalid refresh token")
         val userUuid = runCatching { UUID.fromString(userId) }
             .getOrElse { throw IllegalArgumentException("Invalid refresh token") }

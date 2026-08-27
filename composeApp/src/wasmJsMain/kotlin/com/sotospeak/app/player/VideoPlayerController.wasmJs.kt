@@ -1,5 +1,6 @@
 package com.sotospeak.app.player
 
+import io.ktor.client.HttpClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -30,7 +31,7 @@ import org.w3c.dom.HTMLVideoElement
  * а DOM-video скрывается в состояниях, где показываются Compose-оверлеи
  * (big-play до старта, «Начать заново» после конца) — см. [setDomVisible].
  */
-actual class VideoPlayerController {
+actual class VideoPlayerController actual constructor(httpClient: HttpClient) {
 
     private val _state = MutableStateFlow(VideoPlayerState())
     actual val state: StateFlow<VideoPlayerState> = _state.asStateFlow()

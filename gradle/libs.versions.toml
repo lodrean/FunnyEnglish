@@ -14,7 +14,7 @@ androidx-activityCompose = "1.9.3"
 androidx-lifecycle = "2.8.7"
 
 # Ktor
-ktor = "3.0.2"
+ktor = "3.0.3"
 
 # Spring Boot
 springBoot = "3.4.1"
@@ -117,6 +117,8 @@ androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "medi
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
 androidx-media3-ui-compose = { module = "androidx.media3:media3-ui-compose", version.ref = "media3" }
 androidx-media3-ui-compose-material3 = { module = "androidx.media3:media3-ui-compose-material3", version.ref = "media3" }
+# Единый HTTP-стек ExoPlayer на Ktor (bd 4d1): стриминг через KtorDataSource вместо DefaultHttpDataSource
+androidx-media3-datasource-ktor = { module = "androidx.media3:media3-datasource-ktor", version.ref = "media3" }
 
 # Gradle Plugins (for build-logic)
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }

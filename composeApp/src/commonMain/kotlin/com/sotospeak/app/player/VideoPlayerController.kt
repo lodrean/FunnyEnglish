@@ -1,5 +1,6 @@
 package com.sotospeak.app.player
 
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -19,9 +20,12 @@ data class VideoPlayerState(
 
 /**
  * Контроллер видеоплеера. НЕ в Koin — создаётся экраном через
- * remember { VideoPlayerController() } + DisposableEffect { onDispose { release() } }.
+ * remember { VideoPlayerController(mediaClient) } + DisposableEffect { onDispose { release() } }.
+ *
+ * @param httpClient медиа-HTTP-клиент (Koin single named "media", см. MediaHttpClient):
+ *   единый Ktor-стек стриминга (bd 4d1). Контроллер клиент НЕ закрывает (общий жизненный цикл Koin).
  */
-expect class VideoPlayerController() {
+expect class VideoPlayerController(httpClient: HttpClient) {
     val state: StateFlow<VideoPlayerState>
     /**
      * true — видео рендерится внутри canvas/иерархии Compose и поверх него можно

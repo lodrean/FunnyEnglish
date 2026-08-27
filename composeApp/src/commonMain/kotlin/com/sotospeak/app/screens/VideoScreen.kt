@@ -657,7 +657,9 @@ fun VideoRoute(
     val vm: com.sotospeak.app.viewmodel.VideoViewModel = org.koin.compose.viewmodel.koinViewModel()
     val state by vm.state.collectAsState()
 
-    val controller = remember { VideoPlayerController() }
+    // Медиа-HTTP-клиент (Koin single named "media") — единый Ktor-стек стриминга (bd 4d1)
+    val mediaClient: io.ktor.client.HttpClient = org.koin.compose.koinInject(org.koin.core.qualifier.named("media"))
+    val controller = remember { VideoPlayerController(mediaClient) }
     DisposableEffect(Unit) {
         onDispose { controller.release() }
     }

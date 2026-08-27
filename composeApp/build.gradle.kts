@@ -82,6 +82,8 @@ kotlin {
             implementation(libs.androidx.media3.exoplayer)
             implementation(libs.androidx.media3.ui.compose)
             implementation(libs.androidx.media3.ui.compose.material3)
+            // Единый HTTP-стек ExoPlayer на Ktor (bd 4d1): KtorDataSource.Factory вместо DefaultHttpDataSource
+            implementation(libs.androidx.media3.datasource.ktor)
         }
 
         commonMain.dependencies {

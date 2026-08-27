@@ -8,9 +8,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.ktor.KtorDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.compose.material3.Player as Media3Player
 import com.sotospeak.shared.platform.AndroidContextHolder
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,8 +29,12 @@ import kotlinx.coroutines.launch
 /**
  * Android-реализация видеоплеера на Media3 ExoPlayer (спека Part 2 §3.2).
  * Контекст — application context из AndroidContextHolder (НЕ Activity-context).
+ * @param httpClient медиа-HTTP-клиент (Koin single named "media") — единый Ktor-стек
+ *   стриминга (bd 4d1); клиент живёт в Koin, контроллер его НЕ закрывает.
  */
-actual class VideoPlayerController {
+actual class VideoPlayerController actual constructor(httpClient: HttpClient) {
+
+    private val mediaClient: HttpClient = httpClient
 
     private val _state = MutableStateFlow(VideoPlayerState())
     actual val state: StateFlow<VideoPlayerState> = _state.asStateFlow()
@@ -105,13 +112,21 @@ actual class VideoPlayerController {
     /** Доступ к внутреннему ExoPlayer для привязки PlayerView (вместо cast из спеки). */
     internal fun exoPlayer(): ExoPlayer? = player
 
+    @OptIn(UnstableApi::class)
     private fun createPlayer(): ExoPlayer {
         val context = AndroidContextHolder.requireContext()
-        return ExoPlayer.Builder(context).build().also {
-            it.addListener(playerListener)
-            player = it
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-        }
+        // Единый HTTP-стек на Ktor (bd 4d1): вместо встроенного DefaultHttpDataSource
+        // (HttpURLConnection) стриминг идёт через KtorDataSource.Factory(mediaClient).
+        return ExoPlayer.Builder(context)
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(context)
+                    .setDataSourceFactory(KtorDataSource.Factory(mediaClient))
+            )
+            .build().also {
+                it.addListener(playerListener)
+                player = it
+                scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+            }
     }
 
     private fun startPositionTicker() {

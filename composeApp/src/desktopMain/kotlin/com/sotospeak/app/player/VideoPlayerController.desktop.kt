@@ -1,5 +1,6 @@
 package com.sotospeak.app.player
 
+import io.ktor.client.HttpClient
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * Стаб видеоплеера: воспроизведение недоступно на этой платформе (спека Part 2 §3.2).
  */
-actual class VideoPlayerController {
+actual class VideoPlayerController actual constructor(httpClient: HttpClient) {
     private val _state = MutableStateFlow(VideoPlayerState(error = "unsupported"))
     actual val state: StateFlow<VideoPlayerState> = _state.asStateFlow()
 

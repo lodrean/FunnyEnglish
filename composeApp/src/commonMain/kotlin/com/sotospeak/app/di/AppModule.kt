@@ -1,5 +1,6 @@
 package com.sotospeak.app.di
 
+import com.sotospeak.app.player.MediaHttpClient
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.app.viewmodel.*
@@ -8,7 +9,9 @@ import com.sotospeak.shared.api.TokenProvider
 import com.sotospeak.shared.platform.Settings
 import com.sotospeak.shared.repository.GuestProgressRepository
 import com.sotospeak.shared.repository.GuestProgressRepositoryImpl
+import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val appModule = module {
@@ -47,6 +50,12 @@ val appModule = module {
             onSessionExpired = { sessionEvents.listener?.invoke() }
         )
     }
+
+    // Медиа-клиент для стриминга видео (bd 4d1): единый Ktor-стек, БЕЗ auth/JSON —
+    // JWT на медиа-хост не уходит (принцип getTextResource); KtorDataSource сам
+    // обрабатывает статусы (expectSuccess=false). Живёт в Koin (single), контроллер
+    // плеера его НЕ закрывает.
+    single<HttpClient>(named("media")) { MediaHttpClient.create() }
 
     // ViewModels
     viewModel { AuthViewModel(get(), get(), get(), get(), get()) }

@@ -11,6 +11,10 @@ import com.sotospeak.app.viewmodel.VideoState
 import com.sotospeak.designsystem.theme.FunnyTheme
 import com.sotospeak.shared.model.SpeakingTopicDetail
 import com.sotospeak.shared.model.SpeakingVideo
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
 
 /**
@@ -150,7 +154,10 @@ private fun VideoScreenForTest(state: VideoState = mockVideoState()) {
     FunnyTheme {
         VideoScreen(
             state = state,
-            controller = VideoPlayerController(),
+            // Desktop-стаб игнорирует клиент; MockEngine — чтобы не тянуть сеть
+            controller = VideoPlayerController(
+                HttpClient(MockEngine { respond("ok", HttpStatusCode.OK) })
+            ),
             onToggleSubtitles = {},
             onVideoStarted = {},
             onVideoError = {},

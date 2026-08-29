@@ -1,0 +1,51 @@
+Проект: So to Speak (FunnyEnglish) — Kotlin Multiplatform, рабочий каталог — корень репозитория (ветка develop). Ты выполняешь задачу: закоммитить готовую реализацию bd FunnyEnglish-4d1 (единый HTTP-стек ExoPlayer на Ktor), оставленную в рабочем дереве прогонами пайплайна 202608270715 / 202608270758 / 202608270819.
+
+КОНТЕКСТ. Реализация завершена и проверена: гейты зелёные (desktopTest 120/120, compileDebugKotlinAndroid, compileKotlinWasmJs --no-configuration-cache, :app:assembleDebug). Тикет 4d1 остаётся in_progress до живого Android-прогона (нет эмулятора/dev-стека) — это надо отразить в теле коммита. Точный объём коммита задал верификатор (см. .pipeline/202608270819/03-verify.md, раздел «Рекомендации», п.2 и R7).
+
+Выполни ТОЛЬКО коммит по следующему точному списку. Больше ничего не добавляй, не меняй и не удаляй.
+
+ШАГ 1. Проверь состояние: git status --short и git diff --stat (git по пути C:\Program Files\Git\cmd\git.exe, либо добавь его в PATH). Убедись, что в дереве лежат изменения 4d1 (12 modified + untracked MediaHttpClient.*) и нет неожиданных файлов.
+
+ШАГ 2. git add строго этих путей (18 файлов + каталог артефактов):
+1. .beads/issues.jsonl
+2. composeApp/build.gradle.kts
+3. gradle/libs.versions.toml
+4. memory.md
+5. composeApp/src/androidMain/kotlin/com/sotospeak/app/player/VideoPlayerController.android.kt
+6. composeApp/src/commonMain/kotlin/com/sotospeak/app/player/VideoPlayerController.kt
+7. composeApp/src/commonMain/kotlin/com/sotospeak/app/di/AppModule.kt
+8. composeApp/src/commonMain/kotlin/com/sotospeak/app/screens/VideoScreen.kt
+9. composeApp/src/commonTest/kotlin/com/sotospeak/app/tests/VideoScreenTest.kt
+10. composeApp/src/desktopMain/kotlin/com/sotospeak/app/player/VideoPlayerController.desktop.kt
+11. composeApp/src/iosMain/kotlin/com/sotospeak/app/player/VideoPlayerController.ios.kt
+12. composeApp/src/wasmJsMain/kotlin/com/sotospeak/app/player/VideoPlayerController.wasmJs.kt
+13. composeApp/src/commonMain/kotlin/com/sotospeak/app/player/MediaHttpClient.kt
+14. composeApp/src/androidMain/kotlin/com/sotospeak/app/player/MediaHttpClient.android.kt
+15. composeApp/src/desktopMain/kotlin/com/sotospeak/app/player/MediaHttpClient.desktop.kt
+16. composeApp/src/iosMain/kotlin/com/sotospeak/app/player/MediaHttpClient.ios.kt
+17. composeApp/src/wasmJsMain/kotlin/com/sotospeak/app/player/MediaHttpClient.wasmJs.kt
+18. composeApp/src/commonTest/kotlin/com/sotospeak/app/tests/MediaHttpClientTest.kt
+19. composeApp/src/desktopTest/kotlin/com/sotospeak/app/tests/MediaHttpClientEngineTest.kt
+20. .pipeline/202608270819/ — артефакты финального прогона (00-report.md, 01-plan.md, 02-execute.md, 03-verify.md, gate1-main.log, gate2-bump-compile.log, gate3-desktopTest-rerun.log, deps-android.log, deps-desktop.log, deps-wasm.log, verify-rerun.log)
+
+НЕ ДОБАВЛЯТЬ (строго исключить): videos/, .media/, README.plan-execute-verify.md, scripts/plan-execute-verify.config.json, scripts/plan-execute-verify.workflow.js, .pipeline/202608270715/, .pipeline/202608270758/, любые логи, скриншоты и прочие untracked.
+
+ШАГ 3. git commit с сообщением:
+
+refactor(video): единая версия Ktor 3.0.3 + явный движок медиа-клиента (bd 4d1)
+
+Тело (кратко, по фактам):
+- ExoPlayer переведён на KtorDataSource.Factory (androidx-media3-datasource-ktor 1.11.0) вместо DefaultHttpDataSource; новый MediaHttpClient (Koin single named("media")) — без auth/JSON (JWT на медиа-хост не уходит), HttpRedirect, expectSuccess=false, таймауты connect 10s + request/socket INFINITE
+- каталог: ktor 3.0.2 → 3.0.3 (единая версия на всех classpath, nearest-wins — закрывает смесь 3.0.2/3.0.3)
+- движок медиа-клиента — явный через expect/actual фабрику createPlatformMediaHttpClient: OkHttp (android/desktop), Js (wasmJs), Darwin (ios неявно)
+- тесты: MediaHttpClientTest 4/4 (нет Authorization, редирект, не-2xx, таймаут-контракт), MediaHttpClientEngineTest 1/1 (детерминизм движка)
+- гейты зелёные: desktopTest 120/120, compileDebugKotlinAndroid, compileKotlinWasmJs --no-configuration-cache, assembleDebug. Живой Android-гейт НЕ выполнен (нет эмулятора/dev-стека) — тикет 4d1 остаётся in_progress до живого прогона
+- память: memory.md — грабли №99/№100 + решения 2026-08-27; спеки не менялись (ADR-007 не задействован)
+
+ШАГ 4. Проверь: git status --short (в дереве должны остаться ТОЛЬКО videos/, .media/, README.plan-execute-verify.md, scripts/plan-execute-verify.*, .pipeline/202608270715/, .pipeline/202608270758/), затем git log -1 --stat.
+
+ОГРАНИЧЕНИЯ:
+- НЕ делай git push, НЕ создавай/не переключай ветки, НЕ меняй содержимое файлов (только add+commit)
+- НЕ запускай gradle-сборки, тесты и линт
+- Если перед коммитом обнаружишь расхождение со списком (лишние или отсутствующие файлы) — ОСТАНОВИСЬ, ничего не коммить и доложи, что именно не сходится
+- После завершения выведи: хэш коммита, git status --short и краткое резюме

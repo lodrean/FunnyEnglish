@@ -114,3 +114,8 @@ gradle-temp/
 kotlin-js-store/
 maestro-cli
 /qa-agent/
+
+# Local artifacts (not part of the code repo)
+videos/
+.media/
+

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.multipart.MultipartFile
 import java.util.Optional
@@ -69,14 +70,30 @@ class PracticeSubmissionServiceTest {
             "https://media.example.com/sotospeak/speaking/submissions/u_$userId/abc.m4a"
         every { userRepository.getReferenceById(userId) } returns
             User(email = "student@test.com", displayName = "Student")
-        every { submissionRepository.save(any()) } answers { firstArg() }
+        every { submissionRepository.saveAndFlush(any()) } answers { firstArg() }
 
         val result = service.createSubmission(userId, topicId, 30, audioFile())
 
         assertEquals("NEW", result.status)
         assertEquals("https://media.example.com/sotospeak/speaking/submissions/u_$userId/abc.m4a", result.audioUrl)
         assertEquals(30, result.durationSec)
-        verify(exactly = 1) { submissionRepository.save(match { it.status == SubmissionStatus.NEW }) }
+        verify(exactly = 1) { submissionRepository.saveAndFlush(match { it.status == SubmissionStatus.NEW }) }
+    }
+
+    // 1b. createSubmission — race двух параллельных POST: UNIQUE (user_id, topic_id) → 409 fallback
+    @Test
+    fun `createSubmission - unique constraint violation on insert throws DuplicateSubmissionException`() {
+        every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId) } returns Optional.of(topic)
+        every { storageService.uploadFile(any(), "speaking/submissions/u_$userId") } returns
+            "https://media.example.com/sotospeak/speaking/submissions/u_$userId/abc.m4a"
+        every { userRepository.getReferenceById(userId) } returns
+            User(email = "student@test.com", displayName = "Student")
+        every { submissionRepository.saveAndFlush(any()) } throws
+            DataIntegrityViolationException("duplicate key value violates unique constraint uq_practice_submissions_user_topic")
+
+        assertThrows<com.sotospeak.exception.DuplicateSubmissionException> {
+            service.createSubmission(userId, topicId, 30, audioFile())
+        }
     }
 
     // 2. createSubmission — топик не опубликован/удалён → 404

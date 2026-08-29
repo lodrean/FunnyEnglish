@@ -9,6 +9,7 @@ import com.sotospeak.dto.toResponse
 import com.sotospeak.entity.speaking.Grade
 import com.sotospeak.entity.speaking.PracticeSubmission
 import com.sotospeak.entity.speaking.SubmissionStatus
+import com.sotospeak.exception.DuplicateSubmissionException
 import com.sotospeak.repository.UserRepository
 import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
@@ -17,6 +18,7 @@ import com.sotospeak.service.MediaUrlService
 import com.sotospeak.service.StorageService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -57,7 +59,7 @@ class PracticeSubmissionService(
 
         // 1a. Одна попытка Practice на топик (Part 2 §2.6) — дубли отклоняем на уровне backend
         submissionRepository.findFirstByUserIdAndTopicId(userId, topicId)?.let {
-            throw com.sotospeak.exception.DuplicateSubmissionException("Practice submission already exists for this topic")
+            throw DuplicateSubmissionException("Practice submission already exists for this topic")
         }
 
         // 2. Валидация ДО upload → 400
@@ -72,7 +74,7 @@ class PracticeSubmissionService(
         // 3. Upload в MinIO (публичный URL из S3_PUBLIC_URL, BUG-004)
         val audioUrl = storageService.uploadFile(file, "speaking/submissions/u_$userId")
 
-        // 4. INSERT
+        // 4. INSERT (saveAndFlush — сразу в БД, чтобы UNIQUE отработал внутри try)
         val submission = PracticeSubmission(
             user = userRepository.getReferenceById(userId),
             topic = topic,
@@ -80,7 +82,12 @@ class PracticeSubmissionService(
             durationSec = durationSec,
             status = SubmissionStatus.NEW
         )
-        return submissionRepository.save(submission).toResponse().normalized()
+        return try {
+            submissionRepository.saveAndFlush(submission).toResponse().normalized()
+        } catch (e: DataIntegrityViolationException) {
+            // Fallback на race двух параллельных POST: UNIQUE (user_id, topic_id) (V25) → тот же 409-гейт
+            throw DuplicateSubmissionException("Practice submission already exists for this topic")
+        }
     }
 
     @Transactional(readOnly = true)

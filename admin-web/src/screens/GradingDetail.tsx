@@ -6,14 +6,12 @@ import {
   Alert,
   Avatar,
   Box,
-  Chip,
   Grid,
   List,
   ListItem,
   ListItemText,
   Paper,
   Typography,
-  useTheme,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -23,6 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { AxiosError } from 'axios';
 import SubmissionAudioPlayer from '../components/speaking/SubmissionAudioPlayer';
+import StatusChip from '../components/speaking/StatusChip';
 import RubricForm from '../components/speaking/RubricForm';
 import { PageLoader } from '../components/feedback/PageLoader';
 import { useToast } from '../hooks';
@@ -49,7 +48,6 @@ const initialsOf = (name: string) =>
 export default function GradingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const theme = useTheme();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -147,19 +145,7 @@ export default function GradingDetail() {
                 : '—'}
             </Typography>
           </Box>
-          <Chip
-            label={status}
-            data-testid="submission-status-chip"
-            sx={{
-              bgcolor:
-                status === 'NEW'
-                  ? theme.palette.speaking.status.newContainer
-                  : theme.palette.speaking.status.reviewedContainer,
-              // chip-new: --color-status-new-container + текст #8a5200
-              color: status === 'NEW' ? '#8a5200' : 'text.primary',
-              fontWeight: 700,
-            }}
-          />
+          <StatusChip status={status} data-testid="submission-status-chip" />
         </Box>
       </Paper>
 

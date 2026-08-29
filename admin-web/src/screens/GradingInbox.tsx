@@ -4,7 +4,6 @@ import {
   Autocomplete,
   Box,
   Button,
-  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -21,7 +20,6 @@ import {
   TableRow,
   TextField,
   Typography,
-  useTheme,
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
@@ -30,6 +28,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminUsers } from '../api/client';
 import { EmptyState } from '../components/feedback';
+import StatusChip from '../components/speaking/StatusChip';
 import { useSpeakingTopics, useSubmissions } from '../hooks/useSpeaking';
 import type { SpeakingSubmission, SubmissionStatus } from '../api/speakingApi';
 import { formatMmSs } from '../utils/format';
@@ -105,33 +104,13 @@ export default function GradingInbox() {
   const selectedStudent = (studentOptions ?? []).find((u) => u.id === userId) ?? null;
   const selectedTopic = (topicOptions ?? []).find((t) => t.id === topicId) ?? null;
 
-  const theme = useTheme();
-  const speaking = theme.palette.speaking;
-
-  // WCAG AA: белый текст на warning/success = 2.4–3.3:1 (FAIL).
-  // Чипы по токенам статусов: container-фон + тёмный текст (9.2/8.7:1).
+  // Статус-чип — единый StatusChip (токены speaking.status, light + dark).
   const statusChip = (s: SpeakingSubmission) =>
     s.status === 'NEW' ? (
-      <Chip
-        label="NEW"
-        size="small"
-        sx={{
-          bgcolor: speaking.status.newContainer,
-          color: 'text.primary',
-          fontWeight: 700,
-        }}
-      />
+      <StatusChip status="NEW" />
     ) : (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Chip
-          label="REVIEWED"
-          size="small"
-          sx={{
-            bgcolor: speaking.status.reviewedContainer,
-            color: 'text.primary',
-            fontWeight: 700,
-          }}
-        />
+        <StatusChip status="REVIEWED" />
         {s.grade && (
           <Typography variant="body2" fontWeight="bold">
             {s.grade.totalScore.toFixed(1)}

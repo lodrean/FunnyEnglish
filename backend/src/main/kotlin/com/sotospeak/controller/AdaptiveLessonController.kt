@@ -15,6 +15,11 @@ import java.util.*
 /**
  * REST API для адаптивных уроков
  */
+@Deprecated(
+    message = "Legacy pre-pivot API (AR-5): сломан на runtime (UserPrincipal не реализует UserDetails -> 500). " +
+        "Ожидает решения владельца об удалении в bd FunnyEnglish-8zm. Не использовать.",
+    level = DeprecationLevel.WARNING
+)
 @RestController
 @RequestMapping("/api/v1/adaptive-lessons")
 class AdaptiveLessonController(

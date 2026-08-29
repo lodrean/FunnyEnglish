@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sotospeak.designsystem.tokens.NunitoFontFamily
 
 /**
  * Speaking Trainer — токены Playful Coach v1.1 (.docs/design-system/tokens.json).
@@ -127,15 +128,18 @@ val DarkSpeakingColors = LightSpeakingColors.copy(
 
 val LocalSpeakingColors = staticCompositionLocalOf { LightSpeakingColors }
 
-/** Текстовые стили Speaking Trainer (tokens.json font.scale) */
+/** Текстовые стили Speaking Trainer (tokens.json font.scale).
+ * Базовый шрифт — bundled Nunito (composeResources), таймер — mono tnum. */
 @Immutable
 object SpeakingTextStyles {
     /** Вопросы читаются с расстояния вытянутой руки: 25sp, w600, lineHeight 1.35 */
-    val QuestionText = TextStyle(
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 25.sp,
-        lineHeight = 34.sp
-    )
+    val QuestionText: TextStyle
+        @Composable get() = TextStyle(
+            fontFamily = NunitoFontFamily,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 25.sp,
+            lineHeight = 34.sp
+        )
 
     /** Таймер: моноширинные tabular-цифры (tnum) — не прыгает по ширине, 64sp */
     val TimerDisplay = TextStyle(
@@ -147,10 +151,12 @@ object SpeakingTextStyles {
     )
 
     /** Субтитры поверх scrim-подложки: 17sp, lineHeight 1.4 */
-    val SubtitleText = TextStyle(
-        fontSize = 17.sp,
-        lineHeight = 24.sp
-    )
+    val SubtitleText: TextStyle
+        @Composable get() = TextStyle(
+            fontFamily = NunitoFontFamily,
+            fontSize = 17.sp,
+            lineHeight = 24.sp
+        )
 }
 
 /** Формы Speaking Trainer (tokens.json radius) */

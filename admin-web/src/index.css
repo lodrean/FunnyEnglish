@@ -1,5 +1,6 @@
 /* Import Nunito font from Google Fonts (Playful Coach v1.1, tokens.json font.family.brand) */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+/* JetBrains Mono — timerDisplay/timestamps (Theme.ts h3/overline, веса 600/700, tabular-nums) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
 * {
   margin: 0;

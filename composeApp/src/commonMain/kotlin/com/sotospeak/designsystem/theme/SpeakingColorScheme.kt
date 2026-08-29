@@ -5,12 +5,14 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sotospeak.designsystem.tokens.NunitoFontFamily
 
 /**
  * M3 color scheme Playful Coach — DSM-5 §1.1 (docs/design/M3_IMPLEMENTATION_MAPPING.md),
@@ -93,7 +95,9 @@ fun speakingDarkColorScheme() = darkColorScheme(
 /**
  * M3 type scale Playful Coach — DSM-5 §2. Размеры/веса Nunito без изменений
  * (tokens.json font.scale), роли — по M3.
+ * Основной шрифт — bundled Nunito (composeResources), таймер/таймстемпы — mono tnum.
  */
+@Composable
 fun speakingTypography() = Typography(
     // timerDisplay 64 · mono tnum · 700
     displayLarge = TextStyle(
@@ -105,32 +109,38 @@ fun speakingTypography() = Typography(
     ),
     // headlineSmall 31 · 800
     headlineSmall = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 31.sp
     ),
     // questionText 25/1.35 · 600
     titleLarge = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 25.sp,
         lineHeight = 34.sp
     ),
     // titleMedium 20 · 800
     titleMedium = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 20.sp
     ),
     // bodyMedium 16 · 400
     bodyLarge = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     ),
     // bodySmall 14 · 400
     bodyMedium = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp
     ),
     // labelSmall 12 · 800 · caps
     labelSmall = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 12.sp,
         letterSpacing = 0.72.sp
@@ -145,6 +155,7 @@ fun speakingTypography() = Typography(
     // Кнопки M3 (labelLarge): 16 · 800 (weight extrabold из tokens; Nunito 800 даёт акцент,
     // uppercase не нужен — как в MUI-override Theme.ts)
     labelLarge = TextStyle(
+        fontFamily = NunitoFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 16.sp
     )

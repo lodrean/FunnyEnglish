@@ -1,10 +1,18 @@
 package com.sotospeak.designsystem.tokens
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.sotospeak.composeapp.generated.resources.Res
+import com.sotospeak.composeapp.generated.resources.nunito_bold
+import com.sotospeak.composeapp.generated.resources.nunito_extrabold
+import com.sotospeak.composeapp.generated.resources.nunito_medium
+import com.sotospeak.composeapp.generated.resources.nunito_regular
+import com.sotospeak.composeapp.generated.resources.nunito_semibold
+import org.jetbrains.compose.resources.Font
 
 /**
  * So to Speak Typography System
@@ -22,16 +30,25 @@ val FontWeightSemiBold = FontWeight.SemiBold  // 600
 val FontWeightBold = FontWeight.Bold          // 700
 
 // ==================== Nunito Font Family ====================
-// Note: Nunito should be loaded via Compose Multiplatform font resources
-// For now using default FontFamily.SansSerif with Nunito styling
-val NunitoFontFamily = FontFamily.SansSerif
+// Bundled Nunito (Playful Coach, tokens.json font.family.brand) через composeResources —
+// статические веса 400/500/600/700/800, полные TTF с кириллицей
+// (composeApp/src/commonMain/composeResources/font/).
+val NunitoFontFamily: FontFamily
+    @Composable get() = FontFamily(
+        Font(Res.font.nunito_regular, FontWeight.Normal),
+        Font(Res.font.nunito_medium, FontWeight.Medium),
+        Font(Res.font.nunito_semibold, FontWeight.SemiBold),
+        Font(Res.font.nunito_bold, FontWeight.Bold),
+        Font(Res.font.nunito_extrabold, FontWeight.ExtraBold)
+    )
 
 // ==================== Display Scale ====================
 /**
  * Display Large: 57sp / 64sp / Bold
  * Hero headlines, welcome screens, major celebrations
  */
-val DisplayLarge = TextStyle(
+val DisplayLarge: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 57.sp,
     lineHeight = 64.sp,
@@ -43,7 +60,8 @@ val DisplayLarge = TextStyle(
  * Display Medium: 45sp / 52sp / Bold
  * Section introductions, important scores, level displays
  */
-val DisplayMedium = TextStyle(
+val DisplayMedium: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 45.sp,
     lineHeight = 52.sp,
@@ -55,7 +73,8 @@ val DisplayMedium = TextStyle(
  * Display Small: 36sp / 44sp / Bold
  * Card titles, quest names, achievement headers
  */
-val DisplaySmall = TextStyle(
+val DisplaySmall: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 36.sp,
     lineHeight = 44.sp,
@@ -68,7 +87,8 @@ val DisplaySmall = TextStyle(
  * Headline Large: 32sp / 40sp / SemiBold
  * Page titles, major section headers
  */
-val HeadlineLarge = TextStyle(
+val HeadlineLarge: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 32.sp,
     lineHeight = 40.sp,
@@ -80,7 +100,8 @@ val HeadlineLarge = TextStyle(
  * Headline Medium: 28sp / 36sp / SemiBold
  * Lesson titles, unit headers, dialog titles
  */
-val HeadlineMedium = TextStyle(
+val HeadlineMedium: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 28.sp,
     lineHeight = 36.sp,
@@ -92,7 +113,8 @@ val HeadlineMedium = TextStyle(
  * Headline Small: 24sp / 32sp / SemiBold
  * Card headers, subsection titles
  */
-val HeadlineSmall = TextStyle(
+val HeadlineSmall: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 24.sp,
     lineHeight = 32.sp,
@@ -105,7 +127,8 @@ val HeadlineSmall = TextStyle(
  * Title Large: 22sp / 28sp / Medium
  * Content titles, prominent list items
  */
-val TitleLarge = TextStyle(
+val TitleLarge: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 22.sp,
     lineHeight = 28.sp,
@@ -117,7 +140,8 @@ val TitleLarge = TextStyle(
  * Title Medium: 18sp / 24sp / Medium
  * Secondary titles, form section headers
  */
-val TitleMedium = TextStyle(
+val TitleMedium: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 18.sp,
     lineHeight = 24.sp,
@@ -129,7 +153,8 @@ val TitleMedium = TextStyle(
  * Title Small: 14sp / 20sp / Medium
  * Compact labels, metadata headers, button text
  */
-val TitleSmall = TextStyle(
+val TitleSmall: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -143,7 +168,8 @@ val TitleSmall = TextStyle(
  * Primary reading text, extended content
  * 1.5x line height for dyslexia support
  */
-val BodyLarge = TextStyle(
+val BodyLarge: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 16.sp,
     lineHeight = 24.sp,  // 1.5x ratio
@@ -155,7 +181,8 @@ val BodyLarge = TextStyle(
  * Body Medium: 14sp / 20sp / Normal
  * Default body text, secondary content
  */
-val BodyMedium = TextStyle(
+val BodyMedium: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -167,7 +194,8 @@ val BodyMedium = TextStyle(
  * Body Small: 12sp / 16sp / Normal
  * Captions, footnotes, supplementary metadata
  */
-val BodySmall = TextStyle(
+val BodySmall: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -180,7 +208,8 @@ val BodySmall = TextStyle(
  * Label Large: 14sp / 20sp / Medium
  * Button labels, form labels, navigation items
  */
-val LabelLarge = TextStyle(
+val LabelLarge: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -192,7 +221,8 @@ val LabelLarge = TextStyle(
  * Label Medium: 12sp / 16sp / Medium
  * Compact UI labels, chip text, badges
  */
-val LabelMedium = TextStyle(
+val LabelMedium: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -204,7 +234,8 @@ val LabelMedium = TextStyle(
  * Label Small: 11sp / 16sp / Medium
  * Minimal labels, timestamps, technical metadata
  */
-val LabelSmall = TextStyle(
+val LabelSmall: TextStyle
+    @Composable get() = TextStyle(
     fontFamily = NunitoFontFamily,
     fontSize = 11.sp,
     lineHeight = 16.sp,
@@ -213,6 +244,7 @@ val LabelSmall = TextStyle(
 )
 
 // ==================== Typography ====================
+@Composable
 fun funnyTypography(): Typography {
     return Typography(
         displayLarge = DisplayLarge,

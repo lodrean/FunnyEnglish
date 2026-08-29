@@ -59,6 +59,27 @@ class GlobalExceptionHandler {
         )
     }
 
+    @ExceptionHandler(com.sotospeak.exception.InvalidCredentialsException::class)
+    fun handleInvalidCredentials(ex: com.sotospeak.exception.InvalidCredentialsException): ResponseEntity<ErrorResponse> {
+        // 401, а не 400: семантика HTTP для неверных кредов (bd FunnyEnglish-nj2.7)
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+            ErrorResponse(
+                error = "INVALID_CREDENTIALS",
+                message = ex.message ?: "Invalid credentials"
+            )
+        )
+    }
+
+    @ExceptionHandler(com.sotospeak.exception.InvalidRefreshTokenException::class)
+    fun handleInvalidRefreshToken(ex: com.sotospeak.exception.InvalidRefreshTokenException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+            ErrorResponse(
+                error = "INVALID_REFRESH_TOKEN",
+                message = ex.message ?: "Invalid refresh token"
+            )
+        )
+    }
+
     @ExceptionHandler(com.sotospeak.service.EmailNotVerifiedException::class)
     fun handleEmailNotVerified(ex: com.sotospeak.service.EmailNotVerifiedException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(

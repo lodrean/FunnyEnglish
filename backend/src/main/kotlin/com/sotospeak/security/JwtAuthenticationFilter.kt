@@ -1,5 +1,6 @@
 package com.sotospeak.security
 
+import com.sotospeak.repository.UserRepository
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -10,13 +11,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 @Component
 class JwtAuthenticationFilter(
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
+    private val userRepository: UserRepository
 ) : OncePerRequestFilter() {
 
     private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
+
+    // Кэш userId→role (bd FunnyEnglish-nj2.7): роль сверяется с БД, а не с claim токена
+    // (смена/понижение роли вступает в силу без перевыпуска токена). TTL 60с — компромисс
+    // между свежестью и запросом к БД на каждый HTTP-запрос (рекомендация аудита: 1–5 мин).
+    private data class CachedRole(val role: String, val expiresAtMs: Long)
+    private val roleCache = ConcurrentHashMap<String, CachedRole>()
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -54,6 +64,13 @@ class JwtAuthenticationFilter(
             return
         }
 
+        // Refresh-токен не является access-токеном: предъявление его как Bearer → аноним (401).
+        if (jwtService.extractType(token) == JwtService.TOKEN_TYPE_REFRESH) {
+            logger.warn("JWT Filter: refresh token used as access token for $requestUri, continuing as anonymous")
+            filterChain.doFilter(request, response)
+            return
+        }
+
         try {
             if (jwtService.validateToken(token)) {
                 logger.debug("JWT Filter: Token is valid")
@@ -62,7 +79,14 @@ class JwtAuthenticationFilter(
 
                 // Skip authentication if userId cannot be extracted
                 if (userId != null) {
-                    val role = jwtService.extractRole(token) ?: "USER"
+                    // Роль — из БД (не из claim токена): понижение роли/блокировка действуют
+                    // в течение TTL кэша даже для уже выданных токенов. Пользователь удалён → аноним.
+                    val role = resolveRole(userId)
+                    if (role == null) {
+                        logger.warn("JWT Filter: user $userId not found in DB, continuing as anonymous")
+                        filterChain.doFilter(request, response)
+                        return
+                    }
                     val authorities = listOf(SimpleGrantedAuthority("ROLE_$role"))
 
                     val authentication = UsernamePasswordAuthenticationToken(
@@ -88,9 +112,24 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
+    /** Роль пользователя из БД с кэшем на [ROLE_CACHE_TTL_MS]; null — пользователь не найден/ошибка. */
+    private fun resolveRole(userId: String): String? {
+        val now = System.currentTimeMillis()
+        roleCache[userId]?.takeIf { it.expiresAtMs > now }?.let { return it.role }
+        val uuid = runCatching { UUID.fromString(userId) }.getOrNull() ?: return null
+        val role = runCatching { userRepository.findById(uuid).orElse(null)?.role }
+            .onFailure { logger.error("JWT Filter: role lookup failed for $userId: ${it.message}") }
+            .getOrNull() ?: return null
+        roleCache[userId] = CachedRole(role, now + ROLE_CACHE_TTL_MS)
+        return role
+    }
+
     companion object {
         /** Request attribute: токен был, но истёк — entry point отдаёт 401 с code=TOKEN_EXPIRED. */
         const val ATTR_TOKEN_EXPIRED = "com.sotospeak.TOKEN_EXPIRED"
+
+        /** TTL кэша userId→role (мс). */
+        const val ROLE_CACHE_TTL_MS = 60_000L
     }
 }
 

@@ -74,4 +74,11 @@ class AuthController(
     fun refresh(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
         return ResponseEntity.ok(authService.refreshToken(request))
     }
+
+    /** Отзыв refresh-токена (выход из сессии). Идемпотентно — всегда 200. */
+    @PostMapping("/logout")
+    fun logout(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<Void> {
+        authService.logout(request)
+        return ResponseEntity.ok().build()
+    }
 }

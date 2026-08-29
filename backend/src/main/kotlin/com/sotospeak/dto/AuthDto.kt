@@ -38,14 +38,17 @@ data class OAuthRequest(
 
 data class AuthResponse(
     val token: String,
+    /** Одноразовый refresh-токен (ротация при каждом /auth/refresh, bd FunnyEnglish-nj2.7). */
+    val refreshToken: String,
     val user: UserResponse
 )
 
-/** Ответ регистрации. При включённой email-верификации токена нет (login после подтверждения почты). */
+/** Ответ регистрации. При включённой email-верификации токенов нет (login после подтверждения почты). */
 data class RegisterResponse(
     val user: UserResponse,
     val emailSent: Boolean,
-    val token: String? = null
+    val token: String? = null,
+    val refreshToken: String? = null
 )
 
 data class ResendVerificationRequest(

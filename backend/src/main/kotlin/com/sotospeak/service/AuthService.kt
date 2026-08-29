@@ -51,6 +51,7 @@ class AuthService(
         return RegisterResponse(user = savedUser.toResponse(), emailSent = false, token = token)
     }
 
+    @Transactional(readOnly = true)
     fun login(request: LoginRequest): AuthResponse {
         val email = request.email.trim().lowercase()
         val user = userRepository.findByEmail(email)
@@ -127,6 +128,7 @@ class AuthService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun refreshToken(request: RefreshTokenRequest): AuthResponse {
         val claims = jwtService.extractClaimsAllowExpired(request.refreshToken)
             ?: throw IllegalArgumentException("Invalid refresh token")

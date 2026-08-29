@@ -3,6 +3,7 @@ package com.sotospeak.repository.audio
 import com.sotospeak.entity.audio.AudioTest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -38,6 +39,7 @@ interface AudioTestRepository : JpaRepository<AudioTest, UUID> {
 
     @Query("""
         SELECT at FROM AudioTest at
+        LEFT JOIN FETCH at.category
         LEFT JOIN FETCH at.questions q
         LEFT JOIN FETCH q.answers
         WHERE at.id = :id AND at.isPublished = true
@@ -60,4 +62,10 @@ interface AudioTestRepository : JpaRepository<AudioTest, UUID> {
     fun countPublishedByCategory(@Param("categoryId") categoryId: UUID?): Long
 
     fun existsByTitleIgnoreCase(title: String): Boolean
+
+    // EntityGraph: admin-список маппит category в AudioTestResponse — без fetch был N+1
+    // (коллекции questions/transcripts намеренно не фетчатся: Page + join-fetch коллекции =
+    // in-memory пагинация; их догружает hibernate.default_batch_fetch_size)
+    @EntityGraph(attributePaths = ["category"])
+    override fun findAll(pageable: Pageable): Page<AudioTest>
 }

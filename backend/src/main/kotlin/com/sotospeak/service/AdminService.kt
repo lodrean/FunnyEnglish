@@ -18,6 +18,7 @@ import com.sotospeak.repository.TestRepository
 import com.sotospeak.repository.UserRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -39,6 +40,7 @@ class AdminService(
         private const val RECENT_ACTIVITY_LIMIT = 10
     }
 
+    @Transactional(readOnly = true)
     fun getAnalytics(): AdminAnalyticsResponse {
         val topCategories = progressRepository
             .findCategoryCompletions(PageRequest.of(0, TOP_CATEGORIES_LIMIT))
@@ -63,6 +65,7 @@ class AdminService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getDailyActivity(days: Int): List<DailyActivityResponse> {
         val safeDays = days.coerceAtLeast(1)
         val today = LocalDate.now(ZoneId.systemDefault())
@@ -87,6 +90,7 @@ class AdminService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getLevelDistribution(): List<LevelDistributionResponse> {
         return userRepository.countUsersByLevel().map { levelCount ->
             LevelDistributionResponse(
@@ -96,6 +100,7 @@ class AdminService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getPopularTests(): List<PopularTestResponse> {
         return progressRepository.findPopularTests().map { test ->
             PopularTestResponse(
@@ -108,6 +113,7 @@ class AdminService(
     }
 
     /** Аналитика по гостевым (обезличенным) пользователям */
+    @Transactional(readOnly = true)
     fun getGuestAnalytics(): GuestAnalyticsResponse {
         val total = guestEventRepository.countDistinctGuests()
         val active7d = guestEventRepository.countDistinctGuestsActiveSince(
@@ -124,6 +130,7 @@ class AdminService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getRecentActivity(): List<RecentActivityResponse> {
         return userRepository.findRecentActivity(RECENT_ACTIVITY_LIMIT).map { activity ->
             RecentActivityResponse(

@@ -3,6 +3,7 @@ package com.sotospeak.service
 import com.sotospeak.repository.QuestRepository
 import com.sotospeak.shared.model.*
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.*
 import java.time.temporal.TemporalAdjusters
 import java.util.*
@@ -24,6 +25,7 @@ class QuestService(
     /**
      * Получить ежедневные квесты пользователя
      */
+    @Transactional // read + lazy-генерация (save) при первом обращении за день
     fun getDailyQuests(userId: UUID): List<DailyQuest> {
         // Check if quests exist for today
         val existingQuests = questRepository.findDailyQuestsForToday(userId)
@@ -42,6 +44,7 @@ class QuestService(
     /**
      * Получить еженедельные квесты
      */
+    @Transactional // read + lazy-генерация (save) при первом обращении за неделю
     fun getWeeklyQuests(userId: UUID): List<WeeklyQuest> {
         // Calculate week boundaries
         val now = Instant.now()
@@ -69,6 +72,7 @@ class QuestService(
     /**
      * Забрать награду за квест
      */
+    @Transactional
     fun claimReward(userId: UUID, questId: String): QuestReward {
         val quest = questRepository.findById(UUID.fromString(questId))
             .orElseThrow { NoSuchElementException("Quest not found") }
@@ -106,6 +110,7 @@ class QuestService(
     /**
      * Обновить прогресс квеста
      */
+    @Transactional
     fun updateQuestProgress(userId: UUID, type: QuestType, increment: Int = 1) {
         val activeQuests = questRepository.findActiveQuestsByType(userId, type)
         

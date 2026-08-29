@@ -124,6 +124,7 @@ class AdminLogController(
 ) {
 
     @GetMapping
+    @Transactional(readOnly = true)
     fun getLogs(
         @RequestParam(required = false) level: String?,
         @RequestParam(required = false) platform: String?,

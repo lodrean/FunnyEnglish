@@ -232,6 +232,7 @@ class QuestionService(
         throw NotImplementedError("getQuestionForUser temporarily disabled")
     }
     
+    @Transactional(readOnly = true)
     fun getPublishedQuestionsByTest(testId: UUID): List<QuestionPublicResponse> {
         return questionRepository.findByTestIdAndIsPublishedTrueOrderByDisplayOrderAsc(testId)
             .map { it.toPublicResponse() }
@@ -417,6 +418,7 @@ class QuestionService(
         )
     }
     
+    @Transactional(readOnly = true)
     fun validateImageWordMatchAnswer(
         questionId: UUID, 
         matches: List<WordHotspotMatch>

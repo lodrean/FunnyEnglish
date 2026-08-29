@@ -30,22 +30,26 @@ class AudioTestService(
 
     // ============== Public API ==============
 
+    @Transactional(readOnly = true)
     fun getPublishedAudioTests(categoryId: UUID?, difficulty: Int?, pageable: Pageable): Page<AudioTestResponse> {
         return audioTestRepository.findPublishedAudioTests(categoryId, difficulty, pageable)
             .map { it.toResponse() }
     }
 
+    @Transactional(readOnly = true)
     fun getPublishedAudioTestById(id: UUID): AudioTestDetailResponse {
         val audioTest = audioTestRepository.findPublishedByIdWithDetails(id)
             .orElseThrow { NoSuchElementException("Audio test not found") }
         return audioTest.toDetailResponse()
     }
 
+    @Transactional(readOnly = true)
     fun getUserProgress(userId: UUID): List<AudioTestProgressResponse> {
         return audioTestProgressRepository.findByUserIdWithAudioTest(userId)
             .map { it.toResponse() }
     }
 
+    @Transactional(readOnly = true)
     fun getUserProgressForTest(userId: UUID, audioTestId: UUID): AudioTestProgressResponse? {
         return audioTestProgressRepository.findByUserIdAndAudioTestId(userId, audioTestId)
             .map { it.toResponse() }
@@ -54,10 +58,12 @@ class AudioTestService(
 
     // ============== Admin API ==============
 
+    @Transactional(readOnly = true)
     fun getAllAudioTests(pageable: Pageable): Page<AudioTestResponse> {
         return audioTestRepository.findAll(pageable).map { it.toResponse() }
     }
 
+    @Transactional(readOnly = true)
     fun getAudioTestById(id: UUID): AudioTestDetailResponse {
         val audioTest = audioTestRepository.findByIdWithDetails(id)
             .orElseThrow { NoSuchElementException("Audio test not found") }

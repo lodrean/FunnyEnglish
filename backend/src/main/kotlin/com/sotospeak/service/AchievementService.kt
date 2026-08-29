@@ -7,6 +7,7 @@ import com.sotospeak.repository.ProgressRepository
 import com.sotospeak.repository.UserAchievementRepository
 import com.sotospeak.shared.model.*
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.*
 
@@ -23,6 +24,7 @@ class AchievementService(
     /**
      * Получить все достижения (для авторизованного пользователя - с статусом)
      */
+    @Transactional(readOnly = true)
     fun getAllAchievements(userId: String?): List<AchievementResponse> {
         val allAchievements = achievementRepository.findAll()
         
@@ -43,6 +45,7 @@ class AchievementService(
     /**
      * Получить достижения пользователя
      */
+    @Transactional(readOnly = true)
     fun getUserAchievements(userId: String): List<AchievementResponse> {
         val userUUID = UUID.fromString(userId)
         val allAchievements = achievementRepository.findAll()
@@ -58,6 +61,7 @@ class AchievementService(
     /**
      * Получить детали конкретного достижения
      */
+    @Transactional(readOnly = true)
     fun getAchievementDetail(userId: UUID, achievementId: String): UserAchievement {
         val achievement = achievementRepository.findById(achievementId)
             .orElseThrow { NoSuchElementException("Achievement not found") }
@@ -76,6 +80,7 @@ class AchievementService(
     /**
      * Получить статистику достижений
      */
+    @Transactional(readOnly = true)
     fun getAchievementStats(userId: UUID): com.sotospeak.controller.AchievementStats {
         val userAchievements = userAchievementRepository.findByUserId(userId)
         val earnedCount = userAchievements.count { it.isEarned }
@@ -109,6 +114,7 @@ class AchievementService(
     /**
      * Проверить и разблокировать достижения при событии
      */
+    @Transactional
     fun checkAchievements(userId: UUID, event: GameEvent): List<Achievement> {
         val unlockedAchievements = mutableListOf<Achievement>()
         val allAchievements = achievementRepository.findAll()
@@ -148,6 +154,7 @@ class AchievementService(
     /**
      * Check and award achievements after test completion (used by ProgressService)
      */
+    @Transactional
     fun checkAndAwardAchievements(userId: String, percentage: Int, stars: Int): List<AchievementResponse> {
         val userUUID = UUID.fromString(userId)
         val event = GameEvent.LessonCompleted(
@@ -176,6 +183,7 @@ class AchievementService(
     /**
      * Обновить прогресс достижения
      */
+    @Transactional
     fun updateProgress(userId: UUID, achievementId: String, progress: Float) {
         val userAchievement = userAchievementRepository
             .findByUserIdAndAchievementId(userId, achievementId)

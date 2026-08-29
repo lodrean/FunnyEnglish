@@ -8,6 +8,7 @@ import com.sotospeak.repository.QuestionRepository
 import com.sotospeak.repository.TestRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
@@ -26,6 +27,7 @@ class TestValidationService(
         val stars: Int
     )
 
+    @Transactional(readOnly = true)
     fun validateTest(testId: UUID, answers: List<SubmitAnswerRequest>): ValidationResult {
         val test = testRepository.findByIdWithQuestions(testId)
             ?: throw NoSuchElementException("Test not found")

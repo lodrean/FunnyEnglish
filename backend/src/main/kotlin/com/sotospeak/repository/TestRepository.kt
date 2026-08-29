@@ -10,7 +10,11 @@ import java.util.UUID
 
 @Repository
 interface TestRepository : JpaRepository<Test, UUID> {
+    // EntityGraph: toListResponse читает questions.size и category — без fetch был N+1
+    @EntityGraph(attributePaths = ["category", "questions"])
     fun findByCategoryIdAndIsPublishedTrueOrderByDisplayOrder(categoryId: UUID): List<Test>
+
+    @EntityGraph(attributePaths = ["category", "questions"])
     fun findByIsPublishedTrueOrderByDisplayOrder(): List<Test>
     fun findByDifficultyAndIsPublishedTrueOrderByDisplayOrder(difficulty: Difficulty): List<Test>
     fun countByIsPublishedTrue(): Long

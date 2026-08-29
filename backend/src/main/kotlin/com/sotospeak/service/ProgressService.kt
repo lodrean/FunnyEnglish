@@ -96,6 +96,7 @@ class ProgressService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getUserProgress(userId: String): List<ProgressResponse> {
         val userUUID = UUID.fromString(userId)
         val progressList = progressRepository.findByUserId(userUUID)
@@ -105,6 +106,7 @@ class ProgressService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getUserProgressSummary(userId: String): UserProgressSummary {
         val userUUID = UUID.fromString(userId)
         val progressList = progressRepository.findByUserId(userUUID)

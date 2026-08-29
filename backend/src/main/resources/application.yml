@@ -11,11 +11,17 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    # OSIV off: сессия не держится весь запрос — lazy-доступ вне @Transactional падает,
+    # N+1 не маскируется. Все read-методы сервисов обязаны иметь @Transactional(readOnly = true).
+    open-in-view: false
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        # Батчевая догрузка lazy-коллекций вместо N+1 (для пейджированных списков,
+        # где join-fetch коллекции невозможен без in-memory пагинации)
+        default_batch_fetch_size: 16
 
   # SMTP (staging — Mailpit, prod — внешний провайдер; креды только через env)
   mail:

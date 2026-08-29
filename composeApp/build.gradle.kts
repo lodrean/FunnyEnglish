@@ -98,9 +98,6 @@ kotlin {
             api(projects.shared) {
                 exclude(group = "io.github.aakira", module = "napier")
             }
-            implementation(projects.design) {
-                exclude(group = "io.github.aakira", module = "napier")
-            }
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)

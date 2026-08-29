@@ -149,7 +149,7 @@ private object LoginClicks {
     var guest = false
 }
 
-/** Ввод текста в FunnyTextField: testTag стоит на обёртке,
+/** Ввод текста в поле ввода: testTag стоит на обёртке,
  *  сам editable — потомок с SetText action */
 @OptIn(ExperimentalTestApi::class)
 private fun ComposeUiTest.enterTextByTag(tag: String, text: String) {

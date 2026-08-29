@@ -9,7 +9,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":shared"))
-            api(project(":design"))
             
             implementation(compose.runtime)
             implementation(compose.foundation)

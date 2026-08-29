@@ -56,6 +56,3 @@ include(":feature-gamification")
 
 include(":feature-leaderboard")
 include(":feature-learning")
-
-// Design System module
-include(":design")

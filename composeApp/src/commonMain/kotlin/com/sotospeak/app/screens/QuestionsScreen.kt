@@ -23,7 +23,7 @@ import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.components.SpeakingGate
 import com.sotospeak.app.components.questionsCountText
 import com.sotospeak.app.viewmodel.QuestionsState
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.animations.speakingPressable
 import com.sotospeak.designsystem.theme.SpeakingTextStyles

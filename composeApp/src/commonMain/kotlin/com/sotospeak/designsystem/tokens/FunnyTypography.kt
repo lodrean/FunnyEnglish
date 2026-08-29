@@ -1,6 +1,5 @@
 package com.sotospeak.designsystem.tokens
 
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -242,32 +241,6 @@ val LabelSmall: TextStyle
     fontWeight = FontWeightMedium,
     letterSpacing = 0.5.sp
 )
-
-// ==================== Typography ====================
-@Composable
-fun funnyTypography(): Typography {
-    return Typography(
-        displayLarge = DisplayLarge,
-        displayMedium = DisplayMedium,
-        displaySmall = DisplaySmall,
-        
-        headlineLarge = HeadlineLarge,
-        headlineMedium = HeadlineMedium,
-        headlineSmall = HeadlineSmall,
-        
-        titleLarge = TitleLarge,
-        titleMedium = TitleMedium,
-        titleSmall = TitleSmall,
-        
-        bodyLarge = BodyLarge,
-        bodyMedium = BodyMedium,
-        bodySmall = BodySmall,
-        
-        labelLarge = LabelLarge,
-        labelMedium = LabelMedium,
-        labelSmall = LabelSmall
-    )
-}
 
 // ==================== Accessibility ====================
 /**

@@ -23,7 +23,7 @@ import com.sotospeak.app.viewmodel.TopicUiModel
 import com.sotospeak.app.viewmodel.TopicsState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 
 /**
  * Экран топиков внутри темы (спека Part 2 §2.2).

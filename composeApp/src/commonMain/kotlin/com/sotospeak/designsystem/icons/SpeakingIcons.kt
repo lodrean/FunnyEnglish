@@ -1,4 +1,4 @@
-package com.sotospeak.design.icons
+package com.sotospeak.designsystem.icons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType

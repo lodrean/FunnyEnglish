@@ -13,7 +13,6 @@ kotlin {
             api(project(":core:data"))
             api(project(":core:presentation"))
             api(project(":feature-api"))
-            api(project(":design"))
 
             implementation(compose.runtime)
             implementation(compose.foundation)

@@ -22,7 +22,7 @@ import com.sotospeak.app.viewmodel.AppThemeMode
 import com.sotospeak.app.viewmodel.MySubmissionsState
 import com.sotospeak.app.viewmodel.ProfileState
 import com.sotospeak.app.viewmodel.QuestionsState
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.FunnyThemePreview
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.shared.model.SpeakingGrade

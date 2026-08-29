@@ -17,7 +17,6 @@ import com.sotospeak.designsystem.accessibility.platformReduceMotionEnabled
  *
  * Features:
  * - Light/Dark theme support
- * - Extended gamification color scheme (LocalFunnyColorScheme)
  * - Accessibility features (Reduce Motion)
  * - Consistent color scheme, typography, and shapes
  */
@@ -59,11 +58,8 @@ fun FunnyTheme(
     content: @Composable () -> Unit
 ) {
     // M3 color scheme — Playful Coach (DSM-5 §1.1, tokens v1.3.0).
-    // Legacy DS 1.x funny*ColorScheme больше не провайдится в MaterialTheme;
-    // LocalFunnyColorScheme остаётся только для legacy-компонентов designsystem/components.
     val colorScheme = if (darkTheme) speakingDarkColorScheme() else speakingLightColorScheme()
 
-    val extendedColorScheme = if (darkTheme) DarkFunnyColorScheme else LightFunnyColorScheme
     val speakingColors = if (darkTheme) DarkSpeakingColors else LightSpeakingColors
 
     val typography = speakingTypography()
@@ -79,7 +75,6 @@ fun FunnyTheme(
     CompositionLocalProvider(
         LocalReduceMotion provides reduceMotion,
         LocalFunnyThemeConfig provides themeConfig,
-        LocalFunnyColorScheme provides extendedColorScheme,
         LocalSpeakingColors provides speakingColors
     ) {
         MaterialTheme(

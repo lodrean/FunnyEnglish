@@ -70,7 +70,7 @@ export const Login: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: (theme) =>
-          theme.palette.mode === 'dark' ? '#121212' : '#F5F5F5',
+          theme.palette.mode === 'dark' ? '#121212' : '#EEF3FF',
         p: 2,
       }}
     >
@@ -173,7 +173,8 @@ export const Login: React.FC = () => {
           </Button>
         </Box>
 
-        {/* Demo credentials hint */}
+        {/* Demo credentials hint (dev only, не попадает в prod-сборку) */}
+        {import.meta.env.DEV && (
         <Box sx={{ mt: 3, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
           <Typography variant="caption" color="text.secondary" display="block">
             <strong>Demo credentials:</strong>
@@ -185,6 +186,7 @@ export const Login: React.FC = () => {
             Password: admin123
           </Typography>
         </Box>
+        )}
       </Paper>
     </Box>
   );

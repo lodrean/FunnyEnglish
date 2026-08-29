@@ -42,7 +42,9 @@ param(
     [string]$Model = 'kimi-code/k3',
     [switch]$DryRun,
     [switch]$SkipGates,
-    [switch]$NoCommit
+    [switch]$NoCommit,
+    [int]$KimiTimeoutSec = 1200,
+    [int]$GateTimeoutSec = 1800
 )
 
 # EAP=Stop делал фатальным ЛЮБОЙ stderr нативных команд (git «Switched to a new
@@ -166,23 +168,42 @@ function Update-IssueJsonl {
     return $false
 }
 
+function Invoke-Native {
+    # Запуск нативной команды с таймаутом через фоновый job.
+    # Возвращает exit code нативной команды; -2 = таймаут; -1 = нет вывода.
+    param(
+        [scriptblock]$Body,
+        [object[]]$Arguments = @(),
+        [int]$TimeoutSec = 1800,
+        [string]$LogPath = ''
+    )
+    $workdir = (Get-Location).Path
+    $sb = {
+        param($b, $a, $l, $w)
+        Set-Location $w
+        if ($l) { & $b @a *> $l } else { & $b @a }
+        $LASTEXITCODE
+    }
+    $job = Start-Job -ScriptBlock $sb -ArgumentList $Body, $Arguments, $LogPath, $workdir
+    if (Wait-Job $job -Timeout $TimeoutSec) {
+        $out = @(Receive-Job $job -Keep)
+        Remove-Job $job -Force
+        if ($out.Count -gt 0) { return [int]$out[-1] }
+        return -1
+    }
+    Stop-Job $job -ErrorAction SilentlyContinue
+    Remove-Job $job -Force
+    return -2
+}
+
 function Invoke-Gate {
     param([hashtable]$Gate, [string]$LogDir)
     $log = Join-Path $LogDir ("gate-{0}.log" -f $Gate.Name)
     $dir = if ($Gate.Dir) { $Gate.Dir } else { '.' }
     Push-Location $dir
-    $oldEap = $ErrorActionPreference
-    $ErrorActionPreference = 'Continue'
-    try {
-        & $Gate.Cmd @($Gate.Args) *> $log
-        $code = $LASTEXITCODE
-    } catch {
-        $code = -1
-        Add-Content -Path $log -Value ("[driver] gate error: " + $_.Exception.Message) -Encoding utf8
-    } finally {
-        $ErrorActionPreference = $oldEap
-        Pop-Location
-    }
+    $body = { param($cmd, $cmdArgs) & $cmd @cmdArgs }
+    $code = Invoke-Native -Body $body -Arguments @($Gate.Cmd, $Gate.Args) -TimeoutSec $GateTimeoutSec -LogPath $log
+    Pop-Location
     [pscustomobject]@{ Name = $Gate.Name; Ok = ($code -eq 0); ExitCode = $code; Log = $log }
 }
 
@@ -288,27 +309,33 @@ $extra$kindExtra
     $promptFile = Join-Path $dir 'kimi-prompt.txt'
     Set-Content -Path $promptFile -Value $prompt -Encoding utf8
 
-    # --- kimi ---
+    # --- kimi (с таймаутом и одним ретраем) ---
     $kimiLog = Join-Path $dir 'kimi-run.log'
-    Write-Host ("  [{0}] kimi: {1} ({2})" -f $stamp, $id, $Model)
-    $oldEap = $ErrorActionPreference
-    $ErrorActionPreference = 'Continue'   # stderr kimi (NativeCommandError) не должен прерывать поток
-    try {
+    $kimiCode = -1
+    $kimiTimedOut = $false
+    $kimiBody = { param($p, $m, $c) kimi -p $p -m $m --print --mcp-config-file $c }
+    for ($attempt = 1; $attempt -le 2; $attempt++) {
+        Write-Host ("  [{0}] kimi: {1} ({2}) — попытка {3}" -f $stamp, $id, $Model, $attempt)
+        $started = Get-Date
         if (Test-Path $McpConfig) {
-            & kimi -p $prompt -m $Model --print --mcp-config-file $McpConfig *> $kimiLog
+            $kimiCode = Invoke-Native -Body $kimiBody -Arguments @($prompt, $Model, $McpConfig) -TimeoutSec $KimiTimeoutSec -LogPath $kimiLog
         } else {
-            & kimi -p $prompt -m $Model --print *> $kimiLog
+            $kimiCode = Invoke-Native -Body { param($p, $m) kimi -p $p -m $m --print } -Arguments @($prompt, $Model) -TimeoutSec $KimiTimeoutSec -LogPath $kimiLog
         }
-        $kimiCode = $LASTEXITCODE
-    } catch {
-        $kimiCode = -1
-        Add-Content -Path $kimiLog -Value ("[driver] kimi invocation error: " + $_.Exception.Message) -Encoding utf8
-    } finally {
-        $ErrorActionPreference = $oldEap
+        if ($kimiCode -eq -2) {
+            $kimiTimedOut = $true
+            Write-Host ("  kimi TIMEOUT (> {0} с) на попытке {1} — чистка зависших процессов" -f $KimiTimeoutSec, $attempt)
+            Get-Process kimi -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -ge $started.AddMinutes(-1) } | Stop-Process -Force -ErrorAction SilentlyContinue
+            foreach ($pn in @('serena', 'uv', 'uvx', 'python', 'python3.13', 'node')) {
+                Get-Process $pn -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -ge $started.AddMinutes(-1) } | Stop-Process -Force -ErrorAction SilentlyContinue
+            }
+            if ($attempt -eq 1) { Write-Host '  повторная попытка...'; continue }
+        }
+        break
     }
     $logBytes = if (Test-Path $kimiLog) { (Get-Item $kimiLog).Length } else { 0 }
-    $kimiOk = $logBytes -gt 0
-    Write-Host ("  kimi exit: {0}; log bytes: {1}" -f $kimiCode, $logBytes)
+    $kimiOk = ($logBytes -gt 0) -and (-not $kimiTimedOut)
+    Write-Host ("  kimi exit: {0}; timedout: {1}; log bytes: {2}" -f $kimiCode, $kimiTimedOut, $logBytes)
 
     # --- гейты ---
     $gateResults = @()
@@ -342,7 +369,7 @@ $extra$kindExtra
         $verdict = 'CLOSED (kimi+гейты OK)'
     } else {
         Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ updated_at = (Get-UtcNowIso) } | Out-Null
-        $why = if ($ownerStopped) { "kimi остановился: $statusMarker" } else { "kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) }
+        $why = if ($kimiTimedOut) { "kimi TIMEOUT (2x$($KimiTimeoutSec/60) мин)" } elseif ($ownerStopped) { "kimi остановился: $statusMarker" } else { "kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) }
         $verdict = "IN_PROGRESS ($why)"
     }
     Write-Host ("  verdict: {0}" -f $verdict)

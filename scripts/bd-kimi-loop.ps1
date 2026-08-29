@@ -41,7 +41,8 @@ param(
     [string]$Epic = '',
     [string]$Model = 'kimi-code/k3',
     [switch]$DryRun,
-    [switch]$SkipGates
+    [switch]$SkipGates,
+    [switch]$NoCommit
 )
 
 $ErrorActionPreference = 'Stop'
@@ -249,6 +250,12 @@ foreach ($task in $queue) {
     # статус -> in_progress
     Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ status = 'in_progress'; updated_at = (Get-UtcNowIso) } | Out-Null
 
+    # --- git: ветка под задачу (коммит и merge в develop — в конце обработки) ---
+    $branch = "kimi/$id-$stamp"
+    if (-not $NoCommit) {
+        git checkout -b $branch 2>&1 | Out-Null
+    }
+
     # --- промпт ---
     $epicPrefix = ($id -split '\.')[0]
     $kind = $EpicGateConfig[$epicPrefix]
@@ -276,7 +283,7 @@ $extra$kindExtra
 - НЕ запускай gradle-сборки/тесты/линт (гейты прогоняет драйвер), НЕ делай git-коммитов и пушей.
 - Спеки/PRD (docs/, openspec/) НЕ правишь: если для задачи нужна правка спеки или решение владельца — ОСТАНОВИСЬ и напиши в отчёте, что именно требуется (ADR-007, human-in-the-loop).
 - После правок запиши краткий отчёт в $dir/02-execute.md: что сделано, список изменённых/созданных файлов, как проверить.
-- В финальном ответе верни сводку до 10 строк.
+- В финальном ответе ПЕРВОЙ строкой верни маркер: `STATUS: DONE` (задача выполнена, можно закрывать) | `STATUS: NEEDS_OWNER` (нужно решение владельца или правка спеки, ADR-007) | `STATUS: BLOCKED` (непреодолимое препятствие). Далее — сводка до 10 строк.
 "@
     $promptFile = Join-Path $dir 'kimi-prompt.txt'
     Set-Content -Path $promptFile -Value $prompt -Encoding utf8
@@ -314,9 +321,18 @@ $extra$kindExtra
     }
     $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok })
 
+    # --- маркер статуса от kimi (DONE | NEEDS_OWNER | BLOCKED) ---
+    $statusMarker = ''
+    if (Test-Path $kimiLog) {
+        $m = (Get-Content $kimiLog | Select-String -Pattern 'STATUS:\s*(DONE|NEEDS_OWNER|BLOCKED)' | Select-Object -Last 1)
+        if ($m) { $statusMarker = $m.Matches[0].Groups[1].Value }
+    }
+    $ownerStopped = $statusMarker -in @('NEEDS_OWNER', 'BLOCKED')
+
     # --- статус ---
     $changed = (& git status --short 2>$null | Out-String).Trim()
-    if ($kimiOk -and $gatesOk) {
+    $closeable = $kimiOk -and $gatesOk -and -not $ownerStopped
+    if ($closeable) {
         Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{
             status      = 'closed'
             closed_at   = (Get-UtcNowIso)
@@ -325,8 +341,9 @@ $extra$kindExtra
         } | Out-Null
         $verdict = 'CLOSED (kimi+гейты OK)'
     } else {
-        Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ updated_at = (Get-UtcNowIso) }
-        $verdict = "IN_PROGRESS (kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) + ')'
+        Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ updated_at = (Get-UtcNowIso) } | Out-Null
+        $why = if ($ownerStopped) { "kimi остановился: $statusMarker" } else { "kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) }
+        $verdict = "IN_PROGRESS ($why)"
     }
     Write-Host ("  verdict: {0}" -f $verdict)
     $reportLines += ("  -> {0}" -f $verdict)
@@ -349,6 +366,31 @@ $(if (Test-Path $kimiLog) { (Get-Content $kimiLog -Tail 120 | Out-String) } else
     Set-Content -Path (Join-Path $dir '00-report.md') -Value $report -Encoding utf8
     $runLog = Join-Path (Get-Location) ("kimi-runs/{0}-{1}.md" -f $stamp, $id)
     Set-Content -Path $runLog -Value $report -Encoding utf8
+
+    # --- git: коммит на ветке + merge в develop (или WIP в stash при незакрытой задаче) ---
+    if (-not $NoCommit) {
+        if ($closeable) {
+            git add -A 2>&1 | Out-Null
+            $type = 'chore'
+            if ($task.title -match '^(SEC|ADM|BUG|FIX)') { $type = 'fix' }
+            elseif ($task.title -match '^(LC|BE|ADT|DS|KMP|INF)') { $type = 'refactor' }
+            elseif ($task.title -match '^PR') { $type = 'feat' }
+            $scope = switch ($kind) { 'admin' { 'admin' } 'backend' { 'backend' } default { 'composeApp' } }
+            $msg = "$type($scope): $($task.title) (bd $id)"
+            git commit -m $msg 2>&1 | Out-Null
+            git checkout develop 2>&1 | Out-Null
+            $mg = (& git merge --no-ff $branch -m "merge: $msg" 2>&1 | Out-String)
+            if ($LASTEXITCODE -ne 0) { Write-Host ("  git WARN merge: " + $mg.Trim()) }
+            git branch -D $branch 2>&1 | Out-Null
+            Write-Host ("  git: committed+merged -> develop ($msg)")
+        } else {
+            git stash push -u -m "bd $id not closed (kimi=$kimiCode, $verdict)" 2>&1 | Out-Null
+            git checkout develop 2>&1 | Out-Null
+            git branch -D $branch 2>&1 | Out-Null
+            Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ status = 'in_progress'; updated_at = (Get-UtcNowIso) } | Out-Null
+            Write-Host ("  git: WIP застешен (stash), ветка удалена, статус in_progress")
+        }
+    }
 }
 
 # --- Авто-закрытие эпиков, у которых не осталось открытых детей ---
@@ -369,6 +411,16 @@ if (-not $Epic) {
             } | Out-Null
             Write-Host ("EPIC-CLOSED {0} ({1})" -f $t.id, $t.title)
         }
+    }
+}
+
+# --- Финальный коммит статусов эпиков (если что-то осталось незакоммиченным) ---
+if (-not $NoCommit) {
+    $dirty = (& git status --short | Measure-Object -Line).Lines
+    if ($dirty -gt 0) {
+        git add -A 2>&1 | Out-Null
+        git commit -m "chore(bd): авто-закрытие эпиков и финальные статусы" 2>&1 | Out-Null
+        Write-Host 'git: финальный chore-коммит (эпики/статусы)'
     }
 }
 

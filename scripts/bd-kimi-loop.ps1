@@ -337,11 +337,13 @@ $extra$kindExtra
     $kimiOk = ($kimiCode -eq 0) -and ($logBytes -gt 0) -and (-not $kimiTimedOut)
     Write-Host ("  kimi exit: {0}; timedout: {1}; log bytes: {2}" -f $kimiCode, $kimiTimedOut, $logBytes)
 
-    # --- детект исчерпания квоты kimi (403 usage limit) → марафон остановится после задачи ---
+    # --- детект исчерпания квоты kimi (403 usage limit) → марафон остановится после задачи.
+    # ТОЛЬКО при ненулевом exit (сессия убита ошибкой) И точной строке в ХВОСТЕ лога:
+    # сам текст грабли в memory.md тоже содержит «usage limit» (kimi читает память). ---
     $quotaHit = $false
     if (Test-Path $kimiLog) {
-        $rawLog = Get-Content $kimiLog -Raw -ErrorAction SilentlyContinue
-        if ($rawLog -match "usage limit|You've reached|access_terminated|Error code: 403") { $quotaHit = $true }
+        $tailLog = Get-Content $kimiLog -Tail 50 -Raw -ErrorAction SilentlyContinue
+        if ($kimiCode -ne 0 -and $tailLog -match "You've reached your 5-hour usage limit|access_terminated_error") { $quotaHit = $true }
     }
 
     # --- гейты ---

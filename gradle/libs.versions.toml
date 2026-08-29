@@ -87,6 +87,10 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+# Версия Testcontainers управляется Spring Boot BOM (spring-boot-dependencies),
+# как jackson-module-kotlin — каталог без version.ref.
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
 
 # JWT
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version = "0.12.6" }

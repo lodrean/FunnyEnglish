@@ -58,6 +58,10 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockk)
+    // Testcontainers-Postgres для интеграционных тестов (bd FunnyEnglish-wy7.4):
+    // H2 + create-drop не ловит Postgres-специфику (грабли №31/81).
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.testcontainers.postgresql)
     runtimeOnly(libs.h2)
 }
 

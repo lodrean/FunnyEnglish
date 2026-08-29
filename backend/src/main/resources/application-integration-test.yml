@@ -34,7 +34,8 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:integration-test-jwt-secret-key}
+    # Минимум 32 байта — JwtService fail-fast (require >= 32 байт для HS256).
+    secret: ${JWT_SECRET:integration-test-jwt-secret-key-0123456789}
     expiration: 86400000  # 24 hours
 
   s3:

@@ -45,10 +45,10 @@ param(
     [switch]$NoCommit
 )
 
-$ErrorActionPreference = 'Stop'
-# Не давать ненулевому exit-коду нативного процесса (kimi/gradlew) стать
-# фатальной ошибкой: pwsh 7.3+ бросает при EAP=Stop, а kimi исторически
-# выходит с кодом 1 при успешно выполненной задаче (kimi-runs/2026-08-28).
+# EAP=Stop делал фатальным ЛЮБОЙ stderr нативных команд (git «Switched to a new
+# branch», kimi/gradlew логи) — драйвер не должен умирать на этом. Собственные
+# ошибки обрабатываются try/catch и проверками exit-кодов.
+$ErrorActionPreference = 'Continue'
 $PSNativeCommandUseErrorActionPreference = $false
 $IssuesPath = Join-Path (Get-Location) '.beads/issues.jsonl'
 $McpConfig  = Join-Path (Get-Location) '.kimi-code/mcp.json'
@@ -319,7 +319,7 @@ $extra$kindExtra
             Write-Host ("  gate {0}: {1} (exit {2})" -f $r.Name, $(if ($r.Ok) { 'OK' } else { 'FAIL' }), $r.ExitCode)
         }
     }
-    $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok })
+    if ($kind -eq 'none') { $gatesOk = $true } else { $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok }) }
 
     # --- маркер статуса от kimi (DONE | NEEDS_OWNER | BLOCKED) ---
     $statusMarker = ''

@@ -1,39 +1,42 @@
 # So to Speak
 
-Кроссплатформенное приложение для изучения английского языка с геймификацией.
+Кроссплатформенный **тренажёр устной английской речи**: ученик смотрит видео по теме, отвечает на вопросы голосом, а учитель проверяет записи и ставит оценку по рубрике.
+
+## Как это работает
+
+**Флоу ученика:** Библиотека тем (Library) → Топик → Видео (с субтитрами WebVTT или без) → Вопросы → один из двух режимов:
+
+- **Training** — локальная тренировка: ровно 3 попытки на топик с эскалацией таймера (80с → 50с → 30с). Записи **не покидают устройство**, их можно только прослушать. Доступен гостю без регистрации.
+- **Practice** — контрольная точка: одна запись на все вопросы за 30 секунд, без review — автоматически уходит учителю на сервер. Требует авторизации.
+
+**Флоу учителя (admin-web):** управление контентом (темы, топики, видео, субтитры, вопросы) и **Grading** — inbox записей с прослушиванием и оценкой по рубрике: grammar / vocabulary / pronunciation / fluency (1–10 каждый) + общий балл + комментарий.
 
 ## Возможности
 
-- **Тесты разных типов**: выбор текста, картинок, аудио, перетаскивание, заполнение пропусков
-- **Система прогресса**: очки, уровни, звёзды (1-3 за тест)
-- **Достижения**: награды за активность и успехи
-- **Таблица лидеров**: соревнуйтесь с другими пользователями
-- **Streak**: отслеживание ежедневной активности
-- **Темы**: светлая, тёмная, системная
-- **Админ-панель**: управление тестами, пользователями, аналитика
-
-## Скриншоты
-
-| Главная | Тест | Результат | Профиль |
-|---------|------|-----------|---------|
-| ![Home](docs/screenshots/home.png) | ![Test](docs/screenshots/test.png) | ![Result](docs/screenshots/result.png) | ![Profile](docs/screenshots/profile.png) |
+- **Guest-first**: видео и Training доступны без регистрации; регистрация требуется только при входе в Practice
+- **Видеоплеер** с субтитрами WebVTT (Media3 на Android), fullscreen-режим
+- **Голосовые ответы** с записью, таймером и offline-retry отправки
+- **Рубричное оценивание** учителем (4 критерия × 1–10 + комментарий)
+- **Админ-панель**: контент Speaking, Grading, пользователи, аналитика
+- **Темы оформления**: светлая, тёмная, системная (дизайн-система Playful Coach)
 
 ## Технологии
 
 | Компонент | Стек |
 |-----------|------|
-| **Backend** | Kotlin, Spring Boot 3, PostgreSQL, JWT, S3 |
-| **Mobile** | Kotlin Multiplatform, Compose Multiplatform, Ktor, Koin |
+| **Backend** | Kotlin, Spring Boot 3, PostgreSQL + Flyway, JWT, S3/MinIO (видео и аудио) |
+| **Mobile/Desktop/Web** | Kotlin Multiplatform, Compose Multiplatform (Android/Desktop/WASM), Ktor, Koin |
 | **Admin** | React 18, TypeScript, Material UI, TanStack Query |
 
 ## Структура проекта
 
 ```
 So to Speak/
-├── backend/          # Spring Boot API
-├── admin-web/        # React админ-панель
-├── composeApp/       # Compose Multiplatform UI
-├── shared/           # KMP shared модуль (API, models)
+├── backend/          # Spring Boot API (context-path /api)
+├── admin-web/        # React админ-панель (Speaking / Grading / Users / Analytics)
+├── composeApp/       # Основной KMP-модуль UI (android/desktop/wasmJs)
+├── app/              # Тонкая Android-обёртка
+├── shared/           # KMP shared модуль (API-клиент, модели)
 └── docs/             # Документация
 ```
 
@@ -55,7 +58,7 @@ docker compose up -d
 | Сервис | URL | Учетные данные |
 |--------|-----|----------------|
 | Admin Panel | http://localhost:3000 | `admin@sotospeak.com` / `admin123` |
-| Backend API | http://localhost:8080 | - |
+| Backend API | http://localhost:8080/api | - |
 | MinIO Console | http://localhost:9001 | `minioadmin` / `minioadmin` |
 
 Все учетные данные: [CREDENTIALS.md](CREDENTIALS.md)
@@ -68,15 +71,19 @@ docker compose down
 docker compose up -d --build
 ```
 
-### Mobile (Desktop)
+### Desktop
 
 ```bash
 ./gradlew :composeApp:run
 ```
 
-### Mobile (Android)
+### Android
 
-Откройте проект в Android Studio и запустите `composeApp`.
+```bash
+./gradlew :app:assembleDebug
+```
+
+Или откройте проект в Android Studio и запустите `app`.
 
 ## Демо-аккаунт
 
@@ -96,7 +103,7 @@ Password: demo123
 | `DATABASE_PASSWORD` | DB password | - |
 | `JWT_SECRET` | JWT signing key (min 32 chars) | - |
 | `JWT_EXPIRATION` | Token expiration (ms) | 86400000 |
-| `ADMIN_EMAIL` | Admin email | admin@sotospeak.app |
+| `ADMIN_EMAIL` | Admin email | admin@sotospeak.com |
 | `ADMIN_PASSWORD` | Admin password | - |
 | `AWS_ACCESS_KEY` | S3 access key | - |
 | `AWS_SECRET_KEY` | S3 secret key | - |
@@ -113,7 +120,7 @@ SOTOSPEAK_API_BASE_URL=http://10.0.2.2:8080
 
 ## API
 
-Полная документация: [docs/API.md](docs/API.md)
+Полная документация: [docs/API.md](docs/API.md). Базовый путь: `/api`.
 
 ### Основные endpoints
 
@@ -122,16 +129,19 @@ SOTOSPEAK_API_BASE_URL=http://10.0.2.2:8080
 | POST | /auth/register | Регистрация |
 | POST | /auth/login | Вход |
 | GET | /users/me | Текущий пользователь |
-| GET | /categories | Список категорий |
-| GET | /tests/{id} | Детали теста |
-| POST | /tests/{id}/submit | Отправить ответы |
-| GET | /leaderboard | Таблица лидеров |
+| GET | /public/speaking/libraries | Опубликованные темы |
+| GET | /public/speaking/topics/{id} | Топик с видео и вопросами |
+| POST | /speaking/submissions | Отправка practice-записи (multipart) |
+| GET | /admin/speaking/* | Управление контентом (учитель) |
 
 ## Документация
 
-- [API Documentation](docs/API.md) - REST API
-- [Architecture](docs/ARCHITECTURE.md) - Архитектура системы
-- [Contributing](CONTRIBUTING.md) - Как внести вклад
+- [PRD: Speaking-тренажёр](docs/prd/SPEAKING-TRAINER-001.prd.md) — требования продукта
+- [API Documentation](docs/API.md) — REST API
+- [Architecture](docs/ARCHITECTURE.md) — архитектура системы
+- [User Guide](docs/USER_GUIDE.md) — руководство (ученик + учитель)
+- [Testing](docs/TESTING.md) — runbook'и тестирования
+- [Contributing](CONTRIBUTING.md) — как внести вклад
 
 ## Разработка
 
@@ -139,72 +149,48 @@ SOTOSPEAK_API_BASE_URL=http://10.0.2.2:8080
 
 ```bash
 # Backend
-./gradlew -p backend test
+./gradlew :backend:test
 
-# Admin Web
-npm --prefix admin-web test
+# KMP (desktop target)
+./gradlew :composeApp:desktopTest
 
-# Mobile
-./gradlew :shared:allTests
+# Admin Web (unit)
+npm --prefix admin-web exec vitest run
+
+# Admin Web (E2E, Playwright)
+npm --prefix admin-web run test:e2e
+
+# Mobile E2E (Maestro, нужен эмулятор)
+maestro test .maestro/flows/
+
+# API (Newman, против живого стека)
+newman run api-tests/sotospeak-api-collection.json
 ```
-
-### QA Automation
-
-Проект имеет комплексную систему автоматизации тестирования:
-
-| Тип | Инструмент | Команда |
-|-----|------------|---------|
-| **Unit** | Kotest | `./gradlew :shared:allTests` |
-| **API** | Newman (Postman) | `newman run qa/postman/sotospeak-api.json` |
-| **E2E** | Maestro | `maestro test .maestro/flows/` |
-| **Visual** | AI QA Agent | `qa-agent compare base.png curr.png` |
-
-#### AI QA Agent (Visual Regression)
-
-```bash
-cd qa-agent
-./setup.sh                    # Установка
-source venv/bin/activate      # Активация
-
-qa-agent compare \
-  screenshots/baseline.png \
-  screenshots/current.png \
-  -n "home-screen"
-```
-
-Создаёт HTML-отчёт с:
-- Pixel-perfect сравнением
-- SSIM score
-- Heatmap различий
-- Side-by-side визуализацией
-
-Подробнее: [qa-agent/README.md](qa-agent/README.md)
 
 ### Сборка
 
 ```bash
 # Backend JAR
-./gradlew -p backend bootJar
+./gradlew :backend:bootJar
 
 # Admin Web
 npm --prefix admin-web run build
 
 # Android APK
-./gradlew :composeApp:assembleDebug
+./gradlew :app:assembleDebug
 ```
 
 ## Roadmap
 
-- [x] Базовая функциональность MVP
-- [x] Админ-панель
-- [x] Система достижений
-- [x] Таблица лидеров
-- [x] Темная тема
+- [x] Пивот продукта: Speaking-тренажёр (видео + голосовые ответы)
+- [x] Training (3 попытки, локальные записи) и Practice (отправка учителю)
+- [x] Guest-first доступ и Practice-гейтинг
+- [x] Админ-панель: контент Speaking + Grading по рубрике
+- [x] Дизайн-система Playful Coach
+- [x] Email-верификация (staging/prod)
+- [ ] OAuth (Google, VK, Telegram) — отключён до реализации верификации токенов
 - [ ] Push-уведомления
-- [ ] Офлайн-режим
-- [ ] OAuth (Google, VK, Telegram)
-- [ ] Голосовой ввод
-- [ ] Multiplayer режим
+- [ ] iOS
 
 ## Лицензия
 

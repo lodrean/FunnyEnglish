@@ -10,7 +10,13 @@ import java.util.UUID
 enum class SubmissionStatus { NEW, REVIEWED }
 
 @Entity
-@Table(name = "practice_submissions")
+@Table(
+    name = "practice_submissions",
+    // UNIQUE (user_id, topic_id) — одна Practice-отправка на топик (Flyway V25; нужен и для H2 create-drop)
+    uniqueConstraints = [
+        UniqueConstraint(name = "uq_practice_submissions_user_topic", columnNames = ["user_id", "topic_id"])
+    ]
+)
 class PracticeSubmission(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

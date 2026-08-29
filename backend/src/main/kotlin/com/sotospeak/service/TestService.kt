@@ -83,6 +83,14 @@ class TestService(
         val test = testRepository.findByIdWithQuestions(UUID.fromString(testId))
             ?: throw NoSuchElementException("Test not found")
 
+        // SEC: GET /tests/** is permitAll — never expose drafts publicly.
+        // Throwing before returning also keeps drafts out of the testDetails cache
+        // (Spring does not cache exceptions). Publish/unpublish goes through
+        // updateTest(), which evicts testDetails#testId via @CacheEvict.
+        if (!test.isPublished) {
+            throw NoSuchElementException("Test not found")
+        }
+
         // Eagerly load answers
         test.questions.forEach { question ->
             question.answers.size // trigger lazy load

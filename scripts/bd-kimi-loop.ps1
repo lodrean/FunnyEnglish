@@ -342,7 +342,7 @@ $extra$kindExtra
     # сам текст грабли в memory.md тоже содержит «usage limit» (kimi читает память). ---
     $quotaHit = $false
     if (Test-Path $kimiLog) {
-        $tailLog = Get-Content $kimiLog -Tail 50 -Raw -ErrorAction SilentlyContinue
+        $tailLog = ((Get-Content $kimiLog -Tail 50 -ErrorAction SilentlyContinue) -join "`n")
         if ($kimiCode -ne 0 -and $tailLog -match "You've reached your 5-hour usage limit|access_terminated_error") { $quotaHit = $true }
     }
 

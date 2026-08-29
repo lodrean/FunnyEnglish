@@ -3,7 +3,6 @@ package com.sotospeak.config
 import com.sotospeak.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -33,11 +32,13 @@ class SecurityConfig(
                     // Public endpoints (paths without /api context path)
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/tests/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/audio-tests/**").permitAll()
+                    // NOTE: /public/** covers live guest endpoints (/public/speaking/**, /public/guest-events,
+                    // /public/logs) AND legacy /public/tests, /public/adaptive — narrowing requires owner
+                    // decision in bd FunnyEnglish-8zm (GuestFlowE2ETest depends on public test validation).
                     .requestMatchers("/public/**").permitAll()
-                    .requestMatchers("/leaderboard/**").permitAll()
+                    // Legacy pre-pivot routes (AR-5, bd FunnyEnglish-8zm) removed from permitAll:
+                    // GET /categories/**, GET /tests/**, GET /api/audio-tests/**, /leaderboard/**
+                    // now require authentication.
 
                     // Admin endpoints (hasAuthority because JwtAuthFilter adds ROLE_ prefix)
                     .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")

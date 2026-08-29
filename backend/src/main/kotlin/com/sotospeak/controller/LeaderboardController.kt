@@ -7,6 +7,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
+@Deprecated(
+    message = "Legacy pre-pivot API (AR-5): убран из SecurityConfig permitAll, живые клиенты не используют. " +
+        "Ожидает решения владельца об удалении в bd FunnyEnglish-8zm. Не использовать.",
+    level = DeprecationLevel.WARNING
+)
 @RestController
 @RequestMapping("/leaderboard")
 class LeaderboardController(

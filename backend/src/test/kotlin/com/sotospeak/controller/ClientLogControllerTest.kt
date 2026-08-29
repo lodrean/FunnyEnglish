@@ -162,8 +162,8 @@ class ClientLogControllerTest {
 
     @Test
     fun `admin logs требует ADMIN и фильтрует по level и platform`() {
-        // аноним — 403
-        mockMvc.get("/admin/logs").andExpect { status { isForbidden() } }
+        // аноним — 401 (bd FunnyEnglish-nj2.7, раньше 403)
+        mockMvc.get("/admin/logs").andExpect { status { isUnauthorized() } }
 
         // seed: 2 записи
         mockMvc.post("/public/logs") {

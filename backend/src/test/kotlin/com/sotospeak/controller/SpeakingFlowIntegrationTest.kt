@@ -169,7 +169,7 @@ class SpeakingFlowIntegrationTest {
             .andExpect { status { isNotFound() } }
     }
 
-    // 2. Гость: POST submissions → 403
+    // 2. Гость: POST submissions → 401 (bd FunnyEnglish-nj2.7, раньше 403)
     @Test
     fun `guest cannot submit practice recording`() {
         val topic = seedPublishedContent()
@@ -179,7 +179,7 @@ class SpeakingFlowIntegrationTest {
             this.file(file)
             param("topicId", topic.id.toString())
             param("durationSec", "30")
-        }.andExpect { status { isForbidden() } }
+        }.andExpect { status { isUnauthorized() } }
     }
 
     // 3. USER: multipart POST → 201, status NEW, audioUrl содержит public-url

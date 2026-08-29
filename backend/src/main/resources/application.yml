@@ -77,8 +77,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:} # REQUIRED: min 32 chars, set via env variable
     expiration: 86400000 # 24 hours
-    # Окно, в течение которого ИСТЁКШИЙ access-токен можно обменять на новый через /auth/refresh.
-    refresh-window: ${JWT_REFRESH_WINDOW:604800000} # 7 days
+    # TTL refresh-токена (отдельный JWT с JTI, ротация и отзыв — bd FunnyEnglish-nj2.7).
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days
   oauth:
     # OAuth-логин отключён до реализации верификации токена у провайдера (SEC, PROJECT-REVIEW Б3):
     # без проверки у Google/VK/Telegram клиентский token подделывается (account-takeover).

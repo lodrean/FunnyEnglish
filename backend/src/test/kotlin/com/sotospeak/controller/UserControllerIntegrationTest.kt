@@ -30,8 +30,8 @@ class UserControllerIntegrationTest {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
         }.andExpect {
-            // Spring Security returns 403 for anonymous requests to authenticated endpoints
-            status { isForbidden() }
+            // 401 для анонимных запросов к защищённым эндпоинтам (bd FunnyEnglish-nj2.7, раньше 403)
+            status { isUnauthorized() }
         }
     }
 }

@@ -3,13 +3,13 @@ package com.sotospeak.service
 import com.sotospeak.dto.*
 import com.sotospeak.entity.AuthProvider
 import com.sotospeak.entity.User
+import com.sotospeak.exception.InvalidCredentialsException
 import com.sotospeak.repository.UserRepository
 import com.sotospeak.security.JwtService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 class AuthService(
@@ -17,8 +17,7 @@ class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
     private val emailVerificationService: EmailVerificationService,
-    @Value("\${app.jwt.refresh-window:604800000}")
-    private val refreshWindowMs: Long,
+    private val refreshTokenService: RefreshTokenService,
     /** OAuth-логин выключен по умолчанию до реализации верификации токена у провайдера (SEC Б3). */
     @Value("\${app.oauth.enabled:false}")
     val oauthEnabled: Boolean
@@ -48,17 +47,18 @@ class AuthService(
         }
 
         val token = jwtService.generateToken(savedUser.id.toString(), savedUser.email, savedUser.role)
-        return RegisterResponse(user = savedUser.toResponse(), emailSent = false, token = token)
+        val refreshToken = refreshTokenService.issue(savedUser)
+        return RegisterResponse(user = savedUser.toResponse(), emailSent = false, token = token, refreshToken = refreshToken)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun login(request: LoginRequest): AuthResponse {
         val email = request.email.trim().lowercase()
         val user = userRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("Invalid credentials")
+            ?: throw InvalidCredentialsException()
 
         if (user.passwordHash == null || !passwordEncoder.matches(request.password, user.passwordHash)) {
-            throw IllegalArgumentException("Invalid credentials")
+            throw InvalidCredentialsException()
         }
 
         if (emailVerificationService.enabled && !user.emailVerified) {
@@ -66,9 +66,11 @@ class AuthService(
         }
 
         val token = jwtService.generateToken(user.id.toString(), user.email, user.role)
+        val refreshToken = refreshTokenService.issue(user)
 
         return AuthResponse(
             token = token,
+            refreshToken = refreshToken,
             user = user.toResponse()
         )
     }
@@ -121,35 +123,34 @@ class AuthService(
         }
 
         val token = jwtService.generateToken(user.id.toString(), user.email, user.role)
+        val refreshToken = refreshTokenService.issue(user)
 
         return AuthResponse(
             token = token,
+            refreshToken = refreshToken,
             user = user.toResponse()
         )
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * Обмен refresh-токена на новую пару access+refresh с ротацией (bd FunnyEnglish-nj2.7).
+     * Старый refresh-токен одноразовый; reuse-detection отзывает всю цепочку (RefreshTokenService).
+     */
+    @Transactional
     fun refreshToken(request: RefreshTokenRequest): AuthResponse {
-        val claims = jwtService.extractClaimsAllowExpired(request.refreshToken)
-            ?: throw IllegalArgumentException("Invalid refresh token")
-        // Истёкший access-токен можно обменять только в пределах refresh-окна (по умолчанию 7 дней) —
-        // иначе украденный токен продлевался бы бесконечно.
-        val expiration = claims.expiration?.toInstant()
-            ?: throw IllegalArgumentException("Invalid refresh token")
-        if (expiration.isBefore(java.time.Instant.now().minusMillis(refreshWindowMs))) {
-            throw IllegalArgumentException("Refresh window expired")
-        }
-        val userId = claims.subject ?: throw IllegalArgumentException("Invalid refresh token")
-        val userUuid = runCatching { UUID.fromString(userId) }
-            .getOrElse { throw IllegalArgumentException("Invalid refresh token") }
-        val user = userRepository.findById(userUuid)
-            .orElseThrow { IllegalArgumentException("Invalid refresh token") }
-
+        val (user, newRefreshToken) = refreshTokenService.rotate(request.refreshToken)
         val token = jwtService.generateToken(user.id.toString(), user.email, user.role)
 
         return AuthResponse(
             token = token,
+            refreshToken = newRefreshToken,
             user = user.toResponse()
         )
+    }
+
+    /** Logout: отзыв предъявленного refresh-токена. Идемпотентно (всегда успешно для клиента). */
+    @Transactional
+    fun logout(request: RefreshTokenRequest) {
+        refreshTokenService.revoke(request.refreshToken)
     }
 }

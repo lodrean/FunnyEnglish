@@ -57,7 +57,8 @@ class AudioTestIntegrationTest {
                 id = UUID.fromString(adminId),
                 email = "admin@test.com",
                 passwordHash = "password",
-                displayName = "Admin User"
+                displayName = "Admin User",
+                role = "ADMIN"   // роль сверяется с БД, claim токена игнорируется (bd FunnyEnglish-nj2.7)
             ))
         }
         if (!userRepository.existsById(UUID.fromString(userId))) {

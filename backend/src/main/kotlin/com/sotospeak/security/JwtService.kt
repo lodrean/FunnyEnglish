@@ -18,6 +18,10 @@ class JwtService {
     @Value("\${app.jwt.expiration}")
     private var expiration: Long = 86400000
 
+    /** TTL refresh-токена (отдельный долгоживущий токен, bd FunnyEnglish-nj2.7). */
+    @Value("\${app.jwt.refresh-expiration:604800000}")
+    private var refreshExpiration: Long = 604800000
+
     private val key: SecretKey by lazy {
         Keys.hmacShaKeyFor(secretKey.toByteArray())
     }
@@ -49,6 +53,43 @@ class JwtService {
             .compact()
     }
 
+    /** Сгенерированный refresh-токен: сырое значение (отдаётся клиенту), JTI и момент истечения. */
+    data class RefreshTokenData(val raw: String, val jti: String, val expiresAt: java.time.Instant)
+
+    /**
+     * Refresh-токен — отдельный JWT с claim type=refresh и уникальным JTI.
+     * Хранится в БД только как SHA-256-хэш (RefreshTokenService), ротируется при каждом обмене.
+     */
+    fun generateRefreshToken(userId: String): RefreshTokenData {
+        val now = Date()
+        val expiryDate = Date(now.time + refreshExpiration)
+        val jti = UUID.randomUUID().toString()
+
+        val raw = Jwts.builder()
+            .subject(userId)
+            .id(jti)
+            .claim("type", TOKEN_TYPE_REFRESH)
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(key)
+            .compact()
+        return RefreshTokenData(raw, jti, expiryDate.toInstant())
+    }
+
+    /**
+     * Парсит refresh-токен: подпись валидна, не истёк, claim type=refresh.
+     * null — любая невалидность (caller отвечает 401).
+     */
+    fun parseRefreshToken(token: String): Claims? {
+        return try {
+            val claims = extractAllClaims(token)
+            if (claims["type"] as? String != TOKEN_TYPE_REFRESH) null else claims
+        } catch (e: Exception) {
+            logger.warn("Refresh token validation failed: ${e.javaClass.simpleName} - ${e.message}")
+            null
+        }
+    }
+
     fun validateToken(token: String): Boolean {
         return try {
             val claims = extractAllClaims(token)
@@ -77,6 +118,15 @@ class JwtService {
     fun extractEmail(token: String): String? {
         return try {
             extractAllClaims(token)["email"] as? String
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** claim type токена (refresh-токены помечены type=refresh); null — access-токен/неизвестно. */
+    fun extractType(token: String): String? {
+        return try {
+            extractAllClaims(token)["type"] as? String
         } catch (e: Exception) {
             null
         }
@@ -119,5 +169,9 @@ class JwtService {
             .build()
             .parseSignedClaims(token)
             .payload
+    }
+
+    companion object {
+        const val TOKEN_TYPE_REFRESH = "refresh"
     }
 }

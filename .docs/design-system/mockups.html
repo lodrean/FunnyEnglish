@@ -10,7 +10,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: var(--font-brand);
-    background: var(--color-surface-warm);
+    background: var(--color-surface-container);
     color: var(--color-text);
     min-height: 100vh;
   }НУ
@@ -25,7 +25,7 @@
   .switcher button {
     font-family: var(--font-brand); font-weight: var(--weight-bold); font-size: var(--text-body-small);
     padding: 10px 20px; border: none; border-radius: var(--radius-full);
-    background: var(--color-surface-warm); color: var(--color-text-muted);
+    background: var(--color-surface-container-high); color: var(--color-text-muted);
     cursor: pointer; transition: all var(--duration-m3-state) var(--ease-m3-standard);
   }
   .switcher button.active { background: var(--color-primary-strong); color: var(--color-on-primary); }
@@ -66,7 +66,7 @@
   .btn:active::after { opacity: var(--state-pressed); }
   .btn:active { transform: scale(.97); }
   .btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
-  .btn-primary { background: var(--color-primary-strong); color: #fff; } /* Filled: белый только на primaryStrong (4.76:1 AA) */
+  .btn-primary { background: var(--color-primary-strong); color: var(--color-on-primary); } /* Filled: белый только на light primaryStrong (4.76:1 AA); dark — onPrimary v1.3.1 */
   .btn-ghost { background: transparent; color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-outline); } /* M3 Outlined (ex-SpeakingGhostButton) */
   .btn-danger-ghost { background: transparent; color: var(--color-error); box-shadow: inset 0 0 0 1px var(--color-error); } /* M3 Outlined error */
   .link-btn {
@@ -280,7 +280,7 @@
   .player { display: flex; align-items: center; gap: var(--space-l); }
   .player-play {
     width: 56px; height: 56px; border-radius: var(--radius-full); border: none; flex-shrink: 0;
-    background: var(--color-primary-strong); color: #fff; cursor: pointer; /* M3 FilledIconButton */
+    background: var(--color-primary-strong); color: var(--color-on-primary); cursor: pointer; /* M3 FilledIconButton */
     display: flex; align-items: center; justify-content: center;
     transition: transform var(--duration-fast) var(--ease-standard);
   }
@@ -388,7 +388,7 @@
     position: relative; overflow: hidden;
     font-family: var(--font-brand); font-weight: var(--weight-extrabold); font-size: var(--text-body-medium);
     border: none; border-radius: var(--radius-button); padding: 16px; min-height: var(--size-touch);
-    cursor: pointer; background: var(--color-primary-strong); color: #fff; flex-shrink: 0; /* M3 FilledButton */
+    cursor: pointer; background: var(--color-primary-strong); color: var(--color-on-primary); flex-shrink: 0; /* M3 FilledButton */
     transition: transform var(--duration-fast) var(--ease-standard);
   }
   .video-cta::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; transition: opacity var(--duration-m3-state) var(--ease-m3-standard); }
@@ -541,7 +541,7 @@ v2.0 · 2026-08-07 — DSM-4: компонентная база → Material 3 (
   Outlined TextField label-в-бордере, Elevated/Filled/Outlined cards, FilterChip,
   NavigationBar с pill-индикатором, state layers, tonal surfaceContainer*).
   + 4 новых фрейма по §6: Topics, Questions, MySubmissions, Debug Menu.
-  Все экраны — light/dark через переключатель темы (tokens v1.3.0).
+  Все экраны — light/dark через переключатель темы (tokens v1.3.1).
   Поведение и аннотации — без изменений. Соответствие: docs/design/M3_REPLACEMENT_REGISTRY.md.
 v2.1 · 2026-08-10 — решения владельца по DSM-7 (M3_PIXEL_REPORT, 2026-08-08):
   frame-questions — тексты CTA эталонно из приложения («Тренировка · 3 попытки» /
@@ -1173,7 +1173,7 @@ v2.1 · 2026-08-10 — решения владельца по DSM-7 (M3_PIXEL_RE
       document.getElementById('frame-' + btn.dataset.frame).classList.add('active');
     });
   });
-  // Light/dark (все экраны в двух темах — tokens v1.3.0)
+  // Light/dark (все экраны в двух темах — tokens v1.3.1)
   document.getElementById('themeToggle').addEventListener('click', () => {
     if (document.documentElement.getAttribute('data-theme') === 'dark') {
       document.documentElement.removeAttribute('data-theme');

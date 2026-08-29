@@ -2,7 +2,10 @@
    Источник: tokens.json (W3C DTCG draft). Одна палитра — два таргета (Compose + MUI).
    v1.2.0 · 2026-08-01: аудит WCAG — primaryStrong, textMuted/timer затемнены, recordContainer.
    v1.3.0 · 2026-08-07: DSM-2 — M3-роли (surfaceContainer*, outlineVariant, inverse*, scrim,
-   surfaceTint, state layers, elevation levels, M3-easing). Цвета v1.2.0 не изменены. */
+   surfaceTint, state layers, elevation levels, M3-easing). Цвета v1.2.0 не изменены.
+   v1.3.1 · 2026-08-10: errata (утв. владельцем 2026-08-08) — dark onPrimary/onSecondary = #1A2F5E
+   (белый на dark primary #8FB3F5 / secondary #B79EED = WCAG FAIL); dark primaryStrong = #8FB3F5;
+   удалён --color-surface-warm (нет в tokens.json). */
 
 :root {
   /* Brand */
@@ -45,7 +48,6 @@
   /* Neutral (light periwinkle) */
   --color-background: #EEF3FF;
   --color-surface: #FFFFFF;
-  --color-surface-warm: #E5DCFF;
   --color-surface-card: #FFFFFF;
   --color-surface-variant: #D8E2FA;
   --color-outline: #B9C7EE;
@@ -142,13 +144,15 @@
 [data-theme="dark"] {
   --color-background: #161A2E;
   --color-surface: #1F2440;
-  --color-surface-warm: #252B4A;
   --color-surface-card: #252B4A;
   --color-surface-variant: #2B3152;
   --color-text: #E8EAF6;
   --color-text-muted: #9AA0C4;
   --color-primary: #8FB3F5;
+  --color-on-primary: #1A2F5E; /* v1.3.1 errata: белый на #8FB3F5 = WCAG FAIL */
+  --color-primary-strong: #8FB3F5; /* v1.3.1: dark filled-кнопки = primary (текст onPrimary) */
   --color-secondary: #B79EED;
+  --color-on-secondary: #1A2F5E; /* v1.3.1 errata: белый на #B79EED = WCAG FAIL */
   --color-record: #FFB27D;
   --color-outline: #3D4568;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.25);

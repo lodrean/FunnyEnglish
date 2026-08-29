@@ -85,6 +85,7 @@ const speakingLight = {
 
 // Dark-вариант: record осветлён для контраста (tokens.json color.dark)
 // + dark-контейнеры v1.3.0 (M3): primaryContainer/secondaryContainer/recordContainer
+// + dark-статусы: 1:1 composeApp DarkSpeakingColors — единые токены статус-чипов обоих клиентов
 const speakingDark = {
   ...speakingLight,
   record: '#FFB27D',
@@ -94,6 +95,12 @@ const speakingDark = {
   onPrimaryContainer: '#DDE8FD',
   secondaryContainer: '#46366F',
   onSecondaryContainer: '#E5DCFF',
+  status: {
+    new: '#FFB74D',
+    newContainer: '#3D2A0A',
+    reviewed: '#81C784',
+    reviewedContainer: '#1B4D1F',
+  },
 };
 
 // Chart Colors for Data Visualization (первый = brand primary)
@@ -693,17 +700,21 @@ const darkThemeOptions: ThemeOptions = {
           },
         },
         containedPrimary: {
-          background: '#8FB3F5',
+          backgroundColor: '#8FB3F5',
           color: '#161A2E',
           '&:hover': {
-            background: '#5B8DEF',
+            backgroundColor: '#8FB3F5',
+            // M3 hover state layer: 8% onPrimary поверх dark.primary (НЕ светлый #5B8DEF)
+            backgroundImage: 'linear-gradient(rgba(22,26,46,0.08), rgba(22,26,46,0.08))',
           },
         },
         containedSecondary: {
-          background: '#B79EED',
+          backgroundColor: '#B79EED',
           color: '#161A2E',
           '&:hover': {
-            background: '#9B7EDE',
+            backgroundColor: '#B79EED',
+            // M3 hover state layer: 8% onSecondary поверх dark.secondary (НЕ светлый #9B7EDE)
+            backgroundImage: 'linear-gradient(rgba(22,26,46,0.08), rgba(22,26,46,0.08))',
           },
         },
         outlined: {

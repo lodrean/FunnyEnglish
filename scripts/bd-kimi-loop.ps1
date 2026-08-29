@@ -171,20 +171,22 @@ function Update-IssueJsonl {
 function Invoke-Native {
     # Запуск нативной команды с таймаутом через фоновый job.
     # Возвращает exit code нативной команды; -2 = таймаут; -1 = нет вывода.
+    # ВАЖНО: scriptblock'и через Start-Job -ArgumentList НЕ сериализуются
+    # (превращаются в строку-текст), поэтому передаём имя команды + аргументы.
     param(
-        [scriptblock]$Body,
+        [string]$CmdName,
         [object[]]$Arguments = @(),
         [int]$TimeoutSec = 1800,
         [string]$LogPath = ''
     )
     $workdir = (Get-Location).Path
     $sb = {
-        param($b, $a, $l, $w)
+        param($c, $a, $l, $w)
         Set-Location $w
-        if ($l) { & $b @a *> $l } else { & $b @a }
+        if ($l) { & $c @a *> $l } else { & $c @a }
         $LASTEXITCODE
     }
-    $job = Start-Job -ScriptBlock $sb -ArgumentList $Body, $Arguments, $LogPath, $workdir
+    $job = Start-Job -ScriptBlock $sb -ArgumentList $CmdName, $Arguments, $LogPath, $workdir
     if (Wait-Job $job -Timeout $TimeoutSec) {
         $out = @(Receive-Job $job -Keep)
         Remove-Job $job -Force
@@ -201,8 +203,7 @@ function Invoke-Gate {
     $log = Join-Path $LogDir ("gate-{0}.log" -f $Gate.Name)
     $dir = if ($Gate.Dir) { $Gate.Dir } else { '.' }
     Push-Location $dir
-    $body = { param($cmd, $cmdArgs) & $cmd @cmdArgs }
-    $code = Invoke-Native -Body $body -Arguments @($Gate.Cmd, $Gate.Args) -TimeoutSec $GateTimeoutSec -LogPath $log
+    $code = Invoke-Native -CmdName $Gate.Cmd -Arguments $Gate.Args -TimeoutSec $GateTimeoutSec -LogPath $log
     Pop-Location
     [pscustomobject]@{ Name = $Gate.Name; Ok = ($code -eq 0); ExitCode = $code; Log = $log }
 }
@@ -313,15 +314,11 @@ $extra$kindExtra
     $kimiLog = Join-Path $dir 'kimi-run.log'
     $kimiCode = -1
     $kimiTimedOut = $false
-    $kimiBody = { param($p, $m, $c) kimi -p $p -m $m --print --mcp-config-file $c }
+    $kimiArgs = if (Test-Path $McpConfig) { @('-p', $prompt, '-m', $Model, '--print', '--mcp-config-file', $McpConfig) } else { @('-p', $prompt, '-m', $Model, '--print') }
     for ($attempt = 1; $attempt -le 2; $attempt++) {
         Write-Host ("  [{0}] kimi: {1} ({2}) — попытка {3}" -f $stamp, $id, $Model, $attempt)
         $started = Get-Date
-        if (Test-Path $McpConfig) {
-            $kimiCode = Invoke-Native -Body $kimiBody -Arguments @($prompt, $Model, $McpConfig) -TimeoutSec $KimiTimeoutSec -LogPath $kimiLog
-        } else {
-            $kimiCode = Invoke-Native -Body { param($p, $m) kimi -p $p -m $m --print } -Arguments @($prompt, $Model) -TimeoutSec $KimiTimeoutSec -LogPath $kimiLog
-        }
+        $kimiCode = Invoke-Native -CmdName 'kimi' -Arguments $kimiArgs -TimeoutSec $KimiTimeoutSec -LogPath $kimiLog
         if ($kimiCode -eq -2) {
             $kimiTimedOut = $true
             Write-Host ("  kimi TIMEOUT (> {0} с) на попытке {1} — чистка зависших процессов" -f $KimiTimeoutSec, $attempt)

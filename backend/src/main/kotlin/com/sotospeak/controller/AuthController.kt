@@ -62,6 +62,11 @@ class AuthController(
         @PathVariable provider: String,
         @Valid @RequestBody request: OAuthRequest
     ): ResponseEntity<AuthResponse> {
+        // Endpoint отключён до реализации верификации токена у провайдера (SEC Б3):
+        // без проверки у Google/VK/Telegram клиентский token подделывается → account-takeover.
+        if (!authService.oauthEnabled) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+        }
         return ResponseEntity.ok(authService.oauthLogin(provider, request))
     }
 

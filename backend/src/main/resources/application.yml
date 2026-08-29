@@ -73,6 +73,10 @@ app:
     expiration: 86400000 # 24 hours
     # Окно, в течение которого ИСТЁКШИЙ access-токен можно обменять на новый через /auth/refresh.
     refresh-window: ${JWT_REFRESH_WINDOW:604800000} # 7 days
+  oauth:
+    # OAuth-логин отключён до реализации верификации токена у провайдера (SEC, PROJECT-REVIEW Б3):
+    # без проверки у Google/VK/Telegram клиентский token подделывается (account-takeover).
+    enabled: ${OAUTH_ENABLED:false}
 
   s3:
     endpoint: ${S3_ENDPOINT:http://localhost:9000}

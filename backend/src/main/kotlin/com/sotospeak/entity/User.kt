@@ -20,14 +20,14 @@ data class User(
     val displayName: String,
 
     @Column(name = "avatar_url")
-    val avatarUrl: String? = null,
+    var avatarUrl: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "auth_provider")
-    val authProvider: AuthProvider = AuthProvider.EMAIL,
+    var authProvider: AuthProvider = AuthProvider.EMAIL,
 
     @Column(name = "provider_id")
-    val providerId: String? = null,
+    var providerId: String? = null,
 
     @Column(nullable = false)
     var level: Int = 1,

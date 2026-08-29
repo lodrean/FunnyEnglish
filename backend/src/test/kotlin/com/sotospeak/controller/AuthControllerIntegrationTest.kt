@@ -2,6 +2,7 @@ package com.sotospeak.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.sotospeak.dto.LoginRequest
+import com.sotospeak.dto.OAuthRequest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -53,6 +54,19 @@ class AuthControllerIntegrationTest {
             content = objectMapper.writeValueAsString(request)
         }.andExpect {
             status { isBadRequest() }
+        }
+    }
+
+    @Test
+    fun `oauth login is disabled by default and returns 404`() {
+        // SEC Б3: endpoint отключён до реализации верификации токена у провайдера.
+        val request = OAuthRequest(token = "forged-provider-token", email = "victim@sotospeak.app")
+
+        mockMvc.post("/auth/oauth/google") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(request)
+        }.andExpect {
+            status { isNotFound() }
         }
     }
 }

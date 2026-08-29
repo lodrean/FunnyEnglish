@@ -18,7 +18,10 @@ class AuthService(
     private val jwtService: JwtService,
     private val emailVerificationService: EmailVerificationService,
     @Value("\${app.jwt.refresh-window:604800000}")
-    private val refreshWindowMs: Long
+    private val refreshWindowMs: Long,
+    /** OAuth-логин выключен по умолчанию до реализации верификации токена у провайдера (SEC Б3). */
+    @Value("\${app.oauth.enabled:false}")
+    val oauthEnabled: Boolean
 ) {
     @Transactional
     fun register(request: RegisterRequest): RegisterResponse {
@@ -69,6 +72,12 @@ class AuthService(
         )
     }
 
+    /**
+     * ВНИМАНИЕ: endpoint выключен по умолчанию (`app.oauth.enabled=false`, SEC Б3).
+     * TODO(security): перед включением реализовать верификацию [OAuthRequest.token] у провайдера
+     * (Google tokeninfo / VK users.get / Telegram HMAC) — сейчас клиентский token принимается
+     * как providerId без проверки, что даёт account-takeover.
+     */
     @Transactional
     fun oauthLogin(provider: String, request: OAuthRequest): AuthResponse {
         val authProvider = when (provider.lowercase()) {
@@ -86,12 +95,13 @@ class AuthService(
             user = userRepository.findByEmail(request.email)
 
             if (user != null) {
-                // Link existing account with OAuth provider
-                user = user.copy(
-                    authProvider = authProvider,
-                    providerId = request.token,
-                    avatarUrl = request.avatarUrl ?: user.avatarUrl
-                )
+                // Link existing account with OAuth provider (мутация managed-entity, не copy() —
+                // copy() на data class-entity ломает dirty-checking и делает лишний merge+SELECT)
+                user.authProvider = authProvider
+                user.providerId = request.token
+                if (request.avatarUrl != null) {
+                    user.avatarUrl = request.avatarUrl
+                }
                 user = userRepository.save(user)
             }
         }

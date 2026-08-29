@@ -92,6 +92,9 @@ services:
       # dev only: высокие лимиты для E2E-прогонов (в prod env не выставлять — дефолт 5/мин на login)
       RATE_LIMIT_LOGIN_CAPACITY: "100"
       RATE_LIMIT_REGISTER_CAPACITY: "50"
+      # X-Forwarded-For/X-Real-IP доверяются ТОЛЬКО от этих прокси (nj2.4): docker-сети
+      # (admin nginx -> backend). Без whitelist заголовки игнорируются (remoteAddr).
+      RATE_LIMIT_TRUSTED_PROXIES: ${RATE_LIMIT_TRUSTED_PROXIES:-172.16.0.0/12}
       LOG_LEVEL: DEBUG
       SECURITY_LOG_LEVEL: DEBUG
       WEB_LOG_LEVEL: DEBUG

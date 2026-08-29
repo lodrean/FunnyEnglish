@@ -18,7 +18,12 @@ import java.util.concurrent.atomic.AtomicLong
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 1) // After CORS, before auth
 class RateLimitingFilter(
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    // Доверенные прокси (через запятую: IP или IPv4 CIDR), которым разрешено
+    // выставлять X-Forwarded-For / X-Real-IP. Дефолт из env RATE_LIMIT_TRUSTED_PROXIES
+    // (пусто = заголовкам НЕ доверяем, считаем по remoteAddr — защита от спуфинга,
+    // bd FunnyEnglish-nj2.4). Параметр с дефолтом — для тестов.
+    trustedProxiesConfig: String? = System.getenv("RATE_LIMIT_TRUSTED_PROXIES")
 ) : OncePerRequestFilter() {
 
     private val logger = LoggerFactory.getLogger(RateLimitingFilter::class.java)
@@ -165,22 +170,85 @@ class RateLimitingFilter(
         return false
     }
 
+    // --- Trusted proxy handling (SEC nj2.4) ---
+    // X-Forwarded-For / X-Real-IP принимаются ТОЛЬКО если непосредственный пир
+    // (remoteAddr) входит в whitelist доверенных прокси. Иначе клиент при прямом
+    // доступе может подделать заголовок и обойти rate-limit, меняя IP в каждом запросе.
+
+    private sealed class TrustedProxy {
+        data class Exact(val ip: String) : TrustedProxy()
+        data class CidrV4(val network: Long, val mask: Long) : TrustedProxy()
+    }
+
+    private val trustedProxies: List<TrustedProxy> =
+        (trustedProxiesConfig ?: "")
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .mapNotNull { parseTrustedProxy(it) }
+
+    private fun parseTrustedProxy(entry: String): TrustedProxy? {
+        if ('/' in entry) {
+            val ipPart = entry.substringBefore('/')
+            val prefix = entry.substringAfter('/').toIntOrNull() ?: return null
+            val ip = ipv4ToLong(ipPart) ?: return null
+            if (prefix < 0 || prefix > 32) return null
+            val mask = if (prefix == 0) 0L else (-1L shl (32 - prefix)) and 0xFFFFFFFFL
+            return TrustedProxy.CidrV4(ip and mask, mask)
+        }
+        return TrustedProxy.Exact(entry)
+    }
+
+    private fun ipv4ToLong(ip: String): Long? {
+        val parts = ip.split('.')
+        if (parts.size != 4) return null
+        var result = 0L
+        for (part in parts) {
+            val value = part.toIntOrNull() ?: return null
+            if (value < 0 || value > 255) return null
+            result = (result shl 8) or value.toLong()
+        }
+        return result
+    }
+
+    private fun isTrustedProxy(ip: String): Boolean = trustedProxies.any { proxy ->
+        when (proxy) {
+            is TrustedProxy.Exact -> proxy.ip == ip
+            is TrustedProxy.CidrV4 -> ipv4ToLong(ip)?.let { it and proxy.mask == proxy.network } == true
+        }
+    }
+
+    private fun isValidIp(ip: String): Boolean =
+        ipv4ToLong(ip) != null || ':' in ip // IPv4 строго; IPv6 — наличие ':'
+
     private fun extractClientIp(request: HttpServletRequest): String {
-        // Check for X-Forwarded-For header (when behind proxy/load balancer)
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        if (!xForwardedFor.isNullOrBlank()) {
-            // Take the first IP in the chain
-            return xForwardedFor.split(",")[0].trim()
+        val remoteAddr = request.remoteAddr ?: return "unknown"
+
+        // Прокси-заголовки доверяем только от whitelisted прокси
+        if (!isTrustedProxy(remoteAddr)) {
+            return remoteAddr
         }
 
-        // Check for X-Real-IP header
+        // X-Forwarded-For: client, proxy1, proxy2 — идём справа налево,
+        // отбрасывая доверенные прокси нашей инфраструктуры; первый недоверенный — клиент.
+        // Левые элементы цепочки контролируются клиентом и доверию не подлежат.
+        val xForwardedFor = request.getHeader("X-Forwarded-For")
+        if (!xForwardedFor.isNullOrBlank()) {
+            val chain = xForwardedFor.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            for (ip in chain.asReversed()) {
+                if (!isTrustedProxy(ip)) {
+                    return if (isValidIp(ip)) ip else remoteAddr
+                }
+            }
+            // Вся цепочка из доверенных прокси — падаем на X-Real-IP / remoteAddr
+        }
+
         val xRealIp = request.getHeader("X-Real-IP")
-        if (!xRealIp.isNullOrBlank()) {
+        if (!xRealIp.isNullOrBlank() && isValidIp(xRealIp.trim())) {
             return xRealIp.trim()
         }
 
-        // Fall back to remote address
-        return request.remoteAddr ?: "unknown"
+        return remoteAddr
     }
 
     private fun getConfigForPath(path: String): RateLimitConfig {

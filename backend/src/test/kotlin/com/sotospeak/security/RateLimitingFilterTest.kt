@@ -23,7 +23,8 @@ class RateLimitingFilterTest {
     @BeforeEach
     fun setup() {
         objectMapper = ObjectMapper()
-        filter = RateLimitingFilter(objectMapper)
+        // Явно пустой whitelist — тесты не зависят от env RATE_LIMIT_TRUSTED_PROXIES
+        filter = RateLimitingFilter(objectMapper, "")
         request = mock(HttpServletRequest::class.java)
         response = mock(HttpServletResponse::class.java)
         filterChain = mock(FilterChain::class.java)
@@ -66,32 +67,74 @@ class RateLimitingFilterTest {
     }
 
     @Test
-    fun `should extract IP from X-Forwarded-For header`() {
-        // Given
+    fun `should use rightmost untrusted IP from X-Forwarded-For when remote address is trusted proxy`() {
+        // Given - прокси 10.0.0.1 в whitelist; левая часть XFF подделана клиентом
+        val trustedFilter = RateLimitingFilter(objectMapper, "10.0.0.0/8")
         `when`(request.requestURI).thenReturn("/auth/login")
         `when`(request.method).thenReturn("POST")
-        `when`(request.getHeader("X-Forwarded-For")).thenReturn("192.168.1.1, 10.0.0.1")
+        `when`(request.remoteAddr).thenReturn("10.0.0.1")
+        `when`(request.getHeader("X-Forwarded-For")).thenReturn("1.2.3.4, 192.168.1.1")
+
+        // When - 6 запросов с РАЗНЫМИ поддельными левыми IP, но одним реальным клиентом
+        repeat(6) { i ->
+            `when`(request.getHeader("X-Forwarded-For")).thenReturn("1.2.3.$i, 192.168.1.1")
+            trustedFilter.doFilter(request, response, filterChain)
+        }
+
+        // Then - лимит общий по 192.168.1.1 (первый недоверенный справа), обход не удался
+        verify(response, atLeastOnce()).status = 429
+    }
+
+    @Test
+    fun `should ignore X-Forwarded-For when remote address is not a trusted proxy`() {
+        // Given - прямой клиент (не прокси) подделывает X-Forwarded-For
+        `when`(request.requestURI).thenReturn("/auth/login")
+        `when`(request.method).thenReturn("POST")
+        `when`(request.remoteAddr).thenReturn("203.0.113.5")
+
+        // When - каждый запрос с уникальным поддельным IP
+        repeat(6) { i ->
+            `when`(request.getHeader("X-Forwarded-For")).thenReturn("9.9.9.$i")
+            filter.doFilter(request, response, filterChain)
+        }
+
+        // Then - лимит считается по remoteAddr, спуфинг не помог
+        verify(response, atLeastOnce()).status = 429
+    }
+
+    @Test
+    fun `should use X-Real-IP when remote address is trusted proxy`() {
+        // Given
+        val trustedFilter = RateLimitingFilter(objectMapper, "10.0.0.1")
+        `when`(request.requestURI).thenReturn("/auth/login")
+        `when`(request.method).thenReturn("POST")
+        `when`(request.remoteAddr).thenReturn("10.0.0.1")
+        `when`(request.getHeader("X-Forwarded-For")).thenReturn(null)
+        `when`(request.getHeader("X-Real-IP")).thenReturn("192.168.1.2")
 
         // When
-        filter.doFilter(request, response, filterChain)
+        trustedFilter.doFilter(request, response, filterChain)
 
         // Then
         verify(filterChain).doFilter(request, response)
     }
 
     @Test
-    fun `should extract IP from X-Real-IP header`() {
+    fun `should ignore X-Real-IP when remote address is not a trusted proxy`() {
         // Given
         `when`(request.requestURI).thenReturn("/auth/login")
         `when`(request.method).thenReturn("POST")
-        `when`(request.getHeader("X-Forwarded-For")).thenReturn(null)
-        `when`(request.getHeader("X-Real-IP")).thenReturn("192.168.1.2")
+        `when`(request.remoteAddr).thenReturn("203.0.113.6")
 
-        // When
-        filter.doFilter(request, response, filterChain)
+        // When - каждый запрос с уникальным поддельным X-Real-IP
+        repeat(6) { i ->
+            `when`(request.getHeader("X-Forwarded-For")).thenReturn(null)
+            `when`(request.getHeader("X-Real-IP")).thenReturn("8.8.8.$i")
+            filter.doFilter(request, response, filterChain)
+        }
 
         // Then
-        verify(filterChain).doFilter(request, response)
+        verify(response, atLeastOnce()).status = 429
     }
 
     @Test

@@ -124,6 +124,10 @@ services:
       SPRING_MAIL_STARTTLS: ${SPRING_MAIL_STARTTLS:-true}
       MAIL_FROM: ${MAIL_FROM:?Set MAIL_FROM in .env}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:?Set PUBLIC_APP_URL in .env (https://api.yourdomain.com)}
+      # X-Forwarded-For/X-Real-IP доверяются ТОЛЬКО от этих прокси (nj2.4): docker-сети
+      # (Caddy -> backend; порт backend наружу не проброшен). Без whitelist заголовки
+      # игнорируются и весь трафик схлопнется в один бакет по IP прокси.
+      RATE_LIMIT_TRUSTED_PROXIES: ${RATE_LIMIT_TRUSTED_PROXIES:-172.16.0.0/12}
       # Продовые логи — INFO (дефолт application.yml), DEBUG не включаем
     # Порт наружу НЕ пробрасываем — вход только через Caddy (API_HOST)
     expose:

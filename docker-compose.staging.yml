@@ -115,6 +115,9 @@ services:
       # Ослабленные rate-limit'ы для E2E/приёмки (грабля №23; в prod НЕ выставлять)
       RATE_LIMIT_LOGIN_CAPACITY: ${RATE_LIMIT_LOGIN_CAPACITY:-100}
       RATE_LIMIT_REGISTER_CAPACITY: ${RATE_LIMIT_REGISTER_CAPACITY:-50}
+      # X-Forwarded-For/X-Real-IP доверяются ТОЛЬКО от этих прокси (nj2.4): docker-сети
+      # (admin nginx -> backend). Без whitelist заголовки игнорируются (remoteAddr).
+      RATE_LIMIT_TRUSTED_PROXIES: ${RATE_LIMIT_TRUSTED_PROXIES:-172.16.0.0/12}
       # Email-верификация через Mailpit (поддержка в backend — OpenSpec add-email-verification;
       # до её реализации переменные безвредно игнорируются)
       EMAIL_VERIFICATION_ENABLED: ${EMAIL_VERIFICATION_ENABLED:-false}

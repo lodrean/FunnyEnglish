@@ -128,11 +128,11 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // .avatar-circle 88dp; tertiary-токена в SpeakingColors нет — secondary
+                // .avatar-circle 88dp; WCAG: container-пара вместо secondary+белый (2.2:1 FAIL в dark)
                 Box(
                     modifier = Modifier
                         .size(88.dp)
-                        .background(speaking.secondary, CircleShape)
+                        .background(speaking.secondaryContainer, CircleShape)
                         .testTag("profile_avatar"),
                     contentAlignment = Alignment.Center
                 ) {
@@ -140,7 +140,7 @@ fun ProfileScreen(
                         text = initialsOf(profile.user.displayName),
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = speaking.onPrimary
+                        color = speaking.onSecondaryContainer
                     )
                 }
                 Text(

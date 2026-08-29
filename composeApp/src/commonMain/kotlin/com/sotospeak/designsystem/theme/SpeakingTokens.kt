@@ -31,7 +31,9 @@ data class SpeakingColors(
     val primaryContainer: Color,   // #DDE8FD
     val onPrimaryContainer: Color, // #1A2F5E
     val secondary: Color,          // #9B7EDE — фирменный фиолетовый
+    val onSecondary: Color,        // контент на secondary (dark: #1A2F5E — белый на #B79EED = 2.2:1 FAIL)
     val secondaryContainer: Color, // #E5DCFF (note-bg)
+    val onSecondaryContainer: Color, // текст на secondaryContainer (аватар профиля)
     val background: Color,         // #EEF3FF светлый / #161A2E тёмный
     val surface: Color,
     val surfaceVariant: Color,     // трек таймер-кольца
@@ -66,7 +68,9 @@ val LightSpeakingColors = SpeakingColors(
     primaryContainer = Color(0xFFDDE8FD),
     onPrimaryContainer = Color(0xFF1A2F5E),
     secondary = Color(0xFF9B7EDE),
+    onSecondary = Color(0xFFFFFFFF),
     secondaryContainer = Color(0xFFE5DCFF),
+    onSecondaryContainer = Color(0xFF5B3FA8),
     background = Color(0xFFEEF3FF),
     surface = Color(0xFFFFFFFF),
     surfaceVariant = Color(0xFFD8E2FA),
@@ -97,10 +101,13 @@ val LightSpeakingColors = SpeakingColors(
 val DarkSpeakingColors = LightSpeakingColors.copy(
     primary = Color(0xFF8FB3F5),
     primaryStrong = Color(0xFF8FB3F5),
+    onPrimary = Color(0xFF1A2F5E),            // errata dark-ролей: белый на #8FB3F5 = 2.2:1 FAIL
+    onSecondary = Color(0xFF1A2F5E),          // errata dark-ролей: белый на #B79EED = 2.2:1 FAIL
     primaryContainer = Color(0xFF2E3E6E),     // v1.3.0 M3 dark
     onPrimaryContainer = Color(0xFFDDE8FD),   // v1.3.0 M3 dark
     secondary = Color(0xFFB79EED),
     secondaryContainer = Color(0xFF46366F),   // v1.3.0 M3 dark
+    onSecondaryContainer = Color(0xFFE5DCFF), // v1.3.0 M3 dark
     background = Color(0xFF161A2E),
     surface = Color(0xFF1F2440),
     surfaceVariant = Color(0xFF2B3152),

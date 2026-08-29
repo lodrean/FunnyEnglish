@@ -24,7 +24,14 @@ ignore_all_files_in_gitignore: true
 # Maps the language key to the options.
 # The settings are considered only if the project is trusted (see global configuration to define trusted projects).
 # See https://oraios.github.io/serena/02-usage/050_configuration.html#language-server-specific-settings
-ls_specific_settings: {}
+ls_specific_settings:
+  kotlin:
+    # Use the previously installed Kotlin Language Server because the pinned
+    # Serena version (262.9593.0) is no longer available from the JetBrains CDN.
+    # When a custom ls_path is set, the managed download is bypassed.
+    ls_path: "C:\\Users\\etaba\\.serena\\language_servers\\static\\KotlinLanguageServer\\kotlin_language_server\\kotlin-lsp.cmd"
+    # JVM options are handled by the wrapper script above, so keep them empty.
+    jvm_options: ""
 
 # list of additional paths to ignore in this project.
 # Same syntax as gitignore, so you can use * and **.
@@ -36,7 +43,38 @@ ls_specific_settings: {}
 #     - "**/bin/**"
 #     - "**/obj/**"
 # Note: global ignored_paths from serena_config.yml are also applied additively.
-ignored_paths: []
+ignored_paths:
+  # Build / dependency caches
+  - "**/node_modules"
+  - "**/.gradle"
+  - "**/.kotlin"
+  - "**/build"
+  - "**/dist"
+  - "**/out"
+  - "**/kotlin-js-store"
+  - "**/gradle-temp"
+  # IDE / tooling
+  - "**/.idea"
+  - "**/.vscode"
+  - "**/*.iml"
+  - "**/.cxx"
+  # Test / coverage outputs
+  - "**/coverage"
+  - "**/test-results"
+  - "**/playwright-report"
+  - "**/.storybook/cache"
+  # Logs / session artifacts
+  - "**/logs"
+  - "**/*.log"
+  - "**/.playwright-mcp"
+  - "**/.pipeline"
+  - "**/videos"
+  - "**/.media"
+  # Local / backup copies
+  - "**/admin-web-backup"
+  - "**/.dolt"
+  - "**/*.db"
+  - "**/.beads/proxieddb"
 
 # whether the project is in read-only mode
 # If set to true, all editing tools will be disabled and attempts to use them will result in an error
@@ -78,7 +116,19 @@ default_modes:
 
 # initial prompt for the project. It will always be given to the LLM upon activating the project
 # (contrary to the memories, which are loaded on demand).
-initial_prompt: ""
+initial_prompt: |
+  You are working on "So to Speak" — a Kotlin Multiplatform (KMP) English-learning application
+  with an Android client, a Kotlin/JVM backend, and a React/TypeScript admin-web dashboard.
+
+  Before making changes, read the project instructions in `AGENTS.md` at the repository root.
+  Key conventions:
+  - Use `bd` (beads) for task tracking; do not create markdown TODO lists.
+  - Follow the OpenSpec workflow for spec/PRD changes (`openspec/`).
+  - Use Clean Architecture / MVI in Android/KMP code and the existing patterns in admin-web.
+  - Run the relevant verification commands before claiming work is complete.
+
+  Use Serena's semantic code search tools (`find_symbol`, `find_referencing_symbols`,
+  `get_symbols_overview`) when exploring the codebase.
 
 # time budget (seconds) per tool call for the retrieval of additional symbol information
 # such as docstrings or parameter information.

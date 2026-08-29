@@ -53,7 +53,7 @@ param(
 $ErrorActionPreference = 'Continue'
 $PSNativeCommandUseErrorActionPreference = $false
 $IssuesPath = Join-Path (Get-Location) '.beads/issues.jsonl'
-$McpConfig  = Join-Path (Get-Location) '.kimi-code/mcp.json'
+$KimiMcpFile = Join-Path (Get-Location) 'scripts/kimi-mcp-empty.json'
 
 # --- Причины пропуска (динамически: владелец-решения / эпики / окружение-блокеры) ---
 # 4d1: код follow-up готов, блокер — живой Android-гейт (нет эмулятора); тикет НЕ закрывать.
@@ -300,7 +300,7 @@ $extra$kindExtra
 
 Требования и ограничения:
 - ПЕРЕД правками прочитай memory.md (архитектура, конвенции, известные грабли) и AGENTS.md (правила проекта).
-- Для навигации по символам используй Serena (MCP) или grep/read; для UI-правок сверяйся с дизайн-системой Playful Coach (tokens в design/ и composeApp/designsystem).
+- Для навигации по символам используй grep/read/glob; для UI-правок сверяйся с дизайн-системой Playful Coach (tokens в design/ и composeApp/designsystem).
 - Меняй ТОЛЬКО файлы, необходимые для этой задачи; ничего лишнего не «улучшай», не удаляй и не переписывай.
 - НЕ запускай gradle-сборки/тесты/линт (гейты прогоняет драйвер), НЕ делай git-коммитов и пушей.
 - Спеки/PRD (docs/, openspec/) НЕ правишь: если для задачи нужна правка спеки или решение владельца — ОСТАНОВИСЬ и напиши в отчёте, что именно требуется (ADR-007, human-in-the-loop).
@@ -310,11 +310,13 @@ $extra$kindExtra
     $promptFile = Join-Path $dir 'kimi-prompt.txt'
     Set-Content -Path $promptFile -Value $prompt -Encoding utf8
 
-    # --- kimi (с таймаутом и одним ретраем) ---
+    # --- kimi (с таймаутом и одним ретраем; БЕЗ внешних MCP-серверов: serena
+    # через uvx периодически вешал сессию — навигация через grep/read самого kimi;
+    # пустой конфиг через файл: встроенные кавычки JSON в args pwsh режет) ---
     $kimiLog = Join-Path $dir 'kimi-run.log'
     $kimiCode = -1
     $kimiTimedOut = $false
-    $kimiArgs = if (Test-Path $McpConfig) { @('-p', $prompt, '-m', $Model, '--print', '--mcp-config-file', $McpConfig) } else { @('-p', $prompt, '-m', $Model, '--print') }
+    $kimiArgs = @('-p', $prompt, '-m', $Model, '--print', '--mcp-config-file', $KimiMcpFile)
     for ($attempt = 1; $attempt -le 2; $attempt++) {
         Write-Host ("  [{0}] kimi: {1} ({2}) — попытка {3}" -f $stamp, $id, $Model, $attempt)
         $started = Get-Date

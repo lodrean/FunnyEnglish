@@ -1,0 +1,34 @@
+﻿Проект: So to Speak (FunnyEnglish) — Kotlin Multiplatform (Compose Multiplatform).
+Рабочий каталог — корень репозитория (ветка develop). Ты выполняешь задачу bd FunnyEnglish-xic.
+
+Задача: MySubmissions: заголовок/бейдж/карточка разошлись с frame-submissions (MS1-MS3)
+
+Описание задачи (из bd):
+Аудит DC-A1. Мокап: «Отправки»+подзаголовок, бейдж NEW, 2-строчная карточка с grade-chip, explainer о запрете повторной отправки. App: «← Мои записи», «На проверке», 1-строчная карточка, explainer отсутствует.
+
+
+Контекст задачи (дизайн-конформити, MS1-MS3):
+- Аудит: docs/qa/design-conformance/REPORT_ANDROID_2026-08-10.md, строка MySubmissions (❌ MS1-MS3).
+- Мокап: .docs/design-system/mockups.html, frame frame-submissions; скриншот-эталон docs/qa/design-conformance/mockup-submissions.png.
+- App сейчас: «← Мои записи», «На проверке», 1-строчная карточка, explainer отсутствует.
+- Привести экран MySubmissions (composeApp, app/screens/*, MySubmissionsViewModel) к мокапу:
+  1) заголовок «Отправки» + подзаголовок (например «N записей · оценка учителя» по мокапу);
+  2) бейдж NEW для новых записей;
+  3) карточка 2-строчная: тема/дата + grade-chip (цвета из SpeakingColors, статусы НОВАЯ/ПРОВЕРЕНО и пр. по мокапу);
+  4) explainer о запрете повторной отправки.
+- Тексты не ломай те, на которые завязаны тесты/Maestro (проверь desktopTest и .maestro).
+- ВАЖНО: это изменение поведения UI, но спеки/PRD не трогай (мокап — источник). Если без правки спеки
+  не обойтись — остановись и опиши, что нужно (ADR-007).
+
+Стек клиента: Kotlin Multiplatform + Compose (монолит composeApp, app/screens/*, app/viewmodel/*, app/di/*, design/ + composeApp/designsystem токены Playful Coach).
+- MVI: XxxState/Action/Event + StateFlow; DI — Koin (AppModule.kt); навигация — sealed AppScreen без NavHost.
+- Гейты драйвера: :composeApp:desktopTest, :composeApp:compileDebugKotlinAndroid, :composeApp:compileKotlinWasmJs (--no-configuration-cache). Сборки/тесты сам НЕ запускай.
+
+Требования и ограничения:
+- ПЕРЕД правками прочитай memory.md (архитектура, конвенции, известные грабли) и AGENTS.md (правила проекта).
+- Для навигации по символам используй grep/read/glob; для UI-правок сверяйся с дизайн-системой Playful Coach (tokens в design/ и composeApp/designsystem).
+- Меняй ТОЛЬКО файлы, необходимые для этой задачи; ничего лишнего не «улучшай», не удаляй и не переписывай.
+- НЕ запускай gradle-сборки/тесты/линт (гейты прогоняет драйвер), НЕ делай git-коммитов и пушей.
+- Спеки/PRD (docs/, openspec/) НЕ правишь: если для задачи нужна правка спеки или решение владельца — ОСТАНОВИСЬ и напиши в отчёте, что именно требуется (ADR-007, human-in-the-loop).
+- После правок запиши краткий отчёт в C:\Users\etaba\IdeaProjects\projects\Packages\FunnyEnglish\.pipeline\20260830-012427/02-execute.md: что сделано, список изменённых/созданных файлов, как проверить.
+- В финальном ответе ПЕРВОЙ строкой верни маркер: STATUS: DONE (задача выполнена, можно закрывать) | STATUS: NEEDS_OWNER (нужно решение владельца или правка спеки, ADR-007) | STATUS: BLOCKED (непреодолимое препятствие). Далее — сводка до 10 строк.

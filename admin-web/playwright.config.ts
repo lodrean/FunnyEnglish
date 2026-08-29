@@ -36,7 +36,7 @@ export default defineConfig({
   /* Глобальные настройки для всех проектов */
   use: {
     /* Базовый URL для тестов */
-    baseURL: process.env.ADMIN_URL || 'http://localhost:5173',
+    baseURL: process.env.ADMIN_URL || 'http://localhost:3000',
     
     /* Сохранять trace при первом повторе */
     trace: 'on-first-retry',
@@ -139,7 +139,7 @@ export default defineConfig({
   /* Запуск локального dev сервера перед тестами */
   webServer: process.env.SKIP_WEB_SERVER ? undefined : {
     command: 'npm run dev',
-    url: 'http://localhost:5173',
+    url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

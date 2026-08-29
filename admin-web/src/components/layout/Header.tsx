@@ -28,7 +28,6 @@ import {
   Search as SearchIcon,
   Notifications as NotificationsIcon,
   ArrowBack as ArrowBackIcon,
-  Settings as SettingsIcon,
   Logout as LogoutIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
@@ -398,10 +397,6 @@ export const Header: React.FC<HeaderProps> = ({
           </Typography>
         </Box>
         <Divider />
-        <MenuItem onClick={() => navigate('/settings')}>
-          <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
-          Settings
-        </MenuItem>
         <MenuItem onClick={() => navigate('/users/admins')}>
           <PersonIcon fontSize="small" sx={{ mr: 1 }} />
           Profile

@@ -1,0 +1,22 @@
+﻿Проект: So to Speak (FunnyEnglish) — Kotlin Multiplatform (Compose Multiplatform).
+Рабочий каталог — корень репозитория (ветка develop). Ты выполняешь задачу bd FunnyEnglish-9bo.1.
+
+Задача: ADM: Dashboard — убрать вымышленные метрики
+
+Описание задачи (из bd):
+completionRate: 78.5, avgSessionTime: 24.3 — хардкод; userGrowth = totalUsers − (7−index−1)×50 → отрицательные значения; fetchDashboardData глотает ошибку. Реальные метрики (submissions/day, активные ученики) или честный empty state; переименовать legacy-термины в speaking-метрики. Источник: §2.3 К3; PROJECT_AUDIT_2026-08-29 D-1; Dashboard.tsx:95-110,255-289. Quick win.
+
+
+Стек admin-web: React 18 + TS strict + MUI 6 + TanStack Query 5 + axios (src/api/client.ts, токен в localStorage) + vite 5.
+- Страницы — src/pages/, API-клиент — src/api/client.ts, E2E — e2e/ (Playwright, Page Object e2e/pages/).
+- Гейты драйвера: npm run typecheck (tsc --noEmit) и npx vitest run в admin-web. Сборки/тесты сам НЕ запускай.
+- Конвенции: MUI компоненты, theme из src/theme (палитра speaking), формы на react-hook-form, данные через TanStack Query.
+
+Требования и ограничения:
+- ПЕРЕД правками прочитай memory.md (архитектура, конвенции, известные грабли) и AGENTS.md (правила проекта).
+- Для навигации по символам используй Serena (MCP) или grep/read; для UI-правок сверяйся с дизайн-системой Playful Coach (tokens в design/ и composeApp/designsystem).
+- Меняй ТОЛЬКО файлы, необходимые для этой задачи; ничего лишнего не «улучшай», не удаляй и не переписывай.
+- НЕ запускай gradle-сборки/тесты/линт (гейты прогоняет драйвер), НЕ делай git-коммитов и пушей.
+- Спеки/PRD (docs/, openspec/) НЕ правишь: если для задачи нужна правка спеки или решение владельца — ОСТАНОВИСЬ и напиши в отчёте, что именно требуется (ADR-007, human-in-the-loop).
+- После правок запиши краткий отчёт в C:\Users\etaba\IdeaProjects\projects\Packages\FunnyEnglish\.pipeline\20260829-205118/02-execute.md: что сделано, список изменённых/созданных файлов, как проверить.
+- В финальном ответе верни сводку до 10 строк.

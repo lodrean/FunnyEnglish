@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '../feedback/ErrorBoundary';
 import {
   Box,
   CssBaseline,
@@ -51,6 +52,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const location = useLocation();
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
@@ -140,8 +142,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             },
           }}
         >
-          {/* Page Content */}
-          {children || <Outlet />}
+          {/* Page Content: route-level boundary — краш страницы не роняет layout;
+              key по pathname сбрасывает boundary при переходе на другой роут */}
+          {children || (
+            <ErrorBoundary key={location.pathname}>
+              <Outlet />
+            </ErrorBoundary>
+          )}
         </Box>
       </Box>
 

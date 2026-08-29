@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -18,17 +18,12 @@ import {
   Alert,
   InputAdornment,
   Avatar,
-  Toolbar,
   useTheme,
   alpha,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Search as SearchIcon,
-
   Download as DownloadIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
   Close as CloseIcon,
   MailOutline as MessageIcon,
 } from '@mui/icons-material';
@@ -56,17 +51,29 @@ interface UserListItem {
   totalPoints: number;
 }
 
-interface UserFormData {
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserListItem['role'];
-  status: UserListItem['status'];
-}
+// Debounce для серверного поиска (паттерн как в GradingInbox)
+const useDebouncedValue = (value: string, delayMs = 300) => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+  return debounced;
+};
 
-// Fetch users from API
-const fetchUsers = async (): Promise<UserListItem[]> => {
-  const users = await getAdminUsers();
+// Маппинг UI-ролей в роли backend (GET /admin/users?role=)
+const roleToApi: Record<string, string> = {
+  student: 'USER',
+  instructor: 'TEACHER',
+  admin: 'ADMIN',
+};
+
+// Fetch users from API (серверный поиск q и фильтр role)
+const fetchUsers = async (search: string, role: string): Promise<UserListItem[]> => {
+  const users = await getAdminUsers({
+    query: search || undefined,
+    role: roleToApi[role],
+  });
   
   return users.map((user: AdminUserSummary) => {
     // Split displayName into first/last name (best effort)
@@ -101,26 +108,9 @@ const fetchUsers = async (): Promise<UserListItem[]> => {
   });
 };
 
-const createUser = async (_data: UserFormData): Promise<UserListItem> => {
-  // TODO: Implement when API supports user creation
-  throw new Error('User creation not implemented in API yet');
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _updateUser = async (_id: string, _data: UserFormData): Promise<UserListItem> => {
-  // TODO: Implement when API supports user update
-  throw new Error('User update not implemented in API yet');
-};
-
-const deleteUser = async (id: string): Promise<void> => {
-  // TODO: Implement when API supports user deletion
-  console.log('Delete user:', id);
-};
-
-const bulkDeleteUsers = async (ids: string[]): Promise<void> => {
-  // TODO: Implement when API supports bulk deletion
-  console.log('Bulk delete users:', ids);
-};
+// Создание/редактирование/удаление пользователей backend не поддерживает
+// (нет POST/PUT/DELETE /admin/users) — действия убраны из UI, чтобы не было
+// тихого ложного успеха (bd FunnyEnglish-9bo.4, аудит §2.3 К4).
 
 // Role mapping for StatusBadge
 const getRoleVariant = (role: UserListItem['role']) => {
@@ -192,55 +182,18 @@ const Users: React.FC = () => {
     role: '',
     status: '',
   });
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserListItem | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  // Drawer read-only с деталями пользователя (редактирование API не поддерживает)
+  const [viewingUser, setViewingUser] = useState<UserListItem | null>(null);
   // Диалог «Сообщение ученику» (с его результатами тестов)
   const [messageDialogUser, setMessageDialogUser] = useState<UserListItem | null>(null);
   const [messageText, setMessageText] = useState('');
   const [messageType, setMessageType] = useState<'MESSAGE' | 'COMMENT'>('MESSAGE');
   const [messageTestId, setMessageTestId] = useState<string>('');
   
-  const [formData, setFormData] = useState<UserFormData>({
-    email: '',
-    firstName: '',
-    lastName: '',
-    role: 'student',
-    status: 'active',
-  });
-
+  const debouncedSearch = useDebouncedValue(filters.search);
   const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['users'],
-    queryFn: fetchUsers,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: createUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      handleCloseDrawer();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setDeleteDialogOpen(false);
-      setUserToDelete(null);
-    },
-  });
-
-  const bulkDeleteMutation = useMutation({
-    mutationFn: bulkDeleteUsers,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setSelectedUsers([]);
-      setBulkDeleteDialogOpen(false);
-    },
+    queryKey: ['users', debouncedSearch, filters.role],
+    queryFn: () => fetchUsers(debouncedSearch, filters.role),
   });
 
   // Детали выбранного ученика (результаты тестов) для диалога сообщения
@@ -282,68 +235,15 @@ const Users: React.FC = () => {
     sendMessageMutation.reset();
   };
 
-  // Filter users
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      !filters.search ||
-      user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-      user.firstName.toLowerCase().includes(filters.search.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesRole = !filters.role || user.role === filters.role;
-    const matchesStatus = !filters.status || user.status === filters.status;
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  // Поиск и фильтр роли — серверные (queryFn выше); статус — клиентский
+  const filteredUsers = users.filter((user) => !filters.status || user.status === filters.status);
 
-  const handleOpenDrawer = (user?: UserListItem) => {
-    if (user) {
-      setEditingUser(user);
-      setFormData({
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        status: user.status,
-      });
-    } else {
-      setEditingUser(null);
-      setFormData({
-        email: '',
-        firstName: '',
-        lastName: '',
-        role: 'student',
-        status: 'active',
-      });
-    }
-    setDrawerOpen(true);
+  const handleOpenDrawer = (user: UserListItem) => {
+    setViewingUser(user);
   };
 
   const handleCloseDrawer = () => {
-    setDrawerOpen(false);
-    setEditingUser(null);
-    setFormData({ email: '', firstName: '', lastName: '', role: 'student', status: 'active' });
-  };
-
-  const handleSubmit = () => {
-    if (!formData.email.trim() || !formData.firstName.trim() || !formData.lastName.trim()) {
-      return;
-    }
-
-    if (editingUser) {
-      // updateMutation.mutate({ id: editingUser.id, data: formData });
-    } else {
-      createMutation.mutate(formData);
-    }
-  };
-
-  const handleDelete = (user: UserListItem) => {
-    setUserToDelete(user);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (userToDelete) {
-      deleteMutation.mutate(userToDelete.id);
-    }
+    setViewingUser(null);
   };
 
   const handleExportCSV = () => {
@@ -500,15 +400,6 @@ const Users: React.FC = () => {
           >
             Export CSV
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDrawer()}
-            data-testid="add-user-button"
-            sx={{ backgroundColor: theme.palette.primary.main }}
-          >
-            Add User
-          </Button>
         </Box>
       </Box>
 
@@ -559,134 +450,83 @@ const Users: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Bulk Actions */}
-      {selectedUsers.length > 0 && (
-        <Paper sx={{ p: 1, mb: 2, backgroundColor: alpha(theme.palette.primary.main, 0.1) }}>
-          <Toolbar variant="dense" sx={{ minHeight: 48 }}>
-            <Typography variant="body2" sx={{ flex: 1 }}>
-              {selectedUsers.length} user(s) selected
-            </Typography>
-            <Button
-              size="small"
-              color="error"
-              startIcon={<DeleteIcon />}
-              onClick={() => setBulkDeleteDialogOpen(true)}
-            >
-              Delete Selected
-            </Button>
-          </Toolbar>
-        </Paper>
-      )}
-
       {/* Data Table with Design System */}
       <DataTable
         columns={columns}
         data={filteredUsers}
         keyExtractor={(user) => user.id}
         loading={isLoading}
-        selectable
-        onSelectionChange={setSelectedUsers}
         onRowClick={(user) => handleOpenDrawer(user)}
-        rowActions={[
-          { label: 'Edit', icon: <EditIcon fontSize="small" />, onClick: (user) => handleOpenDrawer(user) },
-          { label: 'Delete', icon: <DeleteIcon fontSize="small" />, onClick: (user) => handleDelete(user), danger: true },
-        ]}
         emptyState={<Typography color="text.secondary">No users found</Typography>}
         stickyHeader
       />
 
-      {/* Add/Edit Drawer */}
+      {/* User Details Drawer (read-only: API не поддерживает редактирование) */}
       <Drawer
         anchor="right"
-        open={drawerOpen}
+        open={!!viewingUser}
         onClose={handleCloseDrawer}
         PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}
       >
-        <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h6">
-              {editingUser ? 'Edit User' : 'Add User'}
-            </Typography>
-            <IconButton onClick={handleCloseDrawer}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+        {viewingUser && (
+          <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h6" data-testid="user-details-title">
+                User Details
+              </Typography>
+              <IconButton onClick={handleCloseDrawer}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
 
-          <Box flex={1}>
-            <TextField
-              label="Email"
-              fullWidth
-              margin="normal"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              error={!formData.email.trim()}
-            />
-            <TextField
-              label="First Name"
-              fullWidth
-              margin="normal"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              required
-              error={!formData.firstName.trim()}
-            />
-            <TextField
-              label="Last Name"
-              fullWidth
-              margin="normal"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              required
-              error={!formData.lastName.trim()}
-            />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={formData.role}
+            <Box flex={1}>
+              <TextField
+                label="Email"
+                fullWidth
+                margin="normal"
+                value={viewingUser.email}
+                disabled
+              />
+              <TextField
+                label="First Name"
+                fullWidth
+                margin="normal"
+                value={viewingUser.firstName}
+                disabled
+              />
+              <TextField
+                label="Last Name"
+                fullWidth
+                margin="normal"
+                value={viewingUser.lastName}
+                disabled
+              />
+              <TextField
                 label="Role"
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserListItem['role'] })}
-              >
-                <MenuItem value="student">Student</MenuItem>
-                <MenuItem value="instructor">Instructor</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={formData.status}
+                fullWidth
+                margin="normal"
+                value={viewingUser.role.charAt(0).toUpperCase() + viewingUser.role.slice(1)}
+                disabled
+              />
+              <TextField
                 label="Status"
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as UserListItem['status'] })}
-              >
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-                <MenuItem value="suspended">Suspended</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
+                fullWidth
+                margin="normal"
+                value={viewingUser.status.charAt(0).toUpperCase() + viewingUser.status.slice(1)}
+                disabled
+              />
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Editing users is not supported by the API yet.
+              </Alert>
+            </Box>
 
-          <Box display="flex" gap={1} mt={2}>
-            <Button variant="outlined" fullWidth onClick={handleCloseDrawer}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleSubmit}
-              disabled={
-                !formData.email.trim() ||
-                !formData.firstName.trim() ||
-                !formData.lastName.trim() ||
-                createMutation.isPending
-              }
-              sx={{ backgroundColor: theme.palette.primary.main }}
-            >
-              {createMutation.isPending ? 'Saving...' : editingUser ? 'Update' : 'Create'}
-            </Button>
+            <Box display="flex" gap={1} mt={2}>
+              <Button variant="outlined" fullWidth onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </Box>
           </Box>
-        </Box>
+        )}
       </Drawer>
 
       {/* Message to Student Dialog (результаты + отправка сообщения/комментария) */}
@@ -813,53 +653,6 @@ const Users: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete User</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete {userToDelete?.firstName} {userToDelete?.lastName}?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This action cannot be undone. All user data will be permanently removed.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={confirmDelete}
-            variant="contained"
-            color="error"
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Bulk Delete Dialog */}
-      <Dialog open={bulkDeleteDialogOpen} onClose={() => setBulkDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Multiple Users</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete {selectedUsers.length} users?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBulkDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => bulkDeleteMutation.mutate(selectedUsers)}
-            variant="contained"
-            color="error"
-            disabled={bulkDeleteMutation.isPending}
-          >
-            {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete All'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

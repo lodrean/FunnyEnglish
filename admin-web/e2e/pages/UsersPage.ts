@@ -72,24 +72,24 @@ export class UsersPage {
 }
 
 /**
- * Page Object для страницы деталей пользователя (drawer справа)
+ * Page Object для drawer деталей пользователя (read-only: API не поддерживает редактирование)
  */
 export class UserDetailsPage {
   readonly page: Page;
-  readonly updateButton: Locator;
+  readonly drawerTitle: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    // Кнопка Update в drawer
-    this.updateButton = page.locator('button:has-text("Update"), button[type="submit"]').first();
+    // Заголовок read-only drawer «User Details»
+    this.drawerTitle = page.locator('[data-testid="user-details-title"]');
   }
 
   /**
-   * Проверить что страница/дравер загружен
+   * Проверить что drawer загружен
    */
   async expectPageLoaded() {
-    // Проверяем что видна кнопка Update в drawer
-    await expect(this.updateButton).toBeVisible({ timeout: 10000 });
+    // Проверяем что виден заголовок drawer с деталями пользователя
+    await expect(this.drawerTitle).toBeVisible({ timeout: 10000 });
   }
 
   /**

@@ -1,0 +1,377 @@
+<#
+.SYNOPSIS
+    Автономный прогон открытых задач bd через kimi-code CLI (драйвер-цикл).
+
+.DESCRIPTION
+    Читает .beads/issues.jsonl (passive export; CLI bd на этой машине нет),
+    сортирует открытые задачи (priority -> created_at), для каждой кодовой
+    задачи: собирает промпт -> запускает kimi (headless --print) ->
+    прогоняет гейты (gradle) -> обновляет статус в .beads/issues.jsonl ->
+    пишет артефакты в .pipeline/<stamp>/ и сводку в kimi-runs/<stamp>.md.
+
+    Задачи-«решения владельца» (ADR-007) и блокированные окружением
+    пропускаются с указанием причины (таблица $SkipReasons).
+
+    Тикет закрывается ТОЛЬКО если: kimi завершился с кодом 0, лог непустой,
+    ВСЕ гейты зелёные. Иначе остаётся in_progress с updated_at.
+
+.PARAMETER Only
+    Запустить только указанные id (например -Only FunnyEnglish-j8r).
+
+.PARAMETER Epic
+    Запустить подзадачи эпика (например -Epic FunnyEnglish-9bo). Гейты
+    выбираются по типу эпика (admin/backend/client/none).
+
+.PARAMETER Model
+    Модель kimi (дефолт kimi-code/k3).
+
+.PARAMETER DryRun
+    Показать очередь/скипы и ничего не запускать.
+
+.PARAMETER SkipGates
+    Не прогонять gradle-гейты (только kimi + статус).
+
+.EXAMPLE
+    .\scripts\bd-kimi-loop.ps1 -DryRun
+    .\scripts\bd-kimi-loop.ps1
+    .\scripts\bd-kimi-loop.ps1 -Only FunnyEnglish-j8r -SkipGates
+#>
+param(
+    [string[]]$Only = @(),
+    [string]$Epic = '',
+    [string]$Model = 'kimi-code/k3',
+    [switch]$DryRun,
+    [switch]$SkipGates
+)
+
+$ErrorActionPreference = 'Stop'
+# Не давать ненулевому exit-коду нативного процесса (kimi/gradlew) стать
+# фатальной ошибкой: pwsh 7.3+ бросает при EAP=Stop, а kimi исторически
+# выходит с кодом 1 при успешно выполненной задаче (kimi-runs/2026-08-28).
+$PSNativeCommandUseErrorActionPreference = $false
+$IssuesPath = Join-Path (Get-Location) '.beads/issues.jsonl'
+$McpConfig  = Join-Path (Get-Location) '.kimi-code/mcp.json'
+
+# --- Причины пропуска (динамически: владелец-решения / эпики / окружение-блокеры) ---
+# 4d1: код follow-up готов, блокер — живой Android-гейт (нет эмулятора); тикет НЕ закрывать.
+$HardcodedSkips = @{
+    'FunnyEnglish-4d1' = 'Код follow-up готов; блокер — живой Android-гейт (нет эмулятора); тикет НЕ закрывать'
+}
+
+# --- Дополнительный контекст задачи в промпт ---
+$TaskExtras = @{
+    'FunnyEnglish-j8r' = @'
+Контекст задачи (cleanup):
+- libs.androidx.media3.session подключён в shared и feature-tests, но MediaSession нигде не создаётся.
+  Либо удалить зависимость, либо задействовать под фоновое аудио/медиаконтролы — выбери удаление,
+  если нет явных признаков использования (проверь grep по MediaSession/Player.Listener и пр.).
+- media3-ui (PlayerView) остался в gradle/libs.versions.toml после миграции на ui-compose (bd FunnyEnglish-did).
+  Удали алиас/версию media3-ui, если на него нет ссылок (проверь все build.gradle.kts и исходники).
+- Затронутые места: gradle/libs.versions.toml, shared/build.gradle.kts, feature-tests/build.gradle.kts
+  (и feature-*/build.gradle.kts, где media3-ui/session упоминаются).
+- Гейты драйвера: :composeApp:desktopTest, :composeApp:compileDebugKotlinAndroid,
+  :composeApp:compileKotlinWasmJs (--no-configuration-cache). Сборки сам не запускай.
+'@
+    'FunnyEnglish-xic' = @'
+Контекст задачи (дизайн-конформити, MS1-MS3):
+- Аудит: docs/qa/design-conformance/REPORT_ANDROID_2026-08-10.md, строка MySubmissions (❌ MS1-MS3).
+- Мокап: .docs/design-system/mockups.html, frame frame-submissions; скриншот-эталон docs/qa/design-conformance/mockup-submissions.png.
+- App сейчас: «← Мои записи», «На проверке», 1-строчная карточка, explainer отсутствует.
+- Привести экран MySubmissions (composeApp, app/screens/*, MySubmissionsViewModel) к мокапу:
+  1) заголовок «Отправки» + подзаголовок (например «N записей · оценка учителя» по мокапу);
+  2) бейдж NEW для новых записей;
+  3) карточка 2-строчная: тема/дата + grade-chip (цвета из SpeakingColors, статусы НОВАЯ/ПРОВЕРЕНО и пр. по мокапу);
+  4) explainer о запрете повторной отправки.
+- Тексты не ломай те, на которые завязаны тесты/Maestro (проверь desktopTest и .maestro).
+- ВАЖНО: это изменение поведения UI, но спеки/PRD не трогай (мокап — источник). Если без правки спеки
+  не обойтись — остановись и опиши, что нужно (ADR-007).
+'@
+    'FunnyEnglish-c47' = @'
+Контекст задачи (дизайн-конформити, V1/V2):
+- Аудит: docs/qa/design-conformance/REPORT_ANDROID_2026-08-10.md, строка Video (⚠️ V1-V3).
+- Мокап: .docs/design-system/mockups.html, frame frame-video; эталон docs/qa/design-conformance/mockup-video.png.
+- Мокап: реплика (активные субтитры) в БЕЛОЙ карточке под плеером, CTA (переход к вопросам) сразу после карточки.
+- App сейчас: текст субтитров plain (без карточки), CTA прижата к низу.
+- Привести VideoScreen (composeApp) к мокапу: субтитры в карточке под плеером, CTA сразу после карточки.
+  Полноэкранный overlay-режим (video_subtitle_overlay, memory.md §5 решение 2026-08-12) НЕ ломать.
+- ВАЖНО: изменение UI-композиции; спеки/PRD не трогай. Если без правки спеки не обойтись — остановись
+  и опиши (ADR-007).
+'@
+}
+
+# --- Гейты по типу работы (client = KMP-приложение, admin = admin-web, backend = Spring Boot, none) ---
+$GatesByKind = @{
+    'client' = @(
+        @{ Name = 'desktopTest';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':composeApp:desktopTest') },
+        @{ Name = 'androidCompile'; Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':composeApp:compileDebugKotlinAndroid') },
+        @{ Name = 'wasmCompile';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':composeApp:compileKotlinWasmJs', '--no-configuration-cache') }
+    )
+    'admin' = @(
+        @{ Name = 'adminTypecheck'; Dir = 'admin-web'; Cmd = 'npm'; Args = @('run', 'typecheck') },
+        @{ Name = 'adminVitest';    Dir = 'admin-web'; Cmd = 'npx'; Args = @('vitest', 'run') }
+    )
+    'backend' = @(
+        @{ Name = 'backendTest';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':backend:test') }
+    )
+    'none' = @()
+}
+# Тип гейтов по эпику (префикс id); дефолт — client.
+$EpicGateConfig = @{
+    'FunnyEnglish-9bo' = 'admin'
+    'FunnyEnglish-b85' = 'admin'
+    'FunnyEnglish-nj2' = 'backend'
+    'FunnyEnglish-wy7' = 'backend'
+    'FunnyEnglish-0w3' = 'backend'
+    'FunnyEnglish-qbq' = 'none'
+}
+
+# Дополнительный контекст в промпт по типу работы
+$KindExtras = @{
+    'admin' = @'
+Стек admin-web: React 18 + TS strict + MUI 6 + TanStack Query 5 + axios (src/api/client.ts, токен в localStorage) + vite 5.
+- Страницы — src/pages/, API-клиент — src/api/client.ts, E2E — e2e/ (Playwright, Page Object e2e/pages/).
+- Гейты драйвера: npm run typecheck (tsc --noEmit) и npx vitest run в admin-web. Сборки/тесты сам НЕ запускай.
+- Конвенции: MUI компоненты, theme из src/theme (палитра speaking), формы на react-hook-form, данные через TanStack Query.
+'@
+    'backend' = @'
+Стек backend: Spring Boot 3.4.1 + Kotlin + PostgreSQL + Flyway + JWT.
+- Контекст-путь /api; контроллеры БЕЗ /api в маппингах; сущности backend/.../entity, миграции backend/src/main/resources/db/migration.
+- Гейт драйвера: .\gradlew.bat :backend:test (тесты на H2 test-profile). Сборки/тесты сам НЕ запускай.
+- Известные грабли: JSONB workaround (TestService), jackson-module-kotlin обязателен, миграции писать с IF NOT EXISTS.
+'@
+    'client' = @'
+Стек клиента: Kotlin Multiplatform + Compose (монолит composeApp, app/screens/*, app/viewmodel/*, app/di/*, design/ + composeApp/designsystem токены Playful Coach).
+- MVI: XxxState/Action/Event + StateFlow; DI — Koin (AppModule.kt); навигация — sealed AppScreen без NavHost.
+- Гейты драйвера: :composeApp:desktopTest, :composeApp:compileDebugKotlinAndroid, :composeApp:compileKotlinWasmJs (--no-configuration-cache). Сборки/тесты сам НЕ запускай.
+'@
+}
+
+function Get-UtcNowIso { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
+
+function Update-IssueJsonl {
+    param([string]$Path, [string]$Id, [hashtable]$Changes)
+    $lines = [System.Collections.Generic.List[string]]::new()
+    Get-Content $Path -Encoding utf8 | ForEach-Object { $lines.Add($_) }
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        if ($line -notmatch '^\s*\{\s*$' -and $line -match ('"id"\s*:\s*"' + [regex]::Escape($Id) + '"')) {
+            $obj = $line | ConvertFrom-Json
+            foreach ($k in $Changes.Keys) { $obj | Add-Member -NotePropertyName $k -NotePropertyValue $Changes[$k] -Force }
+            $lines[$i] = ($obj | ConvertTo-Json -Compress -Depth 10)
+            Set-Content -Path $Path -Value $lines -Encoding utf8
+            return $true
+        }
+    }
+    return $false
+}
+
+function Invoke-Gate {
+    param([hashtable]$Gate, [string]$LogDir)
+    $log = Join-Path $LogDir ("gate-{0}.log" -f $Gate.Name)
+    $dir = if ($Gate.Dir) { $Gate.Dir } else { '.' }
+    Push-Location $dir
+    $oldEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        & $Gate.Cmd @($Gate.Args) *> $log
+        $code = $LASTEXITCODE
+    } catch {
+        $code = -1
+        Add-Content -Path $log -Value ("[driver] gate error: " + $_.Exception.Message) -Encoding utf8
+    } finally {
+        $ErrorActionPreference = $oldEap
+        Pop-Location
+    }
+    [pscustomobject]@{ Name = $Gate.Name; Ok = ($code -eq 0); ExitCode = $code; Log = $log }
+}
+
+# --- Загрузка задач ---
+if (-not (Test-Path $IssuesPath)) { throw "issues.jsonl не найден: $IssuesPath" }
+$issues = Get-Content $IssuesPath -Encoding utf8 | Where-Object { $_ -match '"id"' } | ForEach-Object { $_ | ConvertFrom-Json }
+$open = @($issues | Where-Object { $_.status -notin @('closed', 'done', 'deferred') })
+if ($Only.Count) { $open = @($open | Where-Object { $_.id -in $Only }) }
+if ($Epic) {
+    $epicChildren = @($issues | Where-Object {
+        $_.dependencies -and (@($_.dependencies | Where-Object { $_.depends_on_id -eq $Epic }).Count -gt 0)
+    } | ForEach-Object { $_.id })
+    $open = @($open | Where-Object { $_.id -in $epicChildren })
+    Write-Host ("[bd-kimi-loop] эпик {0}: открытых детей {1}" -f $Epic, $open.Count)
+}
+
+# --- Динамические скипы: DECISION-задачи, эпики с открытыми детьми, блокеры окружения ---
+$openIds = @($open | ForEach-Object { $_.id })
+$childCount = @{}
+foreach ($i in $issues) {
+    if ($i.dependencies) {
+        foreach ($d in $i.dependencies) {
+            if ($d.depends_on_id -and $d.depends_on_id -ne $i.id -and $d.depends_on_id -in $openIds) {
+                if (-not $childCount.ContainsKey($d.depends_on_id)) { $childCount[$d.depends_on_id] = 0 }
+                $childCount[$d.depends_on_id]++
+            }
+        }
+    }
+}
+$SkipReasons = @{}
+foreach ($h in $HardcodedSkips.Keys) { $SkipReasons[$h] = $HardcodedSkips[$h] }
+foreach ($t in $open) {
+    $reason = $null
+    if ($t.title -match 'DECISION|РЕШЕНИЕ|решение владельца' -or $t.description -match 'Решение владельца|решение владельца') {
+        $reason = 'Решение владельца (DECISION) — не задача на код'
+    } elseif ($childCount[$t.id] -gt 0) {
+        $reason = "Эпик-контейнер ($($childCount[$t.id]) открытых детей) — выполняется через подзадачи"
+    } elseif ($t.description -match 'НЕ закрывать до живого|блокирован.*эмулятор|ждёт живого') {
+        $reason = 'Блокер окружения (живой гейт) — тикет НЕ закрывать'
+    }
+    if ($reason -and -not $SkipReasons.ContainsKey($t.id)) { $SkipReasons[$t.id] = $reason }
+}
+
+$queue = @($open | Sort-Object @{ e = { try { [int]$_.priority } catch { 99 } } }, @{ e = { $_.created_at } })
+$effectiveSkips = @($SkipReasons.Keys | Where-Object { $_ -in $openIds })
+Write-Host ("[bd-kimi-loop] открытых задач: {0}; в очереди: {1}; скипов: {2}" -f $open.Count, $queue.Count, $effectiveSkips.Count)
+
+$reportLines = @()
+foreach ($task in $queue) {
+    $id = $task.id
+    $skip = $SkipReasons[$id]
+    if ($skip) {
+        $msg = "SKIP  {0} [p{1}] {2}  -> {3}" -f $id, $task.priority, $task.title, $skip
+        Write-Host $msg; $reportLines += $msg
+        continue
+    }
+    $msg = "RUN   {0} [p{1}] {2}" -f $id, $task.priority, $task.title
+    Write-Host $msg; $reportLines += $msg
+    if ($DryRun) { continue }
+
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $dir = Join-Path (Get-Location) (".pipeline/$stamp")
+    New-Item -ItemType Directory -Path $dir -Force | Out-Null
+
+    # статус -> in_progress
+    Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ status = 'in_progress'; updated_at = (Get-UtcNowIso) } | Out-Null
+
+    # --- промпт ---
+    $epicPrefix = ($id -split '\.')[0]
+    $kind = $EpicGateConfig[$epicPrefix]
+    if (-not $kind) { $kind = 'client' }
+    $gates = $GatesByKind[$kind]
+    if (-not $gates) { $gates = @() }
+    $extra = ''
+    if ($TaskExtras.ContainsKey($id)) { $extra = "`n`n$($TaskExtras[$id])" }
+    $kindExtra = ''
+    if ($KindExtras.ContainsKey($kind)) { $kindExtra = "`n`n$($KindExtras[$kind])" }
+    $prompt = @"
+Проект: So to Speak (FunnyEnglish) — Kotlin Multiplatform (Compose Multiplatform).
+Рабочий каталог — корень репозитория (ветка develop). Ты выполняешь задачу bd $id.
+
+Задача: $($task.title)
+
+Описание задачи (из bd):
+$($task.description)
+$extra$kindExtra
+
+Требования и ограничения:
+- ПЕРЕД правками прочитай memory.md (архитектура, конвенции, известные грабли) и AGENTS.md (правила проекта).
+- Для навигации по символам используй Serena (MCP) или grep/read; для UI-правок сверяйся с дизайн-системой Playful Coach (tokens в design/ и composeApp/designsystem).
+- Меняй ТОЛЬКО файлы, необходимые для этой задачи; ничего лишнего не «улучшай», не удаляй и не переписывай.
+- НЕ запускай gradle-сборки/тесты/линт (гейты прогоняет драйвер), НЕ делай git-коммитов и пушей.
+- Спеки/PRD (docs/, openspec/) НЕ правишь: если для задачи нужна правка спеки или решение владельца — ОСТАНОВИСЬ и напиши в отчёте, что именно требуется (ADR-007, human-in-the-loop).
+- После правок запиши краткий отчёт в $dir/02-execute.md: что сделано, список изменённых/созданных файлов, как проверить.
+- В финальном ответе верни сводку до 10 строк.
+"@
+    $promptFile = Join-Path $dir 'kimi-prompt.txt'
+    Set-Content -Path $promptFile -Value $prompt -Encoding utf8
+
+    # --- kimi ---
+    $kimiLog = Join-Path $dir 'kimi-run.log'
+    Write-Host ("  [{0}] kimi: {1} ({2})" -f $stamp, $id, $Model)
+    $oldEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'   # stderr kimi (NativeCommandError) не должен прерывать поток
+    try {
+        if (Test-Path $McpConfig) {
+            & kimi -p $prompt -m $Model --print --mcp-config-file $McpConfig *> $kimiLog
+        } else {
+            & kimi -p $prompt -m $Model --print *> $kimiLog
+        }
+        $kimiCode = $LASTEXITCODE
+    } catch {
+        $kimiCode = -1
+        Add-Content -Path $kimiLog -Value ("[driver] kimi invocation error: " + $_.Exception.Message) -Encoding utf8
+    } finally {
+        $ErrorActionPreference = $oldEap
+    }
+    $logBytes = if (Test-Path $kimiLog) { (Get-Item $kimiLog).Length } else { 0 }
+    $kimiOk = $logBytes -gt 0
+    Write-Host ("  kimi exit: {0}; log bytes: {1}" -f $kimiCode, $logBytes)
+
+    # --- гейты ---
+    $gateResults = @()
+    if ($kimiOk -and -not $SkipGates) {
+        foreach ($g in $gates) {
+            $r = Invoke-Gate -Gate $g -LogDir $dir
+            $gateResults += $r
+            Write-Host ("  gate {0}: {1} (exit {2})" -f $r.Name, $(if ($r.Ok) { 'OK' } else { 'FAIL' }), $r.ExitCode)
+        }
+    }
+    $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok })
+
+    # --- статус ---
+    $changed = (& git status --short 2>$null | Out-String).Trim()
+    if ($kimiOk -and $gatesOk) {
+        Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{
+            status      = 'closed'
+            closed_at   = (Get-UtcNowIso)
+            close_reason = ("Прогон kimi {0}: exit {1}, гейты OK ({2})" -f $stamp, $kimiCode, (($gateResults | ForEach-Object { $_.Name }) -join ','))
+            updated_at  = (Get-UtcNowIso)
+        } | Out-Null
+        $verdict = 'CLOSED (kimi+гейты OK)'
+    } else {
+        Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ updated_at = (Get-UtcNowIso) }
+        $verdict = "IN_PROGRESS (kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) + ')'
+    }
+    Write-Host ("  verdict: {0}" -f $verdict)
+    $reportLines += ("  -> {0}" -f $verdict)
+
+    # --- отчёт прогона ---
+    $report = @"
+# Прогон kimi: $id — $($task.title)
+
+- Стамп: $stamp · Модель: $Model · Задача: [$id] $($task.title)
+- kimi exit code: $kimiCode · Лог: kimi-run.log · Промпт: kimi-prompt.txt
+- Гейты: $(if ($gateResults.Count) { ($gateResults | ForEach-Object { "$($_.Name)=$(if ($_.Ok) {'OK'} else {"FAIL($($_.ExitCode))"})" }) -join ', ' } else { 'не запускались' })
+- Вердикт: $verdict
+
+## Изменённые файлы (git status --short)
+$changed
+
+## Сводка kimi (хвост kimi-run.log)
+$(if (Test-Path $kimiLog) { (Get-Content $kimiLog -Tail 120 | Out-String) } else { '(лог отсутствует)' })
+"@
+    Set-Content -Path (Join-Path $dir '00-report.md') -Value $report -Encoding utf8
+    $runLog = Join-Path (Get-Location) ("kimi-runs/{0}-{1}.md" -f $stamp, $id)
+    Set-Content -Path $runLog -Value $report -Encoding utf8
+}
+
+# --- Авто-закрытие эпиков, у которых не осталось открытых детей ---
+if (-not $Epic) {
+    $allOpenNow = @($issues | Where-Object { $_.status -notin @('closed', 'done', 'deferred') })
+    $openNowIds = @($allOpenNow | ForEach-Object { $_.id })
+    foreach ($t in $allOpenNow) {
+        if ($childCount[$t.id] -le 0) { continue }
+        $kidsOpen = @($issues | Where-Object {
+            $_.dependencies -and (@($_.dependencies | Where-Object { $_.depends_on_id -eq $t.id }).Count -gt 0)
+        } | Where-Object { $_.id -in $openNowIds })
+        if ($kidsOpen.Count -eq 0) {
+            Update-IssueJsonl -Path $IssuesPath -Id $t.id -Changes @{
+                status       = 'closed'
+                closed_at    = (Get-UtcNowIso)
+                close_reason = 'Эпик закрыт автоматически: все открытые дети выполнены'
+                updated_at   = (Get-UtcNowIso)
+            } | Out-Null
+            Write-Host ("EPIC-CLOSED {0} ({1})" -f $t.id, $t.title)
+        }
+    }
+}
+
+Write-Host '---'
+$reportLines | ForEach-Object { Write-Host $_ }
+Write-Host '[bd-kimi-loop] завершено'

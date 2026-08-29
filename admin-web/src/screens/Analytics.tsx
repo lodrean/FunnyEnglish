@@ -24,8 +24,6 @@ import {
   Download as DownloadIcon,
   TrendingUp as TrendingUpIcon,
   People as PeopleIcon,
-  Assignment as AssignmentIcon,
-  PictureAsPdf as PdfIcon,
   TableChart as CsvIcon,
   PersonOutline as GuestIcon,
   TaskAlt as CompletionIcon,
@@ -33,9 +31,16 @@ import {
   OnlinePrediction as ActiveIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { getGuestAnalytics } from '../api/client';
 import {
-
+  getAdminAnalytics,
+  getAdminDailyActivity,
+  getAdminLevelDistribution,
+  getPopularTests,
+  getRecentActivity,
+  getGuestAnalytics,
+} from '../api/client';
+import type { DailyActivity, LevelDistribution, PopularTest, RecentActivityItem } from '../types';
+import {
   XAxis,
   YAxis,
   CartesianGrid,
@@ -72,89 +77,45 @@ interface DateRange {
   end: string;
 }
 
+// Только реальные данные backend (аудит К1: моки запрещены)
 interface AnalyticsData {
   metrics: {
     totalUsers: number;
-    activeUsers: number;
-    testsTaken: number;
-    avgCompletionTime: number;
-    completionRate: number;
-    avgScore: number;
+    totalCompletions: number;
+    publishedTests: number;
+    totalTests: number;
   };
-  userActivity: { date: string; newUsers: number; activeUsers: number; sessions: number }[];
-  testPerformance: { testName: string; attempts: number; completions: number; avgScore: number }[];
-  topTests: { id: string; name: string; category: string; attempts: number; completionRate: number; avgScore: number }[];
-  topUsers: { id: string; name: string; email: string; testsCompleted: number; avgScore: number; totalTime: number }[];
-  userDistribution: { name: string; value: number }[];
-  scoreDistribution: { range: string; count: number }[];
+  dailyActivity: DailyActivity[];
+  levels: LevelDistribution[];
+  popularTests: PopularTest[];
+  recentActivity: RecentActivityItem[];
 }
 
-// Mock API
-const fetchAnalytics = async (_dateRange: DateRange): Promise<AnalyticsData> => {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  
+const DAY_MS = 24 * 60 * 60 * 1000;
+const toIsoDate = (d: Date): string => d.toISOString().slice(0, 10);
+
+// Backend daily-activity принимает только "последние N дней" — запрашиваем покрывающий
+// диапазон, точный [start, end] отфильтровываем на клиенте.
+const fetchAnalytics = async (days: number): Promise<AnalyticsData> => {
+  const [overview, dailyActivity, levels, popularTests, recentActivity] = await Promise.all([
+    getAdminAnalytics(),
+    getAdminDailyActivity(days),
+    getAdminLevelDistribution(),
+    getPopularTests(5),
+    getRecentActivity(10),
+  ]);
+
   return {
     metrics: {
-      totalUsers: 12458,
-      activeUsers: 3421,
-      testsTaken: 15234,
-      avgCompletionTime: 24.5,
-      completionRate: 78.5,
-      avgScore: 74.2,
+      totalUsers: Number(overview.totalUsers),
+      totalCompletions: Number(overview.totalCompletions),
+      publishedTests: Number(overview.publishedTests),
+      totalTests: Number(overview.totalTests),
     },
-    userActivity: [
-      { date: 'Jan 1', newUsers: 45, activeUsers: 1200, sessions: 3200 },
-      { date: 'Jan 2', newUsers: 52, activeUsers: 1350, sessions: 3600 },
-      { date: 'Jan 3', newUsers: 38, activeUsers: 1180, sessions: 3100 },
-      { date: 'Jan 4', newUsers: 65, activeUsers: 1420, sessions: 4100 },
-      { date: 'Jan 5', newUsers: 48, activeUsers: 1380, sessions: 3800 },
-      { date: 'Jan 6', newUsers: 72, activeUsers: 1560, sessions: 4500 },
-      { date: 'Jan 7', newUsers: 58, activeUsers: 1490, sessions: 4200 },
-      { date: 'Jan 8', newUsers: 41, activeUsers: 1320, sessions: 3500 },
-      { date: 'Jan 9', newUsers: 55, activeUsers: 1450, sessions: 4000 },
-      { date: 'Jan 10', newUsers: 63, activeUsers: 1580, sessions: 4600 },
-      { date: 'Jan 11', newUsers: 49, activeUsers: 1410, sessions: 3800 },
-      { date: 'Jan 12', newUsers: 67, activeUsers: 1620, sessions: 4800 },
-      { date: 'Jan 13', newUsers: 54, activeUsers: 1480, sessions: 4200 },
-      { date: 'Jan 14', newUsers: 71, activeUsers: 1690, sessions: 5100 },
-      { date: 'Jan 15', newUsers: 62, activeUsers: 1550, sessions: 4700 },
-    ],
-    testPerformance: [
-      { testName: 'Basic Grammar', attempts: 1250, completions: 980, avgScore: 78.5 },
-      { testName: 'Vocabulary A1', attempts: 980, completions: 820, avgScore: 82.1 },
-      { testName: 'Listening B1', attempts: 750, completions: 580, avgScore: 71.3 },
-      { testName: 'Reading B2', attempts: 620, completions: 480, avgScore: 75.8 },
-      { testName: 'Writing C1', attempts: 420, completions: 310, avgScore: 68.9 },
-      { testName: 'Business English', attempts: 890, completions: 720, avgScore: 79.2 },
-      { testName: 'Academic Words', attempts: 560, completions: 430, avgScore: 73.5 },
-    ],
-    topTests: [
-      { id: '1', name: 'Basic Grammar - Present Simple', category: 'Grammar', attempts: 1250, completionRate: 78.4, avgScore: 78.5 },
-      { id: '2', name: 'Business English Vocabulary', category: 'Vocabulary', attempts: 890, completionRate: 80.9, avgScore: 79.2 },
-      { id: '3', name: 'Everyday Conversations', category: 'Listening', attempts: 1450, completionRate: 88.3, avgScore: 82.3 },
-      { id: '4', name: 'Vocabulary A1', category: 'Vocabulary', attempts: 980, completionRate: 83.7, avgScore: 82.1 },
-      { id: '5', name: 'Reading Comprehension B2', category: 'Reading', attempts: 670, completionRate: 80.6, avgScore: 74.2 },
-    ],
-    topUsers: [
-      { id: '1', name: 'Chris Miller', email: 'chris.miller@example.com', testsCompleted: 67, avgScore: 91.2, totalTime: 4560 },
-      { id: '2', name: 'John Doe', email: 'john.doe@example.com', testsCompleted: 45, avgScore: 78.5, totalTime: 3240 },
-      { id: '3', name: 'Mike Wilson', email: 'mike.wilson@example.com', testsCompleted: 32, avgScore: 65.2, totalTime: 2150 },
-      { id: '4', name: 'Emma Davis', email: 'emma.davis@example.com', testsCompleted: 25, avgScore: 88.5, totalTime: 1680 },
-      { id: '5', name: 'Lisa Wang', email: 'lisa.wang@example.com', testsCompleted: 28, avgScore: 74.8, totalTime: 1890 },
-    ],
-    userDistribution: [
-      { name: 'Active', value: 3421 },
-      { name: 'Inactive', value: 5234 },
-      { name: 'New', value: 1245 },
-      { name: 'Returning', value: 2558 },
-    ],
-    scoreDistribution: [
-      { range: '90-100%', count: 1245 },
-      { range: '80-89%', count: 2890 },
-      { range: '70-79%', count: 3567 },
-      { range: '60-69%', count: 2341 },
-      { range: 'Below 60%', count: 4191 },
-    ],
+    dailyActivity,
+    levels,
+    popularTests,
+    recentActivity,
   };
 };
 
@@ -165,12 +126,10 @@ interface MetricCardProps {
   subtitle?: string;
   icon: React.ReactNode;
   color: string;
-  trend?: string;
-  trendUp?: boolean;
   loading?: boolean;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, icon, color, trend, trendUp, loading }) => {
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, icon, color, loading }) => {
   if (loading) {
     return (
       <Card sx={{ height: '100%' }}>
@@ -198,11 +157,6 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, icon, c
                 {subtitle}
               </Typography>
             )}
-            {trend && (
-              <Typography variant="body2" color={trendUp ? COLORS.success : COLORS.error} sx={{ mt: 0.5 }}>
-                {trendUp ? '↑' : '↓'} {trend} vs last period
-              </Typography>
-            )}
           </Box>
           <Box
             sx={{
@@ -224,24 +178,58 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, icon, c
   );
 };
 
-// Format time
-const formatTime = (minutes: number): string => {
-  if (minutes >= 60) {
-    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+// Empty state вместо моков, когда backend вернул пустые данные
+const EmptyState: React.FC<{ message: string; height?: number }> = ({ message, height = 320 }) => (
+  <Box display="flex" alignItems="center" justifyContent="center" height={height} data-testid="analytics-empty-state">
+    <Typography color="text.secondary">{message}</Typography>
+  </Box>
+);
+
+const formatDateLabel = (iso: string): string =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+const formatTimestamp = (iso: string): string => new Date(iso).toLocaleString();
+
+const ACTIVITY_TYPE_LABELS: Record<string, string> = {
+  NEW_USER: 'New user',
+  TEST_COMPLETED: 'Test completed',
+  ACHIEVEMENT: 'Achievement',
+};
+
+const activityTypeColor = (type: string): string => {
+  switch (type) {
+    case 'NEW_USER':
+      return COLORS.primary;
+    case 'TEST_COMPLETED':
+      return COLORS.success;
+    case 'ACHIEVEMENT':
+      return COLORS.warning;
+    default:
+      return COLORS.info;
   }
-  return `${minutes}m`;
+};
+
+const csvEscape = (value: string | number): string => {
+  const s = String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
 const Analytics: React.FC = () => {
-  const [dateRange, setDateRange] = useState<DateRange>({
-    start: '2024-01-01',
-    end: '2024-01-15',
+  const [dateRange, setDateRange] = useState<DateRange>(() => {
+    const now = Date.now();
+    return { start: toIsoDate(new Date(now - 13 * DAY_MS)), end: toIsoDate(new Date(now)) };
   });
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
 
+  // Сколько дней запросить у backend, чтобы покрыть выбранный start
+  const daysNeeded = Math.min(
+    365,
+    Math.max(1, Math.floor((Date.now() - new Date(`${dateRange.start}T00:00:00`).getTime()) / DAY_MS) + 1)
+  );
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['analytics', dateRange],
-    queryFn: () => fetchAnalytics(dateRange),
+    queryKey: ['analytics', daysNeeded],
+    queryFn: () => fetchAnalytics(daysNeeded),
   });
 
   // Гостевые (обезличенные) пользователи — реальные данные с backend
@@ -250,9 +238,42 @@ const Analytics: React.FC = () => {
     queryFn: getGuestAnalytics,
   });
 
-  const handleExport = (format: 'pdf' | 'csv') => {
-    // Simulate export
-    console.log(`Exporting as ${format}...`);
+  // Точный диапазон [start, end] — фильтрация на клиенте (ISO-даты сравниваются строками)
+  const filteredActivity = (data?.dailyActivity ?? []).filter(
+    (d) => d.date >= dateRange.start && d.date <= dateRange.end
+  );
+
+  const handleExportCsv = () => {
+    if (!data) return;
+    const lines: string[] = [];
+    lines.push('Metric,Value');
+    lines.push(`Total Users,${data.metrics.totalUsers}`);
+    lines.push(`Tests Completed,${data.metrics.totalCompletions}`);
+    lines.push(`Published Tests,${data.metrics.publishedTests}`);
+    lines.push(`Total Tests,${data.metrics.totalTests}`);
+    lines.push('');
+    lines.push('Date,New Users,Tests Completed,Achievements Earned');
+    filteredActivity.forEach((d) => {
+      lines.push([d.date, d.newUsers, d.testsCompleted, d.achievementsEarned].map(csvEscape).join(','));
+    });
+    lines.push('');
+    lines.push('Popular Test,Category,Completions');
+    data.popularTests.forEach((t) => {
+      lines.push([t.name, t.category, t.completions].map(csvEscape).join(','));
+    });
+    lines.push('');
+    lines.push('Level,Users');
+    data.levels.forEach((l) => {
+      lines.push([`Level ${l.level}`, l.users].map(csvEscape).join(','));
+    });
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `analytics_${dateRange.start}_${dateRange.end}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
     setExportMenuAnchor(null);
   };
 
@@ -292,6 +313,7 @@ const Analytics: React.FC = () => {
             variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+            disabled={!data}
           >
             Export
           </Button>
@@ -300,11 +322,7 @@ const Analytics: React.FC = () => {
             open={Boolean(exportMenuAnchor)}
             onClose={() => setExportMenuAnchor(null)}
           >
-            <MenuItem onClick={() => handleExport('pdf')}>
-              <PdfIcon fontSize="small" sx={{ mr: 1 }} />
-              Export as PDF
-            </MenuItem>
-            <MenuItem onClick={() => handleExport('csv')}>
+            <MenuItem onClick={handleExportCsv}>
               <CsvIcon fontSize="small" sx={{ mr: 1 }} />
               Export as CSV
             </MenuItem>
@@ -318,35 +336,29 @@ const Analytics: React.FC = () => {
           <MetricCard
             title="Total Users"
             value={data?.metrics.totalUsers.toLocaleString() || 0}
-            subtitle={`${data?.metrics.activeUsers.toLocaleString() || 0} active`}
+            subtitle="registered users"
             icon={<PeopleIcon />}
             color={COLORS.primary}
-            trend="12.5%"
-            trendUp={true}
             loading={isLoading}
           />
         </Grid>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Tests Taken"
-            value={data?.metrics.testsTaken.toLocaleString() || 0}
-            subtitle={`${data?.metrics.completionRate || 0}% completion rate`}
-            icon={<AssignmentIcon />}
+            title="Tests Completed"
+            value={data?.metrics.totalCompletions.toLocaleString() || 0}
+            subtitle="all time"
+            icon={<CompletionIcon />}
             color={COLORS.success}
-            trend="8.2%"
-            trendUp={true}
             loading={isLoading}
           />
         </Grid>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Average Score"
-            value={`${data?.metrics.avgScore || 0}%`}
-            subtitle={`${formatTime(data?.metrics.avgCompletionTime || 0)} avg time`}
+            title="Published Tests"
+            value={data?.metrics.publishedTests.toLocaleString() || 0}
+            subtitle={`${data?.metrics.totalTests ?? 0} total`}
             icon={<TrendingUpIcon />}
             color={COLORS.info}
-            trend="3.1%"
-            trendUp={true}
             loading={isLoading}
           />
         </Grid>
@@ -414,23 +426,26 @@ const Analytics: React.FC = () => {
             </Typography>
             {isLoading ? (
               <Skeleton variant="rectangular" height={320} />
+            ) : filteredActivity.length === 0 ? (
+              <EmptyState message="No activity data for the selected period" />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
-                <AreaChart data={data?.userActivity}>
+                <AreaChart data={filteredActivity}>
                   <defs>
                     <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.8} />
                       <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="colorActiveUsers" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.8} />
                       <stop offset="95%" stopColor={COLORS.success} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                  <XAxis dataKey="date" stroke={COLORS.textSecondary} />
-                  <YAxis stroke={COLORS.textSecondary} />
+                  <XAxis dataKey="date" tickFormatter={formatDateLabel} stroke={COLORS.textSecondary} />
+                  <YAxis stroke={COLORS.textSecondary} allowDecimals={false} />
                   <Tooltip
+                    labelFormatter={(label) => formatDateLabel(String(label))}
                     contentStyle={{
                       backgroundColor: COLORS.card,
                       border: `1px solid ${COLORS.primary}`,
@@ -448,11 +463,11 @@ const Analytics: React.FC = () => {
                   />
                   <Area
                     type="monotone"
-                    dataKey="activeUsers"
+                    dataKey="testsCompleted"
                     stroke={COLORS.success}
                     fillOpacity={1}
-                    fill="url(#colorActiveUsers)"
-                    name="Active Users"
+                    fill="url(#colorCompleted)"
+                    name="Tests Completed"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -462,29 +477,31 @@ const Analytics: React.FC = () => {
         <Grid xs={12} lg={4}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Score Distribution
+              User Level Distribution
             </Typography>
             {isLoading ? (
               <Skeleton variant="rectangular" height={320} />
+            ) : !data || data.levels.length === 0 ? (
+              <EmptyState message="No user level data yet" />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <Pie
-                    data={data?.scoreDistribution}
+                    data={data.levels}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
                     outerRadius={100}
                     paddingAngle={5}
-                    dataKey="count"
-                    nameKey="range"
+                    dataKey="users"
+                    nameKey="level"
                   >
-                    {data?.scoreDistribution.map((_, index) => (
+                    {data.levels.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip formatter={(value, name) => [value, `Level ${name}`]} />
+                  <Legend formatter={(value) => `Level ${value}`} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -497,16 +514,18 @@ const Analytics: React.FC = () => {
         <Grid xs={12}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Test Performance
+              Popular Tests
             </Typography>
             {isLoading ? (
               <Skeleton variant="rectangular" height={320} />
+            ) : !data || data.popularTests.length === 0 ? (
+              <EmptyState message="No completed tests yet" />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={data?.testPerformance}>
+                <BarChart data={data.popularTests}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                  <XAxis dataKey="testName" stroke={COLORS.textSecondary} />
-                  <YAxis stroke={COLORS.textSecondary} />
+                  <XAxis dataKey="name" stroke={COLORS.textSecondary} />
+                  <YAxis stroke={COLORS.textSecondary} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: COLORS.card,
@@ -515,8 +534,7 @@ const Analytics: React.FC = () => {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="attempts" fill={COLORS.primary} name="Attempts" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="completions" fill={COLORS.success} name="Completions" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="completions" fill={COLORS.primary} name="Completions" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -538,24 +556,30 @@ const Analytics: React.FC = () => {
                   <TableRow sx={{ backgroundColor: '#FAFAFA' }}>
                     <TableCell>Test Name</TableCell>
                     <TableCell>Category</TableCell>
-                    <TableCell align="center">Attempts</TableCell>
-                    <TableCell align="center">Completion</TableCell>
-                    <TableCell align="center">Avg Score</TableCell>
+                    <TableCell align="center">Completions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {isLoading ? (
                     [...Array(5)].map((_, i) => (
                       <TableRow key={i}>
-                        {[...Array(5)].map((_, j) => (
+                        {[...Array(3)].map((_, j) => (
                           <TableCell key={j}>
                             <Skeleton variant="text" />
                           </TableCell>
                         ))}
                       </TableRow>
                     ))
+                  ) : !data || data.popularTests.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center">
+                        <Typography variant="body2" color="text.secondary" py={2}>
+                          No completed tests yet
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    data?.topTests.map((test) => (
+                    data.popularTests.map((test) => (
                       <TableRow key={test.id} hover>
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
@@ -565,28 +589,7 @@ const Analytics: React.FC = () => {
                         <TableCell>
                           <Chip label={test.category} size="small" />
                         </TableCell>
-                        <TableCell align="center">{test.attempts.toLocaleString()}</TableCell>
-                        <TableCell align="center">{test.completionRate}%</TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            label={`${test.avgScore}%`}
-                            size="small"
-                            sx={{
-                              backgroundColor:
-                                test.avgScore >= 80
-                                  ? `${COLORS.success}20`
-                                  : test.avgScore >= 60
-                                  ? `${COLORS.warning}20`
-                                  : `${COLORS.error}20`,
-                              color:
-                                test.avgScore >= 80
-                                  ? COLORS.success
-                                  : test.avgScore >= 60
-                                  ? COLORS.warning
-                                  : COLORS.error,
-                            }}
-                          />
-                        </TableCell>
+                        <TableCell align="center">{test.completions.toLocaleString()}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -596,20 +599,20 @@ const Analytics: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Most Active Users */}
+        {/* Recent Activity */}
         <Grid xs={12} lg={6}>
           <Paper sx={{ p: 4 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Most Active Users
+              Recent Activity
             </Typography>
             <TableContainer>
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ backgroundColor: '#FAFAFA' }}>
                     <TableCell>User</TableCell>
-                    <TableCell align="center">Tests</TableCell>
-                    <TableCell align="center">Avg Score</TableCell>
-                    <TableCell align="center">Time Spent</TableCell>
+                    <TableCell align="center">Type</TableCell>
+                    <TableCell>Details</TableCell>
+                    <TableCell align="right">When</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -623,59 +626,42 @@ const Analytics: React.FC = () => {
                         ))}
                       </TableRow>
                     ))
+                  ) : !data || data.recentActivity.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        <Typography variant="body2" color="text.secondary" py={2}>
+                          No recent activity yet
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    data?.topUsers.map((user) => (
-                      <TableRow key={user.id} hover>
+                    data.recentActivity.map((item, index) => (
+                      <TableRow key={`${item.timestamp}-${index}`} hover>
                         <TableCell>
-                          <Box display="flex" alignItems="center" gap={1.5}>
-                            <Box
-                              sx={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: '50%',
-                                backgroundColor: `${COLORS.primary}20`,
-                                color: COLORS.primary,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '0.875rem',
-                                fontWeight: 500,
-                              }}
-                            >
-                              {user.name.charAt(0)}
-                            </Box>
-                            <Box>
-                              <Typography variant="body2" fontWeight={500}>
-                                {user.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {user.email}
-                              </Typography>
-                            </Box>
-                          </Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {item.userName}
+                          </Typography>
                         </TableCell>
-                        <TableCell align="center">{user.testsCompleted}</TableCell>
                         <TableCell align="center">
                           <Chip
-                            label={`${user.avgScore}%`}
+                            label={ACTIVITY_TYPE_LABELS[item.type] ?? item.type}
                             size="small"
                             sx={{
-                              backgroundColor:
-                                user.avgScore >= 80
-                                  ? `${COLORS.success}20`
-                                  : user.avgScore >= 60
-                                  ? `${COLORS.warning}20`
-                                  : `${COLORS.error}20`,
-                              color:
-                                user.avgScore >= 80
-                                  ? COLORS.success
-                                  : user.avgScore >= 60
-                                  ? COLORS.warning
-                                  : COLORS.error,
+                              backgroundColor: `${activityTypeColor(item.type)}20`,
+                              color: activityTypeColor(item.type),
                             }}
                           />
                         </TableCell>
-                        <TableCell align="center">{formatTime(user.totalTime)}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {item.details || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="caption" color="text.secondary">
+                            {formatTimestamp(item.timestamp)}
+                          </Typography>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}

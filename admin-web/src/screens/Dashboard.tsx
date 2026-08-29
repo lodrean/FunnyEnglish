@@ -12,12 +12,11 @@ import {
   Alert,
   Paper,
   useTheme,
-  useMediaQuery,
   alpha,
 } from '@mui/material';
 import {
   People as PeopleIcon,
-  Assignment as TestIcon,
+  Mic as MicIcon,
   TrendingUp as TrendingUpIcon,
   AccessTime as AccessTimeIcon,
   Add as AddIcon,
@@ -30,8 +29,6 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -39,20 +36,21 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  Legend,
+  Cell,
 } from 'recharts';
 import { StatsCard } from '../components/data';
-import { getAdminAnalytics, getAdminDailyActivity, getRecentActivity } from '../api/client';
-import type { DailyActivity, RecentActivityItem } from '../types';
+import { getAdminAnalytics, getRecentActivity } from '../api/client';
+import { getSubmissions } from '../api/speakingApi';
+import type { RecentActivityItem } from '../types';
 
-// Types
+// Types — только реальные speaking-метрики (аудит D-1: моки запрещены)
 interface DashboardStats {
-  totalUsers: number;
-  totalTests: number;
-  completionRate: number;
-  avgSessionTime: number;
-  userGrowth: { date: string; users: number }[];
-  testCompletions: { testName: string; completions: number; attempts: number }[];
+  totalStudents: number;
+  activeStudents7d: number;
+  totalSubmissions: number;
+  pendingReview: number;
+  reviewedCount: number;
+  submissionsPerDay: { date: string; submissions: number }[];
 }
 
 interface Activity {
@@ -82,56 +80,44 @@ const transformActivity = (item: RecentActivityItem): Activity => {
   };
 };
 
-// Fetch real dashboard data
+const DAY_MS = 24 * 60 * 60 * 1000;
+// Backend ждёт LocalDate 'yyyy-MM-dd' (границы дней — UTC)
+const toIsoDate = (d: Date): string => d.toISOString().slice(0, 10);
+
+// Fetch real dashboard data. Ошибки НЕ проглатываем — их показывает error-state useQuery.
 const fetchDashboardData = async (): Promise<{ stats: DashboardStats; activities: Activity[] }> => {
-  try {
-    const [analytics, dailyActivity, recentActivity] = await Promise.all([
+  const now = Date.now();
+  const days = Array.from({ length: 7 }, (_, i) => toIsoDate(new Date(now - (6 - i) * DAY_MS)));
+
+  const [analytics, recentActivity, allSubmissions, newSubmissions, reviewedSubmissions, weekSubmissions, ...dailyCounts] =
+    await Promise.all([
       getAdminAnalytics(),
-      getAdminDailyActivity(7),
       getRecentActivity(10),
+      getSubmissions({ size: 1 }),
+      getSubmissions({ status: 'NEW', size: 1 }),
+      getSubmissions({ status: 'REVIEWED', size: 1 }),
+      // Последние ≤100 отправок за 7 дней — для оценки активных учеников (backend cap size=100)
+      getSubmissions({ from: days[0], size: 100 }),
+      // Точный count отправок на каждый день через totalElements (size=1 — минимальный ответ)
+      ...days.map((day) => getSubmissions({ from: day, to: day, size: 1 })),
     ]);
 
-    // Transform daily activity to user growth format
-    const userGrowth = dailyActivity.map((day: DailyActivity, index: number) => ({
-      date: new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }),
-      users: analytics.totalUsers - (dailyActivity.length - index - 1) * 50, // Approximation
-    }));
+  const activeStudents7d = new Set(weekSubmissions.content.map((s) => s.student.id)).size;
 
-    // Mock test completions (not available in API yet)
-    const testCompletions = [
-      { testName: 'Basic Grammar', completions: 856, attempts: 1000 },
-      { testName: 'Vocabulary A1', completions: 742, attempts: 900 },
-      { testName: 'Listening B1', completions: 634, attempts: 800 },
-      { testName: 'Reading B2', completions: 521, attempts: 700 },
-      { testName: 'Writing C1', completions: 412, attempts: 600 },
-    ];
-
-    return {
-      stats: {
-        totalUsers: Number(analytics.totalUsers),
-        totalTests: Number(analytics.totalTests),
-        completionRate: 78.5, // Mock - not in API yet
-        avgSessionTime: 24.3, // Mock - not in API yet
-        userGrowth,
-        testCompletions,
-      },
-      activities: recentActivity.map(transformActivity),
-    };
-  } catch (error) {
-    console.error('Failed to fetch dashboard data:', error);
-    // Return fallback data
-    return {
-      stats: {
-        totalUsers: 0,
-        totalTests: 0,
-        completionRate: 0,
-        avgSessionTime: 0,
-        userGrowth: [],
-        testCompletions: [],
-      },
-      activities: [],
-    };
-  }
+  return {
+    stats: {
+      totalStudents: Number(analytics.totalUsers),
+      activeStudents7d,
+      totalSubmissions: allSubmissions.totalElements,
+      pendingReview: newSubmissions.totalElements,
+      reviewedCount: reviewedSubmissions.totalElements,
+      submissionsPerDay: days.map((day, i) => ({
+        date: new Date(day).toLocaleDateString('en-US', { weekday: 'short' }),
+        submissions: dailyCounts[i].totalElements,
+      })),
+    },
+    activities: recentActivity.map(transformActivity),
+  };
 };
 
 // Activity Icon Component
@@ -187,7 +173,6 @@ const formatRelativeTime = (timestamp: string): string => {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
@@ -245,75 +230,74 @@ const Dashboard: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Stats Cards - Using new Design System StatsCard */}
+      {/* Stats Cards - реальные метрики, без вымышленных дельт */}
       <Grid container spacing={3} mb={3}>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Total Users"
-            value={stats?.totalUsers.toLocaleString() || 0}
+            title="Total Students"
+            value={(stats?.totalStudents ?? 0).toLocaleString()}
             icon={PeopleIcon}
-            change={{ value: 12.5, isPositive: true, label: 'vs last week' }}
             variant="primary"
-            chartType="sparkline"
-            chartData={[65, 78, 90, 81, 96, 105, 120]}
             loading={isLoading}
           />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Total Tests"
-            value={stats?.totalTests.toLocaleString() || 0}
-            icon={TestIcon}
-            change={{ value: 8.2, isPositive: true, label: 'vs last week' }}
-            variant="info"
-            chartType="sparkline"
-            chartData={[45, 52, 49, 60, 55, 65, 68]}
-            loading={isLoading}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} lg={3}>
-          <StatsCard
-            title="Completion Rate"
-            value={`${stats?.completionRate || 0}%`}
+            title="Active Students (7d)"
+            value={(stats?.activeStudents7d ?? 0).toLocaleString()}
             icon={TrendingUpIcon}
-            change={{ value: 3.1, isPositive: true, label: 'vs last week' }}
             variant="success"
             loading={isLoading}
           />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Avg Session"
-            value={`${stats?.avgSessionTime || 0}m`}
+            title="Practice Submissions"
+            value={(stats?.totalSubmissions ?? 0).toLocaleString()}
+            icon={MicIcon}
+            variant="info"
+            loading={isLoading}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={3}>
+          <StatsCard
+            title="Pending Review"
+            value={(stats?.pendingReview ?? 0).toLocaleString()}
             icon={AccessTimeIcon}
-            change={{ value: 5.4, isPositive: false, label: 'vs last week' }}
             variant="warning"
             loading={isLoading}
           />
         </Grid>
       </Grid>
 
-      {/* Charts Row */}
+      {/* Charts Row — реальные данные по speaking-отправкам */}
       <Grid container spacing={3} mb={3}>
         <Grid xs={12} lg={8}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              User Growth
+              Submissions per Day (last 7 days)
             </Typography>
             {isLoading ? (
               <Box height={320} display="flex" alignItems="center" justifyContent="center">
                 <Typography color="text.secondary">Loading chart...</Typography>
               </Box>
+            ) : !stats || stats.totalSubmissions === 0 ? (
+              <Box height={320} display="flex" alignItems="center" justifyContent="center">
+                <Typography color="text.secondary">
+                  No practice submissions yet — chart will appear after the first student submission
+                </Typography>
+              </Box>
             ) : (
               <ResponsiveContainer width="100%" height={320}>
-                <LineChart data={stats?.userGrowth}>
+                <BarChart data={stats.submissionsPerDay}>
                   <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     stroke={theme.palette.text.secondary}
                     tick={{ fill: theme.palette.text.secondary }}
                   />
-                  <YAxis 
+                  <YAxis
+                    allowDecimals={false}
                     stroke={theme.palette.text.secondary}
                     tick={{ fill: theme.palette.text.secondary }}
                   />
@@ -325,15 +309,13 @@ const Dashboard: React.FC = () => {
                       boxShadow: theme.shadows[4],
                     }}
                   />
-                  <Line
-                    type="monotone"
-                    dataKey="users"
-                    stroke={theme.palette.primary.main}
-                    strokeWidth={3}
-                    dot={{ fill: theme.palette.primary.main, strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, fill: theme.palette.primary.main }}
+                  <Bar
+                    dataKey="submissions"
+                    fill={theme.palette.primary.main}
+                    name="Submissions"
+                    radius={[4, 4, 0, 0]}
                   />
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
             )}
           </Paper>
@@ -341,40 +323,35 @@ const Dashboard: React.FC = () => {
         <Grid xs={12} lg={4}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Test Completions
+              Grading Status
             </Typography>
             {isLoading ? (
               <Box height={320} display="flex" alignItems="center" justifyContent="center">
                 <Typography color="text.secondary">Loading chart...</Typography>
               </Box>
+            ) : !stats || stats.totalSubmissions === 0 ? (
+              <Box height={320} display="flex" alignItems="center" justifyContent="center">
+                <Typography color="text.secondary">No submissions to grade yet</Typography>
+              </Box>
             ) : (
               <ResponsiveContainer width="100%" height={320}>
-                <BarChart 
-                  data={stats?.testCompletions} 
-                  layout={isMobile ? 'vertical' : 'horizontal'}
+                <BarChart
+                  data={[
+                    { name: 'Pending', count: stats.pendingReview },
+                    { name: 'Reviewed', count: stats.reviewedCount },
+                  ]}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
-                  {isMobile ? (
-                    <>
-                      <XAxis type="number" stroke={theme.palette.text.secondary} />
-                      <YAxis 
-                        dataKey="testName" 
-                        type="category" 
-                        width={80} 
-                        stroke={theme.palette.text.secondary}
-                        tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <XAxis 
-                        dataKey="testName" 
-                        stroke={theme.palette.text.secondary}
-                        tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
-                      />
-                      <YAxis stroke={theme.palette.text.secondary} />
-                    </>
-                  )}
+                  <XAxis
+                    dataKey="name"
+                    stroke={theme.palette.text.secondary}
+                    tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    stroke={theme.palette.text.secondary}
+                    tick={{ fill: theme.palette.text.secondary }}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: theme.palette.background.paper,
@@ -383,19 +360,10 @@ const Dashboard: React.FC = () => {
                       boxShadow: theme.shadows[4],
                     }}
                   />
-                  <Legend />
-                  <Bar 
-                    dataKey="completions" 
-                    fill={theme.palette.success.main} 
-                    name="Completed" 
-                    radius={[4, 4, 0, 0]} 
-                  />
-                  <Bar 
-                    dataKey="attempts" 
-                    fill={theme.palette.primary.main} 
-                    name="Attempts" 
-                    radius={[4, 4, 0, 0]} 
-                  />
+                  <Bar dataKey="count" name="Submissions" radius={[4, 4, 0, 0]}>
+                    <Cell fill={theme.palette.warning.main} />
+                    <Cell fill={theme.palette.success.main} />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}

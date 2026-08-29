@@ -27,7 +27,6 @@ const VALID_ROUTES = [
   '/users/groups',
   '/analytics/reports',
   '/analytics/statistics',
-  '/settings',
 ];
 
 export const RouteValidator: React.FC = () => {

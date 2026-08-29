@@ -69,7 +69,7 @@ test.describe('Direct URL Access', () => {
     await page.getByRole('button', { name: 'Sign In' }).click();
     await expect(page).toHaveURL('/', { timeout: 10000 });
     
-    const routes = ['/speaking/topics', '/speaking/libraries', '/users', '/settings'];
+    const routes = ['/speaking/topics', '/speaking/libraries', '/users'];
     
     for (const route of routes) {
       await page.goto(route);

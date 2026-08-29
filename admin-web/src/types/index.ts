@@ -44,6 +44,7 @@ export interface PopularTest {
   id: string;
   name: string;
   completions: number;
+  category: string;
 }
 
 export interface RecentActivityItem {

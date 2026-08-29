@@ -11,3 +11,6 @@ export type { ConfirmDialogProps, ConfirmDialogVariant } from './ConfirmDialog';
 
 export { EmptyState, SearchEmptyState, FolderEmptyState } from './EmptyState';
 export type { EmptyStateProps, EmptyStateVariant } from './EmptyState';
+
+export { ErrorBoundary, ErrorFallback, withErrorBoundary } from './ErrorBoundary';
+export type { ErrorFallbackProps } from './ErrorBoundary';

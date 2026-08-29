@@ -11,7 +11,6 @@ import {
   Analytics as AnalyticsIcon,
   Assessment as AssessmentIcon,
   BarChart as BarChartIcon,
-  Settings as SettingsIcon,
   RecordVoiceOver as RecordVoiceOverIcon,
   RateReview as RateReviewIcon,
   MenuBook as MenuBookIcon,
@@ -130,12 +129,6 @@ export const navItems: NavItem[] = [
     path: '/logs',
     icon: ArticleIcon,
     requiresAdmin: true,
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    path: '/settings',
-    icon: SettingsIcon,
   },
 ];
 

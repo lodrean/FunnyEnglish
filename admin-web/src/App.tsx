@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Box, CircularProgress } from '@mui/material'
 import { ThemeProvider } from './theme/ThemeProvider'
-import { ToastProvider } from './components/feedback'
+import { ToastProvider, ErrorBoundary } from './components/feedback'
 import { AdminLayout } from './components/layout'
 import { useAuthStore } from './store/authStore'
 import { RouteValidator } from './components/navigation/RouteValidator'
@@ -10,7 +10,6 @@ import {
   Dashboard,
   Users,
   Analytics,
-  Settings,
   Login,
   SpeakingLibraries,
   SpeakingLibraryEditor,
@@ -97,6 +96,8 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
+        {/* Top-level boundary: краш роутов/инициализации не должен давать белый экран (memory №42) */}
+        <ErrorBoundary>
         <RouteValidator />
         <AppInitializer>
           <Routes>
@@ -154,15 +155,13 @@ function App() {
               
               {/* Client Logs (OpenSpec add-client-logging) */}
               <Route path="logs" element={<ClientLogs />} />
-
-              {/* Settings */}
-              <Route path="settings" element={<Settings />} />
             </Route>
             
             {/* Catch all - redirect to login */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </AppInitializer>
+        </ErrorBoundary>
       </ToastProvider>
     </ThemeProvider>
   )

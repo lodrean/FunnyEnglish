@@ -1,6 +1,6 @@
 // Аудит переполнений: элементы, вылезающие за границы viewport/родителя (admin-web)
 const { chromium } = require('@playwright/test');
-const PAGES = ['/', '/speaking/libraries', '/speaking/topics', '/speaking/questions', '/grading', '/users', '/analytics', '/logs', '/settings'];
+const PAGES = ['/', '/speaking/libraries', '/speaking/topics', '/speaking/questions', '/grading', '/users', '/analytics', '/logs'];
 const WIDTHS = [1280, 768, 390];
 
 (async () => {

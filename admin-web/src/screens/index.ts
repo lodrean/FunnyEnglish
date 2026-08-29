@@ -1,7 +1,6 @@
 export { default as Dashboard } from './Dashboard'
 export { default as Users } from './Users'
 export { default as Analytics } from './Analytics'
-export { default as Settings } from './Settings'
 export { default as Login } from './Login'
 export { default as SpeakingLibraries } from './SpeakingLibraries'
 export { default as SpeakingLibraryEditor } from './SpeakingLibraryEditor'

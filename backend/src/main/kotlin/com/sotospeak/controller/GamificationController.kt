@@ -3,6 +3,7 @@ package com.sotospeak.controller
 import com.sotospeak.dto.AchievementResponse
 import com.sotospeak.service.*
 import com.sotospeak.shared.model.*
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
@@ -17,6 +18,7 @@ import java.util.*
         "Ожидает решения владельца об удалении в bd FunnyEnglish-8zm. Не использовать.",
     level = DeprecationLevel.WARNING
 )
+@Profile("legacy")
 @RestController
 @RequestMapping("/api/v1/gamification")
 class GamificationController(

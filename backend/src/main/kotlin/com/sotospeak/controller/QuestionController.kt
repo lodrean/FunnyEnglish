@@ -3,6 +3,7 @@ package com.sotospeak.controller
 import com.sotospeak.dto.*
 import com.sotospeak.entity.QuestionType
 import com.sotospeak.service.QuestionService
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -15,6 +16,7 @@ import java.util.UUID
  * NOTE: Некоторые endpoints отключены из-за JSONB миграции.
  * Будут восстановлены после полной миграции данных.
  */
+@Profile("legacy")
 @RestController
 @RequestMapping("/questions")
 class QuestionController(

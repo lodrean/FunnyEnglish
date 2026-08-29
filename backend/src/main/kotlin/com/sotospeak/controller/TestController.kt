@@ -5,10 +5,12 @@ import com.sotospeak.security.UserPrincipal
 import com.sotospeak.service.ProgressService
 import com.sotospeak.service.TestService
 import jakarta.validation.Valid
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
+@Profile("legacy")
 @RestController
 @RequestMapping("/tests")
 class TestController(

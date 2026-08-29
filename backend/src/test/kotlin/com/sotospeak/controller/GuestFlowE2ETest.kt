@@ -25,7 +25,7 @@ import java.util.*
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles("test", "legacy") // legacy: /public/tests/** изолирован за @Profile("legacy") (bd 0w3.2)
 class GuestFlowE2ETest {
 
     @Autowired

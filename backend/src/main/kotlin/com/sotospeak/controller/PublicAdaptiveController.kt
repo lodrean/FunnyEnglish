@@ -3,6 +3,7 @@ package com.sotospeak.controller
 import com.sotospeak.service.PublicAdaptiveService
 import com.sotospeak.shared.model.AdaptiveLessonState
 import com.sotospeak.shared.model.FeedbackResponse
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*
  * Public endpoints for guest adaptive lessons.
  * No authentication required - returns read-only lesson content.
  */
+@Profile("legacy")
 @RestController
 @RequestMapping("/public/adaptive")
 class PublicAdaptiveController(

@@ -19,7 +19,7 @@
   .changelog { padding: 0 var(--space-xxl) var(--space-l); font-size: var(--text-body-small); color: var(--color-text-muted); line-height: 1.6; max-width: 1080px; }
   .changelog b { color: var(--color-text); }
   nav.toc { display: flex; gap: var(--space-s); flex-wrap: wrap; padding: 0 var(--space-xxl) var(--space-xl); }
-  nav.toc a { font-size: var(--text-body-small); font-weight: var(--weight-bold); color: var(--color-text-muted); text-decoration: none; padding: 6px 14px; border-radius: var(--radius-full); background: var(--color-surface-warm); }
+  nav.toc a { font-size: var(--text-body-small); font-weight: var(--weight-bold); color: var(--color-text-muted); text-decoration: none; padding: 6px 14px; border-radius: var(--radius-full); background: var(--color-surface-container-high); }
   nav.toc a:hover { color: var(--color-primary); }
   main { max-width: 1080px; margin: 0 auto; padding: 0 var(--space-xxl) 96px; display: flex; flex-direction: column; gap: 56px; }
   section h2 { font-size: var(--text-title-medium); font-weight: var(--weight-extrabold); margin-bottom: var(--space-s); }
@@ -59,7 +59,7 @@
   .btn:focus-visible, .rec-btn:focus-visible, input:focus-visible, .chip:focus-visible, .nav-item:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
   .btn[disabled] { cursor: default; transform: none; }
   .btn[disabled]::after { display: none; }
-  .btn-filled { background: var(--color-primary-strong); color: #fff; } /* белый текст — ТОЛЬКО на primaryStrong (4.76:1 AA) */
+  .btn-filled { background: var(--color-primary-strong); color: var(--color-on-primary); } /* белый текст — ТОЛЬКО на light primaryStrong (4.76:1 AA); dark — onPrimary v1.3.1 */
   .btn-filled[disabled] { background: color-mix(in srgb, var(--color-text) 12%, transparent); color: color-mix(in srgb, var(--color-text) 38%, transparent); }
   .btn-tonal { background: var(--color-primary-container); color: var(--color-on-primary-container); }
   .btn-outlined { background: transparent; color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-outline); }
@@ -182,7 +182,7 @@
   .ic { width: 22px; height: 22px; }
   /* A11y table */
   table { width: 100%; border-collapse: collapse; font-size: var(--text-body-small); background: var(--color-surface); border-radius: var(--radius-card); overflow: hidden; box-shadow: var(--shadow-card); }
-  th, td { text-align: left; padding: var(--space-m) var(--space-l); border-bottom: 1px solid var(--color-surface-warm); }
+  th, td { text-align: left; padding: var(--space-m) var(--space-l); border-bottom: 1px solid var(--color-outline-variant); }
   th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-muted); }
   .pass { color: var(--color-success); font-weight: var(--weight-extrabold); }
   .fail { color: var(--color-error); font-weight: var(--weight-extrabold); }
@@ -452,7 +452,7 @@
     swBrand: [['primary','#5B8DEF'],['primaryStrong','#3B6FD4'],['onPrimary','#FFFFFF'],['primaryContainer','#DDE8FD'],['onPrimaryContainer','#1A2F5E'],['secondary','#9B7EDE'],['secondaryContainer','#E5DCFF'],['onSecondaryContainer','#5B3FA8'],['tertiary','#006C4C']],
     swSemantic: [['record','#FF9F6B'],['recordActive','#D97238'],['recordContainer','#FFE3D1'],['onRecordContainer','#8A3B0E'],['onRecord','#2D3561'],['waveformPlayback','#5B8DEF'],['success','#43A047'],['warning','#FB8C00'],['error','#E53935']],
     swTimer: [['level 1 · 80с','#4A7FE8'],['level 2 · 50с','#8A68D6'],['level 3 · 30с','#D97238'],['status NEW','#FB8C00'],['NEW container','#FFE0B2'],['status REVIEWED','#43A047'],['REVIEWED container','#C8E6C9']],
-    swNeutral: [['background','#EEF3FF'],['surface','#FFFFFF'],['surfaceWarm','#E5DCFF'],['surfaceVariant','#D8E2FA'],['outline','#B9C7EE'],['text','#2D3561'],['textMuted','#58609A']],
+    swNeutral: [['background','#EEF3FF'],['surface','#FFFFFF'],['surfaceVariant','#D8E2FA'],['outline','#B9C7EE'],['text','#2D3561'],['textMuted','#58609A']],
     swM3: [['surfaceContainerLow','#F6F8FF',1],['surfaceContainer','#E9EFFE',1],['surfaceContainerHigh','#E2E9FB',1],['outlineVariant','#D4DDF5',1],['inverseSurface','#2D3561',1],['inverseOnSurface','#EEF3FF',1],['inversePrimary','#8FB3F5',1],['surfaceTint','#5B8DEF',1]]
   };
   const copied = document.getElementById('copied');

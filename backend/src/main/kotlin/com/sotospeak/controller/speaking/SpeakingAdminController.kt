@@ -61,6 +61,26 @@ class SpeakingAdminController(
     fun getTopics(@RequestParam libraryId: UUID): ResponseEntity<List<AdminTopicResponse>> =
         ResponseEntity.ok(contentService.getTopics(libraryId))
 
+    /** Детали топика (включая черновики и soft-deleted) — deep-link без N+1 (Part 3 §3.3) */
+    @GetMapping("/topics/{id}")
+    fun getTopic(@PathVariable id: UUID): ResponseEntity<AdminTopicResponse> =
+        ResponseEntity.ok(contentService.getTopic(id))
+
+    /** Точечный publish/unpublish без полного PUT (Part 3 §3.3) */
+    @PatchMapping("/libraries/{id}/publish")
+    fun publishLibrary(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: PublishRequest
+    ): ResponseEntity<AdminLibraryResponse> =
+        ResponseEntity.ok(contentService.publishLibrary(id, request.isPublished))
+
+    @PatchMapping("/topics/{id}/publish")
+    fun publishTopic(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: PublishRequest
+    ): ResponseEntity<AdminTopicResponse> =
+        ResponseEntity.ok(contentService.publishTopic(id, request.isPublished))
+
     @PostMapping("/topics")
     fun createTopic(
         @Valid @RequestBody request: CreateTopicRequest
@@ -112,7 +132,29 @@ class SpeakingAdminController(
         return ResponseEntity.noContent().build()
     }
 
+    /** Batch-reorder вопросов топика: полный упорядоченный список id (Part 3 §3.2) */
+    @PostMapping("/topics/{id}/questions/reorder")
+    fun reorderQuestions(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: ReorderSpeakingQuestionsRequest
+    ): ResponseEntity<Void> {
+        contentService.reorderQuestions(id, request.questionIds)
+        return ResponseEntity.noContent().build()
+    }
+
     // ============== Grading inbox ============== 
+
+    /** Счётчик записей по статусу (badge «NEW» в сайдбаре, Part 3 §3.3) */
+    @GetMapping("/submissions/count")
+    fun getSubmissionsCount(
+        @RequestParam(required = false) status: SubmissionStatus?
+    ): ResponseEntity<SubmissionCountResponse> =
+        ResponseEntity.ok(SubmissionCountResponse(submissionService.countSubmissions(status)))
+
+    /** Детали записи — deep-link `/grading/submissions/:id` без страницы inbox (Part 3 §3.3) */
+    @GetMapping("/submissions/{id}")
+    fun getSubmission(@PathVariable id: UUID): ResponseEntity<AdminSubmissionResponse> =
+        ResponseEntity.ok(submissionService.getSubmission(id))
 
     @GetMapping("/submissions")
     fun getSubmissions(

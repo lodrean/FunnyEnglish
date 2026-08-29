@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
+import org.springframework.test.web.servlet.patch
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import org.springframework.transaction.annotation.Transactional
@@ -392,6 +393,146 @@ class SpeakingFlowIntegrationTest {
             status { isOk() }
             jsonPath("$.totalElements") { value(0) }
         }
+    }
+
+    // 9. ADMIN: GET topics/{id} — детали черновика без N+1 (deep-link); unknown id → 404
+    @Test
+    fun `admin can get topic by id including drafts`() {
+        val draftLibrary = libraryRepository.save(Library(title = "Draft Lib", isPublished = false))
+        val draftTopic = Topic(title = "Draft Topic", isPublished = false)
+        draftLibrary.addTopic(draftTopic)
+        draftTopic.addQuestion(SpeakingQuestion(text = "Q draft?", displayOrder = 0))
+        val saved = topicRepository.save(draftTopic)
+
+        mockMvc.get("/admin/speaking/topics/${saved.id}") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.title") { value("Draft Topic") }
+            jsonPath("$.isPublished") { value(false) }
+            jsonPath("$.isDeleted") { value(false) }
+            jsonPath("$.questions[0].text") { value("Q draft?") }
+        }
+
+        mockMvc.get("/admin/speaking/topics/${UUID.randomUUID()}") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect { status { isNotFound() } }
+    }
+
+    // 10. ADMIN: PATCH publish — точечный publish/unpublish library и topic (Part 3 §3.3)
+    @Test
+    fun `admin can publish and unpublish via PATCH publish`() {
+        val library = libraryRepository.save(Library(title = "Patch Lib", isPublished = false))
+        val topic = Topic(title = "Patch Topic", isPublished = false)
+        library.addTopic(topic)
+        val savedTopic = topicRepository.save(topic)
+
+        mockMvc.patch("/admin/speaking/libraries/${library.id}/publish") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"isPublished": true}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.isPublished") { value(true) }
+        }
+
+        mockMvc.patch("/admin/speaking/topics/${savedTopic.id}/publish") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"isPublished": true}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.isPublished") { value(true) }
+            jsonPath("$.published") { doesNotExist() } // грабля №18
+        }
+
+        // unpublish топика обратно
+        mockMvc.patch("/admin/speaking/topics/${savedTopic.id}/publish") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"isPublished": false}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.isPublished") { value(false) }
+        }
+    }
+
+    // 11. ADMIN: batch-reorder вопросов — displayOrder = индекс; чужой/неполный набор id → 400
+    @Test
+    fun `admin can batch reorder topic questions`() {
+        val library = libraryRepository.save(Library(title = "Reorder Lib", isPublished = false))
+        val topic = Topic(title = "Reorder Topic", isPublished = false)
+        library.addTopic(topic)
+        topic.addQuestion(SpeakingQuestion(text = "Q1", displayOrder = 0))
+        topic.addQuestion(SpeakingQuestion(text = "Q2", displayOrder = 1))
+        topic.addQuestion(SpeakingQuestion(text = "Q3", displayOrder = 2))
+        val saved = topicRepository.save(topic)
+        val ids = saved.questions.sortedBy { it.displayOrder }.map { it.id.toString() }
+        val reversed = ids.reversed()
+
+        mockMvc.post("/admin/speaking/topics/${saved.id}/questions/reorder") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(mapOf("questionIds" to reversed))
+        }.andExpect { status { isNoContent() } }
+
+        mockMvc.get("/admin/speaking/topics/${saved.id}") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.questions[0].id") { value(reversed[0]) }
+            jsonPath("$.questions[0].displayOrder") { value(0) }
+            jsonPath("$.questions[2].id") { value(reversed[2]) }
+            jsonPath("$.questions[2].displayOrder") { value(2) }
+        }
+
+        // неполный набор id → 400
+        mockMvc.post("/admin/speaking/topics/${saved.id}/questions/reorder") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(mapOf("questionIds" to ids.drop(1)))
+        }.andExpect { status { isBadRequest() } }
+    }
+
+    // 12. ADMIN: GET submissions/{id} (deep-link) + GET submissions/count?status= (badge)
+    @Test
+    fun `admin can get submission by id and count by status`() {
+        val topic = seedPublishedContent()
+        val submissionId = submitAs(userToken, topic.id!!)
+
+        mockMvc.get("/admin/speaking/submissions/$submissionId") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.id") { value(submissionId) }
+            jsonPath("$.userEmail") { value("speaking-user@test.com") }
+            jsonPath("$.topicTitle") { value("My Morning Routine") }
+            jsonPath("$.status") { value("NEW") }
+            jsonPath("$.audioUrl") { value(publicAudioUrl) }
+        }
+
+        mockMvc.get("/admin/speaking/submissions/count") {
+            header("Authorization", "Bearer $adminToken")
+            param("status", "NEW")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.count") { value(1) }
+        }
+
+        gradeAs(adminToken, submissionId, GradeSubmissionRequest(8, 8, 8, 8, null))
+
+        mockMvc.get("/admin/speaking/submissions/count") {
+            header("Authorization", "Bearer $adminToken")
+            param("status", "NEW")
+        }.andExpect { jsonPath("$.count") { value(0) } }
+        mockMvc.get("/admin/speaking/submissions/count") {
+            header("Authorization", "Bearer $adminToken")
+            param("status", "REVIEWED")
+        }.andExpect { jsonPath("$.count") { value(1) } }
+
+        mockMvc.get("/admin/speaking/submissions/${UUID.randomUUID()}") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect { status { isNotFound() } }
     }
 
     // ============== helpers ==============

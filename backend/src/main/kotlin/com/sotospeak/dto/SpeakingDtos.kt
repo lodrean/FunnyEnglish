@@ -123,6 +123,21 @@ data class CreateSpeakingQuestionRequest(
     val displayOrder: Int = 0
 )
 
+/** PATCH …/publish — точечная смена isPublished без полного PUT (Part 3 §3.3) */
+data class PublishRequest(
+    @field:NotNull val isPublished: Boolean
+)
+
+/** Batch-reorder вопросов топика: полный упорядоченный список id (Part 3 §3.2) */
+data class ReorderSpeakingQuestionsRequest(
+    @field:NotNull val questionIds: List<String>   // UUID строкой — паттерн CreateTopicRequest.libraryId
+)
+
+/** GET …/submissions/count?status=NEW — счётчик для badge (Part 3 §3.3) */
+data class SubmissionCountResponse(
+    val count: Long
+)
+
 data class GradeSubmissionRequest(
     @field:NotNull @field:Min(1) @field:Max(10) val grammar: Int,
     @field:NotNull @field:Min(1) @field:Max(10) val vocabulary: Int,

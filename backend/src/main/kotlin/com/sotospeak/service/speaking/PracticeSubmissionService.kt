@@ -109,6 +109,18 @@ class PracticeSubmissionService(
         submissionRepository.search(status, userId, topicId, dateFrom, dateTo, pageable)
             .map { it.toAdminResponse().normalized() }
 
+    /** Детали записи для admin deep-link (Part 3 §3.3) — без выборки страницы inbox */
+    @Transactional(readOnly = true)
+    fun getSubmission(id: UUID): AdminSubmissionResponse =
+        submissionRepository.findByIdWithDetails(id)
+            .orElseThrow { NoSuchElementException("Submission not found") }
+            .toAdminResponse().normalized()
+
+    /** Счётчик записей по статусу (badge «NEW» в сайдбаре, Part 3 §3.3); status=null → все */
+    @Transactional(readOnly = true)
+    fun countSubmissions(status: SubmissionStatus?): Long =
+        status?.let { submissionRepository.countByStatus(it) } ?: submissionRepository.count()
+
     // ============== Admin: grading ==============
 
     fun gradeSubmission(submissionId: UUID, request: GradeSubmissionRequest, reviewerId: UUID): GradeResponse {

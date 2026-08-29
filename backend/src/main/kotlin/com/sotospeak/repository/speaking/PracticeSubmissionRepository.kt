@@ -48,6 +48,8 @@ interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID>
 
     fun findFirstByUserIdAndTopicId(userId: UUID, topicId: UUID): PracticeSubmission?
 
+    fun countByStatus(status: SubmissionStatus): Long
+
     @Query("""
         SELECT s FROM PracticeSubmission s
         LEFT JOIN FETCH s.user

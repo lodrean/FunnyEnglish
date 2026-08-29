@@ -120,6 +120,14 @@ class SpeakingContentService(
         topicRepository.findByLibraryIdOrderByDisplayOrderAsc(libraryId)
             .map { it.toAdminResponse().copy(video = it.video?.toResponse()?.normalized()) }
 
+    /** Детали топика для admin (включая черновики и soft-deleted — deep-link без N+1, Part 3 §3.3) */
+    @Transactional(readOnly = true)
+    fun getTopic(id: UUID): AdminTopicResponse {
+        val topic = topicRepository.findByIdWithDetails(id)
+            .orElseThrow { NoSuchElementException("Topic not found") }
+        return topic.toAdminResponse().copy(video = topic.video?.toResponse()?.normalized())
+    }
+
     fun createTopic(request: CreateTopicRequest): AdminTopicResponse {
         val library = libraryRepository.findById(parseUuid(request.libraryId))
             .orElseThrow { NoSuchElementException("Library not found") }
@@ -141,6 +149,23 @@ class SpeakingContentService(
         request.description?.let { topic.description = it }
         request.displayOrder?.let { topic.displayOrder = it }
         request.isPublished?.let { topic.isPublished = it }
+        val saved = topicRepository.save(topic)
+        return saved.toAdminResponse().copy(video = saved.video?.toResponse()?.normalized())
+    }
+
+    /** Точечный publish/unpublish без полного PUT (Part 3 §3.3) */
+    fun publishLibrary(id: UUID, isPublished: Boolean): AdminLibraryResponse {
+        val library = libraryRepository.findById(id)
+            .orElseThrow { NoSuchElementException("Library not found") }
+        library.isPublished = isPublished
+        val saved = libraryRepository.save(library)
+        return saved.toAdminResponse(saved.topics.count { it.deletedAt == null })
+    }
+
+    fun publishTopic(id: UUID, isPublished: Boolean): AdminTopicResponse {
+        val topic = topicRepository.findByIdWithDetails(id)
+            .orElseThrow { NoSuchElementException("Topic not found") }
+        topic.isPublished = isPublished
         val saved = topicRepository.save(topic)
         return saved.toAdminResponse().copy(video = saved.video?.toResponse()?.normalized())
     }
@@ -215,6 +240,23 @@ class SpeakingContentService(
         val question = questionRepository.findById(id)
             .orElseThrow { NoSuchElementException("Question not found") }
         questionRepository.delete(question)
+    }
+
+    /**
+     * Batch-reorder вопросов топика (Part 3 §3.2): принимает ПОЛНЫЙ упорядоченный
+     * список id вопросов топика; displayOrder = индекс в списке. Несовпадение
+     * набора id с вопросами топика → 400 (IllegalArgumentException).
+     */
+    fun reorderQuestions(topicId: UUID, questionIds: List<String>) {
+        val topic = topicRepository.findByIdWithDetails(topicId)
+            .orElseThrow { NoSuchElementException("Topic not found") }
+        val orderedIds = questionIds.map { parseUuid(it) } // невалидный UUID → IllegalArgumentException → 400
+        val byId = topic.questions.mapNotNull { q -> q.id?.let { it to q } }.toMap()
+        require(orderedIds.size == byId.size && orderedIds.all { it in byId }) {
+            "questionIds must contain exactly all question ids of the topic"
+        }
+        orderedIds.forEachIndexed { index, questionId -> byId.getValue(questionId).displayOrder = index }
+        questionRepository.saveAll(topic.questions)
     }
 
     // ============== Helpers ==============

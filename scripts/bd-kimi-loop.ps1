@@ -333,12 +333,20 @@ $extra$kindExtra
         break
     }
     $logBytes = if (Test-Path $kimiLog) { (Get-Item $kimiLog).Length } else { 0 }
-    $kimiOk = ($logBytes -gt 0) -and (-not $kimiTimedOut)
+    # Закрытие ТОЛЬКО при реальном успехе: exit 0 (403-квота и прочие падения дают exit 1)
+    $kimiOk = ($kimiCode -eq 0) -and ($logBytes -gt 0) -and (-not $kimiTimedOut)
     Write-Host ("  kimi exit: {0}; timedout: {1}; log bytes: {2}" -f $kimiCode, $kimiTimedOut, $logBytes)
+
+    # --- детект исчерпания квоты kimi (403 usage limit) → марафон остановится после задачи ---
+    $quotaHit = $false
+    if (Test-Path $kimiLog) {
+        $rawLog = Get-Content $kimiLog -Raw -ErrorAction SilentlyContinue
+        if ($rawLog -match "usage limit|You've reached|access_terminated|Error code: 403") { $quotaHit = $true }
+    }
 
     # --- гейты ---
     $gateResults = @()
-    if ($kimiOk -and -not $SkipGates) {
+    if ($kimiOk -and -not $SkipGates -and -not $quotaHit) {
         foreach ($g in $gates) {
             $r = Invoke-Gate -Gate $g -LogDir $dir
             $gateResults += $r
@@ -347,10 +355,11 @@ $extra$kindExtra
     }
     if ($kind -eq 'none') { $gatesOk = $true } else { $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok }) }
 
-    # --- маркер статуса от kimi (DONE | NEEDS_OWNER | BLOCKED) ---
+    # --- маркер статуса от kimi (DONE | NEEDS_OWNER | BLOCKED) — ТОЛЬКО из хвоста лога,
+    # чтобы эхо промпта в начале не давало ложных совпадений ---
     $statusMarker = ''
     if (Test-Path $kimiLog) {
-        $m = (Get-Content $kimiLog | Select-String -Pattern 'STATUS:\s*(DONE|NEEDS_OWNER|BLOCKED)' | Select-Object -Last 1)
+        $m = (Get-Content $kimiLog -Tail 300 | Select-String -Pattern 'STATUS:\s*(DONE|NEEDS_OWNER|BLOCKED)' | Select-Object -Last 1)
         if ($m) { $statusMarker = $m.Matches[0].Groups[1].Value }
     }
     $ownerStopped = $statusMarker -in @('NEEDS_OWNER', 'BLOCKED')
@@ -368,7 +377,7 @@ $extra$kindExtra
         $verdict = 'CLOSED (kimi+гейты OK)'
     } else {
         Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ updated_at = (Get-UtcNowIso) } | Out-Null
-        $why = if ($kimiTimedOut) { "kimi TIMEOUT (2x$($KimiTimeoutSec/60) мин)" } elseif ($ownerStopped) { "kimi остановился: $statusMarker" } else { "kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) }
+        $why = if ($quotaHit) { 'квота kimi исчерпана (403 usage limit)' } elseif ($kimiTimedOut) { "kimi TIMEOUT (2x$($KimiTimeoutSec/60) мин)" } elseif ($ownerStopped) { "kimi остановился: $statusMarker" } else { "kimi=$kimiCode gates=" + ($(if ($gatesOk) { 'ok' } else { 'FAIL' })) }
         $verdict = "IN_PROGRESS ($why)"
     }
     Write-Host ("  verdict: {0}" -f $verdict)
@@ -417,6 +426,12 @@ $(if (Test-Path $kimiLog) { (Get-Content $kimiLog -Tail 120 | Out-String) } else
             Update-IssueJsonl -Path $IssuesPath -Id $id -Changes @{ status = 'in_progress'; updated_at = (Get-UtcNowIso) } | Out-Null
             Write-Host ("  git: WIP застешен (stash), ветка удалена, статус in_progress")
         }
+    }
+
+    # --- квота kimi исчерпана: дальше бессмысленно, останавливаем марафон ---
+    if ($quotaHit) {
+        Write-Host 'QUOTA: квота kimi (5-hour usage limit) исчерпана — марафон остановлен. Перезапустить после сброса окна.'
+        break
     }
 }
 

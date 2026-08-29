@@ -18,7 +18,7 @@ import com.sotospeak.designsystem.tokens.NunitoFontFamily
 /**
  * Speaking Trainer — токены Playful Coach v1.1 (.docs/design-system/tokens.json).
  *
- * Используются новыми speaking-экранами; legacy-палитра (FunnyColorScheme) не тронута.
+ * Используются speaking-экранами (legacy-палитра FunnyColorScheme удалена, bd FunnyEnglish-2oz.6).
  * Доступ: `MaterialTheme.speakingColors` или `LocalSpeakingColors.current`.
  *
  * WCAG: на record-фоне (#FF9F6B) — только тёмный текст [text] (5.8:1);

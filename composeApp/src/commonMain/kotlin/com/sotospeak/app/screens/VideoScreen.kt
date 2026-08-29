@@ -27,7 +27,7 @@ import com.sotospeak.app.player.VideoPlayerController
 import com.sotospeak.app.player.VideoPlayerState
 import com.sotospeak.app.subtitles.TranscriptPanel
 import com.sotospeak.app.viewmodel.VideoState
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
 

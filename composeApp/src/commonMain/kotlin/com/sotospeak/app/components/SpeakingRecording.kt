@@ -54,7 +54,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingElevation

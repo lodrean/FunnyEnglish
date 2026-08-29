@@ -38,7 +38,7 @@ import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.viewmodel.RecorderUiState
 import com.sotospeak.app.viewmodel.TrainingState
 import com.sotospeak.app.viewmodel.TrainingViewModel
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingElevation

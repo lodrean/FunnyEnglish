@@ -31,7 +31,7 @@ import com.sotospeak.app.components.SpeakingTimerRing
 import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.viewmodel.PracticePhase
 import com.sotospeak.app.viewmodel.PracticeState
-import com.sotospeak.design.icons.SpeakingIcons
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes

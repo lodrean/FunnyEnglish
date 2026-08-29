@@ -625,9 +625,9 @@ private data class BottomNavItem(
 
 // Лейблы и иконки по мокапу Playful Coach v1.1 (bottomnav: home/send/user, аудит 2026-08-01)
 private val mainNavItems = listOf(
-    BottomNavItem(AppScreen.Library, "Темы", com.sotospeak.design.icons.SpeakingIcons.Home),
-    BottomNavItem(AppScreen.MySubmissions, "Отправки", com.sotospeak.design.icons.SpeakingIcons.Send),
-    BottomNavItem(AppScreen.Profile, "Профиль", com.sotospeak.design.icons.SpeakingIcons.User)
+    BottomNavItem(AppScreen.Library, "Темы", com.sotospeak.designsystem.icons.SpeakingIcons.Home),
+    BottomNavItem(AppScreen.MySubmissions, "Отправки", com.sotospeak.designsystem.icons.SpeakingIcons.Send),
+    BottomNavItem(AppScreen.Profile, "Профиль", com.sotospeak.designsystem.icons.SpeakingIcons.User)
 )
 
 @Composable

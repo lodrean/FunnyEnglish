@@ -1,7 +1,6 @@
 package com.sotospeak.designsystem.tokens
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Shapes
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
@@ -109,23 +108,6 @@ val MediumComponentShape = ShapeMedium
  * Large component shape: 16dp (MD3 large).
  */
 val LargeComponentShape = ShapeLarge
-
-// ==================== Material 3 Shapes ====================
-/**
- * Material 3 shapes configuration for the theme.
- *
- * MD3 mapping:
- * - small  -> 4.dp  (chips, snackbars)
- * - medium -> 12.dp (cards)
- * - large  -> 16.dp (FABs, navigation drawer)
- */
-fun funnyShapes(): Shapes {
-    return Shapes(
-        small = ShapeExtraSmall,
-        medium = ShapeMedium,
-        large = ShapeLarge
-    )
-}
 
 // ==================== Extension Functions ====================
 /**

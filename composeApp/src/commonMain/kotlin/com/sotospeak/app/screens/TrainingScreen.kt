@@ -603,7 +603,9 @@ fun TrainingRoute(
     onNavigateToLibrary: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    val vm: com.sotospeak.app.viewmodel.TrainingViewModel = org.koin.compose.viewmodel.koinViewModel()
+    // VM со скоупом маршрута (К3): на каждый topicId своя VM, очищается при уходе с экрана
+    val vm: com.sotospeak.app.viewmodel.TrainingViewModel =
+        com.sotospeak.app.util.routeViewModel("training:$topicId")
     val state by vm.state.collectAsState()
     val currentState by rememberUpdatedState(state)
 

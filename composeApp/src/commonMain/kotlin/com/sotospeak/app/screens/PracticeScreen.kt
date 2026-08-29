@@ -521,7 +521,9 @@ fun PracticeRoute(
     onNavigateToLibrary: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    val vm: com.sotospeak.app.viewmodel.PracticeViewModel = org.koin.compose.viewmodel.koinViewModel()
+    // VM со скоупом маршрута (К3): на каждый topicId своя VM, очищается при уходе с экрана
+    val vm: com.sotospeak.app.viewmodel.PracticeViewModel =
+        com.sotospeak.app.util.routeViewModel("practice:$topicId")
     val state by vm.state.collectAsState()
 
     val recorder = remember { com.sotospeak.app.recorder.VoiceRecorder() }

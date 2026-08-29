@@ -43,6 +43,7 @@ import com.sotospeak.app.screens.TrainingRoute
 import com.sotospeak.app.screens.PracticeRoute
 import com.sotospeak.app.screens.MySubmissionsScreen
 import com.sotospeak.app.util.ObserveAsEvents
+import com.sotospeak.app.util.routeViewModel
 import com.sotospeak.designsystem.theme.ApplySystemBarStyle
 import com.sotospeak.designsystem.theme.FunnyTheme
 import com.sotospeak.designsystem.layout.MaxContentWidth
@@ -282,8 +283,6 @@ private fun MainAppContent(
     onLogout: () -> Unit
 ) {
     val settingsState by settingsViewModel.state.collectAsState()
-    val profileViewModel: ProfileViewModel = koinViewModel()
-    val messagesViewModel: MessagesViewModel = koinViewModel()
 
     val showBottomNav = currentScreen is AppScreen.Library ||
         currentScreen is AppScreen.MySubmissions ||
@@ -353,10 +352,12 @@ private fun MainAppContent(
             ) { currentScreen ->
             when (currentScreen) {
                 is AppScreen.Profile -> {
+                    // VM со скоупом маршрута (К3): создаются при входе, очищаются при уходе
+                    val profileViewModel: ProfileViewModel = routeViewModel(currentScreen)
                     val state by profileViewModel.profileState.collectAsState()
                     val isGuest = authMode == AuthMode.GUEST
                     // Статистика stat-карточек — из существующего MySubmissionsViewModel
-                    val submissionsVm: MySubmissionsViewModel = koinViewModel()
+                    val submissionsVm: MySubmissionsViewModel = routeViewModel(currentScreen)
                     val submissionsState by submissionsVm.state.collectAsState()
                     // debug-меню (qa/debug): вход — 7 тапов по версии внизу профиля
                     val appConfig: com.sotospeak.app.di.AppConfig = koinInject()
@@ -392,6 +393,7 @@ private fun MainAppContent(
                     )
                 }
                 is AppScreen.Messages -> {
+                    val messagesViewModel: MessagesViewModel = routeViewModel(currentScreen)
                     val state by messagesViewModel.state.collectAsState()
                     MessagesScreen(
                         state = state,
@@ -416,7 +418,7 @@ private fun MainAppContent(
                 }
                 // ==================== Speaking-тренажёр ====================
                 is AppScreen.Library -> {
-                    val vm: LibraryViewModel = koinViewModel()
+                    val vm: LibraryViewModel = routeViewModel(currentScreen)
                     val state by vm.state.collectAsState()
                     ObserveAsEvents(vm.events) { event ->
                         when (event) {
@@ -431,7 +433,7 @@ private fun MainAppContent(
                     )
                 }
                 is AppScreen.Topics -> {
-                    val vm: TopicsViewModel = koinViewModel()
+                    val vm: TopicsViewModel = routeViewModel(currentScreen)
                     val state by vm.state.collectAsState()
                     LaunchedEffect(currentScreen.libraryId) {
                         vm.onAction(TopicsAction.OnLoad(currentScreen.libraryId))
@@ -486,7 +488,7 @@ private fun MainAppContent(
                     )
                 }
                 is AppScreen.Questions -> {
-                    val vm: QuestionsViewModel = koinViewModel()
+                    val vm: QuestionsViewModel = routeViewModel(currentScreen)
                     val state by vm.state.collectAsState()
                     val isGuest = authMode == AuthMode.GUEST
                     LaunchedEffect(currentScreen.topicId, isGuest) {
@@ -579,7 +581,7 @@ private fun MainAppContent(
                             onRegisterClick = { onNavigate(AppScreen.Register) }
                         )
                     } else {
-                        val vm: MySubmissionsViewModel = koinViewModel()
+                        val vm: MySubmissionsViewModel = routeViewModel(currentScreen)
                         val state by vm.state.collectAsState()
                         LaunchedEffect(Unit) {
                             vm.onAction(MySubmissionsAction.OnRefresh)

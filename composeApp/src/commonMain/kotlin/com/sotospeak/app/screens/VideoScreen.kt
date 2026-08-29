@@ -654,7 +654,9 @@ fun VideoRoute(
     onNavigateToQuestions: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    val vm: com.sotospeak.app.viewmodel.VideoViewModel = org.koin.compose.viewmodel.koinViewModel()
+    // VM со скоупом маршрута (К3): на каждый topicId своя VM, очищается при уходе с экрана
+    val vm: com.sotospeak.app.viewmodel.VideoViewModel =
+        com.sotospeak.app.util.routeViewModel("video:$topicId")
     val state by vm.state.collectAsState()
 
     // Медиа-HTTP-клиент (Koin single named "media") — единый Ktor-стек стриминга (bd 4d1)

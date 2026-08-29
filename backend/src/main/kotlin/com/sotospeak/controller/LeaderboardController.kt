@@ -3,6 +3,7 @@ package com.sotospeak.controller
 import com.sotospeak.dto.LeaderboardResponse
 import com.sotospeak.security.UserPrincipal
 import com.sotospeak.service.UserService
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*
         "Ожидает решения владельца об удалении в bd FunnyEnglish-8zm. Не использовать.",
     level = DeprecationLevel.WARNING
 )
+@Profile("legacy")
 @RestController
 @RequestMapping("/leaderboard")
 class LeaderboardController(

@@ -1,6 +1,7 @@
 package com.sotospeak.controller
 
 import com.sotospeak.security.UserPrincipal
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -9,6 +10,7 @@ import java.util.UUID
 /**
  * Controller for feature toggle management
  */
+@Profile("legacy")
 @RestController
 @RequestMapping("/api/features")
 class FeatureToggleController {

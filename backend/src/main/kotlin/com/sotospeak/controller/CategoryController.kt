@@ -4,10 +4,12 @@ import com.sotospeak.dto.CategoryResponse
 import com.sotospeak.dto.TestListResponse
 import com.sotospeak.security.UserPrincipal
 import com.sotospeak.service.TestService
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
+@Profile("legacy")
 @RestController
 @RequestMapping("/categories")
 class CategoryController(

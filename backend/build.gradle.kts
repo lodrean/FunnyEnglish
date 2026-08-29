@@ -15,9 +15,9 @@ java {
 }
 
 dependencies {
-    // Shared module
-    implementation(project(":shared"))
-    
+    // Зависимость :shared снята 2026-08-29 (bd FunnyEnglish-0w3.2): использованные legacy-модели
+    // скопированы в backend/src/main/kotlin/com/sotospeak/shared/model/ (те же FQN).
+
     // Spring Boot
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.security)

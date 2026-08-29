@@ -3,6 +3,7 @@ package com.sotospeak.controller
 import com.sotospeak.dto.*
 import com.sotospeak.security.UserPrincipal
 import com.sotospeak.service.StudentGroupService
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -12,6 +13,7 @@ import java.util.UUID
 // Extension function to convert String userId to UUID
 private fun String.toUUID(): UUID = UUID.fromString(this)
 
+@Profile("legacy")
 @RestController
 @RequestMapping("/api/groups")
 class StudentGroupController(

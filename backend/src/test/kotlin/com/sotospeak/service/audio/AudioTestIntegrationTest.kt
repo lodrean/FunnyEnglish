@@ -26,7 +26,7 @@ import java.util.UUID
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles("test", "legacy") // legacy: AudioTestController изолирован за @Profile("legacy") (bd 0w3.2)
 class AudioTestIntegrationTest {
 
     @Autowired

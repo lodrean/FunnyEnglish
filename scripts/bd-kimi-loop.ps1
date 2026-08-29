@@ -373,9 +373,10 @@ $(if (Test-Path $kimiLog) { (Get-Content $kimiLog -Tail 120 | Out-String) } else
             git add -A 2>&1 | Out-Null
             $type = 'chore'
             if ($task.title -match '^(SEC|ADM|BUG|FIX)') { $type = 'fix' }
-            elseif ($task.title -match '^(LC|BE|ADT|DS|KMP|INF)') { $type = 'refactor' }
+            elseif ($task.title -match '^(LC|BE|ADT|DS|KMP)') { $type = 'refactor' }
             elseif ($task.title -match '^PR') { $type = 'feat' }
-            $scope = switch ($kind) { 'admin' { 'admin' } 'backend' { 'backend' } default { 'composeApp' } }
+            elseif ($task.title -match '^INF') { $type = 'chore' }
+            $scope = switch ($kind) { 'admin' { 'admin' } 'backend' { 'backend' } 'none' { 'infra' } default { 'composeApp' } }
             $msg = "$type($scope): $($task.title) (bd $id)"
             git commit -m $msg 2>&1 | Out-Null
             git checkout develop 2>&1 | Out-Null

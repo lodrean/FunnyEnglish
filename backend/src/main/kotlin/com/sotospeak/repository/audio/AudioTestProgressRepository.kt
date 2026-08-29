@@ -22,6 +22,7 @@ interface AudioTestProgressRepository : JpaRepository<AudioTestProgress, UUID> {
 
     @Query("""
         SELECT p FROM AudioTestProgress p
+        LEFT JOIN FETCH p.audioTest
         WHERE p.user.id = :userId AND p.audioTest.id = :audioTestId
     """)
     fun findByUserIdAndAudioTestId(

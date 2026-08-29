@@ -37,15 +37,18 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getUserById(userId: String): User {
         return userRepository.findById(UUID.fromString(userId))
             .orElseThrow { NoSuchElementException("User not found") }
     }
 
+    @Transactional(readOnly = true)
     fun getAllUsers(): List<User> {
         return userRepository.findAllByOrderByCreatedAtDesc()
     }
 
+    @Transactional(readOnly = true)
     fun getUserStats(user: User): UserStats {
         val testsCompleted = progressRepository.countByUserId(user.id)
         val totalStars = progressRepository.sumStarsByUserId(user.id) ?: 0
@@ -61,6 +64,7 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = ["userProfiles"], key = "#userId")
     fun getUserProfile(userId: String): UserProfileResponse {
         val user = getUserById(userId)
@@ -238,6 +242,7 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = ["leaderboard"], key = "(#currentUserId ?: 'anonymous') + '-' + #limit")
     fun getLeaderboard(currentUserId: String?, limit: Int = 10): LeaderboardResponse {
         val topUsers = userRepository.findTopByTotalPoints(limit)

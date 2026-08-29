@@ -4,6 +4,7 @@ import com.sotospeak.entity.QuestionType
 import com.sotospeak.repository.*
 import com.sotospeak.shared.model.*
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
@@ -15,6 +16,7 @@ class PublicAdaptiveService(
     private val imageWordMatchHotspotRepository: ImageWordMatchHotspotRepository
 ) {
 
+    @Transactional(readOnly = true)
     fun createRandomLesson(categoryId: String?, durationMinutes: Int): AdaptiveLessonState {
         val tests = if (categoryId != null) {
             testRepository.findByCategoryIdAndIsPublishedTrueOrderByDisplayOrder(UUID.fromString(categoryId))
@@ -85,6 +87,7 @@ class PublicAdaptiveService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun validateAnswer(questionId: String, answerId: String): FeedbackResponse {
         val question = questionRepository.findById(UUID.fromString(questionId))
             .orElseThrow { NoSuchElementException("Question not found") }

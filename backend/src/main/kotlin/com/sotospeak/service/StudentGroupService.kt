@@ -68,11 +68,13 @@ class StudentGroupService(
         groupRepository.delete(group)
     }
 
+    @Transactional(readOnly = true)
     fun getTeacherGroups(teacherId: UUID): List<GroupResponse> {
         return groupRepository.findByTeacherId(teacherId)
             .map { mapToGroupResponse(it) }
     }
 
+    @Transactional(readOnly = true)
     fun getGroupDetail(groupId: UUID, teacherId: UUID): GroupDetailResponse {
         val group = groupRepository.findById(groupId)
             .orElseThrow { NoSuchElementException("Group not found") }
@@ -113,6 +115,7 @@ class StudentGroupService(
         memberRepository.deleteByGroupIdAndUserId(groupId, studentId)
     }
 
+    @Transactional(readOnly = true)
     fun getPendingRequests(groupId: UUID, teacherId: UUID): List<JoinRequestResponse> {
         val group = groupRepository.findById(groupId)
             .orElseThrow { NoSuchElementException("Group not found") }
@@ -226,6 +229,7 @@ class StudentGroupService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getStudentGroups(userId: UUID): List<GroupResponse> {
         return memberRepository.findByUserId(userId)
             .map { it.group }
@@ -233,6 +237,7 @@ class StudentGroupService(
             .map { mapToGroupResponse(it) }
     }
 
+    @Transactional(readOnly = true)
     fun getStudentGroupDetail(groupId: UUID, userId: UUID): GroupDetailResponse {
         if (!memberRepository.existsByGroupIdAndUserId(groupId, userId)) {
             throw IllegalAccessException("You are not a member of this group")
@@ -270,6 +275,7 @@ class StudentGroupService(
 
     // ==================== Progress Methods ====================
 
+    @Transactional(readOnly = true)
     fun getGroupProgress(groupId: UUID, teacherId: UUID): GroupProgressSummary {
         val group = groupRepository.findById(groupId)
             .orElseThrow { NoSuchElementException("Group not found") }
@@ -306,6 +312,7 @@ class StudentGroupService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getStudentProgress(member: GroupMember): StudentProgressResponse {
         val user = member.user ?: return StudentProgressResponse(
             userId = member.userId,

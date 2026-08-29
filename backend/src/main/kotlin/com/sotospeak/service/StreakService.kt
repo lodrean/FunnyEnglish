@@ -4,6 +4,7 @@ import com.sotospeak.entity.UserStreak
 import com.sotospeak.repository.UserStreakRepository
 import com.sotospeak.shared.model.*
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -25,6 +26,7 @@ class StreakService(
     /**
      * Получить данные о streak пользователя
      */
+    @Transactional // read + save в getOrCreateUserStreak при первом обращении
     fun getStreakData(userId: UUID): StreakData {
         val userStreak = getOrCreateUserStreak(userId)
         val activities = getRecentActivities(userId, 30)
@@ -48,6 +50,7 @@ class StreakService(
     /**
      * Записать активность и обновить streak
      */
+    @Transactional
     fun recordActivity(userId: UUID): StreakUpdateResult {
         val userStreak = getOrCreateUserStreak(userId)
         val today = LocalDate.now()
@@ -132,6 +135,7 @@ class StreakService(
     /**
      * Использовать streak freeze
      */
+    @Transactional
     fun useStreakFreeze(userId: UUID, days: Int = 1): Boolean {
         val userStreak = getOrCreateUserStreak(userId)
         resetWeeklyFreezesIfNeeded(userStreak)
@@ -149,6 +153,7 @@ class StreakService(
     /**
      * Восстановить streak через челлендж
      */
+    @Transactional
     fun recoverStreak(userId: UUID, challengeId: String): Boolean {
         if (!isRecoveryAvailable(userId, getRecentActivities(userId, 7))) {
             return false

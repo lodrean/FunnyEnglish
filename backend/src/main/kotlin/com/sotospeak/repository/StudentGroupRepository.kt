@@ -4,6 +4,7 @@ import com.sotospeak.entity.GroupJoinRequest
 import com.sotospeak.entity.GroupMember
 import com.sotospeak.entity.JoinRequestStatus
 import com.sotospeak.entity.StudentGroup
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -11,6 +12,8 @@ import java.util.UUID
 
 @Repository
 interface StudentGroupRepository : JpaRepository<StudentGroup, UUID> {
+    // EntityGraph: GroupResponse читает teacher?.displayName — без fetch был N+1
+    @EntityGraph(attributePaths = ["teacher"])
     fun findByTeacherId(teacherId: UUID): List<StudentGroup>
     fun findByInviteCode(inviteCode: String): StudentGroup?
     fun existsByInviteCode(inviteCode: String): Boolean
@@ -19,7 +22,12 @@ interface StudentGroupRepository : JpaRepository<StudentGroup, UUID> {
 
 @Repository
 interface GroupMemberRepository : JpaRepository<GroupMember, UUID> {
+    // EntityGraph: member responses читают user.* — без fetch был N+1
+    @EntityGraph(attributePaths = ["user"])
     fun findByGroupId(groupId: UUID): List<GroupMember>
+
+    // EntityGraph: getStudentGroups читает it.group и group.teacher?.displayName — без fetch был N+1
+    @EntityGraph(attributePaths = ["group", "group.teacher"])
     fun findByUserId(userId: UUID): List<GroupMember>
     fun existsByGroupIdAndUserId(groupId: UUID, userId: UUID): Boolean
     fun countByGroupId(groupId: UUID): Long

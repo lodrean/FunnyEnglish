@@ -88,9 +88,11 @@ class AdaptiveLessonService(
     }
 
     /**
-     * Получить следующий вопрос
+     * Получить следующий вопрос.
+     * НЕ readOnly: при requiresBreak мутирует lesson.status + save (в readOnly-тx
+     * изменение молча терялось — FlushMode.MANUAL не флашит на коммите).
      */
-    @Transactional(readOnly = true)
+    @Transactional
     fun getNextQuestion(userId: UUID, lessonId: UUID): NextQuestionResponse {
         val lesson = adaptiveLessonRepository.findByIdAndUserId(lessonId, userId)
             ?: throw NoSuchElementException("Lesson not found")

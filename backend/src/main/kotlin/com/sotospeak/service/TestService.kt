@@ -22,6 +22,7 @@ class TestService(
     private val iwWordRepository: ImageWordMatchWordRepository,
     private val iwHotspotRepository: ImageWordMatchHotspotRepository
 ) {
+    @Transactional(readOnly = true)
     @Cacheable(value = ["categories"], key = "#userId ?: 'anonymous'")
     fun getCategories(userId: String?): List<CategoryResponse> {
         val categories = categoryRepository.findByIsActiveTrueOrderByDisplayOrder()
@@ -44,6 +45,7 @@ class TestService(
         }
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = ["tests"], key = "#categoryId + '-' + (#userId ?: 'anonymous')")
     fun getTestsByCategory(categoryId: String, userId: String?): List<TestListResponse> {
         val tests = testRepository.findByCategoryIdAndIsPublishedTrueOrderByDisplayOrder(UUID.fromString(categoryId))
@@ -61,6 +63,7 @@ class TestService(
         }
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = ["tests"], key = "'all-' + (#userId ?: 'anonymous')")
     fun getAllTests(userId: String?): List<TestListResponse> {
         val tests = testRepository.findByIsPublishedTrueOrderByDisplayOrder()
@@ -78,6 +81,7 @@ class TestService(
         }
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = ["testDetails"], key = "#testId")
     fun getTestById(testId: String): TestDetailResponse {
         val test = testRepository.findByIdWithQuestions(UUID.fromString(testId))
@@ -137,6 +141,7 @@ class TestService(
     }
 
     // Admin methods
+    @Transactional(readOnly = true)
     fun getTestByIdForAdmin(testId: String): AdminTestDetailResponse {
         val test = testRepository.findByIdWithQuestions(UUID.fromString(testId))
             ?: throw NoSuchElementException("Test not found")

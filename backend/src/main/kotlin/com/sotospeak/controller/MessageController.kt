@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.UUID
@@ -87,6 +88,7 @@ class AdminMessageController(
 
     /** История сообщений, отправленных ученику */
     @GetMapping("/{userId}/messages")
+    @Transactional(readOnly = true)
     fun getMessagesForUser(@PathVariable userId: UUID): ResponseEntity<List<MessageResponse>> {
         val messages = messageRepository.findByRecipientIdOrderByCreatedAtDesc(userId)
         return ResponseEntity.ok(messages.map { MessageResponse.from(it) })
@@ -102,6 +104,7 @@ class UserMessageController(
 ) {
     /** Входящие сообщения ученика */
     @GetMapping
+    @Transactional(readOnly = true)
     fun getInbox(@AuthenticationPrincipal principal: UserPrincipal): ResponseEntity<List<MessageResponse>> {
         val messages = messageRepository.findByRecipientIdOrderByCreatedAtDesc(
             UUID.fromString(principal.userId)
@@ -120,6 +123,7 @@ class UserMessageController(
 
     /** Пометить прочитанным */
     @PostMapping("/{messageId}/read")
+    @Transactional
     fun markAsRead(
         @PathVariable messageId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal

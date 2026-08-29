@@ -2,6 +2,7 @@ package com.sotospeak.repository
 
 import com.sotospeak.entity.Progress
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -11,6 +12,9 @@ import java.util.UUID
 @Repository
 interface ProgressRepository : JpaRepository<Progress, UUID> {
     fun findByUserIdAndTestId(userId: UUID, testId: UUID): Progress?
+
+    // EntityGraph: ProgressService читает test.title и test.category — без fetch был N+1
+    @EntityGraph(attributePaths = ["test", "test.category"])
     fun findByUserId(userId: UUID): List<Progress>
     fun countByUserId(userId: UUID): Long
 

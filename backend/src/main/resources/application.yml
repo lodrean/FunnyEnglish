@@ -121,7 +121,9 @@ logging:
     org.springframework.web: ${WEB_LOG_LEVEL:WARN}
     org.apache.coyote.http11: ${TOMCAT_LOG_LEVEL:WARN}
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    # %X{requestId} — MDC-ключ из RequestIdFilter (bd wy7.8): связывает все строки лога одного запроса
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [%X{requestId:-}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [%X{requestId:-}] - %msg%n"
   # Файловый лог с ротацией (OpenSpec add-client-logging). В docker — volume ./logs:/app/logs
   file:
     name: ${LOG_FILE:logs/backend.log}

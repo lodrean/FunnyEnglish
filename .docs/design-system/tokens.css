@@ -1,5 +1,6 @@
 /* FunnyEnglish Speaking Trainer — Design Tokens (Playful Coach, Variant B)
    Источник: tokens.json (W3C DTCG draft). Одна палитра — два таргета (Compose + MUI).
+   GENERATED FILE v1.3.1 — не редактировать вручную; генератор: scripts/generate_design_tokens.py.
    v1.2.0 · 2026-08-01: аудит WCAG — primaryStrong, textMuted/timer затемнены, recordContainer.
    v1.3.0 · 2026-08-07: DSM-2 — M3-роли (surfaceContainer*, outlineVariant, inverse*, scrim,
    surfaceTint, state layers, elevation levels, M3-easing). Цвета v1.2.0 не изменены.
@@ -124,9 +125,9 @@
   --size-recorder-small: 56px;
 
   /* Elevation */
-  --shadow-card: 0 1px 2px rgba(45, 53, 97, 0.06), 0 2px 8px rgba(45, 53, 97, 0.05);
-  --shadow-fab: 0 4px 0 rgba(217, 114, 56, 0.55);  /* «оттопыренная» жёсткая тень; :active → 0 1px 0 */
-  --shadow-sheet: 0 -4px 24px rgba(45, 53, 97, 0.12);
+  --shadow-card: 0 1px 2px rgba(45,53,97,0.06), 0 2px 8px rgba(45,53,97,0.05);
+  --shadow-fab: 0 4px 0 rgba(217,114,56,0.55);  /* «оттопыренная» жёсткая тень; :active → 0 1px 0 */
+  --shadow-sheet: 0 -4px 24px rgba(45,53,97,0.12);
   --shadow-focus: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
 
   /* Motion */

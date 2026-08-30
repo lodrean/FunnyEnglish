@@ -1,13 +1,17 @@
+// GENERATED FILE — не редактировать вручную.
+// Источник: .docs/design-system/tokens.json; генератор: scripts/generate_design_tokens.py.
 /**
- * So to speak Admin Web — Design System "Playful Coach" v1.1
- * Источник HEX: .docs/design-system/tokens.json v1.1 (вариант B, утверждён владельцем 2026-07-31)
+ * So to speak Admin Web — Design System "Playful Coach" v1.3.1
+ * Источник HEX: .docs/design-system/tokens.json v1.3.1 (вариант B, утверждён владельцем 2026-07-31)
  * Full light/dark theme support with MUI v6
  */
 
 import { createTheme, ThemeOptions, alpha, PaletteMode } from '@mui/material/styles';
 
 // =============================================================================
-// DESIGN TOKENS (tokens.json v1.1 — HEX 1:1)
+// DESIGN TOKENS (tokens.json v1.3.1 — HEX 1:1)
+// Значения без пути в tokens.json (производные оттенки шкал, dark-статусы) —
+// литералы, кандидаты на расширение tokens.json (решение владельца).
 // =============================================================================
 
 // Brand Colors — шкала вокруг primary #5B8DEF
@@ -96,7 +100,7 @@ const speakingDark = {
   secondaryContainer: '#46366F',
   onSecondaryContainer: '#E5DCFF',
   status: {
-    new: '#FFB74D',
+    new: '#FFB74D', // нет в tokens.json: dark-статусы, кандидат на расширение
     newContainer: '#3D2A0A',
     reviewed: '#81C784',
     reviewedContainer: '#1B4D1F',
@@ -122,7 +126,7 @@ const cardShadow = '0 1px 2px rgba(45,53,97,0.06), 0 2px 8px rgba(45,53,97,0.05)
 // Focus ring (tokens.json elevation.focusRing)
 const focusRing = '0 0 0 2px #EEF3FF, 0 0 0 4px #5B8DEF';
 
-// Тёплые индиго-тени вместо нейтрально-чёрных
+// Тёплые индиго-тени вместо нейтрально-чёрных (производная шкала, нет в tokens.json)
 const lightShadows = [
   'none',
   '0 1px 2px rgba(45,53,97,0.05)',

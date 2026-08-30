@@ -156,8 +156,7 @@ private fun MySubmissionsScreenLightPreview() {
             onRefresh = {},
             onRetryPending = {},
             onPlayAudio = {},
-            onStopAudio = {},
-            onBack = {}
+            onStopAudio = {}
         )
     }
 }
@@ -201,8 +200,7 @@ private fun MySubmissionsScreenDarkPreview() {
             onRefresh = {},
             onRetryPending = {},
             onPlayAudio = {},
-            onStopAudio = {},
-            onBack = {}
+            onStopAudio = {}
         )
     }
 }

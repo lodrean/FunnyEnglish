@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
@@ -25,11 +24,12 @@ import com.sotospeak.shared.model.SpeakingGrade
 import com.sotospeak.shared.model.SpeakingSubmission
 
 /**
- * Экран «Мои записи» (спека Part 2 §2.7, §7): статусы NEW/REVIEWED,
+ * Экран «Отправки» (мокап frame-submissions, спека Part 2 §2.7, §7):
+ * заголовок + подзаголовок (без стрелки назад — экран в bottom nav),
+ * 2-строчные карточки со статусом NEW/REVIEWED и grade-chip,
  * карточка оценки по рубрике (4 критерия 1–10 + total + комментарий),
- * секция «Не отправлено» с retry, empty state.
+ * секция «Не отправлено» с retry, explainer о запрете повторной отправки, empty state.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MySubmissionsScreen(
     state: MySubmissionsState,
@@ -37,41 +37,56 @@ fun MySubmissionsScreen(
     onRetryPending: (String) -> Unit,
     onPlayAudio: (String) -> Unit,
     onStopAudio: () -> Unit,
-    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
 
     Scaffold(
         containerColor = speaking.background,
-        topBar = {
-            TopAppBar(
-                title = { Text("Мои записи", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
-            )
-        },
         modifier = modifier.testTag("my_submissions_screen")
     ) { padding ->
-        when {
-            state.isLoading && state.submissions.isEmpty() ->
-                LoadingIndicator(modifier = Modifier.padding(padding))
-            state.error != null && state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
-                ErrorMessage(message = state.error, onRetry = onRefresh, modifier = Modifier.padding(padding))
-            state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
-                SubmissionsEmptyState(modifier = Modifier.padding(padding))
-            else -> SubmissionsList(
-                state = state,
-                onRetryPending = onRetryPending,
-                onPlayAudio = onPlayAudio,
-                onStopAudio = onStopAudio,
-                modifier = Modifier.padding(padding)
-            )
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            SubmissionsHeader()
+            when {
+                state.isLoading && state.submissions.isEmpty() ->
+                    LoadingIndicator()
+                state.error != null && state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
+                    ErrorMessage(message = state.error.orEmpty(), onRetry = onRefresh)
+                state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
+                    SubmissionsEmptyState()
+                else -> SubmissionsList(
+                    state = state,
+                    onRetryPending = onRetryPending,
+                    onPlayAudio = onPlayAudio,
+                    onStopAudio = onStopAudio
+                )
+            }
         }
+    }
+}
+
+/** Заголовок по мокапу frame-submissions: «Отправки» + подзаголовок (стрелка назад избыточна — экран в bottom nav). */
+@Composable
+private fun SubmissionsHeader() {
+    val speaking = LocalSpeakingColors.current
+    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp)) {
+        Text(
+            text = "Отправки",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = speaking.text,
+            modifier = Modifier.testTag("submissions_title")
+        )
+        Text(
+            text = "Записи, отправленные учителю",
+            style = MaterialTheme.typography.bodyMedium,
+            color = speaking.textMuted,
+            modifier = Modifier.testTag("submissions_subtitle")
+        )
     }
 }
 
@@ -87,7 +102,7 @@ private fun SubmissionsList(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Секция «Не отправлено» (offline retry, спека §6.4)
@@ -144,6 +159,18 @@ private fun SubmissionsList(
                 }
             )
         }
+
+        // Explainer мокапа (MS2): правило DUPLICATE_SUBMISSION
+        item {
+            Text(
+                "Повторная отправка по топику запрещена — после REVIEWED топик можно только переиграть в Training",
+                style = MaterialTheme.typography.bodySmall,
+                color = speaking.textMuted,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp, vertical = 4.dp)
+                    .testTag("submissions_explainer")
+            )
+        }
     }
 }
 
@@ -156,7 +183,7 @@ private fun SubmissionCard(
     val speaking = LocalSpeakingColors.current
     val isReviewed = submission.status == "REVIEWED"
 
-    // M3: Card + ListItem (A11, как TopicsScreen)
+    // M3: Card + ListItem (A11, как TopicsScreen); 2 строки по мокапу: тема + «дата, время · длительность»
     Card(
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = speaking.surface),
@@ -175,8 +202,12 @@ private fun SubmissionCard(
                     )
                 },
                 supportingContent = {
+                    val meta = listOfNotNull(
+                        formatSubmissionDate(submission.createdAt).takeIf { it.isNotBlank() },
+                        formatTimer(submission.durationSec)
+                    ).joinToString(" · ")
                     Text(
-                        "${formatTimer(submission.durationSec)} · ${submission.createdAt?.take(10).orEmpty()}",
+                        meta,
                         style = MaterialTheme.typography.bodySmall,
                         color = speaking.textMuted
                     )
@@ -194,10 +225,18 @@ private fun SubmissionCard(
                     }
                 },
                 trailingContent = {
-                    SubmissionStatusChip(
-                        isReviewed = isReviewed,
-                        modifier = Modifier.testTag("submission_status_${submission.id}")
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        submission.grade?.let { grade ->
+                            GradeTotalChip(total = grade.total)
+                        }
+                        SubmissionStatusChip(
+                            isReviewed = isReviewed,
+                            modifier = Modifier.testTag("submission_status_${submission.id}")
+                        )
+                    }
                 },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
             )
@@ -211,7 +250,7 @@ private fun SubmissionCard(
     }
 }
 
-/** Статус-чип NEW/REVIEWED — M3 AssistChip (A11): container + тёмный текст (AA, цвета мокапа). */
+/** Статус-чип NEW/REVIEWED (терминология мокапа) — M3 AssistChip: container + тёмный текст (AA). */
 @Composable
 private fun SubmissionStatusChip(isReviewed: Boolean, modifier: Modifier = Modifier) {
     val speaking = LocalSpeakingColors.current
@@ -220,7 +259,7 @@ private fun SubmissionStatusChip(isReviewed: Boolean, modifier: Modifier = Modif
         modifier = modifier,
         label = {
             Text(
-                if (isReviewed) "Проверено" else "На проверке",
+                if (isReviewed) "REVIEWED" else "NEW",
                 style = MaterialTheme.typography.labelMedium
             )
         },
@@ -233,6 +272,26 @@ private fun SubmissionStatusChip(isReviewed: Boolean, modifier: Modifier = Modif
         ),
         border = null
     )
+}
+
+/** Grade-chip мокапа (.grade-chip): итоговый балл на secondaryContainer, pill, extrabold. */
+@Composable
+private fun GradeTotalChip(total: Double, modifier: Modifier = Modifier) {
+    val speaking = LocalSpeakingColors.current
+    Surface(
+        shape = SpeakingShapes.StatusPill,
+        color = speaking.secondaryContainer,
+        modifier = modifier
+    ) {
+        Text(
+            // KMP: String.format недоступен (WASM) — округление вручную
+            (kotlin.math.round(total * 10) / 10).toString(),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = speaking.onSecondaryContainer,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+        )
+    }
 }
 
 @Composable
@@ -341,4 +400,12 @@ private fun SubmissionsEmptyState(modifier: Modifier = Modifier) {
             color = speaking.textMuted
         )
     }
+}
+
+/** Дата карточки по мокапу: ISO «2026-07-29T09:00:00Z» → «29.07.2026, 09:00». */
+private fun formatSubmissionDate(iso: String?): String {
+    if (iso == null || iso.length < 16) return iso.orEmpty()
+    val ymd = iso.substring(0, 10).split("-")
+    if (ymd.size != 3) return iso.take(10)
+    return "${ymd[2]}.${ymd[1]}.${ymd[0]}, ${iso.substring(11, 16)}"
 }

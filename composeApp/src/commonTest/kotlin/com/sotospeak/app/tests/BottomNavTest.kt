@@ -4,8 +4,8 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import com.sotospeak.app.AppScreen
-import com.sotospeak.app.BottomNavigationBar
+import com.sotospeak.app.navigation.AppScreen
+import com.sotospeak.app.navigation.BottomNavigationBar
 import com.sotospeak.designsystem.theme.FunnyTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals

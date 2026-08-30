@@ -143,7 +143,8 @@ class AdminService(
 
         val reviewed = practiceSubmissionRepository.findReviewedTimestamps()
         val within48h = reviewed.count {
-            Duration.between(it.submittedAt, it.reviewedAt) <= Duration.ofHours(48)
+            // Kotlin-интерфейс проекции: getter-методы, не свойства (h3l.3, фикс компиляции)
+            Duration.between(it.getSubmittedAt(), it.getReviewedAt()) <= Duration.ofHours(48)
         }
 
         val totalGuests = guestEventRepository.countDistinctGuests()

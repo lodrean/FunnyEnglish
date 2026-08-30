@@ -1,0 +1,15 @@
+appId: com.sotospeak.app
+---
+- tapOn: "Профиль"
+- extendedWaitUntil:
+    visible: ".*So to speak v.*"
+    timeout: 10000
+- takeScreenshot: profile-auth
+- repeat:
+    times: 7
+    commands:
+      - tapOn: ".*So to speak v.*"
+- extendedWaitUntil:
+    notVisible: ".*So to speak v.*"
+    timeout: 10000
+- takeScreenshot: debug

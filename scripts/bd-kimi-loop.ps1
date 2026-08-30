@@ -45,6 +45,7 @@ param(
     [switch]$NoCommit,
     [switch]$WaitQuota,
     [switch]$ForceRetry,
+    [string]$ObsidianLog = '',
     [int]$KimiTimeoutSec = 1200,
     [int]$GateTimeoutSec = 1800
 )
@@ -472,11 +473,21 @@ $(if (Test-Path $kimiLog) { (Get-Content $kimiLog -Tail 120 | Out-String) } else
             $scope = switch ($kind) { 'admin' { 'admin' } 'backend' { 'backend' } 'none' { 'infra' } default { 'composeApp' } }
             $msg = "$type($scope): $($task.title) (bd $id)"
             git commit -m $msg 2>&1 | Out-Null
+            $shortCommit = (& git rev-parse --short HEAD 2>$null | Out-String).Trim()
             git checkout develop 2>&1 | Out-Null
             $mg = (& git merge --no-ff $branch -m "merge: $msg" 2>&1 | Out-String)
             if ($LASTEXITCODE -ne 0) { Write-Host ("  git WARN merge: " + $mg.Trim()) }
             git branch -D $branch 2>&1 | Out-Null
             Write-Host ("  git: committed+merged -> develop ($msg)")
+
+            # --- Obsidian-лог выполненных задач (по просьбе пользователя; формат ./pipeline) ---
+            if ($ObsidianLog) {
+                $gateNames = (($gateResults | ForEach-Object { $_.Name }) -join '+')
+                if (-not $gateNames) { $gateNames = '—' }
+                $row = "| $(Get-Date -Format 'yyyy-MM-dd HH:mm') | $stamp | $id — $($task.title -replace '\|', '/') | CLOSED | $gateNames | $shortCommit |"
+                Add-Content -Path $ObsidianLog -Value $row -Encoding utf8
+                Write-Host ("  obsidian: записано в лог ($ObsidianLog)")
+            }
         } else {
             git stash push -u -m "bd $id not closed (kimi=$kimiCode, $verdict)" 2>&1 | Out-Null
             git checkout develop 2>&1 | Out-Null

@@ -43,6 +43,7 @@ param(
     [switch]$DryRun,
     [switch]$SkipGates,
     [switch]$NoCommit,
+    [switch]$WaitQuota,
     [int]$KimiTimeoutSec = 1200,
     [int]$GateTimeoutSec = 1800
 )
@@ -320,6 +321,7 @@ $extra$kindExtra
     $kimiLog = Join-Path $dir 'kimi-run.log'
     $kimiCode = -1
     $kimiTimedOut = $false
+    $quotaHit = $false
     $kimiArgs = @('-p', $prompt, '-m', $Model, '--print', '--mcp-config-file', $KimiMcpFile)
     for ($attempt = 1; $attempt -le 2; $attempt++) {
         Write-Host ("  [{0}] kimi: {1} ({2}) — попытка {3}" -f $stamp, $id, $Model, $attempt)
@@ -334,6 +336,29 @@ $extra$kindExtra
             }
             if ($attempt -eq 1) { Write-Host '  повторная попытка...'; continue }
         }
+        # --- квота kimi: ждём сброса окна (только с -WaitQuota) и ретраим задачу ---
+        if ($kimiCode -ne 0) {
+            $qTail = ((Get-Content $kimiLog -Tail 50 -ErrorAction SilentlyContinue) -join "`n")
+            if ($qTail -match "You've reached your 5-hour usage limit|access_terminated_error") {
+                $quotaHit = $true
+                if ($WaitQuota) {
+                    Write-Host 'QUOTA: квота kimi исчерпана — жду сброса окна (проверка каждые 5 мин, до 6 ч)...'
+                    $recovered = $false
+                    for ($w = 0; $w -lt 72 -and -not $recovered; $w++) {
+                        Start-Sleep -Seconds 300
+                        $to = (& kimi --quiet -p "OK" -m $Model --mcp-config-file $KimiMcpFile 2>&1 | Out-String)
+                        if ($LASTEXITCODE -eq 0 -and $to -notmatch 'usage limit|access_terminated') { $recovered = $true }
+                    }
+                    if ($recovered) {
+                        Write-Host '  квота восстановилась — задача перезапускается с чистого листа'
+                        $attempt = 0
+                        continue
+                    }
+                    Write-Host 'QUOTA: 6 часов ожидания истекли — марафон остановлен'
+                }
+                # без -WaitQuota или после истёкшего ожидания: дальше бессмысленно
+            }
+        }
         break
     }
     $logBytes = if (Test-Path $kimiLog) { (Get-Item $kimiLog).Length } else { 0 }
@@ -341,11 +366,10 @@ $extra$kindExtra
     $kimiOk = ($kimiCode -eq 0) -and ($logBytes -gt 0) -and (-not $kimiTimedOut)
     Write-Host ("  kimi exit: {0}; timedout: {1}; log bytes: {2}" -f $kimiCode, $kimiTimedOut, $logBytes)
 
-    # --- детект исчерпания квоты kimi (403 usage limit) → марафон остановится после задачи.
+    # --- детект исчерпания квоты kimi (403 usage limit) — ставится и в цикле попыток.
     # ТОЛЬКО при ненулевом exit (сессия убита ошибкой) И точной строке в ХВОСТЕ лога:
     # сам текст грабли в memory.md тоже содержит «usage limit» (kimi читает память). ---
-    $quotaHit = $false
-    if (Test-Path $kimiLog) {
+    if (-not $quotaHit -and (Test-Path $kimiLog)) {
         $tailLog = ((Get-Content $kimiLog -Tail 50 -ErrorAction SilentlyContinue) -join "`n")
         if ($kimiCode -ne 0 -and $tailLog -match "You've reached your 5-hour usage limit|access_terminated_error") { $quotaHit = $true }
     }

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sotospeak.app.accessibility.AccessibilityUtils.heading
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 
 /**
@@ -34,7 +35,8 @@ fun SpeakingAppBar(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold,
-            color = speaking.text
+            color = speaking.text,
+            modifier = Modifier.heading()
         )
         if (!subtitle.isNullOrEmpty()) {
             Text(

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Accessibility: навигация -->
+    <string name="a11y_navigate_to_profile">Перейти в профиль</string>
+    <string name="a11y_navigate_to_home">Перейти на главную</string>
+    <string name="a11y_navigate_back">Назад</string>
+    <string name="a11y_navigate_settings">Открыть настройки</string>
+
+    <!-- Accessibility: действия -->
+    <string name="a11y_submit_answer">Отправить ответ</string>
+    <string name="a11y_continue_learning">Продолжить обучение</string>
+    <string name="a11y_start_lesson">Начать урок</string>
+    <string name="a11y_view_all_categories">Показать все категории</string>
+
+    <!-- Accessibility: элементы UI -->
+    <string name="a11y_user_avatar">Аватар пользователя</string>
+    <string name="a11y_level_progress">Прогресс текущего уровня</string>
+    <string name="a11y_streak_count">Текущая серия дней</string>
+    <string name="a11y_points_count">Всего заработано очков</string>
+
+    <!-- Accessibility: тест -->
+    <string name="a11y_question_text">Вопрос</string>
+    <string name="a11y_answer_option">Вариант ответа</string>
+    <string name="a11y_correct_answer">Правильный ответ</string>
+    <string name="a11y_wrong_answer">Неправильный ответ</string>
+
+    <!-- Accessibility: категории -->
+    <string name="a11y_category_icon">Иконка категории</string>
+    <string name="a11y_test_count">Количество тестов</string>
+
+    <!-- Accessibility: достижения -->
+    <string name="a11y_achievement_badge">Значок достижения</string>
+    <string name="a11y_achievement_locked">Достижение заблокировано</string>
+    <string name="a11y_achievement_unlocked">Достижение получено</string>
+
+    <!-- Accessibility: ввод -->
+    <string name="a11y_email_input">Адрес электронной почты</string>
+    <string name="a11y_password_input">Пароль</string>
+    <string name="a11y_password_toggle">Показать или скрыть пароль</string>
+    <string name="a11y_login_button">Войти</string>
+    <string name="a11y_register_button">Создать аккаунт</string>
+</resources>

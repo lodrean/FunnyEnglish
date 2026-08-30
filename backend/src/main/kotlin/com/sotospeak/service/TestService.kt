@@ -222,20 +222,18 @@ class TestService(
                 .orElseThrow { NoSuchElementException("Category not found") }
         } ?: test.category
 
-        val updatedTest = test.copy(
-            category = category,
-            title = request.title ?: test.title,
-            description = request.description ?: test.description,
-            thumbnailUrl = request.thumbnailUrl ?: test.thumbnailUrl,
-            difficulty = request.difficulty?.let { Difficulty.valueOf(it.uppercase()) } ?: test.difficulty,
-            pointsReward = request.pointsReward ?: test.pointsReward,
-            timeLimitSeconds = request.timeLimitSeconds ?: test.timeLimitSeconds,
-            isPublished = request.isPublished ?: test.isPublished,
-            displayOrder = request.displayOrder ?: test.displayOrder,
-            updatedAt = Instant.now()
-        )
+        test.category = category
+        request.title?.let { test.title = it }
+        request.description?.let { test.description = it }
+        request.thumbnailUrl?.let { test.thumbnailUrl = it }
+        request.difficulty?.let { test.difficulty = Difficulty.valueOf(it.uppercase()) }
+        request.pointsReward?.let { test.pointsReward = it }
+        request.timeLimitSeconds?.let { test.timeLimitSeconds = it }
+        request.isPublished?.let { test.isPublished = it }
+        request.displayOrder?.let { test.displayOrder = it }
+        test.updatedAt = Instant.now()
 
-        testRepository.save(updatedTest)
+        testRepository.save(test)
 
         // Update questions if provided
         if (request.questions != null) {
@@ -244,7 +242,7 @@ class TestService(
 
             request.questions.forEachIndexed { qIndex, qRequest ->
                 val question = Question(
-                    test = updatedTest,
+                    test = test,
                     type = QuestionType.valueOf(qRequest.type.uppercase()),
                     title = qRequest.text ?: "Вопрос ${qIndex + 1}",
                     text = qRequest.text,

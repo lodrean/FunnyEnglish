@@ -9,7 +9,7 @@ import java.util.*
  */
 @Entity
 @Table(name = "achievements")
-data class AchievementEntity(
+class AchievementEntity(
     @Id
     val id: String,
     
@@ -42,14 +42,22 @@ data class AchievementEntity(
     
     @Column(name = "points_reward", nullable = false)
     val pointsReward: Int = 0
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AchievementEntity) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 /**
  * Достижения пользователя
  */
 @Entity
 @Table(name = "user_achievements")
-data class UserAchievementEntity(
+class UserAchievementEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
     
@@ -71,14 +79,22 @@ data class UserAchievementEntity(
     
     @Column(name = "is_earned", nullable = false)
     var isEarned: Boolean = false
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is UserAchievementEntity) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 /**
  * Квест/задание
  */
 @Entity
 @Table(name = "quests")
-data class Quest(
+class Quest(
     @Id
     val id: UUID = UUID.randomUUID(),
     
@@ -120,14 +136,22 @@ data class Quest(
     
     @Column(name = "expires_at", nullable = false)
     val expiresAt: Instant
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Quest) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 /**
  * История начисления XP
  */
 @Entity
 @Table(name = "xp_history")
-data class XpHistory(
+class XpHistory(
     @Id
     val id: UUID = UUID.randomUUID(),
     
@@ -145,14 +169,22 @@ data class XpHistory(
     
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now()
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is XpHistory) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 /**
  * Streak пользователя
  */
 @Entity
 @Table(name = "user_streaks")
-data class UserStreak(
+class UserStreak(
     @Id
     val userId: UUID,
     
@@ -176,4 +208,12 @@ data class UserStreak(
     
     @Column(name = "updated_at", nullable = false)
     var updatedAt: Instant = Instant.now()
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is UserStreak) return false
+        return userId == other.userId
+    }
+
+    override fun hashCode(): Int = userId.hashCode()
+}

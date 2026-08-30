@@ -9,7 +9,7 @@ import java.util.UUID
     name = "progress",
     uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "test_id"])]
 )
-data class Progress(
+class Progress(
     @Id
     val id: UUID = UUID.randomUUID(),
 
@@ -22,26 +22,34 @@ data class Progress(
     val test: Test,
 
     @Column(nullable = false)
-    val score: Int = 0,
+    var score: Int = 0,
 
     @Column(name = "max_score", nullable = false)
-    val maxScore: Int,
+    var maxScore: Int,
 
     @Column(nullable = false)
-    val stars: Int = 0,  // 1-3 based on percentage
+    var stars: Int = 0,  // 1-3 based on percentage
 
     @Column(name = "attempts_count", nullable = false)
-    val attemptsCount: Int = 1,
+    var attemptsCount: Int = 1,
 
     @Column(name = "best_score", nullable = false)
-    val bestScore: Int = 0,
+    var bestScore: Int = 0,
 
     @Column(name = "time_spent_seconds")
-    val timeSpentSeconds: Int? = null,
+    var timeSpentSeconds: Int? = null,
 
     @Column(name = "completed_at", nullable = false)
     val completedAt: Instant = Instant.now(),
 
     @Column(name = "last_attempt_at", nullable = false)
-    val lastAttemptAt: Instant = Instant.now()
-)
+    var lastAttemptAt: Instant = Instant.now()
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Progress) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}

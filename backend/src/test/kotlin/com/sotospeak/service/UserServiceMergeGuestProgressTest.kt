@@ -270,7 +270,12 @@ class UserServiceMergeGuestProgressTest {
         every { achievementService.checkAndAwardAchievements(any(), any(), any()) } returns emptyList()
 
         // User at 50 XP, needs 100 for level 2. Award 60 XP to cross threshold.
-        val highRewardTest = testEntity.copy(pointsReward = 50)
+        val highRewardTest = TestEntity(
+            id = testId,
+            category = category,
+            title = "Test Quiz",
+            pointsReward = 50
+        )
         every { testRepository.findById(testId) } returns Optional.of(highRewardTest)
 
         val request = MergeGuestProgressRequest(

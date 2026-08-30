@@ -45,15 +45,14 @@ class ProgressService(
         val isNewBestScore = existingProgress == null || score > existingProgress.bestScore
 
         val progress = if (existingProgress != null) {
-            existingProgress.copy(
-                score = score,
-                maxScore = maxScore,
-                stars = maxOf(existingProgress.stars, stars),
-                attemptsCount = existingProgress.attemptsCount + 1,
-                bestScore = maxOf(existingProgress.bestScore, score),
-                timeSpentSeconds = request.timeSpentSeconds,
-                lastAttemptAt = Instant.now()
-            )
+            existingProgress.score = score
+            existingProgress.maxScore = maxScore
+            existingProgress.stars = maxOf(existingProgress.stars, stars)
+            existingProgress.attemptsCount += 1
+            existingProgress.bestScore = maxOf(existingProgress.bestScore, score)
+            existingProgress.timeSpentSeconds = request.timeSpentSeconds
+            existingProgress.lastAttemptAt = Instant.now()
+            existingProgress
         } else {
             Progress(
                 user = userService.getUserById(userId),

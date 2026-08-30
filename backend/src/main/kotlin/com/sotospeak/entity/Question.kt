@@ -36,7 +36,7 @@ enum class QuestionType {
  */
 @Entity
 @Table(name = "questions")
-data class Question(
+class Question(
     @Id
     val id: UUID = UUID.randomUUID(),
 
@@ -49,25 +49,25 @@ data class Question(
     val type: QuestionType,
 
     @Column(nullable = false)
-    val title: String,
+    var title: String,
 
     @Column(name = "text", columnDefinition = "TEXT")
-    val text: String? = null, // Legacy field, migrated to content
+    var text: String? = null, // Legacy field, migrated to content
 
     @Column(name = "audio_url")
-    val audioUrl: String? = null, // Legacy field, migrated to content
+    var audioUrl: String? = null, // Legacy field, migrated to content
 
     @Column(name = "image_url")
-    val imageUrl: String? = null, // Legacy field
+    var imageUrl: String? = null, // Legacy field
 
     @Column(name = "media_url")
-    val mediaUrl: String? = null, // For question media (image/audio/video)
+    var mediaUrl: String? = null, // For question media (image/audio/video)
 
     @Column(name = "display_order", nullable = false)
-    val displayOrder: Int = 0,
+    var displayOrder: Int = 0,
 
     @Column(nullable = false)
-    val points: Int = 1,
+    var points: Int = 1,
 
     /**
      * Гибкий JSON content - структура зависит от type
@@ -80,30 +80,38 @@ data class Question(
     // val content: QuestionContent? = null,
 
     @Column(name = "time_limit_seconds")
-    val timeLimitSeconds: Int? = null,
+    var timeLimitSeconds: Int? = null,
 
     @Column(name = "explanation", columnDefinition = "TEXT")
-    val explanation: String? = null,
+    var explanation: String? = null,
 
     @Column(name = "hint")
-    val hint: String? = null,
+    var hint: String? = null,
 
     @Column(name = "grammar_note", columnDefinition = "TEXT")
-    val grammarNote: String? = null,
+    var grammarNote: String? = null,
 
     @Column(name = "is_published", nullable = false)
-    val isPublished: Boolean = false,
+    var isPublished: Boolean = false,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: Instant = Instant.now(),
+    var updatedAt: Instant = Instant.now(),
 
     // Legacy relationship - answers now stored in content JSON
     @OneToMany(mappedBy = "question", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     val answers: MutableList<Answer> = mutableListOf()
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Question) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 /**
  * Базовый sealed interface для content (type safety)

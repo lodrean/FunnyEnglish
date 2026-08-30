@@ -1,12 +1,12 @@
 package com.sotospeak.shared.api
 
-import com.sotospeak.shared.model.AuthResponse
-import com.sotospeak.shared.model.LoginRequest
-import com.sotospeak.shared.model.OAuthRequest
-import com.sotospeak.shared.model.RegisterRequest
-import com.sotospeak.shared.model.RegisterResponse
-import com.sotospeak.shared.model.User
-import com.sotospeak.shared.model.UserProfile
+import com.sotospeak.shared.contracts.AuthResponse
+import com.sotospeak.shared.contracts.LoginRequest
+import com.sotospeak.shared.contracts.OAuthRequest
+import com.sotospeak.shared.contracts.RegisterRequest
+import com.sotospeak.shared.contracts.RegisterResponse
+import com.sotospeak.shared.contracts.User
+import com.sotospeak.shared.contracts.UserProfile
 
 /**
  * Срез API: аутентификация и текущий пользователь.

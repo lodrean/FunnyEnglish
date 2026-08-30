@@ -20,8 +20,8 @@ import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.viewmodel.MySubmissionsState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
-import com.sotospeak.shared.model.SpeakingGrade
-import com.sotospeak.shared.model.SpeakingSubmission
+import com.sotospeak.shared.contracts.SpeakingGrade
+import com.sotospeak.shared.contracts.SpeakingSubmission
 
 /**
  * Экран «Отправки» (мокап frame-submissions, спека Part 2 §2.7, §7):

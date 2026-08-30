@@ -404,7 +404,12 @@ style:
       - 'FIXME:'
       - 'STOPSHIP:'
   ForbiddenImport:
-    active: false
+    active: true
+    # LC (bd FunnyEnglish-0w3.3): legacy shared-модели вынесены в com.sotospeak.shared.legacy —
+    # новые клиентские импорты запрещены (активные контракты — com.sotospeak.shared.contracts).
+    # Backend использует собственные копии в backend/.../shared/model (bd 0w3.2), правило его не затрагивает.
+    imports:
+      - 'com.sotospeak.shared.legacy.*'
   ForbiddenMethodCall:
     active: false
   ForbiddenSuppress:

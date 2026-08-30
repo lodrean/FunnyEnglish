@@ -3,11 +3,11 @@ package com.sotospeak.app.di
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
 import com.sotospeak.app.viewmodel.TopicUiModel
-import com.sotospeak.shared.model.*
+import com.sotospeak.shared.contracts.*
 
 /**
  * Мок-реализации для тестирования.
- * Используются shared модели из com.sotospeak.shared.model
+ * Используются shared контракты из com.sotospeak.shared.contracts
  */
 
 // ============================================

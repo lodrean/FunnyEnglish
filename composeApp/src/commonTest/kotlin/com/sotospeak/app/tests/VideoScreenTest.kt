@@ -9,8 +9,8 @@ import com.sotospeak.app.player.VideoPlayerController
 import com.sotospeak.app.screens.VideoScreen
 import com.sotospeak.app.viewmodel.VideoState
 import com.sotospeak.designsystem.theme.FunnyTheme
-import com.sotospeak.shared.model.SpeakingTopicDetail
-import com.sotospeak.shared.model.SpeakingVideo
+import com.sotospeak.shared.contracts.SpeakingTopicDetail
+import com.sotospeak.shared.contracts.SpeakingVideo
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

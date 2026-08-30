@@ -1,4 +1,4 @@
-package com.sotospeak.shared.model
+package com.sotospeak.shared.contracts
 
 import kotlinx.serialization.Serializable
 

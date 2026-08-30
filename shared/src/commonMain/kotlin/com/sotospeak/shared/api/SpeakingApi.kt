@@ -1,9 +1,9 @@
 package com.sotospeak.shared.api
 
-import com.sotospeak.shared.model.SpeakingLibrary
-import com.sotospeak.shared.model.SpeakingSubmission
-import com.sotospeak.shared.model.SpeakingTopicDetail
-import com.sotospeak.shared.model.SpeakingTopicListItem
+import com.sotospeak.shared.contracts.SpeakingLibrary
+import com.sotospeak.shared.contracts.SpeakingSubmission
+import com.sotospeak.shared.contracts.SpeakingTopicDetail
+import com.sotospeak.shared.contracts.SpeakingTopicListItem
 
 /**
  * Срез API: speaking-тренажёр (публичный контент + отправки Practice).

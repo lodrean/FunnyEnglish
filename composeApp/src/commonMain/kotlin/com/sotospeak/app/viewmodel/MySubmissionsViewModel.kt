@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.RecordingMeta
-import com.sotospeak.shared.model.SpeakingSubmission
+import com.sotospeak.shared.contracts.SpeakingSubmission
 import com.sotospeak.shared.platform.AudioPlayer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

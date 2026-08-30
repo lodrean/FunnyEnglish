@@ -15,7 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.sotospeak.app.screens.LoginScreen
-import com.sotospeak.shared.model.AuthMode
+import com.sotospeak.shared.contracts.AuthMode
 import com.sotospeak.app.viewmodel.AuthState
 import com.sotospeak.designsystem.theme.FunnyTheme
 import kotlin.test.Test

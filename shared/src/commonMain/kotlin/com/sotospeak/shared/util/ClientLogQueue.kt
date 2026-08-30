@@ -1,6 +1,6 @@
 package com.sotospeak.shared.util
 
-import com.sotospeak.shared.model.ClientLogDto
+import com.sotospeak.shared.contracts.ClientLogDto
 import com.sotospeak.shared.platform.Settings
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

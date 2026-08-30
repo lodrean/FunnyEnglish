@@ -29,12 +29,12 @@ import com.sotospeak.app.viewmodel.TopicUiModel
 import com.sotospeak.app.viewmodel.TopicsState
 import com.sotospeak.app.viewmodel.TrainingState
 import com.sotospeak.designsystem.theme.FunnyThemePreview
-import com.sotospeak.shared.model.SpeakingGrade
-import com.sotospeak.shared.model.SpeakingLibrary
-import com.sotospeak.shared.model.SpeakingQuestion
-import com.sotospeak.shared.model.SpeakingSubmission
-import com.sotospeak.shared.model.User
-import com.sotospeak.shared.model.UserProfile
+import com.sotospeak.shared.contracts.SpeakingGrade
+import com.sotospeak.shared.contracts.SpeakingLibrary
+import com.sotospeak.shared.contracts.SpeakingQuestion
+import com.sotospeak.shared.contracts.SpeakingSubmission
+import com.sotospeak.shared.contracts.User
+import com.sotospeak.shared.contracts.UserProfile
 import org.junit.Rule
 import org.junit.Test
 

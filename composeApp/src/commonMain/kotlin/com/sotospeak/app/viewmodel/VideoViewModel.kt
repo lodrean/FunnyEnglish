@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.subtitles.SubtitleCue
 import com.sotospeak.app.subtitles.WebVttParser
-import com.sotospeak.shared.model.SpeakingTopicDetail
+import com.sotospeak.shared.contracts.SpeakingTopicDetail
 import com.sotospeak.shared.platform.Settings
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

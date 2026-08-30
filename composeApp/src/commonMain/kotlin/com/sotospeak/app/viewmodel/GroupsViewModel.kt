@@ -3,8 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.shared.api.MessagingApi
-import com.sotospeak.shared.model.GroupDetail
-import com.sotospeak.shared.model.StudentGroup
+import com.sotospeak.shared.contracts.GroupDetail
+import com.sotospeak.shared.contracts.StudentGroup
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

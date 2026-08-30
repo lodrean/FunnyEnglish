@@ -3,8 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.shared.api.AuthApi
-import com.sotospeak.shared.model.GuestSession
-import com.sotospeak.shared.model.UserProfile
+import com.sotospeak.shared.contracts.GuestSession
+import com.sotospeak.shared.contracts.UserProfile
 import com.sotospeak.shared.repository.GuestProgressRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

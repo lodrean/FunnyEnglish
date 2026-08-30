@@ -15,9 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
-import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.viewmodel.MySubmissionsState
+import com.sotospeak.designsystem.animations.ListSkeleton
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
 import com.sotospeak.shared.contracts.SpeakingGrade
@@ -53,11 +55,18 @@ fun MySubmissionsScreen(
             SubmissionsHeader()
             when {
                 state.isLoading && state.submissions.isEmpty() ->
-                    LoadingIndicator()
+                    ListSkeleton()
                 state.error != null && state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
                     ErrorMessage(message = state.error.orEmpty(), onRetry = onRefresh)
                 state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
-                    SubmissionsEmptyState()
+                    EmptyState(
+                        icon = SpeakingIcons.Upload,
+                        title = "У вас пока нет отправленных записей",
+                        subtitle = "Пройдите практику в любом топике библиотеки",
+                        ctaLabel = "Обновить",
+                        onCtaClick = onRefresh,
+                        modifier = Modifier.testTag("submissions_empty")
+                    )
                 else -> SubmissionsList(
                     state = state,
                     onRetryPending = onRetryPending,
@@ -377,30 +386,6 @@ private fun GradeBar(label: String, value: Int) {
     }
 }
 
-@Composable
-private fun SubmissionsEmptyState(modifier: Modifier = Modifier) {
-    val speaking = LocalSpeakingColors.current
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp)
-            .testTag("submissions_empty"),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            "У вас пока нет отправленных записей",
-            style = MaterialTheme.typography.titleMedium,
-            color = speaking.textMuted
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            "Пройдите практику в любом топике библиотеки",
-            style = MaterialTheme.typography.bodyMedium,
-            color = speaking.textMuted
-        )
-    }
-}
 
 /** Дата карточки по мокапу: ISO «2026-07-29T09:00:00Z» → «29.07.2026, 09:00». */
 private fun formatSubmissionDate(iso: String?): String {

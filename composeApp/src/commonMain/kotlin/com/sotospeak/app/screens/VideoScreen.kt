@@ -144,6 +144,10 @@ private fun VideoContent(
     // (1280x720, landscape) полноширинный 16:9 вытеснял транскрипт и CTA за экран
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val videoMaxHeight = maxHeight * 0.45f
+        // Макс. высота транскрипта в карточке: остаток после видео, chips, CTA и hint.
+        // Без bound'а LazyColumn в колонке без weight получил бы infinite constraints;
+        // bound также гарантирует, что CTA не уезжает за экран (аудит V2)
+        val transcriptMaxHeight = (maxHeight - videoMaxHeight - 220.dp).coerceAtLeast(96.dp)
 
         Column(modifier = Modifier.fillMaxSize()) {
         // Mode-chips (видны только если у топика есть субтитры; в fullscreen скрыты)
@@ -335,17 +339,32 @@ private fun VideoContent(
 
         // В fullscreen транскрипт, CTA и hint скрываются — только видео
         if (!isFullscreen) {
-        // Полный транскрипт видео с пословной подсветкой (скроллится внутри панели)
+        // Полный транскрипт видео с пословной подсветкой (скроллится внутри панели).
+        // V1 (аудит): транскрипт в белой карточке под плеером (мокап .subtitle:
+        // surface, radius-button 16 → shapes.medium, shadow-card → ElevatedCard level1)
         if (state.subtitlesEnabled && state.subtitleCues.isNotEmpty()) {
-            TranscriptPanel(
-                cues = state.subtitleCues,
-                positionMs = playerState.positionMs,
-                modifier = Modifier.weight(1f)
-            )
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(12.dp))
+            ElevatedCard(
+                shape = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                TranscriptPanel(
+                    cues = state.subtitleCues,
+                    positionMs = playerState.positionMs,
+                    modifier = Modifier.heightIn(max = transcriptMaxHeight)
+                )
+            }
         }
 
+        // V2 (аудит): CTA сразу после карточки субтитров, НЕ прижата к низу
+        // (weight(1f) убран; свободное место остаётся под hint'ом)
+        Spacer(modifier = Modifier.height(12.dp))
         // CTA доступен всегда — смотреть всё видео необязательно
         // M3 FilledButton (A7/DSM-5 C1): shape medium(16), container primary (=primaryStrong)
         Button(

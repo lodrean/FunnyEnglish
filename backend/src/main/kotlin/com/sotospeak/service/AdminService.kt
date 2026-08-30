@@ -6,6 +6,7 @@ import com.sotospeak.dto.DailyActivityResponse
 import com.sotospeak.dto.GuestAnalyticsResponse
 import com.sotospeak.dto.LevelDistributionResponse
 import com.sotospeak.dto.PopularTestResponse
+import com.sotospeak.dto.PrdMetricsResponse
 import com.sotospeak.dto.RecentActivityResponse
 import com.sotospeak.entity.GuestEventType
 import com.sotospeak.repository.AnswerRepository
@@ -16,9 +17,11 @@ import com.sotospeak.repository.ProgressRepository
 import com.sotospeak.repository.QuestionRepository
 import com.sotospeak.repository.TestRepository
 import com.sotospeak.repository.UserRepository
+import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -33,7 +36,8 @@ class AdminService(
     private val progressRepository: ProgressRepository,
     private val achievementRepository: AchievementRepository,
     private val categoryRepository: CategoryRepository,
-    private val guestEventRepository: GuestEventRepository
+    private val guestEventRepository: GuestEventRepository,
+    private val practiceSubmissionRepository: PracticeSubmissionRepository
 ) {
     companion object {
         private const val TOP_CATEGORIES_LIMIT = 5
@@ -127,6 +131,34 @@ class AdminService(
             guestTestCompletions = completions,
             convertedGuests = converted,
             conversionRate = if (total > 0) converted.toDouble() / total else 0.0
+        )
+    }
+
+    /** Метрики PRD (Speaking Trainer §Metrics): practice/ученик/неделю, доля REVIEWED за 48ч, конверсия гость→регистрация. */
+    @Transactional(readOnly = true)
+    fun getPrdMetrics(): PrdMetricsResponse {
+        val weekAgo = Instant.now().minus(7, ChronoUnit.DAYS)
+        val submissions7d = practiceSubmissionRepository.countCreatedSince(weekAgo)
+        val students7d = practiceSubmissionRepository.countDistinctSubmittersSince(weekAgo)
+
+        val reviewed = practiceSubmissionRepository.findReviewedTimestamps()
+        val within48h = reviewed.count {
+            Duration.between(it.submittedAt, it.reviewedAt) <= Duration.ofHours(48)
+        }
+
+        val totalGuests = guestEventRepository.countDistinctGuests()
+        val convertedGuests = guestEventRepository.countDistinctConvertedGuests()
+
+        return PrdMetricsResponse(
+            practiceSubmissionsLast7d = submissions7d,
+            activeStudentsLast7d = students7d,
+            practicePerStudentPerWeek = if (students7d > 0) submissions7d.toDouble() / students7d else 0.0,
+            reviewedTotal = reviewed.size.toLong(),
+            reviewedWithin48h = within48h.toLong(),
+            reviewedWithin48hShare = if (reviewed.isNotEmpty()) within48h.toDouble() / reviewed.size else 0.0,
+            totalGuests = totalGuests,
+            convertedGuests = convertedGuests,
+            guestConversionRate = if (totalGuests > 0) convertedGuests.toDouble() / totalGuests else 0.0
         )
     }
 

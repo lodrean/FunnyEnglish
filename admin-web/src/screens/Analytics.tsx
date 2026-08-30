@@ -29,6 +29,8 @@ import {
   TaskAlt as CompletionIcon,
   SwapHoriz as ConversionIcon,
   OnlinePrediction as ActiveIcon,
+  Mic as PracticeIcon,
+  RateReview as ReviewIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -38,6 +40,7 @@ import {
   getPopularTests,
   getRecentActivity,
   getGuestAnalytics,
+  getPrdMetrics,
 } from '../api/client';
 import type { DailyActivity, LevelDistribution, PopularTest, RecentActivityItem } from '../types';
 import {
@@ -238,6 +241,12 @@ const Analytics: React.FC = () => {
     queryFn: getGuestAnalytics,
   });
 
+  // Метрики PRD (Speaking Trainer) — агрегаты с backend
+  const { data: prdData, isLoading: prdLoading } = useQuery({
+    queryKey: ['prdMetrics'],
+    queryFn: getPrdMetrics,
+  });
+
   // Точный диапазон [start, end] — фильтрация на клиенте (ISO-даты сравниваются строками)
   const filteredActivity = (data?.dailyActivity ?? []).filter(
     (d) => d.date >= dateRange.start && d.date <= dateRange.end
@@ -360,6 +369,46 @@ const Analytics: React.FC = () => {
             icon={<TrendingUpIcon />}
             color={COLORS.info}
             loading={isLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Метрики PRD (Speaking Trainer) — реальные агрегаты (аудит F-1/F-D) */}
+      <Box mb={1} display="flex" alignItems="center" gap={1}>
+        <Typography variant="h6" fontWeight="bold" color={COLORS.textPrimary} data-testid="prd-metrics-title">
+          PRD Metrics (Speaking Trainer)
+        </Typography>
+        <Chip size="small" label="реальные данные" variant="outlined" />
+      </Box>
+      <Grid container spacing={3} mb={3} data-testid="prd-metrics-section">
+        <Grid xs={12} sm={6} lg={4}>
+          <MetricCard
+            title="Practice / Student / Week"
+            value={(prdData?.practicePerStudentPerWeek ?? 0).toFixed(1)}
+            subtitle={`${prdData?.practiceSubmissionsLast7d ?? 0} отправок · ${prdData?.activeStudentsLast7d ?? 0} учеников за 7 дней`}
+            icon={<PracticeIcon />}
+            color={COLORS.primary}
+            loading={prdLoading}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={4}>
+          <MetricCard
+            title="REVIEWED within 48h"
+            value={`${Math.round((prdData?.reviewedWithin48hShare ?? 0) * 100)}%`}
+            subtitle={`${prdData?.reviewedWithin48h ?? 0} из ${prdData?.reviewedTotal ?? 0} оценённых`}
+            icon={<ReviewIcon />}
+            color={COLORS.success}
+            loading={prdLoading}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={4}>
+          <MetricCard
+            title="Guest → Registration"
+            value={`${Math.round((prdData?.guestConversionRate ?? 0) * 100)}%`}
+            subtitle={`${prdData?.convertedGuests ?? 0} из ${prdData?.totalGuests ?? 0} гостей`}
+            icon={<ConversionIcon />}
+            color={COLORS.warning}
+            loading={prdLoading}
           />
         </Grid>
       </Grid>

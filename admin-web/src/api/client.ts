@@ -148,6 +148,24 @@ export const getGuestAnalytics = async (): Promise<GuestAnalytics> => {
   return response.data;
 };
 
+// Метрики PRD (Speaking Trainer §Metrics, bd FunnyEnglish-h3l.3) — реальные агрегаты backend
+export interface PrdMetrics {
+  practiceSubmissionsLast7d: number;
+  activeStudentsLast7d: number;
+  practicePerStudentPerWeek: number;
+  reviewedTotal: number;
+  reviewedWithin48h: number;
+  reviewedWithin48hShare: number;
+  totalGuests: number;
+  convertedGuests: number;
+  guestConversionRate: number;
+}
+
+export const getPrdMetrics = async (): Promise<PrdMetrics> => {
+  const response = await api.get<PrdMetrics>('/admin/analytics/prd-metrics');
+  return response.data;
+};
+
 // ==================== Client Logs (OpenSpec add-client-logging) ====================
 
 export interface ClientLogEntry {

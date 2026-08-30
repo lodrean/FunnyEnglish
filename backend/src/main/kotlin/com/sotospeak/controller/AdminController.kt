@@ -58,6 +58,11 @@ class AdminController(
         return ResponseEntity.ok(adminService.getAnalytics())
     }
 
+    @GetMapping("/analytics/prd-metrics")
+    fun getPrdMetrics(): ResponseEntity<PrdMetricsResponse> {
+        return ResponseEntity.ok(adminService.getPrdMetrics())
+    }
+
     @GetMapping("/analytics/guests")
     fun getGuestAnalytics(): ResponseEntity<GuestAnalyticsResponse> {
         return ResponseEntity.ok(adminService.getGuestAnalytics())

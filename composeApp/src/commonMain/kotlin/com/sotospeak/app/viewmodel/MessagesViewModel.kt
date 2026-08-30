@@ -2,7 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.shared.api.MessagingApi
 import com.sotospeak.shared.model.Message
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +19,7 @@ data class MessagesState(
  * Inbox ученика: сообщения и комментарии от учителя.
  */
 class MessagesViewModel(
-    private val api: SoToSpeakApi
+    private val messagingApi: MessagingApi
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MessagesState())
@@ -30,7 +30,7 @@ class MessagesViewModel(
 
     fun loadUnreadCount() {
         viewModelScope.launch {
-            api.getUnreadMessagesCount()
+            messagingApi.getUnreadMessagesCount()
                 .onSuccess { _unreadCount.value = it.count.toInt() }
         }
     }
@@ -38,7 +38,7 @@ class MessagesViewModel(
     fun loadMessages() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
-            api.getMessages()
+            messagingApi.getMessages()
                 .onSuccess { messages ->
                     _state.value = MessagesState(isLoading = false, messages = messages)
                 }
@@ -61,7 +61,7 @@ class MessagesViewModel(
             }
         )
         viewModelScope.launch {
-            api.markMessageAsRead(messageId)
+            messagingApi.markMessageAsRead(messageId)
         }
     }
 }

@@ -2,9 +2,8 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.storage.RecordingKind
-import com.sotospeak.app.storage.RecordingStore
-import com.sotospeak.shared.api.SoToSpeakApi
 import com.sotospeak.shared.model.SpeakingLibrary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -36,8 +35,7 @@ sealed interface LibraryEvent {
 }
 
 class LibraryViewModel(
-    private val api: SoToSpeakApi,
-    private val recordingStore: RecordingStore
+    private val repository: SpeakingRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
@@ -61,7 +59,7 @@ class LibraryViewModel(
     fun load() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
-            api.getSpeakingLibraries()
+            repository.getLibraries()
                 .onSuccess { libraries ->
                     // Пустые темы фильтруем на клиенте как страховку (backend тоже фильтрует)
                     val visible = libraries.filter { it.topicCount > 0 }
@@ -86,10 +84,10 @@ class LibraryViewModel(
             val completed = coroutineScope {
                 libraries.map { library ->
                     async {
-                        val done = api.getSpeakingTopics(library.id)
+                        val done = repository.getTopics(library.id)
                             .getOrNull()
                             ?.count { topic ->
-                                recordingStore.list(topic.id).any { it.kind == RecordingKind.TRAINING }
+                                repository.listRecordings(topic.id).any { it.kind == RecordingKind.TRAINING }
                             } ?: 0
                         library.id to done
                     }

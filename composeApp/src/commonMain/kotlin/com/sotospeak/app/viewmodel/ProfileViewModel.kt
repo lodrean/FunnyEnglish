@@ -2,7 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.shared.api.AuthApi
 import com.sotospeak.shared.model.GuestSession
 import com.sotospeak.shared.model.UserProfile
 import com.sotospeak.shared.repository.GuestProgressRepository
@@ -19,7 +19,7 @@ data class ProfileState(
 )
 
 class ProfileViewModel(
-    private val api: SoToSpeakApi,
+    private val authApi: AuthApi,
     private val guestRepo: GuestProgressRepository
 ) : ViewModel() {
 
@@ -34,7 +34,7 @@ class ProfileViewModel(
                 guestSession = guestRepo.getSession()
             )
 
-            api.getUserProfile()
+            authApi.getUserProfile()
                 .onSuccess { profile ->
                     _profileState.value = _profileState.value.copy(
                         isLoading = false,

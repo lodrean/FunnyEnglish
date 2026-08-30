@@ -2,8 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sotospeak.app.storage.RecordingStore
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.shared.platform.Settings
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,8 +44,7 @@ sealed interface TopicsEvent {
 }
 
 class TopicsViewModel(
-    private val api: SoToSpeakApi,
-    private val recordingStore: RecordingStore,
+    private val repository: SpeakingRepository,
     private val settings: Settings
 ) : ViewModel() {
 
@@ -80,7 +78,7 @@ class TopicsViewModel(
     private fun load(libraryId: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
-            api.getSpeakingTopics(libraryId)
+            repository.getTopics(libraryId)
                 .onSuccess { topics ->
                     _state.value = _state.value.copy(
                         isLoading = false,
@@ -92,7 +90,7 @@ class TopicsViewModel(
                                 questionCount = dto.questionCount,
                                 hasSubtitles = dto.hasSubtitles,
                                 isWatched = settings.getString("topic_watched_${dto.id}", null) == "true",
-                                hasLocalRecordings = recordingStore.list(dto.id).isNotEmpty()
+                                hasLocalRecordings = repository.listRecordings(dto.id).isNotEmpty()
                             )
                         }
                     )

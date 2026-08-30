@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.di.SessionEvents
 import com.sotospeak.app.util.GuestAnalytics
 import com.sotospeak.shared.api.ApiException
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.shared.api.AuthApi
+import com.sotospeak.shared.api.GuestApi
 import com.sotospeak.shared.api.TokenProvider
 import com.sotospeak.shared.model.*
 import com.sotospeak.shared.repository.GuestProgressRepository
@@ -38,7 +39,8 @@ data class AuthState(
 )
 
 class AuthViewModel(
-    private val api: SoToSpeakApi,
+    private val authApi: AuthApi,
+    private val guestApi: GuestApi,
     private val tokenProvider: TokenProvider,
     private val guestRepo: GuestProgressRepository,
     private val guestAnalytics: GuestAnalytics,
@@ -106,7 +108,7 @@ class AuthViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
 
-            api.login(LoginRequest(email.trim(), password.trim()))
+            authApi.login(LoginRequest(email.trim(), password.trim()))
                 .onSuccess { response ->
                     tokenProvider.setToken(response.token)
                     val hasGuestProgress = guestRepo.hasProgress()
@@ -132,7 +134,7 @@ class AuthViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
 
-            api.register(RegisterRequest(email.trim(), password.trim(), displayName.trim()))
+            authApi.register(RegisterRequest(email.trim(), password.trim(), displayName.trim()))
                 .onSuccess { response ->
                     if (response.token == null) {
                         // Email-верификация включена: auto-login нет, ждём подтверждения почты
@@ -164,7 +166,7 @@ class AuthViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
 
-            api.oauthLogin(provider, OAuthRequest(token, email, displayName, avatarUrl))
+            authApi.oauthLogin(provider, OAuthRequest(token, email, displayName, avatarUrl))
                 .onSuccess { response ->
                     tokenProvider.setToken(response.token)
                     val hasGuestProgress = guestRepo.hasProgress()
@@ -198,7 +200,7 @@ class AuthViewModel(
     fun resendVerificationEmail(email: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
-            api.resendVerification(email.trim())
+            authApi.resendVerification(email.trim())
             // Ответ 200 независимо от существования email — показываем успех всегда
             _state.value = _state.value.copy(isLoading = false, verificationResent = true)
         }
@@ -225,7 +227,7 @@ class AuthViewModel(
                 testProgress = progress,
                 anonymousId = guestRepo.getAnonymousId() // метрика конверсии
             )
-            api.mergeGuestProgress(request)
+            guestApi.mergeGuestProgress(request)
                 .onSuccess {
                     guestRepo.clearSession()
                     _state.value = _state.value.copy(hasPendingGuestProgress = false)
@@ -243,7 +245,7 @@ class AuthViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            api.getCurrentUser()
+            authApi.getCurrentUser()
                 .onSuccess { user ->
                     _state.value = _state.value.copy(
                         isLoading = false,

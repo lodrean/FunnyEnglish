@@ -2,7 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.shared.model.SpeakingQuestion
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +38,7 @@ sealed interface QuestionsEvent {
 }
 
 class QuestionsViewModel(
-    private val api: SoToSpeakApi
+    private val repository: SpeakingRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(QuestionsState())
@@ -75,9 +75,9 @@ class QuestionsViewModel(
     private fun load(topicId: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null, hasSubmitted = false)
-            val detailDeferred = async { api.getSpeakingTopicDetail(topicId) }
+            val detailDeferred = async { repository.getTopicDetail(topicId) }
             val hasSubmitted = if (!_state.value.isGuest) {
-                api.getMySpeakingSubmissions()
+                repository.getMySubmissions()
                     .getOrNull()
                     ?.any { it.topicId == topicId }
                     ?: false

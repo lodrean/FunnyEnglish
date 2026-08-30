@@ -2,9 +2,9 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.subtitles.SubtitleCue
 import com.sotospeak.app.subtitles.WebVttParser
-import com.sotospeak.shared.api.SoToSpeakApi
 import com.sotospeak.shared.model.SpeakingTopicDetail
 import com.sotospeak.shared.platform.Settings
 import kotlinx.coroutines.channels.Channel
@@ -44,7 +44,7 @@ sealed interface VideoEvent {
 }
 
 class VideoViewModel(
-    private val api: SoToSpeakApi,
+    private val repository: SpeakingRepository,
     private val settings: Settings
 ) : ViewModel() {
 
@@ -95,7 +95,7 @@ class VideoViewModel(
     private fun load(topicId: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null, videoError = false)
-            api.getSpeakingTopicDetail(topicId)
+            repository.getTopicDetail(topicId)
                 .onSuccess { detail ->
                     _state.value = _state.value.copy(isLoading = false, topic = detail)
                     val subtitleUrl = detail.video?.subtitleUrl
@@ -114,7 +114,7 @@ class VideoViewModel(
 
     private fun loadSubtitles(url: String) {
         viewModelScope.launch {
-            api.getTextResource(url)
+            repository.getTextResource(url)
                 .onSuccess { vtt ->
                     val cues = WebVttParser.parse(vtt)
                     _state.value = _state.value.copy(

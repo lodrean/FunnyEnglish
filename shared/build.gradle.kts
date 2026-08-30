@@ -77,7 +77,6 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.androidx.media3.exoplayer)
-            implementation(libs.androidx.media3.session)
         }
 
         desktopMain.dependencies {

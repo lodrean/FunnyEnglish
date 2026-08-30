@@ -34,6 +34,7 @@ import com.sotospeak.app.components.RecordingWaveform
 import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.components.SpeakingRecordButton
 import com.sotospeak.app.components.SpeakingTimerRing
+import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.viewmodel.RecorderUiState
 import com.sotospeak.app.viewmodel.TrainingState
@@ -134,6 +135,7 @@ private fun TrainingContent(
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val isRecording = state.recorder is RecorderUiState.Recording
     val limit = TrainingViewModel.timerLimitFor(state.attemptNumber)
     val timerColor = when (state.attemptNumber) {
@@ -159,7 +161,7 @@ private fun TrainingContent(
                     modifier = Modifier.testTag("level_chip"),
                     label = {
                         Text(
-                            "Уровень ${state.attemptNumber} · $limit сек",
+                            strings.levelChip(state.attemptNumber, limit),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -252,7 +254,7 @@ private fun TrainingContent(
                             totalSeconds = limit,
                             arcColor = timerColor,
                             timeText = formatTimer(state.remainingSeconds),
-                            caption = "лимит попытки",
+                            caption = strings.captionAttemptLimit,
                             timerTestTag = "training_timer"
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -262,7 +264,8 @@ private fun TrainingContent(
                             isRecording = true,
                             enabled = true,
                             onClick = onStopRecording,
-                            testTag = "stop_button"
+                            testTag = "stop_button",
+                            contentDescription = strings.stopRecordingDesc
                         )
                     } else {
                         // T2: idle-кольцо видно ДО записи (полное кольцо, цвет уровня)
@@ -271,7 +274,7 @@ private fun TrainingContent(
                             totalSeconds = limit,
                             arcColor = timerColor,
                             timeText = formatTimer(limit),
-                            caption = "лимит попытки",
+                            caption = strings.captionAttemptLimit,
                             timerTestTag = "training_timer_idle"
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -279,12 +282,13 @@ private fun TrainingContent(
                             isRecording = false,
                             enabled = micPermission == MicPermissionState.Granted,
                             onClick = onStartRecording,
-                            testTag = "record_button"
+                            testTag = "record_button",
+                            contentDescription = strings.startRecordingDesc
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         // T5: подпись попытки по мокапу .rec-hint
                         Text(
-                            "Попытка ${state.attemptNumber} · ответь на все вопросы одной записью",
+                            strings.attemptHint(state.attemptNumber),
                             style = MaterialTheme.typography.bodyMedium,
                             color = speaking.textMuted,
                             textAlign = TextAlign.Center,
@@ -308,7 +312,7 @@ private fun TrainingContent(
         if (state.attempts.isNotEmpty()) {
             item {
                 Text(
-                    "Попытки · ${state.attempts.size} из ${TrainingViewModel.MAX_ATTEMPTS}",
+                    strings.attemptsTitle(state.attempts.size, TrainingViewModel.MAX_ATTEMPTS),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = speaking.text,
@@ -366,7 +370,7 @@ private fun TrainingContent(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        "Записи хранятся только на твоём устройстве",
+                        strings.privacyNote,
                         style = MaterialTheme.typography.bodySmall,
                         color = speaking.textMuted,
                         textAlign = TextAlign.Center
@@ -385,6 +389,7 @@ private fun AttemptCard(
     onPlay: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     // Декоративный прогресс воспроизведения (реальная позиция плеера недоступна,
     // симулируем как в mockups.html); сброс при остановке.
@@ -425,13 +430,13 @@ private fun AttemptCard(
             ) {
                 Icon(
                     imageVector = if (isPlaying) SpeakingIcons.Pause else SpeakingIcons.Play,
-                    contentDescription = if (isPlaying) "Стоп" else "Прослушать",
+                    contentDescription = if (isPlaying) strings.playbackStopDesc else strings.playbackListenDesc,
                     tint = speaking.waveformPlayback
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Попытка ${index + 1}",
+                    strings.attemptNumber(index + 1),
                     style = MaterialTheme.typography.bodyLarge,
                     color = speaking.text
                 )
@@ -450,7 +455,7 @@ private fun AttemptCard(
             CheckPopAppear {
                 Icon(
                     imageVector = SpeakingIcons.CheckCircle,
-                    contentDescription = "Принята",
+                    contentDescription = strings.attemptAcceptedDesc,
                     tint = speaking.success,
                     modifier = Modifier
                         .size(24.dp)
@@ -468,6 +473,7 @@ private fun FinalCtaBlock(
     onRestartAttempts: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     // Появление финальных CTA — fadeIn + scale с EasingBounce (motion-токены)
     CheckPopAppear(initialScale = 0.9f) {
     Card(
@@ -482,7 +488,7 @@ private fun FinalCtaBlock(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                "Все 3 попытки готовы! 🎉",
+                strings.allAttemptsDone,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = speaking.text
@@ -494,7 +500,7 @@ private fun FinalCtaBlock(
                     .testTag("final_go_practice"),
                 colors = ButtonDefaults.buttonColors(containerColor = speaking.record)
             ) {
-                Text("Перейти к практике", color = speaking.onRecord)
+                Text(strings.goToPractice, color = speaking.onRecord)
             }
             OutlinedButton(
                 onClick = onBackToLibrary,
@@ -502,7 +508,7 @@ private fun FinalCtaBlock(
                     .fillMaxWidth()
                     .testTag("final_back_library")
             ) {
-                Text("Вернуться в библиотеку")
+                Text(strings.backToLibrary)
             }
             TextButton(
                 onClick = onRestartAttempts,
@@ -510,7 +516,7 @@ private fun FinalCtaBlock(
                     .fillMaxWidth()
                     .testTag("final_restart")
             ) {
-                Text("Начать заново с попытки 1")
+                Text(strings.restartFromAttempt1)
             }
         }
     }
@@ -523,6 +529,7 @@ private fun MicPermissionRationale(
     onOpenSettings: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Card(
         shape = SpeakingShapes.Card,
         colors = CardDefaults.cardColors(containerColor = speaking.surface),
@@ -533,14 +540,14 @@ private fun MicPermissionRationale(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Для записи голоса нужен доступ к микрофону",
+                strings.micPermissionTitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = speaking.text
             )
             if (permanentlyDenied) {
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(onClick = onOpenSettings) {
-                    Text("Открыть настройки")
+                    Text(strings.openSettings)
                 }
             }
         }

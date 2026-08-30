@@ -21,7 +21,7 @@ import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.components.SpeakingGate
-import com.sotospeak.app.components.questionsCountText
+import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.viewmodel.QuestionsState
 import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
@@ -46,6 +46,7 @@ fun QuestionsScreen(
     libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     // Стрелки в аппбаре нет (мокап frame-questions) — системная кнопка/жест «назад»
     com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
@@ -55,11 +56,11 @@ fun QuestionsScreen(
         topBar = {
             // Мокап frame-questions: h1 «Вопросы», sub — «Тема · Топик · N вопросов», без стрелки
             SpeakingAppBar(
-                title = "Вопросы",
+                title = strings.questionsTitle,
                 subtitle = listOfNotNull(
                     libraryTitle.ifBlank { null },
                     state.topicTitle.ifBlank { null },
-                    if (state.questions.isNotEmpty()) questionsCountText(state.questions.size) else null
+                    if (state.questions.isNotEmpty()) strings.questionsCount(state.questions.size) else null
                 ).joinToString(" · ").ifBlank { null }
             )
         },
@@ -90,6 +91,7 @@ private fun QuestionsContent(
     onRegisterClick: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -135,15 +137,15 @@ private fun QuestionsContent(
                 colors = ButtonDefaults.buttonColors(containerColor = speaking.primaryStrong),
                 interactionSource = trainingIsrc
             ) {
-                Text("Тренировка · 3 попытки", fontWeight = FontWeight.SemiBold)
+                Text(strings.trainingModeButton, fontWeight = FontWeight.SemiBold)
             }
 
             if (state.isGuest) {
                 // Гейтинг гостя (PRD Story 3, frame-locked Playful Coach v1.1)
                 SpeakingGate(
                     icon = SpeakingIcons.Lock,
-                    title = "Ты почти у цели!",
-                    text = "Отправка записи учителю доступна после регистрации",
+                    title = strings.gateTitle,
+                    text = strings.gateText,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
@@ -154,7 +156,7 @@ private fun QuestionsContent(
                             .testTag("practice_locked_cta"),
                         shape = MaterialTheme.shapes.medium
                     ) {
-                        Text("Зарегистрироваться")
+                        Text(strings.registerCta)
                     }
                     OutlinedButton(
                         onClick = onLoginClick,
@@ -165,7 +167,7 @@ private fun QuestionsContent(
                         shape = MaterialTheme.shapes.medium,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                     ) {
-                        Text("Войти")
+                        Text(strings.login)
                     }
                 }
             } else if (state.hasSubmitted) {
@@ -185,7 +187,7 @@ private fun QuestionsContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Отправлено · мои записи",
+                        strings.submittedButton,
                         fontWeight = FontWeight.SemiBold,
                         color = speaking.statusReviewed
                     )
@@ -210,7 +212,7 @@ private fun QuestionsContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Практика · 30 сек",
+                        strings.practiceModeButton,
                         fontWeight = FontWeight.SemiBold,
                         color = speaking.onRecord   // тёмный текст на record (WCAG AA)
                     )
@@ -228,6 +230,7 @@ private fun ActiveQuestionCard(
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -239,7 +242,7 @@ private fun ActiveQuestionCard(
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)) {
             Text(
-                text = "ВОПРОС ${index + 1} ИЗ $total",
+                text = strings.questionOfUpper(index + 1, total),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 0.08.em,

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.SpeakingAppBar
+import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.viewmodel.TopicUiModel
 import com.sotospeak.app.viewmodel.TopicsState
 import com.sotospeak.designsystem.animations.ListSkeleton
@@ -42,6 +43,7 @@ fun TopicsScreen(
     libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     // Стрелки в аппбаре нет (мокап) — системная кнопка/жест «назад»
     com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
@@ -52,9 +54,9 @@ fun TopicsScreen(
             // Мокап frame-topics: h1 — название темы, sub — «N топиков · выбери и начни говорить»,
             // БЕЗ стрелки «назад» (назад — системная кнопка/жест)
             SpeakingAppBar(
-                title = libraryTitle.ifBlank { state.libraryTitle }.ifBlank { "Топики" },
+                title = libraryTitle.ifBlank { state.libraryTitle }.ifBlank { strings.topicsTitle },
                 subtitle = if (state.topics.isNotEmpty()) {
-                    "${topicsCountText(state.topics.size)} · выбери и начни говорить"
+                    strings.topicsSubtitle(state.topics.size)
                 } else null
             )
         },
@@ -69,9 +71,9 @@ fun TopicsScreen(
                 )
                 state.topics.isEmpty() -> EmptyState(
                     icon = SpeakingIcons.Play,
-                    title = "В этой теме пока нет топиков",
-                    subtitle = "Загляни позже — топики появятся скоро",
-                    ctaLabel = "Обновить",
+                    title = strings.topicsEmptyTitle,
+                    subtitle = strings.topicsEmptySubtitle,
+                    ctaLabel = strings.ctaRefresh,
                     onCtaClick = onRetry,
                     modifier = Modifier.testTag("topics_empty")
                 )
@@ -90,6 +92,7 @@ private fun TopicsList(
     onTopicClick: (String) -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -120,7 +123,7 @@ private fun TopicsList(
                     },
                     supportingContent = {
                         Text(
-                            text = "${com.sotospeak.app.components.questionsCountText(topic.questionCount)} · видео ${formatDuration(topic.durationSeconds)}",
+                            text = "${strings.questionsCount(topic.questionCount)} · ${strings.videoLabel} ${formatDuration(topic.durationSeconds)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = speaking.textMuted
                         )
@@ -141,7 +144,7 @@ private fun TopicsList(
                                 onClick = {},
                                 label = {
                                     Text(
-                                        text = if (done) "пройден" else "новый",
+                                        text = if (done) strings.topicStatusDone else strings.topicStatusNew,
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.ExtraBold
                                     )

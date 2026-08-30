@@ -7,6 +7,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.sotospeak.app.di.appModule
+import com.sotospeak.app.localization.LocalAppStrings
+import com.sotospeak.app.localization.Strings
 import com.sotospeak.app.navigation.AppScaffold
 import com.sotospeak.app.navigation.AppScreen
 import com.sotospeak.app.navigation.rememberScreenTransition
@@ -82,9 +84,11 @@ private fun AppThemedContent() {
         logUploader.flush()
     }
 
-    FunnyTheme(darkTheme = useDarkTheme) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            AppContent(settingsViewModel, useDarkTheme = useDarkTheme)
+    CompositionLocalProvider(LocalAppStrings provides Strings.get(settingsState.language)) {
+        FunnyTheme(darkTheme = useDarkTheme) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                AppContent(settingsViewModel, useDarkTheme = useDarkTheme)
+            }
         }
     }
 }

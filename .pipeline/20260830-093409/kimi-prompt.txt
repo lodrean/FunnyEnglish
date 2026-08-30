@@ -1,0 +1,22 @@
+﻿Проект: So to Speak (FunnyEnglish) — Kotlin Multiplatform (Compose Multiplatform).
+Рабочий каталог — корень репозитория (ветка develop). Ты выполняешь задачу bd FunnyEnglish-wy7.7.
+
+Задача: BE: кэш + ETag для /public/speaking/*
+
+Описание задачи (из bd):
+Caffeine + HTTP cache headers для публичного контента, инвалидация при publish. Быстрый старт веб-версии, меньше нагрузки на БД. Источник: §4.3.3.
+
+
+Стек backend: Spring Boot 3.4.1 + Kotlin + PostgreSQL + Flyway + JWT.
+- Контекст-путь /api; контроллеры БЕЗ /api в маппингах; сущности backend/.../entity, миграции backend/src/main/resources/db/migration.
+- Гейт драйвера: .\gradlew.bat :backend:test (тесты на H2 test-profile). Сборки/тесты сам НЕ запускай.
+- Известные грабли: JSONB workaround (TestService), jackson-module-kotlin обязателен, миграции писать с IF NOT EXISTS.
+
+Требования и ограничения:
+- ПЕРЕД правками прочитай memory.md (архитектура, конвенции, известные грабли) и AGENTS.md (правила проекта).
+- Для навигации по символам используй grep/read/glob; для UI-правок сверяйся с дизайн-системой Playful Coach (tokens в design/ и composeApp/designsystem).
+- Меняй ТОЛЬКО файлы, необходимые для этой задачи; ничего лишнего не «улучшай», не удаляй и не переписывай.
+- НЕ запускай gradle-сборки/тесты/линт (гейты прогоняет драйвер), НЕ делай git-коммитов и пушей.
+- Спеки/PRD (docs/, openspec/) НЕ правишь: если для задачи нужна правка спеки или решение владельца — ОСТАНОВИСЬ и напиши в отчёте, что именно требуется (ADR-007, human-in-the-loop).
+- После правок запиши краткий отчёт в C:\Users\etaba\IdeaProjects\projects\Packages\FunnyEnglish\.pipeline\20260830-093409/02-execute.md: что сделано, список изменённых/созданных файлов, как проверить.
+- В финальном ответе ПЕРВОЙ строкой верни маркер: STATUS: DONE (задача выполнена, можно закрывать) | STATUS: NEEDS_OWNER (нужно решение владельца или правка спеки, ADR-007) | STATUS: BLOCKED (непреодолимое препятствие). Далее — сводка до 10 строк.

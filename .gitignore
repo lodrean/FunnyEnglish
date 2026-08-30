@@ -103,6 +103,10 @@ CREDENTIALS.md
 admin-web-backup/
 /26.0.1
 
+# Debug artifacts in repo root (AR-9, bd FunnyEnglish-qbq.2, 2026-08-30)
+/*.png
+/*.err
+
 # Root & e2e node_modules
 node_modules/
 e2e-cmp/node_modules/

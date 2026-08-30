@@ -7,14 +7,14 @@
 ## CI-пайплайны (кто когда запускается)
 | Workflow | Триггер | Назначение |
 |---|---|---|
-| `ci.yml` | push/PR в main, develop | Основной gate: backend-test, shared-test, android-build, admin-web-test, docker-build |
-| `quality-check.yml` | push/PR + schedule | Линт/качество + security-scan |
+| `ci.yml` | push/PR в main, develop + schedule | Единый pipeline (2026-08-30, AR-7): backend/shared/compose-app тесты + Kover-пороги, detekt, admin-web (lint/typecheck/vitest), E2E, security-scan, docker-build |
 | `qa-automation.yml` | push/PR | Unit + API (Newman) + visual |
 | `cmp-e2e-tests.yml` | push/PR | E2E WASM-приложения (Playwright) |
 | `deploy.yml` | push в main | Сборка образов → ghcr → деплой на сервер + health check |
 | `android-release.yml` | tag `v*` / ручной | Подписанные APK/AAB из `:app` (нужны secrets: ANDROID_KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD, API_BASE_URL) |
 | `chromatic.yml` | — | Визуальные снапшоты Storybook |
-| ~~`tests.yml`~~ | только workflow_dispatch | DEPRECATED: дублирует ci.yml, удалить после валидации |
+
+`tests.yml` и `quality-check.yml` УДАЛЕНЫ 2026-08-30 (bd FunnyEnglish-qbq.5): дублировали джобы ci.yml, слиты в единый pipeline.
 
 ## Деплой
 1. PR в develop → зелёный ci.yml.

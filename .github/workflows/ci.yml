@@ -1,13 +1,19 @@
 name: CI
 
+# Единый pipeline (2026-08-30, bd FunnyEnglish-qbq.5, аудит AR-7):
+# слиты ci.yml + quality-check.yml; tests.yml удалён (дублировал джобы).
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  schedule:
+    # Run daily at 9 AM UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
 
 jobs:
-  # Backend Tests
+  # Backend Tests + Coverage (Kover)
   backend-test:
     name: Backend Tests
     runs-on: ubuntu-latest
@@ -40,8 +46,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run backend tests
-        run: ./gradlew :backend:test
+      # test и kover-задачи в одном вызове — тесты выполняются один раз
+      - name: Run backend tests with coverage
+        run: ./gradlew :backend:test :backend:koverVerify :backend:koverHtmlReport
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -55,6 +62,13 @@ jobs:
         with:
           name: backend-test-results
           path: backend/build/reports/tests/
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: backend/build/reports/kover/html
 
   # Shared Module Tests
   shared-test:
@@ -76,6 +90,67 @@ jobs:
 
       - name: Run shared module tests
         run: ./gradlew :shared:allTests
+
+  # Compose App Tests + Coverage (Kover)
+  compose-app-test:
+    name: Compose App Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Compile Desktop
+        run: ./gradlew :composeApp:compileKotlinDesktop
+
+      - name: Run tests with coverage
+        run: ./gradlew :composeApp:desktopTest :composeApp:koverVerify :composeApp:koverHtmlReport
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compose-app-coverage
+          path: composeApp/build/reports/kover/html
+
+  # Detekt (backend + composeApp, baseline в config/detekt/)
+  detekt:
+    name: Detekt
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Detekt
+        run: ./gradlew :backend:detekt :composeApp:detekt
+
+      - name: Upload Detekt Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: detekt-report
+          path: |
+            backend/build/reports/detekt/
+            composeApp/build/reports/detekt/
 
   # Android Build
   android-build:
@@ -104,7 +179,7 @@ jobs:
           name: android-debug-apk
           path: composeApp/build/outputs/apk/debug/*.apk
 
-  # Admin Web Tests
+  # Admin Web Tests (lint + typecheck + vitest coverage + build)
   admin-web-test:
     name: Admin Web Tests
     runs-on: ubuntu-latest
@@ -131,13 +206,137 @@ jobs:
         working-directory: admin-web
         run: npm run typecheck
 
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: admin-web
-        run: npm test -- --run
+        # vitest напрямую: npm-скрипт «test» — watch-режим (грабля №69)
+        run: npx vitest run --coverage
 
       - name: Build
         working-directory: admin-web
         run: npm run build
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: admin-web-coverage
+          path: admin-web/coverage
+
+  # E2E Tests (docker-стек + Playwright админки)
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [backend-test, admin-web-test]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './admin-web/package-lock.json'
+
+      - name: Install Admin Web Dependencies
+        working-directory: ./admin-web
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright
+        working-directory: ./admin-web
+        run: npx playwright install --with-deps
+
+      # docker-compose build копирует готовый backend jar — собираем заранее
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build backend jar
+        run: ./gradlew :backend:bootJar
+
+      - name: Start Services
+        run: docker compose up -d
+
+      - name: Wait for Services
+        run: |
+          for i in $(seq 1 36); do
+            if curl -sf http://localhost:8080/api/actuator/health > /dev/null 2>&1 && \
+               curl -sf http://localhost:3000/ > /dev/null 2>&1; then
+              echo "Services up after ~$((i*5))s"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Services not ready in 180s"
+          docker compose ps
+          docker compose logs --tail 50 backend admin
+          exit 1
+
+      - name: "Smoke: admin login via API"
+        run: |
+          echo "== direct backend login =="
+          curl -s -X POST http://localhost:8080/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@sotospeak.com","password":"admin123"}' | head -c 120
+          echo
+          echo "== via nginx proxy (admin:3000) =="
+          curl -s -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@sotospeak.com","password":"admin123"}' | head -c 120
+          echo
+          echo "== via nginx WITH Origin header (browser-like) =="
+          curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -H "Origin: http://localhost:3000" \
+            -d '{"email":"admin@sotospeak.com","password":"admin123"}'
+          echo
+          echo "== effective CORS_ORIGINS =="
+          docker compose config | grep CORS_ORIGINS || true
+          docker exec sotospeak-backend sh -c 'echo $CORS_ORIGINS' || true
+
+      - name: Run E2E Tests
+        working-directory: ./admin-web
+        # Скрипта test:e2e:headless нет; прогон против docker-админки (3000), без webServer
+        run: npx playwright test
+        env:
+          SKIP_WEB_SERVER: "1"
+          ADMIN_URL: http://localhost:3000
+
+      - name: Dump backend logs on failure
+        if: failure()
+        run: docker compose logs --tail 120 backend | grep -iE "admin|initializer|flyway|error|exception" | tail -40 || true
+
+      - name: Upload E2E Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            admin-web/playwright-report
+            admin-web/test-results
+
+  # Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    # upload-sarif требует security-events: write (иначе «Resource not accessible by integration»)
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
 
   # Docker Build
   docker-build:
@@ -185,3 +384,40 @@ jobs:
           tags: sotospeak-admin:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Summary
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [backend-test, shared-test, compose-app-test, detekt, admin-web-test, e2e-tests, docker-build]
+    if: always()
+
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "# CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Tests | ${{ needs.backend-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Shared Module Tests | ${{ needs.shared-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Compose App Tests | ${{ needs.compose-app-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Detekt | ${{ needs.detekt.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin Web Tests | ${{ needs.admin-web-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Build | ${{ needs.docker-build.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check results
+        run: |
+          failed=0
+          for result in \
+            "${{ needs.backend-test.result }}" \
+            "${{ needs.shared-test.result }}" \
+            "${{ needs.compose-app-test.result }}" \
+            "${{ needs.detekt.result }}" \
+            "${{ needs.admin-web-test.result }}" \
+            "${{ needs.e2e-tests.result }}" \
+            "${{ needs.docker-build.result }}"; do
+            if [ "$result" != "success" ]; then failed=1; fi
+          done
+          exit $failed

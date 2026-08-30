@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.sotospeak.app.di.mockVisibleSpeakingLibraries
+import com.sotospeak.app.error.UiText
 import com.sotospeak.app.screens.LibraryScreen
 import com.sotospeak.app.screens.themeInitials
 import com.sotospeak.app.screens.topicsCountText
@@ -126,10 +127,10 @@ class LibraryScreenTest : BaseUiTest() {
     @Test
     fun errorStateShowsMessageAndRetry() = runTest(
         content = {
-            LibraryScreenForTest(state = LibraryState(error = "504 Proxy Error"))
+            LibraryScreenForTest(state = LibraryState(error = UiText.ServerUnavailable))
         }
     ) {
-        // Сырой текст не показываем — маппинг в человеческий (userFriendlyError, грабля №15)
+        // Типизированная ошибка → человеческий текст (UiText.asString, грабля №15)
         onNodeWithText("Сервер временно недоступен. Попробуйте позже.").assertIsDisplayed()
         onNodeWithText("Попробовать снова").performClick()
         waitForIdle()

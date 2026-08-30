@@ -57,7 +57,7 @@ fun MySubmissionsScreen(
                 state.isLoading && state.submissions.isEmpty() ->
                     ListSkeleton()
                 state.error != null && state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
-                    ErrorMessage(message = state.error.orEmpty(), onRetry = onRefresh)
+                    ErrorMessage(message = state.error, onRetry = onRefresh)
                 state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
                     EmptyState(
                         icon = SpeakingIcons.Upload,

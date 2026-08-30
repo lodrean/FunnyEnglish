@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.RecordingMeta
 import com.sotospeak.shared.contracts.SpeakingSubmission
@@ -20,7 +22,7 @@ data class MySubmissionsState(
     val submissions: List<SpeakingSubmission> = emptyList(),  // новые сверху
     val pendingUploads: List<RecordingMeta> = emptyList(),    // локальные неотправленные (offline retry)
     val playingAudioUrl: String? = null,
-    val error: String? = null
+    val error: UiText? = null
 )
 
 sealed interface MySubmissionsAction {
@@ -88,7 +90,7 @@ class MySubmissionsViewModel(
                     _state.value = _state.value.copy(
                         isLoading = false,
                         pendingUploads = repository.pendingPracticeUploads(),
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }

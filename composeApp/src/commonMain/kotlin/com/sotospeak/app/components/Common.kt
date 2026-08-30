@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.asString
 import com.sotospeak.designsystem.tokens.IconSizeXLarge
 import com.sotospeak.designsystem.tokens.SpaceMd
 import com.sotospeak.designsystem.tokens.SpaceSm
@@ -78,9 +80,13 @@ fun EmptyState(
     }
 }
 
+/**
+ * Экран ошибки. Принимает типизированный [UiText] — маппинг технических сообщений
+ * делается заранее (`Throwable.toUiText`, app/error/UiText.kt), компонент строки не переводит.
+ */
 @Composable
 fun ErrorMessage(
-    message: String,
+    message: UiText,
     onRetry: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -98,7 +104,7 @@ fun ErrorMessage(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = userFriendlyError(message),
+            text = message.asString(),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -108,27 +114,5 @@ fun ErrorMessage(
                 Text("Попробовать снова")
             }
         }
-    }
-}
-
-/**
- * Маппит технические сообщения об ошибках (дампы Ktor-исключений, URL, статус-коды)
- * в понятный пользователю текст. Сырые exception.message в UI не показываем.
- */
-private fun userFriendlyError(raw: String): String {
-    val lower = raw.lowercase()
-    return when {
-        "502" in lower || "503" in lower || "504" in lower || "proxy error" in lower ->
-            "Сервер временно недоступен. Попробуйте позже."
-        "unable to resolve host" in lower || "connection refused" in lower ||
-            "failed to connect" in lower || "timeout" in lower ->
-            "Нет соединения с сервером. Проверьте интернет."
-        "401" in lower -> "Сессия истекла. Войдите снова."
-        "403" in lower -> "Нет доступа к этим данным."
-        "404" in lower -> "Данные не найдены."
-        "notransformationfound" in lower || "expected response body" in lower ||
-            "kotlin reflection" in lower || raw.length > 200 ->
-            "Не удалось загрузить данные. Попробуйте ещё раз."
-        else -> raw
     }
 }

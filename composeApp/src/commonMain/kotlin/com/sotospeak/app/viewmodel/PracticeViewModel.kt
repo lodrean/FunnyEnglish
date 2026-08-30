@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.recorder.RecordingSessionController
 import com.sotospeak.app.storage.RecordingFileStorage
@@ -35,7 +37,7 @@ data class PracticeState(
     val uploadError: Boolean = false,                      // retry; файл не теряется (PRD Story 5)
     val micPermission: MicPermissionState = MicPermissionState.Unknown,
     val hasSubmitted: Boolean = false,                     // уже есть успешная отправка по топику
-    val error: String? = null
+    val error: UiText? = null
 ) {
     companion object {
         const val PRACTICE_LIMIT_SECONDS = 30
@@ -147,7 +149,7 @@ class PracticeViewModel(
                 recordingSession.stopTimer()
                 _state.value = _state.value.copy(
                     phase = PracticePhase.Ready,
-                    error = action.message
+                    error = UiText.Message(action.message)
                 )
             }
             is PracticeAction.OnRetryUpload -> {
@@ -200,7 +202,7 @@ class PracticeViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }
@@ -226,7 +228,7 @@ class PracticeViewModel(
                 _state.value = _state.value.copy(
                     phase = PracticePhase.Ready,
                     uploadError = true,
-                    error = "Не удалось прочитать файл записи"
+                    error = UiText.Message("Не удалось прочитать файл записи")
                 )
                 return@launch
             }
@@ -258,7 +260,7 @@ class PracticeViewModel(
                             uploadError = false,
                             uploadProgress = 0,
                             hasSubmitted = true,
-                            error = "Вы уже отправляли ответ по этой теме"
+                            error = UiText.Message("Вы уже отправляли ответ по этой теме")
                         )
                         _events.trySend(PracticeEvent.ShowMessage("Вы уже отправляли ответ по этой теме"))
                     } else {
@@ -267,7 +269,7 @@ class PracticeViewModel(
                             phase = PracticePhase.Ready,
                             uploadError = true,
                             uploadProgress = 0,
-                            error = error.message ?: "Ошибка отправки"
+                            error = error.toUiText()
                         )
                     }
                 }

@@ -2,6 +2,8 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.api.AuthApi
 import com.sotospeak.shared.contracts.GuestSession
 import com.sotospeak.shared.contracts.UserProfile
@@ -15,7 +17,7 @@ data class ProfileState(
     val isLoading: Boolean = false,
     val userProfile: UserProfile? = null,
     val guestSession: GuestSession? = null,
-    val error: String? = null
+    val error: UiText? = null
 )
 
 class ProfileViewModel(
@@ -44,7 +46,7 @@ class ProfileViewModel(
                 .onFailure { error ->
                     _profileState.value = _profileState.value.copy(
                         isLoading = false,
-                        error = error.message
+                        error = error.toUiText()
                     )
                 }
         }

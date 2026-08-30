@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.recorder.RecordingSessionController
 import com.sotospeak.app.storage.RecordingKind
@@ -32,7 +34,7 @@ data class TrainingState(
     val isFinished: Boolean = false,                       // true после 3-й попытки → финальные CTA
     val playingRecordingPath: String? = null,
     val micPermission: MicPermissionState = MicPermissionState.Unknown,
-    val error: String? = null
+    val error: UiText? = null
 )
 
 
@@ -195,7 +197,7 @@ class TrainingViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }

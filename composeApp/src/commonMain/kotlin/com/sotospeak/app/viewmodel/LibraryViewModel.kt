@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.contracts.SpeakingLibrary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -20,7 +22,7 @@ data class LibraryState(
     val libraries: List<SpeakingLibrary> = emptyList(),
     /** libraryId → число топиков с training-записями (DC-2: бейдж «N пройдено», прогресс-бар) */
     val completedTopics: Map<String, Int> = emptyMap(),
-    val error: String? = null
+    val error: UiText? = null
 )
 
 sealed interface LibraryAction {
@@ -68,7 +70,7 @@ class LibraryViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }

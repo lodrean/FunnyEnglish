@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -49,11 +50,18 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.sotospeak.app.accessibility.playTimerWarningSound
 import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
@@ -80,6 +88,13 @@ import kotlin.math.sin
  * StrokeCap.Round, старт с -90°, прогресс оставшегося времени.
  * Дуга — animateFloatAsState 1000ms linear; цвет уровня — animateColorAsState 300ms EasingStandard.
  * Внутри — моноширинный таймер (testTag сохраняется для UI-тестов).
+ *
+ * A11y (бриф §3 contentDescription; PROJECT-REVIEW-2026-08-28 §3.1 Д2):
+ * - цифры таймера несут [stateDescription] «Осталось N секунд» — читается по фокусу;
+ * - скрытый live-region узел анонсирует остаток не чаще раза в
+ *   [SpeakingMotion.TimerAnnounceIntervalSeconds] (токен motion.timerAnnounceInterval, 5s);
+ * - последние [FINAL_COUNTDOWN_SECONDS] секунд — вибро (LocalHapticFeedback) + звук
+ *   ([playTimerWarningSound]).
  */
 @Composable
 fun SpeakingTimerRing(
@@ -113,6 +128,29 @@ fun SpeakingTimerRing(
         label = "timer_ring_color"
     )
 
+    // §3.1 Д2: звук/вибро последних секунд. Idle-кольца (remaining == лимит ≥ 30с)
+    // сюда не попадают — срабатывает только реальный финальный отсчёт записи.
+    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(remainingSeconds) {
+        if (remainingSeconds in 1..FINAL_COUNTDOWN_SECONDS) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            playTimerWarningSound()
+        }
+    }
+
+    // Текст анонса меняется только на границах интервала (квантование вниз) —
+    // TalkBack не спамится; кратные 5 в русском всегда «секунд», плюрализация не нужна.
+    val announcement = when {
+        remainingSeconds <= 0 -> "Время вышло"
+        remainingSeconds < SpeakingMotion.TimerAnnounceIntervalSeconds ->
+            "Осталось менее ${SpeakingMotion.TimerAnnounceIntervalSeconds} секунд"
+        else -> {
+            val quantized = remainingSeconds -
+                remainingSeconds % SpeakingMotion.TimerAnnounceIntervalSeconds
+            "Осталось $quantized секунд"
+        }
+    }
+
     Box(modifier = modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidth = 10.dp.toPx()
@@ -145,7 +183,12 @@ fun SpeakingTimerRing(
                 style = timerTextStyle,
                 // Мокап .timer-label .tnum: цифры — основной текст (НЕ цвет дуги)
                 color = speaking.text,
-                modifier = if (timerTestTag != null) Modifier.testTag(timerTestTag) else Modifier
+                modifier = Modifier
+                    .semantics {
+                        stateDescription =
+                            "Осталось $remainingSeconds ${secondsPlural(remainingSeconds)}"
+                    }
+                    .then(if (timerTestTag != null) Modifier.testTag(timerTestTag) else Modifier)
             )
             if (caption != null) {
                 Text(
@@ -156,7 +199,27 @@ fun SpeakingTimerRing(
                 )
             }
         }
+        // Визуально скрытый live-region узел (аналог aria-live="polite"):
+        // текст меняется не чаще timerAnnounceInterval → периодический анонс остатка.
+        Text(
+            text = announcement,
+            modifier = Modifier
+                .size(1.dp)
+                .alpha(0f)
+                .semantics { liveRegion = LiveRegionMode.Polite }
+        )
     }
+}
+
+/** Длина финального отсчёта со звуком/вибро (§3.1 Д2: «звук/вибро последних 5с»). */
+private const val FINAL_COUNTDOWN_SECONDS = 5
+
+/** Плюрализация: «1 секунда», «3 секунды», «5 секунд» (для TalkBack stateDescription). */
+private fun secondsPlural(n: Int): String = when {
+    n % 100 in 11..14 -> "секунд"
+    n % 10 == 1 -> "секунда"
+    n % 10 in 2..4 -> "секунды"
+    else -> "секунд"
 }
 
 /**

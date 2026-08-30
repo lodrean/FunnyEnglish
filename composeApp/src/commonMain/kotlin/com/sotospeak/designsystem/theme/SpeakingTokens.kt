@@ -191,6 +191,9 @@ object SpeakingMotion {
     const val DurationSlow = 500
     /** Пульсация REC; при Reduce motion — статичный индикатор */
     const val RecPulseMs = 1600
+    /** Токен motion.timerAnnounceInterval (5s): TalkBack-анонс остатка таймера
+     * не чаще раза в 5с, чтобы не спамить скринридер (бриф §3, §3.1 Д2) */
+    const val TimerAnnounceIntervalSeconds = 5
 
     // M3 motion (tokens v1.3.0 / DSM-5 §3)
     /** M3 Standard: cubic-bezier(0.2, 0, 0, 1) — стандартные переходы */

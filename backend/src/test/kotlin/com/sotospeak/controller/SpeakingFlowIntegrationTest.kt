@@ -1,6 +1,9 @@
 package com.sotospeak.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.sotospeak.config.SPEAKING_PUBLIC_LIBRARIES
+import com.sotospeak.config.SPEAKING_PUBLIC_TOPICS
+import com.sotospeak.config.SPEAKING_PUBLIC_TOPIC_DETAILS
 import com.sotospeak.dto.CreateLibraryRequest
 import com.sotospeak.dto.CreateSpeakingQuestionRequest
 import com.sotospeak.dto.CreateTopicRequest
@@ -18,12 +21,14 @@ import com.sotospeak.security.JwtService
 import com.sotospeak.service.StorageService
 import io.mockk.every
 import io.mockk.mockk
+import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpMethod
@@ -70,6 +75,9 @@ class SpeakingFlowIntegrationTest {
     @Autowired
     private lateinit var jwtService: JwtService
 
+    @Autowired
+    private lateinit var cacheManager: CacheManager
+
     /**
      * StorageService замокан через @Primary-бин (mockk умеет final Kotlin-классы,
      * Mockito-inline + Kotlin non-null params падает с NPE на stubbing).
@@ -96,6 +104,11 @@ class SpeakingFlowIntegrationTest {
 
     @BeforeEach
     fun setup() {
+        // Caffeine-кэш публичного контента (bd wy7.7) живёт вне транзакции и НЕ
+        // откатывается вместе с тестовой tx — чистим, иначе cross-test staleness
+        // (сиды через репозиторий кэш не инвалидируют).
+        listOf(SPEAKING_PUBLIC_LIBRARIES, SPEAKING_PUBLIC_TOPICS, SPEAKING_PUBLIC_TOPIC_DETAILS)
+            .forEach { cacheManager.getCache(it)?.clear() }
         if (!userRepository.existsById(UUID.fromString(adminId))) {
             userRepository.save(User(
                 id = UUID.fromString(adminId),
@@ -533,6 +546,97 @@ class SpeakingFlowIntegrationTest {
         mockMvc.get("/admin/speaking/submissions/${UUID.randomUUID()}") {
             header("Authorization", "Bearer $adminToken")
         }.andExpect { status { isNotFound() } }
+    }
+
+    // 13. Public HTTP-кэш (bd wy7.7, §4.3.3): ETag + Cache-Control; If-None-Match → 304
+    @Test
+    fun `public endpoints return cache headers and honor If-None-Match`() {
+        val topic = seedPublishedContent()
+
+        val response = mockMvc.get("/public/speaking/topics/${topic.id}")
+            .andExpect {
+                status { isOk() }
+                header { exists("ETag") }
+                header { string("Cache-Control", containsString("max-age=60")) }
+                header { string("Cache-Control", containsString("public")) }
+            }.andReturn().response
+        val etag = response.getHeader("ETag")!!
+
+        mockMvc.get("/public/speaking/topics/${topic.id}") {
+            header("If-None-Match", etag)
+        }.andExpect { status { isNotModified() } }
+
+        // изменённый контент (другой сид → другой id) даёт другой ETag
+        val other = seedPublishedContent()
+        mockMvc.get("/public/speaking/topics/${other.id}")
+            .andExpect { header { exists("ETag") } }
+    }
+
+    // 14. Caffeine-кэш детали топика: повторный GET отдаётся из кэша (bd wy7.7)
+    @Test
+    fun `public topic detail is served from caffeine cache`() {
+        val topic = seedPublishedContent()
+
+        mockMvc.get("/public/speaking/topics/${topic.id}")
+            .andExpect { jsonPath("$.title") { value("My Morning Routine") } }
+
+        // прямая мутация через репозиторий (минуя сервис) кэш НЕ инвалидирует
+        val managed = topicRepository.findById(topic.id!!).get()
+        managed.title = "Changed Directly"
+        topicRepository.save(managed)
+
+        mockMvc.get("/public/speaking/topics/${topic.id}")
+            .andExpect { jsonPath("$.title") { value("My Morning Routine") } }
+    }
+
+    // 15. Publish/unpublish через admin API инвалидирует публичный кэш (bd wy7.7)
+    @Test
+    fun `publish and unpublish invalidate public content cache`() {
+        val libraryResponse = mockMvc.post("/admin/speaking/libraries") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(CreateLibraryRequest(title = "Cache Lib"))
+        }.andExpect { status { isCreated() } }
+            .andReturn().response.contentAsString
+        val libraryId = objectMapper.readTree(libraryResponse).get("id").asText()
+
+        val topicResponse = mockMvc.post("/admin/speaking/topics") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(CreateTopicRequest(libraryId = libraryId, title = "Cache Topic"))
+        }.andExpect { status { isCreated() } }
+            .andReturn().response.contentAsString
+        val topicId = objectMapper.readTree(topicResponse).get("id").asText()
+
+        fun publishTopic(value: Boolean) {
+            mockMvc.patch("/admin/speaking/topics/$topicId/publish") {
+                header("Authorization", "Bearer $adminToken")
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"isPublished": $value}"""
+            }.andExpect { status { isOk() } }
+        }
+
+        // публичный detail требует опубликованные И библиотеку, И топик
+        mockMvc.patch("/admin/speaking/libraries/$libraryId/publish") {
+            header("Authorization", "Bearer $adminToken")
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"isPublished": true}"""
+        }.andExpect { status { isOk() } }
+
+        // publish → public видит → detail закэширован
+        publishTopic(true)
+        mockMvc.get("/public/speaking/topics/$topicId")
+            .andExpect { status { isOk() } }
+
+        // unpublish → кэш инвалидирован → 404 (без инвалидации вернулся бы закэшированный 200)
+        publishTopic(false)
+        mockMvc.get("/public/speaking/topics/$topicId")
+            .andExpect { status { isNotFound() } }
+
+        // повторный publish → снова виден
+        publishTopic(true)
+        mockMvc.get("/public/speaking/topics/$topicId")
+            .andExpect { status { isOk() } }
     }
 
     // ============== helpers ==============

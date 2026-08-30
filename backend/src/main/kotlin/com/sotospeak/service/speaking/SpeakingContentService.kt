@@ -1,5 +1,9 @@
 package com.sotospeak.service.speaking
 
+import com.sotospeak.config.EvictSpeakingPublicCache
+import com.sotospeak.config.SPEAKING_PUBLIC_LIBRARIES
+import com.sotospeak.config.SPEAKING_PUBLIC_TOPICS
+import com.sotospeak.config.SPEAKING_PUBLIC_TOPIC_DETAILS
 import com.sotospeak.dto.*
 import com.sotospeak.entity.speaking.Library
 import com.sotospeak.entity.speaking.SpeakingQuestion
@@ -12,6 +16,7 @@ import com.sotospeak.repository.speaking.VideoRepository
 import com.sotospeak.service.MediaUrlService
 import com.sotospeak.service.StorageService
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -35,7 +40,10 @@ class SpeakingContentService(
     private val logger = LoggerFactory.getLogger(SpeakingContentService::class.java)
 
     // ============== Public (guest-readable) ==============
+    // Публичные read-методы кэшируются в Caffeine (bd FunnyEnglish-wy7.7, §4.3.3);
+    // инвалидация — @EvictSpeakingPublicCache на всех admin-мутациях ниже.
 
+    @Cacheable(SPEAKING_PUBLIC_LIBRARIES)
     @Transactional(readOnly = true)
     fun getPublishedLibraries(): List<LibraryResponse> {
         val counts = libraryRepository.countPublishedActiveTopicsByLibrary()
@@ -49,6 +57,7 @@ class SpeakingContentService(
             }
     }
 
+    @Cacheable(SPEAKING_PUBLIC_TOPICS)
     @Transactional(readOnly = true)
     fun getPublishedTopics(libraryId: UUID): List<TopicListItemResponse> {
         val library = libraryRepository.findById(libraryId)
@@ -60,6 +69,7 @@ class SpeakingContentService(
         return topics.map { it.toListItemResponse(questionCounts[it.id] ?: 0) }
     }
 
+    @Cacheable(SPEAKING_PUBLIC_TOPIC_DETAILS)
     @Transactional(readOnly = true)
     fun getTopicDetail(id: UUID): TopicDetailResponse {
         val topic = topicRepository.findPublishedActiveByIdWithDetails(id)
@@ -76,6 +86,7 @@ class SpeakingContentService(
                 .copy(coverUrl = mediaUrlService.normalize(library.coverUrl))
         }
 
+    @EvictSpeakingPublicCache
     fun createLibrary(request: CreateLibraryRequest): AdminLibraryResponse {
         val library = libraryRepository.save(
             Library(
@@ -89,6 +100,7 @@ class SpeakingContentService(
         return library.toAdminResponse(0)
     }
 
+    @EvictSpeakingPublicCache
     fun updateLibrary(id: UUID, request: UpdateLibraryRequest): AdminLibraryResponse {
         val library = libraryRepository.findById(id)
             .orElseThrow { NoSuchElementException("Library not found") }
@@ -101,6 +113,7 @@ class SpeakingContentService(
         return saved.toAdminResponse(saved.topics.count { it.deletedAt == null })
     }
 
+    @EvictSpeakingPublicCache
     fun deleteLibrary(id: UUID) {
         val library = libraryRepository.findById(id)
             .orElseThrow { NoSuchElementException("Library not found") }
@@ -128,6 +141,7 @@ class SpeakingContentService(
         return topic.toAdminResponse().copy(video = topic.video?.toResponse()?.normalized())
     }
 
+    @EvictSpeakingPublicCache
     fun createTopic(request: CreateTopicRequest): AdminTopicResponse {
         val library = libraryRepository.findById(parseUuid(request.libraryId))
             .orElseThrow { NoSuchElementException("Library not found") }
@@ -142,6 +156,7 @@ class SpeakingContentService(
         return saved.toAdminResponse()
     }
 
+    @EvictSpeakingPublicCache
     fun updateTopic(id: UUID, request: UpdateTopicRequest): AdminTopicResponse {
         val topic = topicRepository.findByIdWithDetails(id)
             .orElseThrow { NoSuchElementException("Topic not found") }
@@ -154,6 +169,7 @@ class SpeakingContentService(
     }
 
     /** Точечный publish/unpublish без полного PUT (Part 3 §3.3) */
+    @EvictSpeakingPublicCache
     fun publishLibrary(id: UUID, isPublished: Boolean): AdminLibraryResponse {
         val library = libraryRepository.findById(id)
             .orElseThrow { NoSuchElementException("Library not found") }
@@ -162,6 +178,7 @@ class SpeakingContentService(
         return saved.toAdminResponse(saved.topics.count { it.deletedAt == null })
     }
 
+    @EvictSpeakingPublicCache
     fun publishTopic(id: UUID, isPublished: Boolean): AdminTopicResponse {
         val topic = topicRepository.findByIdWithDetails(id)
             .orElseThrow { NoSuchElementException("Topic not found") }
@@ -171,6 +188,7 @@ class SpeakingContentService(
     }
 
     /** Soft delete, идемпотентно (Part 1 §5.4) */
+    @EvictSpeakingPublicCache
     fun deleteTopic(id: UUID) {
         val topic = topicRepository.findById(id)
             .orElseThrow { NoSuchElementException("Topic not found") }
@@ -182,6 +200,7 @@ class SpeakingContentService(
 
     // ============== Admin: Video (upsert) ==============
 
+    @EvictSpeakingPublicCache
     fun upsertVideo(topicId: UUID, request: UpsertVideoRequest): AdminTopicResponse {
         val topic = topicRepository.findByIdWithDetails(topicId)
             .orElseThrow { NoSuchElementException("Topic not found") }
@@ -220,6 +239,7 @@ class SpeakingContentService(
 
     // ============== Admin: Questions ==============
 
+    @EvictSpeakingPublicCache
     fun addQuestion(topicId: UUID, request: CreateSpeakingQuestionRequest): SpeakingQuestionResponse {
         val topic = topicRepository.findById(topicId)
             .orElseThrow { NoSuchElementException("Topic not found") }
@@ -228,6 +248,7 @@ class SpeakingContentService(
         return questionRepository.save(question).toResponse()
     }
 
+    @EvictSpeakingPublicCache
     fun updateQuestion(id: UUID, request: CreateSpeakingQuestionRequest): SpeakingQuestionResponse {
         val question = questionRepository.findById(id)
             .orElseThrow { NoSuchElementException("Question not found") }
@@ -236,6 +257,7 @@ class SpeakingContentService(
         return questionRepository.save(question).toResponse()
     }
 
+    @EvictSpeakingPublicCache
     fun deleteQuestion(id: UUID) {
         val question = questionRepository.findById(id)
             .orElseThrow { NoSuchElementException("Question not found") }
@@ -247,6 +269,7 @@ class SpeakingContentService(
      * список id вопросов топика; displayOrder = индекс в списке. Несовпадение
      * набора id с вопросами топика → 400 (IllegalArgumentException).
      */
+    @EvictSpeakingPublicCache
     fun reorderQuestions(topicId: UUID, questionIds: List<String>) {
         val topic = topicRepository.findByIdWithDetails(topicId)
             .orElseThrow { NoSuchElementException("Topic not found") }

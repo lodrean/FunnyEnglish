@@ -104,6 +104,39 @@ class RecordingStoreTest {
     }
 
     @Test
+    fun recordedTopicIdsGroupsByKind() {
+        val store = newStore()
+        store.add(meta(topicId = "t1", kind = RecordingKind.TRAINING))
+        store.add(meta(topicId = "t1", attempt = 2, kind = RecordingKind.TRAINING))
+        store.add(meta(topicId = "t2", kind = RecordingKind.PRACTICE, attempt = 0))
+
+        assertEquals(setOf("t1"), store.recordedTopicIds(RecordingKind.TRAINING))
+        assertEquals(setOf("t2"), store.recordedTopicIds(RecordingKind.PRACTICE))
+    }
+
+    @Test
+    fun pruneRemovesMetaWithMissingFile() {
+        val store = newStore()
+        store.add(meta(topicId = "t1", path = "/nonexistent/rec_t1_1.m4a"))
+        store.add(meta(topicId = "t2", kind = RecordingKind.PRACTICE, attempt = 0, path = "/nonexistent/rec_t2_p.m4a"))
+
+        store.prune()
+        assertTrue(store.list().isEmpty())
+    }
+
+    @Test
+    fun pruneRemovesStaleTrainingMeta() {
+        val store = newStore()
+        val now = Clock.System.now().toEpochMilliseconds()
+        val stale = meta(topicId = "t1", path = "/nonexistent/rec_t1_old.m4a")
+            .copy(createdAtEpochMs = now - 31L * 24 * 60 * 60 * 1000)
+        store.add(stale)
+
+        store.prune(now)
+        assertTrue(store.list().isEmpty())
+    }
+
+    @Test
     fun fileNameFormats() {
         val store = newStore()
         assertEquals(

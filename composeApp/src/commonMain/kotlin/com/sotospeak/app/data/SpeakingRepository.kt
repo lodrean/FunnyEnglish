@@ -1,5 +1,6 @@
 package com.sotospeak.app.data
 
+import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.shared.api.SpeakingApi
@@ -48,6 +49,12 @@ class SpeakingRepository(
     // ---- Локальные записи (RecordingStore) ----
 
     fun listRecordings(topicId: String? = null): List<RecordingMeta> = recordingStore.list(topicId)
+
+    /**
+     * topicId с TRAINING-записями — один снапшот кэша store на весь проход (bd 5tf.7),
+     * вместо list() на каждый топик в LibraryViewModel.loadProgress.
+     */
+    fun trainingTopicIds(): Set<String> = recordingStore.recordedTopicIds(RecordingKind.TRAINING)
 
     fun findRecording(filePath: String): RecordingMeta? =
         recordingStore.list().firstOrNull { it.filePath == filePath }

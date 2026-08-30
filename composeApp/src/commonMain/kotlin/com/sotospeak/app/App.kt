@@ -576,7 +576,7 @@ private fun MainAppContent(
                     if (authMode == AuthMode.GUEST) {
                         // Гость: заглушка с CTA логина (спека §7)
                         com.sotospeak.app.components.LockedFeature(
-                            title = "Мои записи доступны после входа",
+                            title = "Отправки доступны после входа",
                             description = "Войдите или зарегистрируйтесь, чтобы отправлять записи учителю и видеть оценки",
                             onRegisterClick = { onNavigate(AppScreen.Register) }
                         )
@@ -601,8 +601,7 @@ private fun MainAppContent(
                             onPlayAudio = { url ->
                                 vm.onAction(MySubmissionsAction.OnPlayAudio(url))
                             },
-                            onStopAudio = { vm.onAction(MySubmissionsAction.OnStopAudio) },
-                            onBack = { vm.onAction(MySubmissionsAction.OnBack) }
+                            onStopAudio = { vm.onAction(MySubmissionsAction.OnStopAudio) }
                         )
                     }
                 }

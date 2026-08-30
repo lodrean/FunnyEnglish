@@ -41,7 +41,7 @@ appId: com.sotospeak.app
     timeout: 20000
 - tapOn: "Отправки"
 - extendedWaitUntil:
-    visible: "На проверке"
+    visible: "NEW"
     timeout: 15000
 - takeScreenshot: submissions
 

@@ -276,8 +276,7 @@ class ScreenshotTest {
             onRefresh = {},
             onRetryPending = {},
             onPlayAudio = {},
-            onStopAudio = {},
-            onBack = {}
+            onStopAudio = {}
         )
     }
 

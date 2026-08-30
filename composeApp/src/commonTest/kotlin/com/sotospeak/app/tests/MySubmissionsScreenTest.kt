@@ -18,11 +18,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * UI тесты экрана «Мои записи» (спека Part 2 §10.1).
+ * UI тесты экрана «Отправки» (мокап frame-submissions, спека Part 2 §10.1).
  * Реальный [MySubmissionsScreen] + моковый [MySubmissionsState] + captured callbacks.
  *
  * Сценарии:
- * 1. Список submission_item_<id> + статусы («На проверке» / «Проверено»)
+ * 1. Список submission_item_<id> + статусы («NEW» / «REVIEWED», мокап frame-submissions)
  * 2. grade_card_<id>: 4 критерия рубрики + total
  * 3. pending_upload_item с «Повторить» → callback с filePath
  * 4. Empty state (submissions_empty)
@@ -42,7 +42,7 @@ class MySubmissionsScreenTest : BaseUiTest() {
         onNodeWithTag("submission_item_sub-1", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithTag("submission_status_sub-1", useUnmergedTree = true).assertExists()
         onNode(
-            hasAnyAncestor(hasTestTag("submission_status_sub-1")) and hasText("На проверке"),
+            hasAnyAncestor(hasTestTag("submission_status_sub-1")) and hasText("NEW"),
             useUnmergedTree = true
         ).assertExists()
 
@@ -51,7 +51,7 @@ class MySubmissionsScreenTest : BaseUiTest() {
         } catch (e: Throwable) { /* уже виден */ }
         onNodeWithTag("submission_item_sub-2", useUnmergedTree = true).assertExists()
         onNode(
-            hasAnyAncestor(hasTestTag("submission_status_sub-2")) and hasText("Проверено"),
+            hasAnyAncestor(hasTestTag("submission_status_sub-2")) and hasText("REVIEWED"),
             useUnmergedTree = true
         ).assertExists()
     }
@@ -73,7 +73,11 @@ class MySubmissionsScreenTest : BaseUiTest() {
         onNodeWithText("Словарный запас", useUnmergedTree = true).assertExists()
         onNodeWithText("Произношение", useUnmergedTree = true).assertExists()
         onNodeWithText("Беглость", useUnmergedTree = true).assertExists()
-        onNodeWithText("7.5", useUnmergedTree = true).assertExists()
+        // total показывается и в grade-chip — проверяем именно внутри карточки рубрики
+        onNode(
+            hasAnyAncestor(hasTestTag("grade_card_sub-2")) and hasText("7.5"),
+            useUnmergedTree = true
+        ).assertExists()
         onNodeWithText("Хорошая работа! Обрати внимание на артикли.", useUnmergedTree = true)
             .assertExists()
     }
@@ -140,8 +144,7 @@ private fun MySubmissionsScreenForTest(
             onRefresh = {},
             onRetryPending = { MySubmissionsClicks.retryPath = it },
             onPlayAudio = {},
-            onStopAudio = {},
-            onBack = {}
+            onStopAudio = {}
         )
     }
 }

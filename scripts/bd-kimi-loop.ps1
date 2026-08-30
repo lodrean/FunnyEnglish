@@ -117,6 +117,14 @@ $GatesByKind = @{
     'backend' = @(
         @{ Name = 'backendTest';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':backend:test') }
     )
+    'mixed' = @(
+        # Продуктовые фичи (h3l) трогают И клиент, И backend — проверяем обе части
+        # (h3l.3 слил сломанную backend-компиляцию, гоняя только клиентские гейты).
+        @{ Name = 'desktopTest';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':composeApp:desktopTest') },
+        @{ Name = 'androidCompile'; Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':composeApp:compileDebugKotlinAndroid') },
+        @{ Name = 'wasmCompile';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':composeApp:compileKotlinWasmJs', '--no-configuration-cache') },
+        @{ Name = 'backendTest';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':backend:test') }
+    )
     'none' = @(
         # INF-задачи (CI/detekt/Kover/чистка): правки могут затрагивать сборку —
         # обязательная проверка конфигурации Gradle (qbq.5 сломал koverVerify вслепую).
@@ -130,6 +138,7 @@ $EpicGateConfig = @{
     'FunnyEnglish-nj2' = 'backend'
     'FunnyEnglish-wy7' = 'backend'
     'FunnyEnglish-0w3' = 'backend'
+    'FunnyEnglish-h3l' = 'mixed'
     'FunnyEnglish-qbq' = 'none'
 }
 

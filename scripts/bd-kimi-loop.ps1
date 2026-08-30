@@ -346,8 +346,10 @@ $extra$kindExtra
                     $recovered = $false
                     for ($w = 0; $w -lt 72 -and -not $recovered; $w++) {
                         Start-Sleep -Seconds 300
-                        $to = (& kimi --quiet -p "OK" -m $Model --mcp-config-file $KimiMcpFile 2>&1 | Out-String)
-                        if ($LASTEXITCODE -eq 0 -and $to -notmatch 'usage limit|access_terminated') { $recovered = $true }
+                        # Тест строгий: только реальный ответ (маркер <choice>) без ошибок.
+                        # Мелкий запрос мог проходить в обход квоты — не доверяем голому exit 0.
+                        $to = (& kimi --quiet -p "Ответь одним словом: OK" -m $Model --mcp-config-file $KimiMcpFile 2>&1 | Out-String)
+                        if ($LASTEXITCODE -eq 0 -and $to -match '<choice>' -and $to -notmatch 'usage limit|access_terminated|Error code') { $recovered = $true }
                     }
                     if ($recovered) {
                         Write-Host '  квота восстановилась — задача перезапускается с чистого листа'

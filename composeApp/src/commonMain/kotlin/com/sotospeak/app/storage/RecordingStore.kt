@@ -1,6 +1,7 @@
 package com.sotospeak.app.storage
 
 import com.sotospeak.shared.platform.Settings
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -26,6 +27,11 @@ enum class RecordingKind { TRAINING, PRACTICE }
  *
  * Имена файлов: `rec_<topicId>_attempt<N>_<epochMs>.m4a` (Training),
  * `rec_<topicId>_practice_<epochMs>.m4a` (Practice).
+ *
+ * Производительность (bd FunnyEnglish-5tf.7): распарсенный список кэшируется в памяти —
+ * JSON читается/парсится один раз за жизнь процесса, мутации обновляют кэш и Settings
+ * одной записью. Все вызовы — с главного потока (VM на viewModelScope, экраны),
+ * дополнительной синхронизации нет.
  */
 class RecordingStore(
     private val settings: Settings,
@@ -33,10 +39,20 @@ class RecordingStore(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
+    private var cache: List<RecordingMeta>? = null
+
     fun list(topicId: String? = null): List<RecordingMeta> {
         val all = loadAll()
         return if (topicId == null) all else all.filter { it.topicId == topicId }
     }
+
+    /**
+     * topicId с записями указанного kind — один проход по кэшу (bd 5tf.7).
+     * Для бейджей прогресса Library/Topics: раньше каждый топик дёргал [list],
+     * что стоило O(топики × размер JSON) парсингов.
+     */
+    fun recordedTopicIds(kind: RecordingKind): Set<String> =
+        loadAll().asSequence().filter { it.kind == kind }.map { it.topicId }.toSet()
 
     fun add(meta: RecordingMeta) {
         saveAll(loadAll() + meta)
@@ -73,20 +89,59 @@ class RecordingStore(
             RecordingKind.PRACTICE -> "rec_${topicId}_practice_$epochMs.m4a"
         }
 
-    private fun loadAll(): List<RecordingMeta> {
-        val raw = settings.getString(KEY, null) ?: return emptyList()
-        return try {
-            json.decodeFromString<List<RecordingMeta>>(raw)
-        } catch (e: Exception) {
-            emptyList() // битый JSON не должен ломать экран — начинаем с чистого списка
+    /**
+     * Чистка хранилища (bd 5tf.7); вызывается один раз при старте приложения.
+     * Удаляются ТОЛЬКО файлы, на которые есть метаданные (чужие файлы не трогаем):
+     * 1) метаданные, чей файл уже не существует, → мета удаляется;
+     * 2) TRAINING-записи старше [TRAINING_TTL_MS] → мета + файл удаляются
+     *    (privacy: «записи хранятся только на устройстве», место не растёт бесконечно;
+     *    прогресс-бейдж по таким топикам обнуляется — принято, TTL консервативный).
+     * Pending PRACTICE TTL не коснётся — они ждут offline-retry (спека §6.4).
+     * Ошибки файловой системы не роняют старт приложения.
+     */
+    fun prune(nowEpochMs: Long = Clock.System.now().toEpochMilliseconds()) {
+        try {
+            val all = loadAll()
+            val staleTraining = all.filter {
+                it.kind == RecordingKind.TRAINING && nowEpochMs - it.createdAtEpochMs > TRAINING_TTL_MS
+            }
+            val missingFile = all.filterNot { it in staleTraining }
+                .filterNot { fileStorage.exists(it.filePath) }
+            val removedPaths = (staleTraining + missingFile).map { it.filePath }.toSet()
+            if (removedPaths.isNotEmpty()) {
+                saveAll(all.filterNot { it.filePath in removedPaths })
+                staleTraining.forEach { fileStorage.delete(it.filePath) }
+            }
+        } catch (ignored: Exception) {
+            // Платформенные стабы/ФС-ошибки: чистка не критична для работы приложения
         }
     }
 
+    private fun loadAll(): List<RecordingMeta> {
+        cache?.let { return it }
+        val raw = settings.getString(KEY, null)
+        val parsed = if (raw == null) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString<List<RecordingMeta>>(raw)
+            } catch (ignored: Exception) {
+                emptyList() // битый JSON не должен ломать экран — начинаем с чистого списка
+            }
+        }
+        cache = parsed
+        return parsed
+    }
+
     private fun saveAll(list: List<RecordingMeta>) {
+        cache = list
         settings.putString(KEY, json.encodeToString(list))
     }
 
     private companion object {
         const val KEY = "speaking_recordings"
+
+        /** TTL TRAINING-записей — 30 дней с момента создания (bd 5tf.7). */
+        const val TRAINING_TTL_MS: Long = 30L * 24 * 60 * 60 * 1000
     }
 }

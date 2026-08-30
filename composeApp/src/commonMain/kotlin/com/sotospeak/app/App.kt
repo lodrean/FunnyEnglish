@@ -92,8 +92,12 @@ private fun AppThemedContent() {
     val logUploader: com.sotospeak.app.util.LogUploader = koinInject()
     val appConfig: com.sotospeak.app.di.AppConfig = koinInject()
     val guestProgressRepository: com.sotospeak.shared.repository.GuestProgressRepository = koinInject()
+    val recordingStore: com.sotospeak.app.storage.RecordingStore = koinInject()
     val logScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
+        // Чистка записей Speaking Trainer (bd 5tf.7): сиротские файлы/метаданные,
+        // TRAINING-записи старше TTL. Pending PRACTICE (offline-retry) не трогается.
+        recordingStore.prune()
         com.sotospeak.shared.util.Logger.remoteQueue = clientLogQueue
         com.sotospeak.shared.util.Logger.remoteMeta = {
             com.sotospeak.shared.util.Logger.RemoteMeta(

@@ -3,7 +3,6 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
-import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.shared.contracts.SpeakingLibrary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -81,14 +80,15 @@ class LibraryViewModel(
      */
     private fun loadProgress(libraries: List<SpeakingLibrary>) {
         viewModelScope.launch {
+            // Один снапшот метаданных на весь проход (bd 5tf.7): раньше list() на каждый
+            // топик перечитывал и парсил JSON — O(библиотеки × топики × размер JSON).
+            val doneTopicIds = repository.trainingTopicIds()
             val completed = coroutineScope {
                 libraries.map { library ->
                     async {
                         val done = repository.getTopics(library.id)
                             .getOrNull()
-                            ?.count { topic ->
-                                repository.listRecordings(topic.id).any { it.kind == RecordingKind.TRAINING }
-                            } ?: 0
+                            ?.count { it.id in doneTopicIds } ?: 0
                         library.id to done
                     }
                 }.awaitAll().toMap()

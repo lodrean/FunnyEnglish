@@ -1,7 +1,15 @@
 package com.sotospeak.controller
 
 import com.sotospeak.entity.User
+import com.sotospeak.entity.speaking.Grade
+import com.sotospeak.entity.speaking.Library
+import com.sotospeak.entity.speaking.PracticeSubmission
+import com.sotospeak.entity.speaking.Topic
 import com.sotospeak.repository.UserRepository
+import com.sotospeak.repository.speaking.GradeRepository
+import com.sotospeak.repository.speaking.LibraryRepository
+import com.sotospeak.repository.speaking.PracticeSubmissionRepository
+import com.sotospeak.repository.speaking.TopicRepository
 import com.sotospeak.security.JwtService
 import com.sotospeak.support.PostgresContainerTest
 import org.junit.jupiter.api.BeforeEach
@@ -41,6 +49,18 @@ class AdminAnalyticsPostgresIT : PostgresContainerTest() {
 
     @Autowired
     private lateinit var jwtService: JwtService
+
+    @Autowired
+    private lateinit var libraryRepository: LibraryRepository
+
+    @Autowired
+    private lateinit var topicRepository: TopicRepository
+
+    @Autowired
+    private lateinit var practiceSubmissionRepository: PracticeSubmissionRepository
+
+    @Autowired
+    private lateinit var gradeRepository: GradeRepository
 
     private lateinit var adminToken: String
     private val adminId = "66666666-6666-6666-6666-666666666666"
@@ -139,6 +159,51 @@ class AdminAnalyticsPostgresIT : PostgresContainerTest() {
             jsonPath("$.totalGuests").exists()
             jsonPath("$.activeGuests7d").exists()
             jsonPath("$.conversionRate").exists()
+        }
+    }
+
+    @Test
+    fun `prd metrics returns 200 with real aggregates`() {
+        // Сид: ученик с отправкой, оцененной учителем (обе метки — "сейчас" → в пределах 48ч).
+        val student = userRepository.save(
+            User(
+                email = "prd-student@test.com",
+                passwordHash = "password",
+                displayName = "PRD Student"
+            )
+        )
+        val library = libraryRepository.save(Library(title = "PRD Lib", isPublished = true))
+        val topic = Topic(title = "PRD Topic", isPublished = true)
+        library.addTopic(topic)
+        val savedTopic = topicRepository.save(topic)
+        val submission = practiceSubmissionRepository.save(
+            PracticeSubmission(
+                user = student,
+                topic = savedTopic,
+                audioUrl = "http://localhost:9000/sotospeak-test/speaking/submissions/prd/a.m4a",
+                durationSec = 25
+            )
+        )
+        gradeRepository.save(
+            Grade(
+                submission = submission,
+                grammar = 8, vocabulary = 8, pronunciation = 8, fluency = 8,
+                reviewer = userRepository.getReferenceById(UUID.fromString(adminId))
+            )
+        )
+
+        mockMvc.get("/admin/analytics/prd-metrics") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.practiceSubmissionsLast7d").value(1)
+            jsonPath("$.activeStudentsLast7d").value(1)
+            jsonPath("$.practicePerStudentPerWeek").value(1.0)
+            jsonPath("$.reviewedTotal").value(1)
+            jsonPath("$.reviewedWithin48h").value(1)
+            jsonPath("$.reviewedWithin48hShare").value(1.0)
+            jsonPath("$.totalGuests").exists()
+            jsonPath("$.guestConversionRate").exists()
         }
     }
 

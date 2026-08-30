@@ -12,6 +12,12 @@ import java.time.Instant
 import java.util.Optional
 import java.util.UUID
 
+/** Проекция: момент отправки и момент оценки (reviewed). */
+interface ReviewedTimestamps {
+    fun getSubmittedAt(): Instant
+    fun getReviewedAt(): Instant
+}
+
 @Repository
 interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID> {
 
@@ -49,6 +55,18 @@ interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID>
     fun findFirstByUserIdAndTopicId(userId: UUID, topicId: UUID): PracticeSubmission?
 
     fun countByStatus(status: SubmissionStatus): Long
+
+    /** Отправок за период (для метрики PRD «practice-отправок/ученик/неделю») */
+    @Query("SELECT COUNT(s) FROM PracticeSubmission s WHERE s.createdAt >= :since")
+    fun countCreatedSince(@Param("since") since: Instant): Long
+
+    /** Уникальных учеников с отправками за период */
+    @Query("SELECT COUNT(DISTINCT s.user.id) FROM PracticeSubmission s WHERE s.createdAt >= :since")
+    fun countDistinctSubmittersSince(@Param("since") since: Instant): Long
+
+    /** Таймстемпы оценённых отправок (для метрики PRD «доля REVIEWED за 48ч») */
+    @Query("SELECT s.createdAt AS submittedAt, g.createdAt AS reviewedAt FROM PracticeSubmission s JOIN s.grade g")
+    fun findReviewedTimestamps(): List<ReviewedTimestamps>
 
     @Query("""
         SELECT s FROM PracticeSubmission s

@@ -264,14 +264,12 @@ kover {
     }
     // Пороги покрытия (koverVerify), bd FunnyEnglish-qbq.5. Стартовые значения
     // консервативные — поднимать постепенно по факту измерений (прецедент: грабля №88).
+    // DSL Kover 0.9.1: имя правила — параметр rule(...); bound — только minValue/maxValue.
     reports {
         verify {
-            rule {
-                name = "Minimal line coverage"
+            rule("Minimal line coverage") {
                 bound {
                     minValue = 20
-                    metric = kotlinx.kover.gradle.plugin.dsl.MetricType.LINE
-                    aggregation = kotlinx.kover.gradle.plugin.dsl.AggregationType.COVERED_PERCENTAGE
                 }
             }
         }

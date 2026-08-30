@@ -116,7 +116,11 @@ $GatesByKind = @{
     'backend' = @(
         @{ Name = 'backendTest';    Dir = '.'; Cmd = '.\gradlew.bat'; Args = @(':backend:test') }
     )
-    'none' = @()
+    'none' = @(
+        # INF-задачи (CI/detekt/Kover/чистка): правки могут затрагивать сборку —
+        # обязательная проверка конфигурации Gradle (qbq.5 сломал koverVerify вслепую).
+        @{ Name = 'gradleConfig'; Dir = '.'; Cmd = '.\gradlew.bat'; Args = @('help', '--no-configuration-cache') }
+    )
 }
 # Тип гейтов по эпику (префикс id); дефолт — client.
 $EpicGateConfig = @{
@@ -355,7 +359,7 @@ $extra$kindExtra
             Write-Host ("  gate {0}: {1} (exit {2})" -f $r.Name, $(if ($r.Ok) { 'OK' } else { 'FAIL' }), $r.ExitCode)
         }
     }
-    if ($kind -eq 'none') { $gatesOk = $true } else { $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok }) }
+    $gatesOk = ($gateResults.Count -gt 0) -and -not ($gateResults | Where-Object { -not $_.Ok })
 
     # --- маркер статуса от kimi (DONE | NEEDS_OWNER | BLOCKED) — ТОЛЬКО из хвоста лога,
     # чтобы эхо промпта в начале не давало ложных совпадений ---

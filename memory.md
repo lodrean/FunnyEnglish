@@ -22,7 +22,7 @@
 - **DI — Koin 4.0.0.** Паттерн: `val xxxModule = module { single { ... }; viewModel { ... } }` (пример: `composeApp/.../app/di/AppModule.kt`). Старт НЕ через `startKoin`, а `KoinApplication { modules(appModule) }` в `App.kt`; VM через `koinViewModel()`. Платформенный конфиг — expect/actual `provideAppConfig()`.
 - **Presentation — MVI на StateFlow.** Тройка файлов на экран: `XxxState.kt` (data class), `XxxAction.kt` (sealed), `XxxEvent.kt`; ViewModel: `MutableStateFlow(State())` + `Channel<Event>.receiveAsFlow()` + `fun onAction(...)` с when. Пример: `feature-home/.../presentation/HomeViewModel.kt`. Ошибки — `UiText?`.
 - **Data — Ktor 3.0.2 + safeCall + Result.** Repository: `override suspend fun getX(): Result<X, DataError.Network> = safeCall { api.getX() }` (пример: `feature-home/.../data/HomeRepositoryImpl.kt`). Json: `ignoreUnknownKeys=true, isLenient=true`. Токен — `PersistentTokenProvider` (multiplatform-settings, ключ `auth_token`). Картинки — Coil 3.
-- **Типы-обёртки**: рабочие `Result`/`DataError` лежат в `core/domain/util/` — импортировать оттуда (в `core/domain/` есть устаревшие дубли!).
+- **Типы-обёртки**: `Result`/`DataError`/`DomainError` лежат ТОЛЬКО в `core/domain/util/` — импортировать оттуда (устаревшие дубли в `core/domain/` удалены 2026-08-30, bd 5tf.8). В `core/domain/` остался неиспользуемый `UiText.kt` (рабочий — `core/presentation/ui/UiText`, у composeApp — `app/error/UiText`) — кандидат на удаление отдельной задачей.
 - **Комментарии и коммиты** — по существу; документация на русском в `docs/`.
 - Admin-web: страницы в `src/pages/`, API в `src/api/client.ts` (axios, токен в localStorage), E2E в `e2e/` (Playwright, Page Object в `e2e/pages/`).
 
@@ -75,7 +75,7 @@ Base URL API: Android — gradle-property `SOTOSPEAK_API_BASE_URL` (дефолт
 3. **JSONB workaround**: `backend/.../service/TestService.kt:267` — «Delete questions first (workaround for JSONB deserialization issue)».
 4. **Napier недоступен на WASM** — закомментирован в commonMain composeApp, стаб в wasmJsMain; kotest глобально исключён из-за WASM (`wasmJsTest` srcDirs обнулены).
 5. **Feature-флаги** `ENABLE_DRAG_DROP_QUESTIONS`, `ENABLE_IMAGE_WORD_MATCH`, `ENABLE_DEBUG_TOOLS`: ON в debug / OFF в release (composeApp/build.gradle.kts); на desktop — env `SOTOSPEAK_ENABLE_*`.
-6. **Дубли `Result`/`DataError`** в `core/domain/` vs `core/domain/util/` — легко импортировать не тот (см. конвенции).
+6. **Дубли `Result`/`DataError`** (ЗАКРЫТО 2026-08-30, bd 5tf.8): устаревшие `core/domain/Result.kt`, `core/domain/DataError.kt`, `core/domain/Error.kt` удалены — рабочие типы только в `core/domain/util/` (`Result`/`DataError`/`DomainError`, Success/Failure, `asEmptyDataResult`). Переход feature-модулей на `kotlin.Result` — при их переработке (§2.2 обзора).
 7. **BUG-001/002/003** (закрыты): не отображался текст вопроса; любой ответ «правильный»; кнопка «Завершить тест» не работала (`docs/issues/`).
 8. **detekt ранее не был подключён ни к одному модулю** — `./gradlew lint` не являлся quality gate. ИСПРАВЛЕНО 2026-08-30 (bd qbq.5): detekt 1.23.7 применён к :backend и :composeApp, конфиг `config/detekt/detekt.yml`, общий baseline `config/detekt/baseline.xml` (генерится `./gradlew :backend:detektBaseline :composeApp:detektBaseline`).
 9. **Context-path backend = `/api`** (`application.yml`): все health-check'и, прокси и API-коллекции должны учитывать префикс. Actuator health: `http://localhost:8080/api/actuator/health` (на корне `/actuator/health` — 404).

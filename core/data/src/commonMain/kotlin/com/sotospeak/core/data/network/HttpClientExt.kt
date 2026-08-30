@@ -13,7 +13,7 @@ import kotlinx.serialization.SerializationException
 /**
  * Executes a network [block] and maps common failure modes to typed [DataError.Network].
  *
- * @return [Result.Success] with the parsed body, or [Result.Error] with a [DataError.Network].
+ * @return [Result.Success] with the parsed body, or [Result.Failure] with a [DataError.Network].
  */
 suspend inline fun <reified T> safeCall(
     execute: () -> HttpResponse

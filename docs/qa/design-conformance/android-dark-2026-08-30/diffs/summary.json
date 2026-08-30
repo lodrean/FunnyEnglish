@@ -1,0 +1,128 @@
+[
+  {
+    "screen": "Onboarding 1",
+    "mockup": "frame-onboarding.png",
+    "app": "onboarding-1.png",
+    "diff_ratio": 0.2431,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Onboarding_1.png"
+  },
+  {
+    "screen": "Onboarding 2",
+    "mockup": "frame-onboarding.png",
+    "app": "onboarding-2.png",
+    "diff_ratio": 0.2462,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Onboarding_2.png"
+  },
+  {
+    "screen": "Onboarding 3",
+    "mockup": "frame-onboarding.png",
+    "app": "onboarding-3.png",
+    "diff_ratio": 0.245,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Onboarding_3.png"
+  },
+  {
+    "screen": "Login",
+    "mockup": "frame-login.png",
+    "app": "login.png",
+    "diff_ratio": 0.2504,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Login.png"
+  },
+  {
+    "screen": "Register",
+    "mockup": "frame-register.png",
+    "app": "register.png",
+    "diff_ratio": 0.2365,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Register.png"
+  },
+  {
+    "screen": "Library guest",
+    "mockup": "frame-library.png",
+    "app": "library-guest.png",
+    "diff_ratio": 0.2283,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Library_guest.png"
+  },
+  {
+    "screen": "Library auth",
+    "mockup": "frame-library.png",
+    "app": "library-auth.png",
+    "diff_ratio": 0.2283,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Library_auth.png"
+  },
+  {
+    "screen": "Profile guest",
+    "mockup": "frame-profile-guest.png",
+    "app": "profile-guest.png",
+    "diff_ratio": 0.4823,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Profile_guest.png"
+  },
+  {
+    "screen": "Profile auth",
+    "mockup": "frame-profile.png",
+    "app": "profile-auth.png",
+    "diff_ratio": 0.1791,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Profile_auth.png"
+  },
+  {
+    "screen": "Topics guest",
+    "mockup": "frame-topics.png",
+    "app": "topics-guest.png",
+    "diff_ratio": 0.1642,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Topics_guest.png"
+  },
+  {
+    "screen": "Topics auth",
+    "mockup": "frame-topics.png",
+    "app": "topics-auth.png",
+    "diff_ratio": 0.1642,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Topics_auth.png"
+  },
+  {
+    "screen": "Video",
+    "mockup": "frame-video.png",
+    "app": "video-auth.png",
+    "diff_ratio": 0.9879,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Video.png"
+  },
+  {
+    "screen": "Questions guest gate",
+    "mockup": "frame-locked.png",
+    "app": "questions-guest-locked.png",
+    "diff_ratio": 0.7308,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Questions_guest_gate.png"
+  },
+  {
+    "screen": "Questions auth",
+    "mockup": "frame-questions.png",
+    "app": "questions-auth.png",
+    "diff_ratio": 0.5537,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Questions_auth.png"
+  },
+  {
+    "screen": "Training idle",
+    "mockup": "frame-training.png",
+    "app": "training-idle.png",
+    "diff_ratio": 0.3627,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Training_idle.png"
+  },
+  {
+    "screen": "Practice ready",
+    "mockup": "frame-practice.png",
+    "app": "practice-ready.png",
+    "diff_ratio": 0.4505,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Practice_ready.png"
+  },
+  {
+    "screen": "MySubmissions",
+    "mockup": "frame-submissions.png",
+    "app": "submissions.png",
+    "diff_ratio": 0.1894,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-MySubmissions.png"
+  },
+  {
+    "screen": "Debug menu",
+    "mockup": "frame-debug.png",
+    "app": "debug.png",
+    "diff_ratio": 0.3308,
+    "diff_image": "docs\\qa\\design-conformance\\android-dark-2026-08-30\\diffs\\diff-Debug_menu.png"
+  }
+]

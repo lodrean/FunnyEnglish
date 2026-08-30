@@ -40,8 +40,9 @@ appId: com.sotospeak.app
     visible: ".*Библиотека тем.*"
     timeout: 20000
 - tapOn: "Отправки"
+# Бейдж статуса NEW рендерится как «На проверке» (MS3, REPORT_ANDROID_2026-08-10)
 - extendedWaitUntil:
-    visible: "NEW"
+    visible: "На проверке"
     timeout: 15000
 - takeScreenshot: submissions
 

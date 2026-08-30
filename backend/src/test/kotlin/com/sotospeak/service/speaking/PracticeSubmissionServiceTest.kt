@@ -10,6 +10,7 @@ import com.sotospeak.repository.UserRepository
 import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
+import com.sotospeak.service.EmailService
 import com.sotospeak.service.MediaUrlService
 import com.sotospeak.service.StorageService
 import io.mockk.every
@@ -34,6 +35,7 @@ class PracticeSubmissionServiceTest {
     private val userRepository = mockk<UserRepository>()
     private val storageService = mockk<StorageService>()
     private val mediaUrlService = mockk<MediaUrlService>()
+    private val emailService = mockk<EmailService>(relaxed = true)
     private val entityManager = mockk<EntityManager>(relaxed = true)
 
     private lateinit var service: PracticeSubmissionService
@@ -48,7 +50,7 @@ class PracticeSubmissionServiceTest {
     fun setup() {
         service = PracticeSubmissionService(
             submissionRepository, gradeRepository, topicRepository,
-            userRepository, storageService, mediaUrlService
+            userRepository, storageService, mediaUrlService, emailService
         )
         ReflectionTestUtils.setField(service, "entityManager", entityManager)
         every { mediaUrlService.normalize(any()) } answers { firstArg() }
@@ -144,10 +146,13 @@ class PracticeSubmissionServiceTest {
         grammar = 7, vocabulary = 8, pronunciation = 6, fluency = 7, comment = "Good"
     )
 
-    // 5. gradeSubmission — успех: grade создан, статус NEW→REVIEWED, reviewer проставлен
+    // 5. gradeSubmission — успех: grade создан, статус NEW→REVIEWED, reviewer проставлен, email ученику
     @Test
-    fun `gradeSubmission success - grade created, status NEW to REVIEWED, reviewer set`() {
-        val submission = submissionWithGrade(null)
+    fun `gradeSubmission success - grade created, status NEW to REVIEWED, reviewer set, email sent`() {
+        val submission = submissionWithGrade(null).apply {
+            user = User(email = "student@test.com", displayName = "Student")
+            this.topic = this@PracticeSubmissionServiceTest.topic
+        }
         val reviewer = User(email = "teacher@test.com", displayName = "Teacher Anna")
         every { submissionRepository.findByIdWithDetails(submission.id!!) } returns Optional.of(submission)
         every { userRepository.getReferenceById(any()) } returns reviewer
@@ -161,6 +166,25 @@ class PracticeSubmissionServiceTest {
         assertEquals(reviewer, submission.grade?.reviewer)
         verify(exactly = 1) { gradeRepository.saveAndFlush(any()) }
         verify(exactly = 1) { submissionRepository.save(submission) }
+        verify(exactly = 1) {
+            emailService.sendSubmissionReviewedEmail("student@test.com", "Student", "Morning Routine", any())
+        }
+    }
+
+    // 5b. gradeSubmission — ученик не прогружен (user == null): grading не падает, письмо не шлём
+    @Test
+    fun `gradeSubmission - missing user does not fail and skips email`() {
+        val submission = submissionWithGrade(null)
+        every { submissionRepository.findByIdWithDetails(submission.id!!) } returns Optional.of(submission)
+        every { userRepository.getReferenceById(any()) } returns
+            User(email = "teacher@test.com", displayName = "Teacher Anna")
+        every { gradeRepository.saveAndFlush(any()) } answers { firstArg() }
+        every { submissionRepository.save(any()) } answers { firstArg() }
+
+        service.gradeSubmission(submission.id!!, gradeRequest(), reviewerId = UUID.randomUUID())
+
+        assertEquals(SubmissionStatus.REVIEWED, submission.status)
+        verify(exactly = 0) { emailService.sendSubmissionReviewedEmail(any(), any(), any(), any()) }
     }
 
     // 6. gradeSubmission — повторный POST на оценённый → 400
@@ -192,6 +216,8 @@ class PracticeSubmissionServiceTest {
         assertEquals(8, existingGrade.vocabulary)
         assertEquals("Good", existingGrade.comment)
         assertEquals(SubmissionStatus.REVIEWED, submission.status) // статус не трогаем
+        // правка оценки (PUT) письмо не шлёт — только первичный grading
+        verify(exactly = 0) { emailService.sendSubmissionReviewedEmail(any(), any(), any(), any()) }
     }
 
     // 8. editGrade — оценки нет → 404

@@ -14,6 +14,7 @@ import com.sotospeak.repository.UserRepository
 import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
+import com.sotospeak.service.EmailService
 import com.sotospeak.service.MediaUrlService
 import com.sotospeak.service.StorageService
 import jakarta.persistence.EntityManager
@@ -39,7 +40,8 @@ class PracticeSubmissionService(
     private val topicRepository: TopicRepository,
     private val userRepository: UserRepository,
     private val storageService: StorageService,
-    private val mediaUrlService: MediaUrlService
+    private val mediaUrlService: MediaUrlService,
+    private val emailService: EmailService
 ) {
     @PersistenceContext
     private lateinit var entityManager: EntityManager
@@ -145,6 +147,17 @@ class PracticeSubmissionService(
         submissionRepository.save(submission)
         // total — generated column: refresh, чтобы подтянуть вычисленное в БД значение
         entityManager.refresh(grade)
+        // Уведомление ученику «Ваша запись проверена» (bd h3l.1; метрика PRD «REVIEWED за 48ч»).
+        // Только первичный grading (POST); editGrade (PUT) письмо не шлёт, чтобы не спамить при правках.
+        // @Async + runCatching внутри EmailService — сбой SMTP не откатывает grading.
+        submission.user?.let { student ->
+            emailService.sendSubmissionReviewedEmail(
+                toEmail = student.email,
+                displayName = student.displayName,
+                topicTitle = submission.topic?.title ?: "",
+                total = grade.total
+            )
+        }
         return grade.toResponse()
     }
 

@@ -21,6 +21,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 
+/**
+ * Единый Ktor-клиент backend'а. Реализует узкие интерфейсы [AuthApi]/[SpeakingApi]/
+ * [MessagingApi]/[GuestApi] (bd FunnyEnglish-5tf.5): потребители зависят от среза,
+ * транспорт (safeCall + refresh по 401, single-flight) остаётся здесь в одном месте.
+ */
 class SoToSpeakApi(
     private val baseUrlProvider: () -> String,
     private val tokenProvider: TokenProvider,
@@ -29,7 +34,7 @@ class SoToSpeakApi(
     private val onSessionExpired: (() -> Unit)? = null,
     /** Тестовый движок (MockEngine); null → платформенный по умолчанию. */
     httpClientEngine: HttpClientEngine? = null
-) {
+) : AuthApi, SpeakingApi, MessagingApi, GuestApi {
     private val refreshMutex = Mutex()
     private val json = Json {
         ignoreUnknownKeys = true
@@ -84,13 +89,13 @@ class SoToSpeakApi(
     }
 
     // Auth endpoints
-    suspend fun register(request: RegisterRequest): Result<RegisterResponse> = safeCallNoRefresh {
+    override suspend fun register(request: RegisterRequest): Result<RegisterResponse> = safeCallNoRefresh {
         client.post("/api/auth/register") {
             setBody(request)
         }.body()
     }
 
-    suspend fun resendVerification(email: String): Result<Unit> = safeCall {
+    override suspend fun resendVerification(email: String): Result<Unit> = safeCall {
         client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
             setBody(ResendVerificationRequest(email))
@@ -98,13 +103,13 @@ class SoToSpeakApi(
         Unit
     }
 
-    suspend fun login(request: LoginRequest): Result<AuthResponse> = safeCallNoRefresh {
+    override suspend fun login(request: LoginRequest): Result<AuthResponse> = safeCallNoRefresh {
         client.post("/api/auth/login") {
             setBody(request)
         }.body()
     }
 
-    suspend fun oauthLogin(provider: String, request: OAuthRequest): Result<AuthResponse> = safeCallNoRefresh {
+    override suspend fun oauthLogin(provider: String, request: OAuthRequest): Result<AuthResponse> = safeCallNoRefresh {
         client.post("/api/auth/oauth/$provider") {
             setBody(request)
         }.body()
@@ -140,48 +145,48 @@ class SoToSpeakApi(
     }
 
     // User endpoints
-    suspend fun getCurrentUser(): Result<User> = safeCall {
+    override suspend fun getCurrentUser(): Result<User> = safeCall {
         client.get("/api/users/me").body()
     }
 
-    suspend fun getUserProfile(): Result<UserProfile> = safeCall {
+    override suspend fun getUserProfile(): Result<UserProfile> = safeCall {
         client.get("/api/users/me/profile").body()
     }
 
     // Messages (inbox ученика: сообщения/комментарии от учителя)
-    suspend fun getMessages(): Result<List<Message>> = safeCall {
+    override suspend fun getMessages(): Result<List<Message>> = safeCall {
         client.get("/api/users/me/messages").body()
     }
 
-    suspend fun getUnreadMessagesCount(): Result<UnreadCountResponse> = safeCall {
+    override suspend fun getUnreadMessagesCount(): Result<UnreadCountResponse> = safeCall {
         client.get("/api/users/me/messages/unread-count").body()
     }
 
-    suspend fun markMessageAsRead(messageId: String): Result<Message> = safeCall {
+    override suspend fun markMessageAsRead(messageId: String): Result<Message> = safeCall {
         client.post("/api/users/me/messages/$messageId/read").body()
     }
 
     // Student Groups endpoints
-    suspend fun getMyStudentGroups(): Result<List<StudentGroup>> = safeCall {
+    override suspend fun getMyStudentGroups(): Result<List<StudentGroup>> = safeCall {
         client.get("/api/groups/student/my-groups").body()
     }
 
-    suspend fun getStudentGroupDetail(groupId: String): Result<GroupDetail> = safeCall {
+    override suspend fun getStudentGroupDetail(groupId: String): Result<GroupDetail> = safeCall {
         client.get("/api/groups/student/$groupId").body()
     }
 
-    suspend fun joinGroupByCode(inviteCode: String): Result<JoinGroupResponse> = safeCall {
+    override suspend fun joinGroupByCode(inviteCode: String): Result<JoinGroupResponse> = safeCall {
         client.post("/api/groups/join") {
             setBody(JoinGroupRequest(inviteCode))
         }.body()
     }
 
-    suspend fun leaveGroup(groupId: String): Result<Unit> = safeCall {
+    override suspend fun leaveGroup(groupId: String): Result<Unit> = safeCall {
         client.post("/api/groups/student/$groupId/leave").body()
     }
 
     // ==================== Public Guest endpoints ====================
-    suspend fun mergeGuestProgress(request: MergeGuestProgressRequest): Result<MergeGuestProgressResponse> = safeCall {
+    override suspend fun mergeGuestProgress(request: MergeGuestProgressRequest): Result<MergeGuestProgressResponse> = safeCall {
         client.post("/api/users/me/merge-guest-progress") {
             setBody(request)
         }.body()
@@ -191,7 +196,7 @@ class SoToSpeakApi(
      * Отправка обезличенных событий гостя (анонимная аналитика).
      * Публичный endpoint, best-effort — ошибки не критичны для UX.
      */
-    suspend fun submitGuestEvents(events: List<GuestEventDto>): Result<GuestEventsBatchResponse> = safeCall {
+    override suspend fun submitGuestEvents(events: List<GuestEventDto>): Result<GuestEventsBatchResponse> = safeCall {
         client.post("/api/public/guest-events") {
             setBody(GuestEventsBatchRequest(events))
         }.body()
@@ -203,7 +208,7 @@ class SoToSpeakApi(
      * сетевые ошибки в AppLogger → ошибка отправки логов породила бы новый лог
      * (рекурсия). Здесь ошибки просто возвращаются Result.failure.
      */
-    suspend fun sendLogs(logs: List<ClientLogDto>): Result<ClientLogsBatchResponse> {
+    override suspend fun sendLogs(logs: List<ClientLogDto>): Result<ClientLogsBatchResponse> {
         return try {
             Result.success(
                 client.post("/api/public/logs") {
@@ -218,26 +223,27 @@ class SoToSpeakApi(
     // ==================== Speaking Trainer endpoints ====================
 
     /** Публичный контент (гость): темы */
-    suspend fun getSpeakingLibraries(): Result<List<SpeakingLibrary>> = safeCall {
+    override suspend fun getSpeakingLibraries(): Result<List<SpeakingLibrary>> = safeCall {
         client.get("/api/public/speaking/libraries").body()
     }
 
     /** Публичный контент (гость): топики темы */
-    suspend fun getSpeakingTopics(libraryId: String): Result<List<SpeakingTopicListItem>> = safeCall {
+    override suspend fun getSpeakingTopics(libraryId: String): Result<List<SpeakingTopicListItem>> = safeCall {
         client.get("/api/public/speaking/libraries/$libraryId/topics").body()
     }
 
     /** Публичный контент (гость): детали топика — видео + субтитры + вопросы */
-    suspend fun getSpeakingTopicDetail(topicId: String): Result<SpeakingTopicDetail> = safeCall {
+    override suspend fun getSpeakingTopicDetail(topicId: String): Result<SpeakingTopicDetail> = safeCall {
         client.get("/api/public/speaking/topics/$topicId").body()
     }
 
     /** Practice: загрузка голосовой записи (multipart, только авторизованным) */
-    suspend fun submitSpeakingPractice(
+    // Дефолт fileName объявлен в SpeakingApi (override не может переопределять default).
+    override suspend fun submitSpeakingPractice(
         topicId: String,
         durationSec: Int,
         audioBytes: ByteArray,
-        fileName: String = "recording.m4a"
+        fileName: String
     ): Result<SpeakingSubmission> = safeCall {
         client.submitFormWithBinaryData(
             url = "/api/speaking/submissions",
@@ -253,12 +259,12 @@ class SoToSpeakApi(
     }
 
     /** Practice: мои отправки с оценками (только авторизованным) */
-    suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeCall {
+    override suspend fun getMySpeakingSubmissions(): Result<List<SpeakingSubmission>> = safeCall {
         client.get("/api/speaking/submissions/my").body()
     }
 
     /** Загрузка текстового ресурса по URL (субтитры WebVTT из MinIO — не API-эндпоинт, спека Part 2 §3.3) */
-    suspend fun getTextResource(url: String): Result<String> = safeCall {
+    override suspend fun getTextResource(url: String): Result<String> = safeCall {
         client.get(url) {
             // B3-фикс (review): defaultRequest добавляет Authorization на КАЖДЫЙ запрос —
             // на медиа-хост (MinIO/S3/CDN) JWT утекать не должен

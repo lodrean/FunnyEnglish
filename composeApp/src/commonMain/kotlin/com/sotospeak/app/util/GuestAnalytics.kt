@@ -1,6 +1,6 @@
 package com.sotospeak.app.util
 
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.shared.api.GuestApi
 import com.sotospeak.shared.model.GuestEventDto
 import com.sotospeak.shared.repository.GuestProgressRepository
 
@@ -12,7 +12,7 @@ import com.sotospeak.shared.repository.GuestProgressRepository
  * следующей попытки. Никаких имён/email — только случайный anonymousId.
  */
 class GuestAnalytics(
-    private val api: SoToSpeakApi,
+    private val guestApi: GuestApi,
     private val guestRepo: GuestProgressRepository
 ) {
 
@@ -26,7 +26,7 @@ class GuestAnalytics(
     suspend fun flush() {
         val pending = guestRepo.getPendingEvents()
         if (pending.isEmpty()) return
-        api.submitGuestEvents(pending)
+        guestApi.submitGuestEvents(pending)
             .onSuccess { guestRepo.clearPendingEvents() }
         // Ошибки игнорируем намеренно: аналитика не должна влиять на UX
     }

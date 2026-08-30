@@ -2,23 +2,20 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.recorder.MicPermissionState
+import com.sotospeak.app.recorder.RecordingSessionController
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
-import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.shared.api.ApiException
-import com.sotospeak.shared.api.SoToSpeakApi
 import com.sotospeak.shared.api.TokenProvider
 import com.sotospeak.shared.model.SpeakingQuestion
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -71,8 +68,7 @@ sealed interface PracticeEvent {
 }
 
 class PracticeViewModel(
-    private val api: SoToSpeakApi,
-    private val recordingStore: RecordingStore,
+    private val repository: SpeakingRepository,
     private val fileStorage: RecordingFileStorage,
     private val tokenProvider: TokenProvider
 ) : ViewModel() {
@@ -84,8 +80,8 @@ class PracticeViewModel(
     val events = _events.receiveAsFlow()
 
     private var currentTopicId: String? = null
-    private var timerJob: Job? = null
-    private var recordingStartedAtMs: Long = 0L
+    // Общий с Training механизм: таймер 30с + длительность записи (bd FunnyEnglish-5tf.5)
+    private val recordingSession = RecordingSessionController(viewModelScope)
 
     fun onAction(action: PracticeAction) {
         when (action) {
@@ -108,17 +104,18 @@ class PracticeViewModel(
                 _state.value = _state.value.copy(phase = PracticePhase.Recording)
             }
             is PracticeAction.OnRecorderStarted -> {
-                recordingStartedAtMs = Clock.System.now().toEpochMilliseconds()
-                startTimer(PracticeState.PRACTICE_LIMIT_SECONDS)
+                recordingSession.markRecordingStarted()
+                recordingSession.startTimer(PracticeState.PRACTICE_LIMIT_SECONDS) { remaining ->
+                    _state.value = _state.value.copy(remainingSeconds = remaining)
+                }
             }
             is PracticeAction.OnStopEarly, is PracticeAction.OnInterruption -> {
                 // Экран останавливает VoiceRecorder → OnRecorderStopped → автоотправка
             }
             is PracticeAction.OnRecorderStopped -> {
-                stopTimer()
+                recordingSession.stopTimer()
                 val path = action.filePath
-                val durationMs = (Clock.System.now().toEpochMilliseconds() - recordingStartedAtMs)
-                    .coerceAtLeast(0)
+                val durationMs = recordingSession.elapsedMs()
 
                 // Короткие записи не считаются попыткой — даём перезаписать
                 if (durationMs < PracticeState.PRACTICE_MIN_DURATION_MS) {
@@ -142,12 +139,12 @@ class PracticeViewModel(
                     createdAtEpochMs = Clock.System.now().toEpochMilliseconds(),
                     uploaded = false
                 )
-                recordingStore.add(meta)
+                repository.addRecording(meta)
                 _state.value = _state.value.copy(takeFilePath = path)
                 upload(path, (durationMs / 1000).toInt().coerceAtLeast(1))
             }
             is PracticeAction.OnRecorderError -> {
-                stopTimer()
+                recordingSession.stopTimer()
                 _state.value = _state.value.copy(
                     phase = PracticePhase.Ready,
                     error = action.message
@@ -155,7 +152,7 @@ class PracticeViewModel(
             }
             is PracticeAction.OnRetryUpload -> {
                 val path = _state.value.takeFilePath ?: return
-                val durationSec = recordingStore.list().firstOrNull { it.filePath == path }
+                val durationSec = repository.findRecording(path)
                     ?.let { (it.durationMs / 1000).toInt().coerceAtLeast(1) } ?: 1
                 upload(path, durationSec)
             }
@@ -178,16 +175,16 @@ class PracticeViewModel(
 
     private fun load(topicId: String) {
         viewModelScope.launch {
-            stopTimer()
             // B2-фикс (review): повторный вход на Practice — полный сброс фазовой машины,
             // иначе после Sent экран навсегда показывал SentPhase; а после ухода во время
             // записи (B1: VoiceRecorder уже release'нут экраном) — кирпич «Recording».
+            recordingSession.reset()
             _state.value = PracticeState(
                 isLoading = true,
                 micPermission = _state.value.micPermission
             )
-            val detailDeferred = async { api.getSpeakingTopicDetail(topicId) }
-            val hasSubmitted = api.getMySpeakingSubmissions()
+            val detailDeferred = async { repository.getTopicDetail(topicId) }
+            val hasSubmitted = repository.getMySubmissions()
                 .getOrNull()
                 ?.any { it.topicId == topicId }
                 ?: false
@@ -207,25 +204,6 @@ class PracticeViewModel(
                     )
                 }
         }
-    }
-
-    private fun startTimer(limitSeconds: Int) {
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            var remaining = limitSeconds
-            _state.value = _state.value.copy(remainingSeconds = remaining)
-            while (isActive && remaining > 0) {
-                delay(1000)
-                remaining--
-                _state.value = _state.value.copy(remainingSeconds = remaining)
-            }
-            // 0:00 → экран останавливает VoiceRecorder → автоотправка (PRD Story 5)
-        }
-    }
-
-    private fun stopTimer() {
-        timerJob?.cancel()
-        timerJob = null
     }
 
     /** Автоотправка сразу после остановки записи (дизайн v1.0 — без Review). */
@@ -253,16 +231,16 @@ class PracticeViewModel(
                 return@launch
             }
             _state.value = _state.value.copy(uploadProgress = 60)
-            api.submitSpeakingPractice(
+            repository.submitPractice(
                 topicId = topicId,
                 durationSec = durationSec,
                 audioBytes = bytes,
                 fileName = filePath.substringAfterLast('/')
             )
                 .onSuccess {
-                    recordingStore.markUploaded(filePath)
+                    repository.markRecordingUploaded(filePath)
                     // Локальный файл уже в MinIO — освобождаем место (спека §6.4)
-                    recordingStore.remove(filePath)
+                    repository.removeRecording(filePath)
                     _state.value = _state.value.copy(
                         phase = PracticePhase.Sent,
                         uploadProgress = 100,
@@ -274,7 +252,7 @@ class PracticeViewModel(
                     // Дубль — backend отклонил повторную отправку (Part 2 §2.6)
                     if (error is ApiException && error.errorCode == "DUPLICATE_SUBMISSION") {
                         fileStorage.delete(filePath)
-                        recordingStore.remove(filePath)
+                        repository.removeRecording(filePath)
                         _state.value = _state.value.copy(
                             phase = PracticePhase.Ready,
                             uploadError = false,
@@ -300,7 +278,7 @@ class PracticeViewModel(
     }
 
     override fun onCleared() {
-        stopTimer()
+        recordingSession.stopTimer()
         super.onCleared()
     }
 }

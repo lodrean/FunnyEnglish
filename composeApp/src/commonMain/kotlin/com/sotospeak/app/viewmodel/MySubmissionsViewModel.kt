@@ -2,10 +2,9 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.RecordingMeta
-import com.sotospeak.app.storage.RecordingStore
-import com.sotospeak.shared.api.SoToSpeakApi
 import com.sotospeak.shared.model.SpeakingSubmission
 import com.sotospeak.shared.platform.AudioPlayer
 import kotlinx.coroutines.channels.Channel
@@ -38,8 +37,7 @@ sealed interface MySubmissionsEvent {
 }
 
 class MySubmissionsViewModel(
-    private val api: SoToSpeakApi,
-    private val recordingStore: RecordingStore,
+    private val repository: SpeakingRepository,
     private val fileStorage: RecordingFileStorage,
     private val audioPlayer: AudioPlayer
 ) : ViewModel() {
@@ -77,19 +75,19 @@ class MySubmissionsViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
             // Автоматический retry неотправленных при входе на экран (спека §6.4)
-            recordingStore.pendingPractice().forEach { retryPending(it.filePath) }
-            api.getMySpeakingSubmissions()
+            repository.pendingPracticeUploads().forEach { retryPending(it.filePath) }
+            repository.getMySubmissions()
                 .onSuccess { submissions ->
                     _state.value = _state.value.copy(
                         isLoading = false,
                         submissions = submissions.sortedByDescending { it.createdAt },
-                        pendingUploads = recordingStore.pendingPractice()
+                        pendingUploads = repository.pendingPracticeUploads()
                     )
                 }
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        pendingUploads = recordingStore.pendingPractice(),
+                        pendingUploads = repository.pendingPracticeUploads(),
                         error = error.message ?: "Ошибка загрузки"
                     )
                 }
@@ -102,7 +100,7 @@ class MySubmissionsViewModel(
         // M3-фикс (review): без in-flight guard быстрые повторные вызовы (OnRefresh +
         // ручной retry) создавали дубли submissions на backend
         if (!inFlightUploads.add(filePath)) return
-        val meta = recordingStore.list().firstOrNull { it.filePath == filePath } ?: run {
+        val meta = repository.findRecording(filePath) ?: run {
             inFlightUploads.remove(filePath)
             return
         }
@@ -112,24 +110,24 @@ class MySubmissionsViewModel(
                     fileStorage.readBytes(filePath)
                 } catch (e: Exception) {
                     _events.trySend(MySubmissionsEvent.ShowMessage("Файл записи не найден"))
-                    recordingStore.remove(filePath)   // файла нет — чистим мету
+                    repository.removeRecording(filePath)   // файла нет — чистим мету
                     return@launch
                 }
-                api.submitSpeakingPractice(
+                repository.submitPractice(
                     topicId = meta.topicId,
                     durationSec = (meta.durationMs / 1000).toInt().coerceAtLeast(1),
                     audioBytes = bytes,
                     fileName = filePath.substringAfterLast('/')
                 )
                     .onSuccess {
-                        recordingStore.markUploaded(filePath)
-                        recordingStore.remove(filePath)   // уже в MinIO — освобождаем место
+                        repository.markRecordingUploaded(filePath)
+                        repository.removeRecording(filePath)   // уже в MinIO — освобождаем место
                         _state.value = _state.value.copy(
-                            pendingUploads = recordingStore.pendingPractice()
+                            pendingUploads = repository.pendingPracticeUploads()
                         )
                         _events.trySend(MySubmissionsEvent.ShowMessage("Запись отправлена учителю"))
                         // Обновим список — новая отправка должна появиться
-                        api.getMySpeakingSubmissions().onSuccess { submissions ->
+                        repository.getMySubmissions().onSuccess { submissions ->
                             _state.value = _state.value.copy(
                                 submissions = submissions.sortedByDescending { it.createdAt }
                             )
@@ -137,7 +135,7 @@ class MySubmissionsViewModel(
                     }
                     .onFailure {
                         _state.value = _state.value.copy(
-                            pendingUploads = recordingStore.pendingPractice()
+                            pendingUploads = repository.pendingPracticeUploads()
                         )
                     }
             } finally {

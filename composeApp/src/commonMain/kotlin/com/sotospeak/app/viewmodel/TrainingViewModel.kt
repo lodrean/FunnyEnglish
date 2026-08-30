@@ -2,21 +2,18 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.recorder.MicPermissionState
+import com.sotospeak.app.recorder.RecordingSessionController
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
-import com.sotospeak.app.storage.RecordingStore
-import com.sotospeak.shared.api.SoToSpeakApi
 import com.sotospeak.shared.model.SpeakingQuestion
 import com.sotospeak.shared.platform.AudioPlayer
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
@@ -76,8 +73,7 @@ sealed interface TrainingEvent {
 }
 
 class TrainingViewModel(
-    private val api: SoToSpeakApi,
-    private val recordingStore: RecordingStore,
+    private val repository: SpeakingRepository,
     private val audioPlayer: AudioPlayer
 ) : ViewModel() {
 
@@ -88,7 +84,8 @@ class TrainingViewModel(
     val events = _events.receiveAsFlow()
 
     private var currentTopicId: String? = null
-    private var timerJob: Job? = null
+    // Общий с Practice механизм: обратный отсчёт лимита попытки (bd FunnyEnglish-5tf.5)
+    private val recordingSession = RecordingSessionController(viewModelScope)
 
     init {
         audioPlayer.setOnCompletionListener {
@@ -113,7 +110,9 @@ class TrainingViewModel(
                     recorder = RecorderUiState.Recording(Clock.System.now().toEpochMilliseconds()),
                     remainingSeconds = limit
                 )
-                startTimer(limit)
+                recordingSession.startTimer(limit) { remaining ->
+                    _state.value = _state.value.copy(remainingSeconds = remaining)
+                }
             }
             is TrainingAction.OnStopRecording, is TrainingAction.OnInterruption -> {
                 // Экран останавливает VoiceRecorder (stop, НЕ cancel — попытка засчитывается);
@@ -126,7 +125,7 @@ class TrainingViewModel(
             }
             is TrainingAction.OnRecorderStopped -> saveAttempt(action.filePath)
             is TrainingAction.OnRecorderError -> {
-                stopTimer()
+                recordingSession.stopTimer()
                 _state.value = _state.value.copy(
                     recorder = RecorderUiState.Error(action.message)
                 )
@@ -144,7 +143,7 @@ class TrainingViewModel(
                 _events.trySend(TrainingEvent.NavigateToPractice(it))
             }
             is TrainingAction.OnRestartAttempts -> {
-                currentTopicId?.let { recordingStore.removeAllForTopic(it) }
+                currentTopicId?.let { repository.removeTrainingAttempts(it) }
                 _state.value = _state.value.copy(
                     attempts = emptyList(),
                     attemptNumber = 1,
@@ -168,7 +167,7 @@ class TrainingViewModel(
 
     private fun load(topicId: String) {
         viewModelScope.launch {
-            stopTimer()
+            recordingSession.stopTimer()
             // B1-фикс (review): повторный вход на экран — VoiceRecorder пересоздан экраном,
             // поэтому застрявший recorder-state (Recording/Saving после ухода во время
             // записи или поворота) сбрасываем в Idle; попытки перечитываем из store.
@@ -179,9 +178,9 @@ class TrainingViewModel(
                 remainingSeconds = 0,
                 playingRecordingPath = null
             )
-            api.getSpeakingTopicDetail(topicId)
+            repository.getTopicDetail(topicId)
                 .onSuccess { detail ->
-                    val attempts = recordingStore.list(topicId)
+                    val attempts = repository.listRecordings(topicId)
                         .filter { it.kind == RecordingKind.TRAINING }
                         .sortedBy { it.attemptNumber }
                     _state.value = _state.value.copy(
@@ -202,26 +201,8 @@ class TrainingViewModel(
         }
     }
 
-    private fun startTimer(limitSeconds: Int) {
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            var remaining = limitSeconds
-            while (isActive && remaining > 0) {
-                delay(1000)
-                remaining--
-                _state.value = _state.value.copy(remainingSeconds = remaining)
-            }
-            // Таймер истёк → экран увидит remainingSeconds == 0 и остановит VoiceRecorder
-        }
-    }
-
-    private fun stopTimer() {
-        timerJob?.cancel()
-        timerJob = null
-    }
-
     private fun saveAttempt(filePath: String) {
-        stopTimer()
+        recordingSession.stopTimer()
         val topicId = currentTopicId ?: return
         val s = _state.value
         val startedAt = (s.recorder as? RecorderUiState.Recording)?.startedAtMs
@@ -240,7 +221,7 @@ class TrainingViewModel(
             timerLimitSeconds = limit,
             createdAtEpochMs = now
         )
-        recordingStore.add(meta)
+        repository.addRecording(meta)
 
         val attempts = (s.attempts + meta).sortedBy { it.attemptNumber }
         val finished = attempts.size >= MAX_ATTEMPTS
@@ -259,7 +240,7 @@ class TrainingViewModel(
     }
 
     override fun onCleared() {
-        stopTimer()
+        recordingSession.stopTimer()
         audioPlayer.stop()
         audioPlayer.release()
         super.onCleared()

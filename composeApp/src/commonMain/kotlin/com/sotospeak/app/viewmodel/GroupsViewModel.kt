@@ -2,7 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sotospeak.shared.api.SoToSpeakApi
+import com.sotospeak.shared.api.MessagingApi
 import com.sotospeak.shared.model.GroupDetail
 import com.sotospeak.shared.model.StudentGroup
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +26,7 @@ data class GroupsUiState(
 )
 
 class GroupsViewModel(
-    private val api: SoToSpeakApi
+    private val messagingApi: MessagingApi
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupsUiState())
@@ -39,7 +39,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             
-            api.getMyStudentGroups()
+            messagingApi.getMyStudentGroups()
                 .onSuccess { groups ->
                     _uiState.update { 
                         it.copy(
@@ -66,7 +66,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             
-            api.getStudentGroupDetail(groupId)
+            messagingApi.getStudentGroupDetail(groupId)
                 .onSuccess { detail ->
                     _uiState.update {
                         it.copy(
@@ -123,7 +123,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isJoining = true, errorMessage = null) }
             
-            api.joinGroupByCode(code)
+            messagingApi.joinGroupByCode(code)
                 .onSuccess { response ->
                     if (response.success) {
                         _uiState.update {
@@ -163,7 +163,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             
-            api.leaveGroup(groupId)
+            messagingApi.leaveGroup(groupId)
                 .onSuccess {
                     _uiState.update {
                         it.copy(

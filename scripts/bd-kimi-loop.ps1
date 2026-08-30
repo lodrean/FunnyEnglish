@@ -276,19 +276,15 @@ foreach ($task in $queue) {
         Write-Host $msg; $reportLines += $msg
         continue
     }
-    # --- Пропуск упорных задач: 3+ безуспешных попыток (вердикт IN_PROGRESS в отчётах).
+    # --- Пропуск упорных задач: 3+ безуспешных попыток.
+    # Счётчик — по kimi-run.log в .pipeline/<stamp>/ (содержит id задачи в эхе промпта;
+    # kimi-prompt.txt/00-report.md уходят в stash при незакрытой задаче и теряются).
     # Не мешает легитимным закрытиям на 3-й попытке (nj2.7) — правило срабатывает ПОСЛЕ 3 неудач.
     if (-not $ForceRetry) {
         $priorAttempts = 0
         foreach ($pd in (Get-ChildItem (Join-Path (Get-Location) '.pipeline') -Directory -ErrorAction SilentlyContinue)) {
-            $pp = Join-Path $pd.FullName 'kimi-prompt.txt'
-            $rep = Join-Path $pd.FullName '00-report.md'
-            if ((Test-Path $pp) -and (Test-Path $rep)) {
-                if (((Get-Content $pp -Raw -ErrorAction SilentlyContinue) -match [regex]::Escape("bd $id")) -and
-                    ((Get-Content $rep -Raw -ErrorAction SilentlyContinue) -match '- Вердикт: IN_PROGRESS')) {
-                    $priorAttempts++
-                }
-            }
+            $k = Join-Path $pd.FullName 'kimi-run.log'
+            if ((Test-Path $k) -and ((Get-Content $k -Raw -ErrorAction SilentlyContinue) -match [regex]::Escape("bd $id"))) { $priorAttempts++ }
         }
         if ($priorAttempts -ge 3) {
             $msg = "SKIP  {0} [p{1}] {2}  -> {3} безуспешных попыток — нужна ручная доводка/решение (см. .pipeline/)" -f $id, $task.priority, $task.title, $priorAttempts

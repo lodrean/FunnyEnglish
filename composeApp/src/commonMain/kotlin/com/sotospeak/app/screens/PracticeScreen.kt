@@ -28,6 +28,7 @@ import com.sotospeak.app.components.RecIndicator
 import com.sotospeak.app.components.RecordingWaveform
 import com.sotospeak.app.components.SpeakingRecordButton
 import com.sotospeak.app.components.SpeakingTimerRing
+import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.viewmodel.PracticePhase
 import com.sotospeak.app.viewmodel.PracticeState
@@ -59,6 +60,7 @@ fun PracticeScreen(
     initialShowBackConfirm: Boolean = false
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     // «Назад» в фазах Recording/Uploading — диалог-подтверждение (спека §6.1)
     var showBackConfirm by remember { mutableStateOf(initialShowBackConfirm) }
@@ -106,23 +108,23 @@ fun PracticeScreen(
     if (showBackConfirm) {
         AlertDialog(
             onDismissRequest = { showBackConfirm = false },
-            title = { Text("Прервать запись?") },
+            title = { Text(strings.backConfirmTitle) },
             text = {
                 Text(
                     if (state.phase == PracticePhase.Recording)
-                        "Запись будет потеряна."
+                        strings.backConfirmRecording
                     else
-                        "Отправка прервётся — запись останется на устройстве."
+                        strings.backConfirmUploading
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
                     showBackConfirm = false
                     onBack()
-                }) { Text("Выйти") }
+                }) { Text(strings.backConfirmLeave) }
             },
             dismissButton = {
-                TextButton(onClick = { showBackConfirm = false }) { Text("Остаться") }
+                TextButton(onClick = { showBackConfirm = false }) { Text(strings.backConfirmStay) }
             }
         )
     }
@@ -138,6 +140,7 @@ private fun PracticeContent(
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -152,7 +155,7 @@ private fun PracticeContent(
                     onClick = {},
                     label = {
                         Text(
-                            "Контрольная · 30 сек",
+                            strings.practiceChipMain,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -176,7 +179,7 @@ private fun PracticeContent(
                     onClick = {},
                     label = {
                         Text(
-                            "1 ЗАПИСЬ НА ВСЕ ВОПРОСЫ",
+                            strings.practiceChipOneRec,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 0.4.sp
@@ -266,7 +269,7 @@ private fun PracticeContent(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        "В отличие от Training, эта запись уйдёт учителю автоматически сразу после остановки таймера — изменить её нельзя",
+                        strings.practiceAutoSendNote,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = speaking.statusNew
@@ -284,6 +287,7 @@ private fun ReadyPhase(
     onRetryUpload: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -297,7 +301,7 @@ private fun ReadyPhase(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "Не удалось отправить. Запись сохранена на устройстве.",
+                        strings.uploadErrorText,
                         color = speaking.text,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -306,7 +310,7 @@ private fun ReadyPhase(
                         onClick = onRetryUpload,
                         modifier = Modifier.testTag("upload_retry_button")
                     ) {
-                        Text("Повторить отправку")
+                        Text(strings.retryUpload)
                     }
                 }
             }
@@ -315,7 +319,7 @@ private fun ReadyPhase(
             state.micPermission == MicPermissionState.PermanentlyDenied
         ) {
             Text(
-                "Для записи нужен доступ к микрофону",
+                strings.micPermissionShort,
                 color = speaking.error,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
@@ -330,7 +334,7 @@ private fun ReadyPhase(
             timeText = formatTimer(PracticeState.PRACTICE_LIMIT_SECONDS),
             size = 150.dp,
             timerTextStyle = SpeakingTextStyles.TimerDisplay.copy(fontSize = 40.sp, lineHeight = 44.sp),
-            caption = "на все ответы"
+            caption = strings.captionAllAnswers
         )
         Spacer(modifier = Modifier.height(16.dp))
         // P2: большая record-кнопка мокапа (.rec-btn)
@@ -338,11 +342,12 @@ private fun ReadyPhase(
             isRecording = false,
             enabled = state.micPermission == MicPermissionState.Granted,
             onClick = onStart,
-            testTag = "practice_start_button"
+            testTag = "practice_start_button",
+            contentDescription = strings.startRecordingDesc
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            "Ответь на все вопросы подряд одной записью",
+            strings.readyHint,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.SemiBold,
             color = speaking.textMuted,
@@ -357,6 +362,7 @@ private fun RecordingPhase(
     onStopEarly: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -371,7 +377,7 @@ private fun RecordingPhase(
             timeText = formatTimer(remainingSeconds),
             size = 150.dp,
             timerTextStyle = SpeakingTextStyles.TimerDisplay.copy(fontSize = 40.sp, lineHeight = 44.sp),
-            caption = "на все ответы",
+            caption = strings.captionAllAnswers,
             timerTestTag = "practice_timer"
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -382,11 +388,12 @@ private fun RecordingPhase(
             isRecording = true,
             enabled = true,
             onClick = onStopEarly,
-            testTag = "practice_stop_button"
+            testTag = "practice_stop_button",
+            contentDescription = strings.stopRecordingDesc
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Закончить и отправить",
+            strings.finishAndSend,
             style = MaterialTheme.typography.bodyMedium,
             color = speaking.textMuted,
             textAlign = TextAlign.Center
@@ -397,6 +404,7 @@ private fun RecordingPhase(
 @Composable
 private fun UploadingPhase(progress: Int) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val reduceMotion = LocalReduceMotion.current
     // Прогресс отправки — tween 180ms linear по ширине (mockups.html .upload-track)
     val animatedProgress by animateFloatAsState(
@@ -416,7 +424,7 @@ private fun UploadingPhase(progress: Int) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Отправка учителю…",
+                strings.uploadingTitle,
                 style = MaterialTheme.typography.titleMedium,
                 color = speaking.text
             )
@@ -434,6 +442,7 @@ private fun UploadingPhase(progress: Int) {
 @Composable
 private fun SentPhase(onBackToLibrary: () -> Unit) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Card(
         shape = SpeakingShapes.Card,
         colors = CardDefaults.cardColors(containerColor = speaking.statusReviewedContainer),
@@ -464,7 +473,7 @@ private fun SentPhase(onBackToLibrary: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Запись отправлена!",
+                strings.sentTitle,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = speaking.text
@@ -475,7 +484,7 @@ private fun SentPhase(onBackToLibrary: () -> Unit) {
                 color = speaking.statusNewContainer
             ) {
                 Text(
-                    "статус NEW · ждёт проверки",
+                    strings.sentStatus,
                     color = speaking.statusNew,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -483,7 +492,7 @@ private fun SentPhase(onBackToLibrary: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "Оценка и комментарий появятся в «Отправки»",
+                strings.sentNote,
                 style = MaterialTheme.typography.bodySmall,
                 color = speaking.textMuted,
                 textAlign = TextAlign.Center
@@ -495,7 +504,7 @@ private fun SentPhase(onBackToLibrary: () -> Unit) {
                     .fillMaxWidth()
                     .testTag("sent_back_button")
             ) {
-                Text("Вернуться в библиотеку")
+                Text(strings.backToLibrary)
             }
         }
     }

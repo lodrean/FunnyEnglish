@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
+import com.sotospeak.app.localization.LocalAppStrings
+import com.sotospeak.app.localization.RussianStrings
 import com.sotospeak.app.viewmodel.LibraryState
 import com.sotospeak.designsystem.animations.ListSkeleton
 import com.sotospeak.designsystem.animations.speakingPressable
@@ -47,6 +49,7 @@ fun LibraryScreen(
     LaunchedEffect(Unit) { onLoad() }
 
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     Box(
         modifier = modifier
@@ -62,9 +65,9 @@ fun LibraryScreen(
             )
             state.libraries.isEmpty() -> EmptyState(
                 icon = SpeakingIcons.Mic,
-                title = "Пока нет доступных тем",
-                subtitle = "Загляни позже — темы появятся скоро",
-                ctaLabel = "Обновить",
+                title = strings.libraryEmptyTitle,
+                subtitle = strings.libraryEmptySubtitle,
+                ctaLabel = strings.ctaRefresh,
                 onCtaClick = onLoad,
                 modifier = Modifier.testTag("library_empty")
             )
@@ -82,6 +85,7 @@ private fun LibraryList(
     onLibraryClick: (String) -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -91,14 +95,14 @@ private fun LibraryList(
         item {
             Column(modifier = Modifier.padding(bottom = 4.dp)) {
                 Text(
-                    text = "Библиотека тем",
+                    text = strings.libraryTitle,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = speaking.text,
                     modifier = Modifier.testTag("library_title")
                 )
                 Text(
-                    text = "Выбери тему и начни говорить",
+                    text = strings.librarySubtitle,
                     style = MaterialTheme.typography.bodyMedium,
                     color = speaking.textMuted,
                     modifier = Modifier.testTag("library_subtitle")
@@ -123,6 +127,7 @@ private fun ThemeCard(
     onClick: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val progress = if (library.topicCount > 0)
         completedTopics.coerceAtMost(library.topicCount).toFloat() / library.topicCount
@@ -168,7 +173,7 @@ private fun ThemeCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = topicsCountText(library.topicCount),
+                        text = strings.topicsCount(library.topicCount),
                         style = MaterialTheme.typography.labelSmall,
                         color = speaking.textMuted,
                         modifier = Modifier.testTag("theme_count_${library.id}")
@@ -221,13 +226,14 @@ private fun ThemeCover(title: String, seed: String, modifier: Modifier = Modifie
 @Composable
 private fun ThemeStatusChip(completedTopics: Int, libraryId: String) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val isDone = completedTopics > 0
     AssistChip(
         onClick = {},
         modifier = Modifier.testTag("theme_chip_${libraryId}"),
         label = {
             Text(
-                text = if (isDone) "$completedTopics ПРОЙДЕНО" else "НОВАЯ",
+                text = if (isDone) strings.topicsCompleted(completedTopics) else strings.themeStatusNew,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 0.4.sp
@@ -273,17 +279,7 @@ internal fun themeInitials(title: String): String {
 }
 
 /** Плюрализация: «1 топик», «3 топика», «6 топиков». */
-internal fun topicsCountText(count: Int): String {
-    val mod100 = count % 100
-    val mod10 = count % 10
-    val word = when {
-        mod100 in 11..14 -> "топиков"
-        mod10 == 1 -> "топик"
-        mod10 in 2..4 -> "топика"
-        else -> "топиков"
-    }
-    return "$count $word"
-}
+internal fun topicsCountText(count: Int): String = RussianStrings.topicsCount(count)
 
 /** Градиенты тайлов из мокапа frame-library. */
 private val THEME_GRADIENTS = listOf(

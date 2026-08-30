@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingAppBar
+import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.player.NativeVideoSurface
 import com.sotospeak.app.player.VideoFullscreenEffect
 import com.sotospeak.app.player.VideoPlayerController
@@ -54,6 +55,7 @@ fun VideoScreen(
     libraryTitle: String = ""
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val playerState by controller.state.collectAsState()
 
     // Подготовка плеера при появлении URL видео; reloadNonce — перезапуск после retry
@@ -95,7 +97,7 @@ fun VideoScreen(
                     title = state.topic?.title.orEmpty(),
                     subtitle = listOfNotNull(
                         libraryTitle.ifBlank { null },
-                        durationSec?.let { "видео ${formatTimer(it)}" }
+                        durationSec?.let { "${strings.videoLabel} ${formatTimer(it)}" }
                     ).joinToString(" · ").ifBlank { null }
                 )
             }
@@ -138,6 +140,7 @@ private fun VideoContent(
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val hasSubtitles = state.topic?.video?.subtitleUrl != null
 
     // BoxWithConstraints: высота видео ограничена долей экрана — на низких viewport'ах
@@ -169,7 +172,7 @@ private fun VideoContent(
                 FilterChip(
                     selected = state.subtitlesEnabled,
                     onClick = { if (!state.subtitlesEnabled) onToggleSubtitles() },
-                    label = { Text("С субтитрами") },
+                    label = { Text(strings.subtitlesOn) },
                     leadingIcon = {
                         Icon(
                             imageVector = SpeakingIcons.ClosedCaptions,
@@ -184,7 +187,7 @@ private fun VideoContent(
                 FilterChip(
                     selected = !state.subtitlesEnabled,
                     onClick = { if (state.subtitlesEnabled) onToggleSubtitles() },
-                    label = { Text("Без субтитров") },
+                    label = { Text(strings.subtitlesOff) },
                     colors = chipColors,
                     border = if (!state.subtitlesEnabled) null else chipBorder
                 )
@@ -302,17 +305,17 @@ private fun VideoContent(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        "Не удалось загрузить видео",
+                        strings.videoLoadError,
                         color = androidx.compose.ui.graphics.Color.White,
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(onClick = onRetryVideo) {
-                            Text("Повторить", color = androidx.compose.ui.graphics.Color.White)
+                            Text(strings.retry, color = androidx.compose.ui.graphics.Color.White)
                         }
                         Button(onClick = onGoToQuestions) {
-                            Text("К вопросам")
+                            Text(strings.toQuestions)
                         }
                     }
                 }
@@ -377,11 +380,11 @@ private fun VideoContent(
             shape = MaterialTheme.shapes.medium,
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text("Перейти к вопросам", fontWeight = FontWeight.SemiBold)
+            Text(strings.goToQuestions, fontWeight = FontWeight.SemiBold)
         }
         // V4: подсказка мокапа (.video-hint)
         Text(
-            "Смотреть всё видео необязательно — к вопросам можно перейти в любой момент",
+            strings.videoHint,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             color = speaking.textMuted,
@@ -484,7 +487,7 @@ private fun BigPlayOverlay(onPlay: () -> Unit, modifier: Modifier = Modifier) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = SpeakingIcons.Play,
-                contentDescription = "Смотреть видео",
+                contentDescription = LocalAppStrings.current.watchVideoDesc,
                 tint = Color(0xFF1A2E42),
                 modifier = Modifier.size(28.dp)
             )
@@ -500,6 +503,7 @@ private fun ReplayOverlay(onReplay: () -> Unit, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        val strings = LocalAppStrings.current
         Surface(
             onClick = onReplay,
             shape = CircleShape,
@@ -512,14 +516,14 @@ private fun ReplayOverlay(onReplay: () -> Unit, modifier: Modifier = Modifier) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = SpeakingIcons.Refresh,
-                    contentDescription = "Начать заново",
+                    contentDescription = strings.startOver,
                     tint = Color(0xFF1A2E42),
                     modifier = Modifier.size(28.dp)
                 )
             }
         }
         Text(
-            text = "Начать заново",
+            text = strings.startOver,
             color = Color.White,
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.testTag("replay_label")
@@ -577,6 +581,7 @@ private fun ControlBarContent(
     contentColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     IconButton(
         onClick = onPlayPause,
         modifier = Modifier
@@ -585,7 +590,7 @@ private fun ControlBarContent(
     ) {
         Icon(
             imageVector = if (playerState.isPlaying) SpeakingIcons.Pause else SpeakingIcons.Play,
-            contentDescription = if (playerState.isPlaying) "Пауза" else "Продолжить",
+            contentDescription = if (playerState.isPlaying) strings.pauseDesc else strings.resumeDesc,
             tint = contentColor,
             modifier = Modifier.size(20.dp)
         )
@@ -652,7 +657,7 @@ private fun ControlBarContent(
     ) {
         Icon(
             imageVector = if (isFullscreen) SpeakingIcons.FullscreenExit else SpeakingIcons.Fullscreen,
-            contentDescription = if (isFullscreen) "Свернуть видео" else "На весь экран",
+            contentDescription = if (isFullscreen) strings.exitFullscreenDesc else strings.enterFullscreenDesc,
             tint = contentColor,
             modifier = Modifier.size(20.dp)
         )

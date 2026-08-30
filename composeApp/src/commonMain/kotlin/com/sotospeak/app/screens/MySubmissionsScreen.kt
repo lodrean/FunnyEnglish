@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
+import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.viewmodel.MySubmissionsState
 import com.sotospeak.designsystem.animations.ListSkeleton
 import com.sotospeak.designsystem.icons.SpeakingIcons
@@ -42,6 +43,7 @@ fun MySubmissionsScreen(
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     Scaffold(
         containerColor = speaking.background,
@@ -61,9 +63,9 @@ fun MySubmissionsScreen(
                 state.submissions.isEmpty() && state.pendingUploads.isEmpty() ->
                     EmptyState(
                         icon = SpeakingIcons.Upload,
-                        title = "У вас пока нет отправленных записей",
-                        subtitle = "Пройдите практику в любом топике библиотеки",
-                        ctaLabel = "Обновить",
+                        title = strings.submissionsEmptyTitle,
+                        subtitle = strings.submissionsEmptySubtitle,
+                        ctaLabel = strings.ctaRefresh,
                         onCtaClick = onRefresh,
                         modifier = Modifier.testTag("submissions_empty")
                     )
@@ -82,16 +84,17 @@ fun MySubmissionsScreen(
 @Composable
 private fun SubmissionsHeader() {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp)) {
         Text(
-            text = "Отправки",
+            text = strings.submissionsTitle,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = speaking.text,
             modifier = Modifier.testTag("submissions_title")
         )
         Text(
-            text = "Записи, отправленные учителю",
+            text = strings.submissionsSubtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = speaking.textMuted,
             modifier = Modifier.testTag("submissions_subtitle")
@@ -108,6 +111,7 @@ private fun SubmissionsList(
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -118,7 +122,7 @@ private fun SubmissionsList(
         if (state.pendingUploads.isNotEmpty()) {
             item {
                 Text(
-                    "Не отправлено",
+                    strings.notSentSection,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = speaking.statusNew
@@ -135,7 +139,7 @@ private fun SubmissionsList(
                 ) {
                     ListItem(
                         headlineContent = {
-                            Text("Запись ждёт отправки", color = speaking.text)
+                            Text(strings.pendingUploadText, color = speaking.text)
                         },
                         leadingContent = {
                             Icon(
@@ -149,7 +153,7 @@ private fun SubmissionsList(
                                 onClick = { onRetryPending(pending.filePath) },
                                 colors = ButtonDefaults.textButtonColors(contentColor = speaking.primary)
                             ) {
-                                Text("Повторить")
+                                Text(strings.retry)
                             }
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -172,7 +176,7 @@ private fun SubmissionsList(
         // Explainer мокапа (MS2): правило DUPLICATE_SUBMISSION
         item {
             Text(
-                "Повторная отправка по топику запрещена — после REVIEWED топик можно только переиграть в Training",
+                strings.submissionsExplainer,
                 style = MaterialTheme.typography.bodySmall,
                 color = speaking.textMuted,
                 modifier = Modifier
@@ -190,6 +194,7 @@ private fun SubmissionCard(
     onPlay: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     val isReviewed = submission.status == "REVIEWED"
 
     // M3: Card + ListItem (A11, как TopicsScreen); 2 строки по мокапу: тема + «дата, время · длительность»
@@ -228,7 +233,7 @@ private fun SubmissionCard(
                     ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                            contentDescription = if (isPlaying) "Стоп" else "Прослушать",
+                            contentDescription = if (isPlaying) strings.playbackStopDesc else strings.playbackListenDesc,
                             tint = speaking.waveformPlayback
                         )
                     }
@@ -306,6 +311,7 @@ private fun GradeTotalChip(total: Double, modifier: Modifier = Modifier) {
 @Composable
 private fun GradeCard(grade: SpeakingGrade, submissionId: String) {
     val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
     Card(
         shape = SpeakingShapes.Chip,
         colors = CardDefaults.cardColors(containerColor = speaking.statusReviewedContainer),
@@ -320,7 +326,7 @@ private fun GradeCard(grade: SpeakingGrade, submissionId: String) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Оценка учителя",
+                    strings.teacherGrade,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = speaking.text
@@ -334,10 +340,10 @@ private fun GradeCard(grade: SpeakingGrade, submissionId: String) {
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            GradeBar("Грамматика", grade.grammar)
-            GradeBar("Словарный запас", grade.vocabulary)
-            GradeBar("Произношение", grade.pronunciation)
-            GradeBar("Беглость", grade.fluency)
+            GradeBar(strings.gradeGrammar, grade.grammar)
+            GradeBar(strings.gradeVocabulary, grade.vocabulary)
+            GradeBar(strings.gradePronunciation, grade.pronunciation)
+            GradeBar(strings.gradeFluency, grade.fluency)
             grade.comment?.takeIf { it.isNotBlank() }?.let { comment ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -348,7 +354,7 @@ private fun GradeCard(grade: SpeakingGrade, submissionId: String) {
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "Проверил: ${grade.reviewerName}",
+                strings.reviewedBy(grade.reviewerName),
                 style = MaterialTheme.typography.bodySmall,
                 color = speaking.textMuted
             )

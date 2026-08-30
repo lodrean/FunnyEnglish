@@ -8,6 +8,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
+import com.sotospeak.composeapp.generated.resources.Res
+import com.sotospeak.composeapp.generated.resources.a11y_achievement_badge
+import com.sotospeak.composeapp.generated.resources.a11y_achievement_locked
+import com.sotospeak.composeapp.generated.resources.a11y_achievement_unlocked
+import com.sotospeak.composeapp.generated.resources.a11y_answer_option
+import com.sotospeak.composeapp.generated.resources.a11y_category_icon
+import com.sotospeak.composeapp.generated.resources.a11y_continue_learning
+import com.sotospeak.composeapp.generated.resources.a11y_correct_answer
+import com.sotospeak.composeapp.generated.resources.a11y_email_input
+import com.sotospeak.composeapp.generated.resources.a11y_level_progress
+import com.sotospeak.composeapp.generated.resources.a11y_login_button
+import com.sotospeak.composeapp.generated.resources.a11y_navigate_back
+import com.sotospeak.composeapp.generated.resources.a11y_navigate_settings
+import com.sotospeak.composeapp.generated.resources.a11y_navigate_to_home
+import com.sotospeak.composeapp.generated.resources.a11y_navigate_to_profile
+import com.sotospeak.composeapp.generated.resources.a11y_password_input
+import com.sotospeak.composeapp.generated.resources.a11y_password_toggle
+import com.sotospeak.composeapp.generated.resources.a11y_points_count
+import com.sotospeak.composeapp.generated.resources.a11y_question_text
+import com.sotospeak.composeapp.generated.resources.a11y_register_button
+import com.sotospeak.composeapp.generated.resources.a11y_start_lesson
+import com.sotospeak.composeapp.generated.resources.a11y_streak_count
+import com.sotospeak.composeapp.generated.resources.a11y_submit_answer
+import com.sotospeak.composeapp.generated.resources.a11y_test_count
+import com.sotospeak.composeapp.generated.resources.a11y_user_avatar
+import com.sotospeak.composeapp.generated.resources.a11y_view_all_categories
+import com.sotospeak.composeapp.generated.resources.a11y_wrong_answer
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Accessibility utilities for So to Speak app
@@ -181,47 +209,48 @@ object AccessibilityUtils {
 }
 
 /**
- * Predefined content descriptions for common UI elements
- * These should be moved to string resources for localization
+ * Описания доступности для типовых UI-элементов.
+ * Строки вынесены в composeResources (`values/strings.xml`, язык UI — русский).
+ * Геттеры composable, т.к. `stringResource` читается из композиции.
  */
 object AccessibilityDescriptions {
-    // Navigation
-    const val NAVIGATE_TO_PROFILE = "Navigate to profile"
-    const val NAVIGATE_TO_HOME = "Navigate to home"
-    const val NAVIGATE_BACK = "Go back"
-    const val NAVIGATE_SETTINGS = "Open settings"
-    
-    // Actions
-    const val SUBMIT_ANSWER = "Submit answer"
-    const val CONTINUE_LEARNING = "Continue learning"
-    const val START_LESSON = "Start lesson"
-    const val VIEW_ALL_CATEGORIES = "View all categories"
-    
-    // UI Elements
-    const val USER_AVATAR = "User avatar"
-    const val LEVEL_PROGRESS = "Current level progress"
-    const val STREAK_COUNT = "Current streak days"
-    const val POINTS_COUNT = "Total points earned"
-    
-    // Test
-    const val QUESTION_TEXT = "Question"
-    const val ANSWER_OPTION = "Answer option"
-    const val CORRECT_ANSWER = "Correct answer"
-    const val WRONG_ANSWER = "Wrong answer"
-    
-    // Categories
-    const val CATEGORY_ICON = "Category icon"
-    const val TEST_COUNT = "Number of tests"
-    
-    // Achievements
-    const val ACHIEVEMENT_BADGE = "Achievement badge"
-    const val ACHIEVEMENT_LOCKED = "Locked achievement"
-    const val ACHIEVEMENT_UNLOCKED = "Unlocked achievement"
-    
-    // Input
-    const val EMAIL_INPUT = "Email address"
-    const val PASSWORD_INPUT = "Password"
-    const val PASSWORD_TOGGLE = "Toggle password visibility"
-    const val LOGIN_BUTTON = "Log in"
-    const val REGISTER_BUTTON = "Create account"
+    // Навигация
+    val navigateToProfile: String @Composable get() = stringResource(Res.string.a11y_navigate_to_profile)
+    val navigateToHome: String @Composable get() = stringResource(Res.string.a11y_navigate_to_home)
+    val navigateBack: String @Composable get() = stringResource(Res.string.a11y_navigate_back)
+    val navigateSettings: String @Composable get() = stringResource(Res.string.a11y_navigate_settings)
+
+    // Действия
+    val submitAnswer: String @Composable get() = stringResource(Res.string.a11y_submit_answer)
+    val continueLearning: String @Composable get() = stringResource(Res.string.a11y_continue_learning)
+    val startLesson: String @Composable get() = stringResource(Res.string.a11y_start_lesson)
+    val viewAllCategories: String @Composable get() = stringResource(Res.string.a11y_view_all_categories)
+
+    // Элементы UI
+    val userAvatar: String @Composable get() = stringResource(Res.string.a11y_user_avatar)
+    val levelProgress: String @Composable get() = stringResource(Res.string.a11y_level_progress)
+    val streakCount: String @Composable get() = stringResource(Res.string.a11y_streak_count)
+    val pointsCount: String @Composable get() = stringResource(Res.string.a11y_points_count)
+
+    // Тест
+    val questionText: String @Composable get() = stringResource(Res.string.a11y_question_text)
+    val answerOption: String @Composable get() = stringResource(Res.string.a11y_answer_option)
+    val correctAnswer: String @Composable get() = stringResource(Res.string.a11y_correct_answer)
+    val wrongAnswer: String @Composable get() = stringResource(Res.string.a11y_wrong_answer)
+
+    // Категории
+    val categoryIcon: String @Composable get() = stringResource(Res.string.a11y_category_icon)
+    val testCount: String @Composable get() = stringResource(Res.string.a11y_test_count)
+
+    // Достижения
+    val achievementBadge: String @Composable get() = stringResource(Res.string.a11y_achievement_badge)
+    val achievementLocked: String @Composable get() = stringResource(Res.string.a11y_achievement_locked)
+    val achievementUnlocked: String @Composable get() = stringResource(Res.string.a11y_achievement_unlocked)
+
+    // Ввод
+    val emailInput: String @Composable get() = stringResource(Res.string.a11y_email_input)
+    val passwordInput: String @Composable get() = stringResource(Res.string.a11y_password_input)
+    val passwordToggle: String @Composable get() = stringResource(Res.string.a11y_password_toggle)
+    val loginButton: String @Composable get() = stringResource(Res.string.a11y_login_button)
+    val registerButton: String @Composable get() = stringResource(Res.string.a11y_register_button)
 }

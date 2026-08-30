@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.springBoot)
     alias(libs.plugins.springDependencyManagement)
     alias(libs.plugins.kover)
+    alias(libs.plugins.detekt)
     kotlin("plugin.spring") version "2.1.0"
     kotlin("plugin.jpa") version "2.1.0"
 }
@@ -77,4 +78,30 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
+}
+
+// detekt подключён 2026-08-30 (bd FunnyEnglish-qbq.5, аудит AR-7): раньше плагин был
+// объявлен только в корне (apply false) и ни один модуль его не применял (грабля №8).
+// Baseline (config/detekt/baseline.xml) гасит существующие замечания — gate ловит новые.
+// Обновление baseline: ./gradlew :backend:detektBaseline :composeApp:detektBaseline
+detekt {
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    baseline = rootProject.file("config/detekt/baseline.xml")
+}
+
+// Пороги покрытия (koverVerify). Стартовые значения консервативные — поднимать
+// постепенно по факту измерений (прецедент: пороги vitest, грабля №88).
+kover {
+    reports {
+        verify {
+            rule {
+                name = "Minimal line coverage"
+                bound {
+                    minValue = 40
+                    metric = kotlinx.kover.gradle.plugin.dsl.MetricType.LINE
+                    aggregation = kotlinx.kover.gradle.plugin.dsl.AggregationType.COVERED_PERCENTAGE
+                }
+            }
+        }
+    }
 }

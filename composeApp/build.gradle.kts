@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kover)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.dropshots)
 }
 
@@ -261,6 +262,27 @@ kover {
             disabledForTestTasks.addAll("testDebugUnitTest", "testReleaseUnitTest", "uiTest")
         }
     }
+    // Пороги покрытия (koverVerify), bd FunnyEnglish-qbq.5. Стартовые значения
+    // консервативные — поднимать постепенно по факту измерений (прецедент: грабля №88).
+    reports {
+        verify {
+            rule {
+                name = "Minimal line coverage"
+                bound {
+                    minValue = 20
+                    metric = kotlinx.kover.gradle.plugin.dsl.MetricType.LINE
+                    aggregation = kotlinx.kover.gradle.plugin.dsl.AggregationType.COVERED_PERCENTAGE
+                }
+            }
+        }
+    }
+}
+
+// detekt подключён 2026-08-30 (bd FunnyEnglish-qbq.5, аудит AR-7, грабля №8).
+// Baseline общий с backend: config/detekt/baseline.xml (см. комментарий в backend/build.gradle.kts).
+detekt {
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    baseline = rootProject.file("config/detekt/baseline.xml")
 }
 
 // Separate task for UI tests (делегирует конфигурацию desktopTest с фильтром **/tests/**)

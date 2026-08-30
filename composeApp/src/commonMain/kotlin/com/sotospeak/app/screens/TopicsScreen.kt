@@ -16,11 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
-import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.viewmodel.TopicUiModel
 import com.sotospeak.app.viewmodel.TopicsState
+import com.sotospeak.designsystem.animations.ListSkeleton
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingShapes
 import com.sotospeak.designsystem.icons.SpeakingIcons
@@ -61,10 +62,18 @@ fun TopicsScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when {
-                state.isLoading && state.topics.isEmpty() -> LoadingIndicator()
+                state.isLoading && state.topics.isEmpty() -> ListSkeleton()
                 state.error != null && state.topics.isEmpty() -> ErrorMessage(
                     message = state.error,
                     onRetry = onRetry
+                )
+                state.topics.isEmpty() -> EmptyState(
+                    icon = SpeakingIcons.Play,
+                    title = "В этой теме пока нет топиков",
+                    subtitle = "Загляни позже — топики появятся скоро",
+                    ctaLabel = "Обновить",
+                    onCtaClick = onRetry,
+                    modifier = Modifier.testTag("topics_empty")
                 )
                 else -> TopicsList(
                     topics = state.topics,

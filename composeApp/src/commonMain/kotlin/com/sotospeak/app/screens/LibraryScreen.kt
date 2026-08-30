@@ -18,9 +18,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
-import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.viewmodel.LibraryState
+import com.sotospeak.designsystem.animations.ListSkeleton
 import com.sotospeak.designsystem.animations.speakingPressable
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingMotion
@@ -54,12 +55,19 @@ fun LibraryScreen(
             .testTag("library_screen")
     ) {
         when {
-            state.isLoading && state.libraries.isEmpty() -> LoadingIndicator()
+            state.isLoading && state.libraries.isEmpty() -> ListSkeleton()
             state.error != null && state.libraries.isEmpty() -> ErrorMessage(
                 message = state.error,
                 onRetry = onLoad
             )
-            state.libraries.isEmpty() -> LibraryEmptyState()
+            state.libraries.isEmpty() -> EmptyState(
+                icon = SpeakingIcons.Mic,
+                title = "Пока нет доступных тем",
+                subtitle = "Загляни позже — темы появятся скоро",
+                ctaLabel = "Обновить",
+                onCtaClick = onLoad,
+                modifier = Modifier.testTag("library_empty")
+            )
             else -> LibraryList(
                 state = state,
                 onLibraryClick = onLibraryClick
@@ -285,21 +293,3 @@ private val THEME_GRADIENTS = listOf(
     listOf(Color(0xFFFB8C00), Color(0xFFE65100))
 )
 
-@Composable
-private fun LibraryEmptyState() {
-    val speaking = LocalSpeakingColors.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp)
-            .testTag("library_empty"),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Пока нет доступных тем",
-            style = MaterialTheme.typography.titleMedium,
-            color = speaking.textMuted
-        )
-    }
-}

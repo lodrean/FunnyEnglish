@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -320,6 +321,20 @@ fun AchievementGridSkeleton(
                 SkeletonText(widthFraction = 0.8f)
             }
         }
+    }
+}
+
+/**
+ * Скелетон списка — N строк-заглушек для экранов списков (Library/Topics/Submissions)
+ * вместо CircularProgressIndicator на время первой загрузки (аудит D-10).
+ */
+@Composable
+fun ListSkeleton(
+    modifier: Modifier = Modifier,
+    itemCount: Int = 6
+) {
+    Column(modifier = modifier.fillMaxSize()) {
+        repeat(itemCount) { SkeletonListItem() }
     }
 }
 

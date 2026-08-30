@@ -1,4 +1,4 @@
-package com.sotospeak.shared.model
+package com.sotospeak.shared.legacy
 
 import kotlinx.serialization.Serializable
 // Timestamp as ISO string

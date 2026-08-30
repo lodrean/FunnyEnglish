@@ -1,11 +1,11 @@
 package com.sotospeak.shared.api
 
-import com.sotospeak.shared.model.ClientLogDto
-import com.sotospeak.shared.model.ClientLogsBatchResponse
-import com.sotospeak.shared.model.GuestEventDto
-import com.sotospeak.shared.model.GuestEventsBatchResponse
-import com.sotospeak.shared.model.MergeGuestProgressRequest
-import com.sotospeak.shared.model.MergeGuestProgressResponse
+import com.sotospeak.shared.contracts.ClientLogDto
+import com.sotospeak.shared.contracts.ClientLogsBatchResponse
+import com.sotospeak.shared.contracts.GuestEventDto
+import com.sotospeak.shared.contracts.GuestEventsBatchResponse
+import com.sotospeak.shared.contracts.MergeGuestProgressRequest
+import com.sotospeak.shared.contracts.MergeGuestProgressResponse
 
 /**
  * Срез API: гостевой режим и публичные best-effort эндпоинты

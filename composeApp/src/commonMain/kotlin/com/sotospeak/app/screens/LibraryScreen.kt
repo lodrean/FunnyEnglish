@@ -26,7 +26,7 @@ import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.theme.SpeakingMotion
 import com.sotospeak.designsystem.theme.SpeakingShapes
 import com.sotospeak.designsystem.icons.SpeakingIcons
-import com.sotospeak.shared.model.SpeakingLibrary
+import com.sotospeak.shared.contracts.SpeakingLibrary
 import kotlin.math.abs
 
 /**

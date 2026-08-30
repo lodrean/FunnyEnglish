@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.viewmodel.MessagesState
-import com.sotospeak.shared.model.Message
-import com.sotospeak.shared.model.MessageType
+import com.sotospeak.shared.contracts.Message
+import com.sotospeak.shared.contracts.MessageType
 
 /**
  * Экран входящих сообщений от учителя (inbox).

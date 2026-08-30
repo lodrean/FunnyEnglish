@@ -10,8 +10,8 @@ import androidx.compose.ui.test.performClick
 import com.sotospeak.app.screens.ProfileScreen
 import com.sotospeak.app.viewmodel.ProfileState
 import com.sotospeak.designsystem.theme.FunnyTheme
-import com.sotospeak.shared.model.User
-import com.sotospeak.shared.model.UserProfile
+import com.sotospeak.shared.contracts.User
+import com.sotospeak.shared.contracts.UserProfile
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

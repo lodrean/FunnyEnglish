@@ -49,7 +49,7 @@ import com.sotospeak.designsystem.theme.FunnyTheme
 import com.sotospeak.designsystem.layout.MaxContentWidth
 import com.sotospeak.app.viewmodel.*
 import com.sotospeak.app.components.MergeProgressDialog
-import com.sotospeak.shared.model.AuthMode
+import com.sotospeak.shared.contracts.AuthMode
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinContext
 import org.koin.compose.viewmodel.koinViewModel

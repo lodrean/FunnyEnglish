@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.storage.RecordingKind
-import com.sotospeak.shared.model.SpeakingLibrary
+import com.sotospeak.shared.contracts.SpeakingLibrary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel

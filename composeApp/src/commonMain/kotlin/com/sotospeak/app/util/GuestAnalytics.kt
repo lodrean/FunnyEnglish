@@ -1,7 +1,7 @@
 package com.sotospeak.app.util
 
 import com.sotospeak.shared.api.GuestApi
-import com.sotospeak.shared.model.GuestEventDto
+import com.sotospeak.shared.contracts.GuestEventDto
 import com.sotospeak.shared.repository.GuestProgressRepository
 
 /**

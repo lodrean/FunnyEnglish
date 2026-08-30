@@ -8,7 +8,7 @@ import com.sotospeak.shared.api.ApiException
 import com.sotospeak.shared.api.AuthApi
 import com.sotospeak.shared.api.GuestApi
 import com.sotospeak.shared.api.TokenProvider
-import com.sotospeak.shared.model.*
+import com.sotospeak.shared.contracts.*
 import com.sotospeak.shared.repository.GuestProgressRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

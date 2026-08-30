@@ -1,8 +1,8 @@
 package com.sotospeak.shared.repository
 
-import com.sotospeak.shared.model.GuestEventDto
-import com.sotospeak.shared.model.GuestSession
-import com.sotospeak.shared.model.GuestTestProgress
+import com.sotospeak.shared.contracts.GuestEventDto
+import com.sotospeak.shared.contracts.GuestSession
+import com.sotospeak.shared.contracts.GuestTestProgress
 import com.sotospeak.shared.platform.Settings
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

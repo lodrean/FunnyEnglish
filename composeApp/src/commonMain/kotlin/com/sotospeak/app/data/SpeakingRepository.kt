@@ -3,10 +3,10 @@ package com.sotospeak.app.data
 import com.sotospeak.app.storage.RecordingMeta
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.shared.api.SpeakingApi
-import com.sotospeak.shared.model.SpeakingLibrary
-import com.sotospeak.shared.model.SpeakingSubmission
-import com.sotospeak.shared.model.SpeakingTopicDetail
-import com.sotospeak.shared.model.SpeakingTopicListItem
+import com.sotospeak.shared.contracts.SpeakingLibrary
+import com.sotospeak.shared.contracts.SpeakingSubmission
+import com.sotospeak.shared.contracts.SpeakingTopicDetail
+import com.sotospeak.shared.contracts.SpeakingTopicListItem
 
 /**
  * Speaking-домен (библиотеки/топики/вопросы/записи): единая точка доступа VM

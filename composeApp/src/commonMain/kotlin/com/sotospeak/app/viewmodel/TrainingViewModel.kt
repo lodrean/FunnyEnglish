@@ -7,7 +7,7 @@ import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.recorder.RecordingSessionController
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
-import com.sotospeak.shared.model.SpeakingQuestion
+import com.sotospeak.shared.contracts.SpeakingQuestion
 import com.sotospeak.shared.platform.AudioPlayer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

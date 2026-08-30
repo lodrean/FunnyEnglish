@@ -25,11 +25,11 @@ import com.sotospeak.app.viewmodel.QuestionsState
 import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.FunnyThemePreview
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
-import com.sotospeak.shared.model.SpeakingGrade
-import com.sotospeak.shared.model.SpeakingQuestion
-import com.sotospeak.shared.model.SpeakingSubmission
-import com.sotospeak.shared.model.User
-import com.sotospeak.shared.model.UserProfile
+import com.sotospeak.shared.contracts.SpeakingGrade
+import com.sotospeak.shared.contracts.SpeakingQuestion
+import com.sotospeak.shared.contracts.SpeakingSubmission
+import com.sotospeak.shared.contracts.User
+import com.sotospeak.shared.contracts.UserProfile
 
 @Preview(showBackground = true)
 @Composable

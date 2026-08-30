@@ -1,6 +1,6 @@
 package com.sotospeak.shared.api
 
-import com.sotospeak.shared.model.*
+import com.sotospeak.shared.contracts.*
 import com.sotospeak.shared.util.Logger as AppLogger
 import io.ktor.client.*
 import io.ktor.client.call.*

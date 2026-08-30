@@ -1,10 +1,10 @@
 package com.sotospeak.shared.api
 
-import com.sotospeak.shared.model.GroupDetail
-import com.sotospeak.shared.model.JoinGroupResponse
-import com.sotospeak.shared.model.Message
-import com.sotospeak.shared.model.StudentGroup
-import com.sotospeak.shared.model.UnreadCountResponse
+import com.sotospeak.shared.contracts.GroupDetail
+import com.sotospeak.shared.contracts.JoinGroupResponse
+import com.sotospeak.shared.contracts.Message
+import com.sotospeak.shared.contracts.StudentGroup
+import com.sotospeak.shared.contracts.UnreadCountResponse
 
 /**
  * Срез API: коммуникация с учителем — inbox сообщений и учебные группы.

@@ -10,7 +10,7 @@ import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
 import com.sotospeak.shared.api.ApiException
 import com.sotospeak.shared.api.TokenProvider
-import com.sotospeak.shared.model.SpeakingQuestion
+import com.sotospeak.shared.contracts.SpeakingQuestion
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

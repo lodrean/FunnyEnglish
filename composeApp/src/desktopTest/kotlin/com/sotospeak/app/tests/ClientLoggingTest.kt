@@ -1,7 +1,7 @@
 package com.sotospeak.app.tests
 
 import com.sotospeak.app.util.LogUploader
-import com.sotospeak.shared.model.ClientLogDto
+import com.sotospeak.shared.contracts.ClientLogDto
 import com.sotospeak.shared.platform.Settings
 import com.sotospeak.shared.util.ClientLogQueue
 import kotlinx.coroutines.runBlocking

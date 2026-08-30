@@ -36,14 +36,12 @@ class AdminUserInitializer(
                     || !passwordEncoder.matches(adminPassword, existingAdmin.passwordHash)
 
             if (needsUpdate) {
-                val updatedAdmin = existingAdmin.copy(
-                    email = adminEmail,
-                    passwordHash = passwordEncoder.encode(adminPassword),
-                    displayName = adminDisplayName,
-                    role = "ADMIN",
-                    emailVerified = true   // системный пользователь — не блокируем email-верификацией
-                )
-                userRepository.save(updatedAdmin)
+                existingAdmin.email = adminEmail
+                existingAdmin.passwordHash = passwordEncoder.encode(adminPassword)
+                existingAdmin.displayName = adminDisplayName
+                existingAdmin.role = "ADMIN"
+                existingAdmin.emailVerified = true   // системный пользователь — не блокируем email-верификацией
+                userRepository.save(existingAdmin)
                 logger.info("Admin user updated: {}", adminEmail)
             } else {
                 logger.info("Admin user already exists: {}", adminEmail)
@@ -80,11 +78,9 @@ class AdminUserInitializer(
             val needsUpdate = !passwordEncoder.matches(demoPassword, existingDemo.passwordHash)
                     || !existingDemo.emailVerified
             if (needsUpdate) {
-                val updatedDemo = existingDemo.copy(
-                    passwordHash = passwordEncoder.encode(demoPassword),
-                    emailVerified = true
-                )
-                userRepository.save(updatedDemo)
+                existingDemo.passwordHash = passwordEncoder.encode(demoPassword)
+                existingDemo.emailVerified = true
+                userRepository.save(existingDemo)
                 logger.info("Demo user updated: {}", demoEmail)
             } else {
                 logger.info("Demo user already exists: {}", demoEmail)

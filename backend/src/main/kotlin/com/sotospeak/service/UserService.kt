@@ -84,19 +84,14 @@ class UserService(
         val user = getUserById(userId)
         val oldLevel = calculateLevel(user.totalPoints)
 
-        val updatedUser = user.copy(
-            totalPoints = user.totalPoints + points,
-            updatedAt = Instant.now()
-        )
+        user.totalPoints += points
+        user.updatedAt = Instant.now()
 
-        val newLevel = calculateLevel(updatedUser.totalPoints)
-        val savedUser = userRepository.save(
-            if (newLevel > oldLevel) {
-                updatedUser.copy(level = newLevel)
-            } else {
-                updatedUser
-            }
-        )
+        val newLevel = calculateLevel(user.totalPoints)
+        if (newLevel > oldLevel) {
+            user.level = newLevel
+        }
+        val savedUser = userRepository.save(user)
 
         val levelUpInfo = if (newLevel > oldLevel) {
             LevelUpInfo(
@@ -127,13 +122,10 @@ class UserService(
             }
         }
 
-        return userRepository.save(
-            user.copy(
-                currentStreak = newStreak,
-                lastActivityDate = today,
-                updatedAt = today
-            )
-        )
+        user.currentStreak = newStreak
+        user.lastActivityDate = today
+        user.updatedAt = today
+        return userRepository.save(user)
     }
 
     @Transactional
@@ -183,16 +175,18 @@ class UserService(
                 else -> 0
             }
 
+            // Старые stars нужны ниже для расчёта XP-разницы — сохраняем до мутации
+            val oldStars = existingProgress?.stars ?: 0
+
             val progress = if (existingProgress != null) {
-                existingProgress.copy(
-                    score = guestProgress.score,
-                    maxScore = guestProgress.maxScore,
-                    stars = maxOf(existingProgress.stars, stars),
-                    attemptsCount = existingProgress.attemptsCount + 1,
-                    bestScore = maxOf(existingProgress.bestScore, guestProgress.score),
-                    timeSpentSeconds = guestProgress.timeSpentSeconds,
-                    lastAttemptAt = Instant.now()
-                )
+                existingProgress.score = guestProgress.score
+                existingProgress.maxScore = guestProgress.maxScore
+                existingProgress.stars = maxOf(existingProgress.stars, stars)
+                existingProgress.attemptsCount += 1
+                existingProgress.bestScore = maxOf(existingProgress.bestScore, guestProgress.score)
+                existingProgress.timeSpentSeconds = guestProgress.timeSpentSeconds
+                existingProgress.lastAttemptAt = Instant.now()
+                existingProgress
             } else {
                 Progress(
                     user = user,
@@ -213,7 +207,7 @@ class UserService(
                 test.pointsReward + (stars * 5)
             } else {
                 // Only award difference for improvement
-                val oldXp = test.pointsReward + (existingProgress.stars * 5)
+                val oldXp = test.pointsReward + (oldStars * 5)
                 val newXp = test.pointsReward + (stars * 5)
                 maxOf(0, newXp - oldXp)
             }

@@ -35,9 +35,11 @@ class QuestionService(
      * Маппинг JSON content в legacy-поля (text/audioUrl) и список Answer.
      * JSONB content в сущности отключён — скоринг (TestValidationService) и
      * публичная выдача работают по legacy Answer-строкам.
+     *
+     * Мутирует переданный вопрос (managed-инстанс или новый до save).
      */
-    private fun mapContentToLegacy(question: Question, type: QuestionType, content: JsonNode?): Pair<Question, List<Answer>> {
-        if (content == null || content.isNull) return question to emptyList()
+    private fun mapContentToLegacy(question: Question, type: QuestionType, content: JsonNode?): List<Answer> {
+        if (content == null || content.isNull) return emptyList()
 
         fun answer(text: String? = null, imageUrl: String? = null, isCorrect: Boolean = false,
                    displayOrder: Int = 0, matchTarget: String? = null) = Answer(
@@ -48,41 +50,48 @@ class QuestionService(
         return when (type) {
             QuestionType.TEXT_SELECT -> {
                 val c = objectMapper.treeToValue(content, TextSelectContentRequest::class.java)
-                question.copy(text = c.text) to c.answers.mapIndexed { i, a ->
+                question.text = c.text
+                c.answers.mapIndexed { i, a ->
                     answer(text = a.text, isCorrect = a.isCorrect, displayOrder = i)
                 }
             }
             QuestionType.IMAGE_SELECT -> {
                 val c = objectMapper.treeToValue(content, ImageSelectContentRequest::class.java)
-                question.copy(text = c.text) to c.answers.mapIndexed { i, a ->
+                question.text = c.text
+                c.answers.mapIndexed { i, a ->
                     answer(text = a.text ?: a.emoji, imageUrl = a.imageUrl, isCorrect = a.isCorrect, displayOrder = i)
                 }
             }
             QuestionType.AUDIO_SELECT -> {
                 val c = objectMapper.treeToValue(content, AudioSelectContentRequest::class.java)
-                question.copy(text = c.text, audioUrl = c.audioUrl) to c.answers.mapIndexed { i, a ->
+                question.text = c.text
+                question.audioUrl = c.audioUrl
+                c.answers.mapIndexed { i, a ->
                     answer(text = a.text, isCorrect = a.isCorrect, displayOrder = i)
                 }
             }
             QuestionType.FILL_BLANK -> {
                 val c = objectMapper.treeToValue(content, FillBlankContentRequest::class.java)
-                question.copy(text = "${c.textBefore} ___ ${c.textAfter}") to c.answers.mapIndexed { i, a ->
+                question.text = "${c.textBefore} ___ ${c.textAfter}"
+                c.answers.mapIndexed { i, a ->
                     answer(text = a.text, isCorrect = a.isCorrect, displayOrder = i)
                 }
             }
             QuestionType.DRAG_DROP_MATCH, QuestionType.DRAG_DROP_IMAGE -> {
                 val c = objectMapper.treeToValue(content, DragDropMatchContentRequest::class.java)
-                question.copy(text = c.text) to c.items.mapIndexed { i, item ->
+                question.text = c.text
+                c.items.mapIndexed { i, item ->
                     answer(text = item.text, isCorrect = true, displayOrder = i, matchTarget = item.targetId)
                 }
             }
             QuestionType.DRAG_DROP_SORT -> {
                 val c = objectMapper.treeToValue(content, DragDropSortContentRequest::class.java)
-                question.copy(text = c.text) to c.items.map { item ->
+                question.text = c.text
+                c.items.map { item ->
                     answer(text = item.text, isCorrect = true, displayOrder = item.correctOrder)
                 }
             }
-            QuestionType.IMAGE_WORD_MATCH -> question to emptyList() // свой endpoint/репозитории
+            QuestionType.IMAGE_WORD_MATCH -> emptyList() // свой endpoint/репозитории
         }
     }
 
@@ -108,8 +117,8 @@ class QuestionService(
             hint = request.hint
         )
 
-        val (mapped, answers) = mapContentToLegacy(question, request.type, request.content)
-        val saved = questionRepository.save(mapped)
+        val answers = mapContentToLegacy(question, request.type, request.content)
+        val saved = questionRepository.save(question)
         answers.forEach { answerRepository.save(it) }
 
         return saved.toDtoResponse()
@@ -120,27 +129,24 @@ class QuestionService(
         val question = questionRepository.findByIdOrNull(id)
             ?: throw IllegalArgumentException("Question not found")
 
-        var updated = question.copy(
-            title = request.title ?: question.title,
-            mediaUrl = request.mediaUrl ?: question.mediaUrl,
-            displayOrder = request.displayOrder ?: question.displayOrder,
-            points = request.points ?: question.points,
-            timeLimitSeconds = request.timeLimitSeconds ?: question.timeLimitSeconds,
-            explanation = request.explanation ?: question.explanation,
-            hint = request.hint ?: question.hint,
-            isPublished = request.isPublished ?: question.isPublished,
-            updatedAt = Instant.now()
-        )
+        request.title?.let { question.title = it }
+        request.mediaUrl?.let { question.mediaUrl = it }
+        request.displayOrder?.let { question.displayOrder = it }
+        request.points?.let { question.points = it }
+        request.timeLimitSeconds?.let { question.timeLimitSeconds = it }
+        request.explanation?.let { question.explanation = it }
+        request.hint?.let { question.hint = it }
+        request.isPublished?.let { question.isPublished = it }
+        question.updatedAt = Instant.now()
 
         // content прислан — пересобираем legacy-поля и ответы
         if (request.content != null && !request.content.isNull) {
-            val (mapped, answers) = mapContentToLegacy(updated, question.type, request.content)
-            updated = mapped
+            val answers = mapContentToLegacy(question, question.type, request.content)
             answerRepository.deleteByQuestionId(question.id)
             answers.forEach { answerRepository.save(it) }
         }
 
-        return questionRepository.save(updated).toDtoResponse()
+        return questionRepository.save(question).toDtoResponse()
     }
 
     @Transactional
@@ -209,7 +215,8 @@ class QuestionService(
         
         questionIds.forEachIndexed { index, id ->
             questions.find { it.id == id }?.let { question ->
-                questionRepository.save(question.copy(displayOrder = index + 1))
+                question.displayOrder = index + 1
+                questionRepository.save(question)
             }
         }
     }
@@ -329,15 +336,13 @@ class QuestionService(
         
         validateCreateImageWordMatchRequest(request)
         
-        val updatedQuestion = existingQuestion.copy(
-            title = request.instruction,
-            imageUrl = request.imageUrl,
-            mediaUrl = request.imageUrl,
-            points = request.points,
-            updatedAt = Instant.now()
-        )
+        existingQuestion.title = request.instruction
+        existingQuestion.imageUrl = request.imageUrl
+        existingQuestion.mediaUrl = request.imageUrl
+        existingQuestion.points = request.points
+        existingQuestion.updatedAt = Instant.now()
         
-        val savedQuestion = questionRepository.save(updatedQuestion)
+        val savedQuestion = questionRepository.save(existingQuestion)
         
         // Update IMAGE_WORD_MATCH specific data
         saveImageWordMatchData(savedQuestion.id, existingQuestion.test?.id ?: 

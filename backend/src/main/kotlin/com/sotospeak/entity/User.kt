@@ -6,18 +6,18 @@ import java.util.UUID
 
 @Entity
 @Table(name = "users")
-data class User(
+class User(
     @Id
     val id: UUID = UUID.randomUUID(),
 
     @Column(unique = true, nullable = false)
-    val email: String,
+    var email: String,
 
     @Column(name = "password_hash")
-    val passwordHash: String? = null,
+    var passwordHash: String? = null,
 
     @Column(name = "display_name", nullable = false)
-    val displayName: String,
+    var displayName: String,
 
     @Column(name = "avatar_url")
     var avatarUrl: String? = null,
@@ -48,7 +48,7 @@ data class User(
     var previousStreakBeforeBreak: Int? = null,
 
     @Column(nullable = false)
-    val role: String = "USER",
+    var role: String = "USER",
 
     @Column(name = "email_verified", nullable = false)
     var emailVerified: Boolean = false,
@@ -69,7 +69,15 @@ data class User(
         inverseJoinColumns = [JoinColumn(name = "achievement_id")]
     )
     val achievements: MutableSet<AchievementEntity> = mutableSetOf()
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is User) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 enum class AuthProvider {
     EMAIL, GOOGLE, VK, TELEGRAM

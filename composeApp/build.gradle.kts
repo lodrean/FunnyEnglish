@@ -153,7 +153,7 @@ kotlin {
             implementation("io.kotest:kotest-assertions-core:5.8.0")
         }
 
-        // Скриншот-тесты (Dropshots, golden-эталоны в src/androidInstrumentedTest/screenshots)
+        // Скриншот-тесты (Dropshots, golden-эталоны закоммичены в src/androidTest/screenshots — AGP-директория, грабля №98)
         val androidInstrumentedTest by getting
         androidInstrumentedTest.dependencies {
             implementation(libs.dropshots)

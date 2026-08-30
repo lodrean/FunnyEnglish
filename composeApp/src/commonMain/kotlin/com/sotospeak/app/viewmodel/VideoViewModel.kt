@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.app.subtitles.SubtitleCue
 import com.sotospeak.app.subtitles.WebVttParser
 import com.sotospeak.shared.contracts.SpeakingTopicDetail
@@ -26,7 +28,7 @@ data class VideoState(
     val subtitleCues: List<SubtitleCue> = emptyList(),
     val videoError: Boolean = false,          // «видео не загружается» — retry + «К вопросам»
     val reloadNonce: Int = 0,                 // M1-фикс (review): ключ перезапуска плеера при retry
-    val error: String? = null
+    val error: UiText? = null
 )
 
 sealed interface VideoAction {
@@ -106,7 +108,7 @@ class VideoViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }

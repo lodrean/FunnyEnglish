@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.platform.Settings
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +18,7 @@ data class TopicsState(
     val isLoading: Boolean = false,
     val libraryTitle: String = "",
     val topics: List<TopicUiModel> = emptyList(),
-    val error: String? = null
+    val error: UiText? = null
 )
 
 /** UI-модель топика: DTO + локальный прогресс из Settings (просмотрен / есть training-записи) */
@@ -98,7 +100,7 @@ class TopicsViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }

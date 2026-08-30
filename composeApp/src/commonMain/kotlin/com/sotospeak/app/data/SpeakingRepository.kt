@@ -15,8 +15,9 @@ import com.sotospeak.shared.contracts.SpeakingTopicListItem
  *
  * Умеренный разбор монолита SoToSpeakApi (bd FunnyEnglish-5tf.5, К4 §2.2
  * PROJECT-REVIEW-2026-08-28): VM больше не ходят в сеть напрямую.
- * Репозиторий намеренно тонкий — маппинг ошибок в UiText остаётся follow-up'ом
- * (предложение 5 того же обзора).
+ * Репозиторий намеренно тонкий. Маппинг ошибок ApiException → UiText —
+ * `Throwable.toUiText()` (app/error/UiText.kt, bd FunnyEnglish-5tf.6,
+ * предложение 5 того же обзора), применяется VM в onFailure.
  */
 class SpeakingRepository(
     private val api: SpeakingApi,

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.SpeakingField
+import com.sotospeak.app.error.asString
 import com.sotospeak.app.viewmodel.AuthState
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.designsystem.animations.speakingPressable
@@ -161,7 +162,7 @@ fun RegisterScreen(
         if (state.error != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = state.error,
+                text = state.error.asString(),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = speaking.errorText,

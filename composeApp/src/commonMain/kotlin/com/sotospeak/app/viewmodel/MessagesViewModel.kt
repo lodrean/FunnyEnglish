@@ -2,6 +2,8 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.api.MessagingApi
 import com.sotospeak.shared.contracts.Message
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +14,7 @@ import kotlinx.coroutines.launch
 data class MessagesState(
     val isLoading: Boolean = false,
     val messages: List<Message> = emptyList(),
-    val error: String? = null
+    val error: UiText? = null
 )
 
 /**
@@ -45,7 +47,7 @@ class MessagesViewModel(
                 .onFailure { error ->
                     _state.value = MessagesState(
                         isLoading = false,
-                        error = error.message ?: "Не удалось загрузить сообщения"
+                        error = error.toUiText()
                     )
                 }
         }

@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.di.SessionEvents
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.app.util.GuestAnalytics
 import com.sotospeak.shared.api.ApiException
 import com.sotospeak.shared.api.AuthApi
@@ -28,7 +30,7 @@ data class AuthState(
     val isLoading: Boolean = false,
     val mode: AuthMode = AuthMode.UNKNOWN,
     val user: User? = null,
-    val error: String? = null,
+    val error: UiText? = null,
     val hasPendingGuestProgress: Boolean = false,
     /** Регистрация прошла, письмо отправлено — ждём подтверждения (auto-login нет, email-верификация flag=on). */
     val verificationEmailSentTo: String? = null,
@@ -124,7 +126,7 @@ class AuthViewModel(
                     _state.value = _state.value.copy(
                         isLoading = false,
                         emailNotVerified = notVerified,
-                        error = if (notVerified) null else (error.message ?: "Ошибка входа")
+                        error = if (notVerified) null else error.toUiText()
                     )
                 }
         }
@@ -156,7 +158,7 @@ class AuthViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка регистрации"
+                        error = error.toUiText()
                     )
                 }
         }
@@ -180,7 +182,7 @@ class AuthViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка авторизации"
+                        error = error.toUiText()
                     )
                 }
         }
@@ -235,7 +237,7 @@ class AuthViewModel(
                 .onFailure { error ->
                     // Keep dialog open so user can retry; log error
                     _state.value = _state.value.copy(
-                        error = error.message ?: "Не удалось перенести прогресс"
+                        error = error.toUiText()
                     )
                 }
         }

@@ -11,10 +11,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.asString
 
 @Composable
 fun MergeProgressDialog(
-    error: String? = null,
+    error: UiText? = null,
     onMerge: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -27,7 +29,7 @@ fun MergeProgressDialog(
                 if (error != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = error,
+                        text = error.asString(),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )

@@ -3,6 +3,8 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.error.UiText
+import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.contracts.SpeakingQuestion
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +21,7 @@ data class QuestionsState(
     val questions: List<SpeakingQuestion> = emptyList(),
     val isGuest: Boolean = false,          // Practice заблокирован для гостя (PRD Story 3)
     val hasSubmitted: Boolean = false,     // Practice уже пройден для этого топика
-    val error: String? = null
+    val error: UiText? = null
 )
 
 sealed interface QuestionsAction {
@@ -96,7 +98,7 @@ class QuestionsViewModel(
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Ошибка загрузки"
+                        error = error.toUiText()
                     )
                 }
         }

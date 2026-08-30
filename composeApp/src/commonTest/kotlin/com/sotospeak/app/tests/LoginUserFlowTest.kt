@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import com.sotospeak.app.error.UiText
 import com.sotospeak.app.screens.LoginScreen
 import com.sotospeak.shared.contracts.AuthMode
 import com.sotospeak.app.viewmodel.AuthState
@@ -61,7 +62,7 @@ class LoginUserFlowTest : BaseUiTest() {
     @Test
     fun userSeesErrorFromState() = runTest(
         content = {
-            LoginScreenForTest(state = AuthState(error = "Invalid email or password"))
+            LoginScreenForTest(state = AuthState(error = UiText.Message("Invalid email or password")))
         }
     ) {
         onNodeWithText("Invalid email or password").assertIsDisplayed()

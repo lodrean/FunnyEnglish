@@ -1,3 +1,5 @@
+// GENERATED FILE — не редактировать вручную.
+// Источник: .docs/design-system/tokens.json; генератор: scripts/generate_design_tokens.py.
 package com.sotospeak.designsystem.theme
 
 import androidx.compose.animation.core.CubicBezierEasing
@@ -16,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.designsystem.tokens.NunitoFontFamily
 
 /**
- * Speaking Trainer — токены Playful Coach v1.1 (.docs/design-system/tokens.json).
+ * Speaking Trainer — токены Playful Coach v1.3.1 (.docs/design-system/tokens.json).
  *
  * Используются speaking-экранами (legacy-палитра FunnyColorScheme удалена, bd FunnyEnglish-2oz.6).
  * Доступ: `MaterialTheme.speakingColors` или `LocalSpeakingColors.current`.
@@ -94,7 +96,7 @@ val LightSpeakingColors = SpeakingColors(
     statusReviewedContainer = Color(0xFFC8E6C9),
     success = Color(0xFF43A047),
     error = Color(0xFFE53935),
-    errorText = Color(0xFFB3261E),
+    errorText = Color(0xFFB3261E), // нет в tokens.json: M3 error text role, кандидат на расширение токенов
     scrimSubtitle = Color(0xB3000000),
     scrimVideoControls = Color(0x80000000)
 )
@@ -119,11 +121,11 @@ val DarkSpeakingColors = LightSpeakingColors.copy(
     onRecord = Color(0xFF161A2E),
     recordContainer = Color(0xFF59311C),      // v1.3.0 M3 dark (был #4A2A18)
     onRecordContainer = Color(0xFFFFD9C2),    // v1.3.0 M3 dark (был #FFCCAA)
-    statusNew = Color(0xFFFFB74D),
-    statusNewContainer = Color(0xFF3D2A0A),
-    statusReviewed = Color(0xFF81C784),
-    statusReviewedContainer = Color(0xFF1B4D1F),
-    errorText = Color(0xFFF2B8B5)  // M3 dark error: на #161A2E читается по AA
+    statusNew = Color(0xFFFFB74D),           // нет в tokens.json: dark-статусы, кандидат на расширение
+    statusNewContainer = Color(0xFF3D2A0A),  // нет в tokens.json
+    statusReviewed = Color(0xFF81C784),      // нет в tokens.json
+    statusReviewedContainer = Color(0xFF1B4D1F), // нет в tokens.json
+    errorText = Color(0xFFF2B8B5)  // M3 dark error: на #161A2E читается по AA (нет в tokens.json)
 )
 
 val LocalSpeakingColors = staticCompositionLocalOf { LightSpeakingColors }

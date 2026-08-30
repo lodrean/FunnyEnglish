@@ -1,3 +1,5 @@
+// GENERATED FILE — не редактировать вручную.
+// Источник: .docs/design-system/tokens.json; генератор: scripts/generate_design_tokens.py.
 package com.sotospeak.designsystem.theme
 
 import androidx.compose.material3.Shapes
@@ -16,7 +18,7 @@ import com.sotospeak.designsystem.tokens.NunitoFontFamily
 
 /**
  * M3 color scheme Playful Coach — DSM-5 §1.1 (docs/design/M3_IMPLEMENTATION_MAPPING.md),
- * значения HEX 1:1 из tokens.json v1.3.0.
+ * значения HEX 1:1 из tokens.json v1.3.1.
  *
  * Ключевое правило WCAG (спека §3): light `primary` = primaryStrong #3B6FD4,
  * потому что M3 кладёт белый onPrimary на primary (белый на #5B8DEF = 3.23:1 FAIL).

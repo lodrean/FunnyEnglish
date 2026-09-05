@@ -58,10 +58,19 @@ class PracticeSubmissionServiceTest {
         every { submissionRepository.findFirstByUserIdAndTopicId(any(), any()) } returns null
     }
 
-    private fun audioFile(size: Long = 1024): MultipartFile = mockk {
+    // Валидная m4a-подпись: [size]"ftypM4A " (bd FunnyEnglish-nj2.8, magic-bytes)
+    private fun m4aBytes(): ByteArray {
+        val b = ByteArray(16)
+        b[4] = 'f'.code.toByte(); b[5] = 't'.code.toByte(); b[6] = 'y'.code.toByte(); b[7] = 'p'.code.toByte()
+        b[8] = 'M'.code.toByte(); b[9] = '4'.code.toByte(); b[10] = 'A'.code.toByte(); b[11] = ' '.code.toByte()
+        return b
+    }
+
+    private fun audioFile(size: Long = 1024, content: ByteArray = m4aBytes()): MultipartFile = mockk {
         every { this@mockk.size } returns size
         every { originalFilename } returns "rec.m4a"
         every { contentType } returns "audio/m4a"
+        every { inputStream } returns java.io.ByteArrayInputStream(content)
     }
 
     // 1. createSubmission — успех
@@ -96,6 +105,18 @@ class PracticeSubmissionServiceTest {
         assertThrows<com.sotospeak.exception.DuplicateSubmissionException> {
             service.createSubmission(userId, topicId, 30, audioFile())
         }
+    }
+
+    // 1c. createSubmission — контент не аудио (magic-bytes не совпали) → 400, upload не вызывается (bd nj2.8)
+    @Test
+    fun `createSubmission - non-audio content rejected by magic-bytes before upload`() {
+        every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId) } returns Optional.of(topic)
+
+        val fake = "definitely not an audio file!!".toByteArray()
+        assertThrows<IllegalArgumentException> {
+            service.createSubmission(userId, topicId, 30, audioFile(content = fake))
+        }
+        verify(exactly = 0) { storageService.uploadFile(any(), any()) }
     }
 
     // 2. createSubmission — топик не опубликован/удалён → 404

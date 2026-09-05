@@ -56,6 +56,15 @@ import java.util.UUID
 @ActiveProfiles("test")
 @Transactional
 class SpeakingFlowIntegrationTest {
+    // Валидный m4a-контент: ftyp-подпись на смещении 4 (bd FunnyEnglish-nj2.8, magic-bytes)
+    private fun validM4a(): ByteArray {
+        val b = ByteArray(1024)
+        b[4] = 'f'.code.toByte(); b[5] = 't'.code.toByte(); b[6] = 'y'.code.toByte(); b[7] = 'p'.code.toByte()
+        b[8] = 'M'.code.toByte(); b[9] = '4'.code.toByte(); b[10] = 'A'.code.toByte(); b[11] = ' '.code.toByte()
+        return b
+    }
+
+
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -186,7 +195,7 @@ class SpeakingFlowIntegrationTest {
     @Test
     fun `guest cannot submit practice recording`() {
         val topic = seedPublishedContent()
-        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", ByteArray(1024))
+        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())
 
         mockMvc.multipart(HttpMethod.POST, "/speaking/submissions") {
             this.file(file)
@@ -199,7 +208,7 @@ class SpeakingFlowIntegrationTest {
     @Test
     fun `user can submit practice recording`() {
         val topic = seedPublishedContent()
-        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", ByteArray(1024))
+        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())
 
         mockMvc.multipart(HttpMethod.POST, "/speaking/submissions") {
             this.file(file)
@@ -236,7 +245,7 @@ class SpeakingFlowIntegrationTest {
         val topic = seedPublishedContent()
         submitAs(userToken, topic.id!!)
 
-        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", ByteArray(1024))
+        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())
         mockMvc.multipart(HttpMethod.POST, "/speaking/submissions") {
             this.file(file)
             param("topicId", topic.id.toString())
@@ -642,7 +651,7 @@ class SpeakingFlowIntegrationTest {
     // ============== helpers ==============
 
     private fun submitAs(token: String, topicId: UUID): String {
-        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", ByteArray(1024))
+        val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())
         val response = mockMvc.multipart(HttpMethod.POST, "/speaking/submissions") {
             this.file(file)
             param("topicId", topicId.toString())

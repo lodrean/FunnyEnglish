@@ -71,7 +71,12 @@ class PracticeSubmissionService(
         require(file.size <= MAX_AUDIO_SIZE_BYTES) {
             "Audio file too large (max 5 MB)"
         }
-        // расширение/content-type проверит StorageService.uploadFile → 400
+        // 2b. Magic-bytes: контент должен соответствовать заявленному аудио-формату
+        // (bd FunnyEnglish-nj2.8 — расширение/content-type подделываются тривиально).
+        // Расширение/content-type дополнительно проверит StorageService.uploadFile → 400.
+        require(AudioSignatureValidator.isAllowedAudio(AudioSignatureValidator.readHeader(file.inputStream))) {
+            "Audio content does not match allowed formats (m4a/aac/mp3/wav/ogg)"
+        }
 
         // 3. Upload в MinIO (публичный URL из S3_PUBLIC_URL, BUG-004)
         val audioUrl = storageService.uploadFile(file, "speaking/submissions/u_$userId")

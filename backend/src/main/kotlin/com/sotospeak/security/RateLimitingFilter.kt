@@ -52,6 +52,9 @@ class RateLimitingFilter(
     private val loginConfig = RateLimitConfig(envInt("RATE_LIMIT_LOGIN_CAPACITY", 5), 1, 12)      // 5 per minute, refill 1 per 12s
     private val registerConfig = RateLimitConfig(envInt("RATE_LIMIT_REGISTER_CAPACITY", 3), 1, 20)   // 3 per minute, refill 1 per 20s
     private val mergeConfig = RateLimitConfig(3, 1, 10)      // burst 3, then 1 per 10s
+    // Upload practice-записей (bd FunnyEnglish-nj2.8): защищаем S3-хранилище от
+    // закачки мусора. 10/мин на IP — реальный ученик делает единицы попыток.
+    private val uploadConfig = RateLimitConfig(envInt("RATE_LIMIT_UPLOAD_CAPACITY", 10), 1, 6)
     private val defaultConfig = RateLimitConfig(100, 10, 6)  // 100 per minute, refill 10 per 6s
 
     init {
@@ -167,6 +170,13 @@ class RateLimitingFilter(
             return true
         }
 
+        // Rate limit practice-загрузок (bd FunnyEnglish-nj2.8). Только ученический
+        // путь: /admin/speaking/submissions (grading) не трогаем.
+        if (method == "POST" && path.contains("/speaking/submissions") &&
+            !path.contains("/admin/")) {
+            return true
+        }
+
         return false
     }
 
@@ -256,6 +266,7 @@ class RateLimitingFilter(
             path.contains("/auth/login") -> loginConfig
             path.contains("/auth/register") -> registerConfig
             path.contains("/merge-guest-progress") -> mergeConfig
+            path.contains("/speaking/submissions") && !path.contains("/admin/") -> uploadConfig
             else -> defaultConfig
         }
     }

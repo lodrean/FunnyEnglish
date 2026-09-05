@@ -48,6 +48,7 @@ fun MainNavHost(
     authMode: AuthMode,
     settingsViewModel: SettingsViewModel,
     onNavigate: (AppScreen) -> Unit,
+    onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
     val settingsState by settingsViewModel.state.collectAsState()
@@ -96,7 +97,7 @@ fun MainNavHost(
                 DebugMenuScreen(
                     appConfig = appConfig,
                     logUploader = logUploader,
-                    onBack = { onNavigate(AppScreen.Profile) }
+                    onBack = onBack
                 )
             }
             is AppScreen.Messages -> {
@@ -106,13 +107,13 @@ fun MainNavHost(
                     state = state,
                     onLoad = { messagesViewModel.loadMessages() },
                     onMarkAsRead = { messagesViewModel.markAsRead(it) },
-                    onBack = { onNavigate(AppScreen.Profile) }
+                    onBack = onBack
                 )
             }
             is AppScreen.Settings -> {
                 SettingsScreen(
                     state = settingsState,
-                    onBack = { onNavigate(AppScreen.Profile) },
+                    onBack = onBack,
                     onToggleNotifications = settingsViewModel::setNotificationsEnabled,
                     onToggleSound = settingsViewModel::setSoundEnabled,
                     onToggleHaptics = settingsViewModel::setHapticsEnabled,
@@ -163,7 +164,7 @@ fun MainNavHost(
                                     screen.libraryTitle
                                 )
                             )
-                        is TopicsEvent.NavigateBack -> onNavigate(AppScreen.Library)
+                        is TopicsEvent.NavigateBack -> onBack()
                     }
                 }
                 TopicsScreen(
@@ -188,9 +189,7 @@ fun MainNavHost(
                             )
                         )
                     },
-                    onNavigateBack = {
-                        onNavigate(AppScreen.Topics(screen.libraryId, screen.libraryTitle))
-                    }
+                    onNavigateBack = onBack
                 )
             }
             is AppScreen.Questions -> {
@@ -221,8 +220,7 @@ fun MainNavHost(
                         is QuestionsEvent.ShowLoginCta -> onNavigate(AppScreen.Login)
                         is QuestionsEvent.NavigateToMySubmissions ->
                             onNavigate(AppScreen.MySubmissions)
-                        is QuestionsEvent.NavigateBack ->
-                            onNavigate(AppScreen.Topics(screen.libraryId, screen.libraryTitle))
+                        is QuestionsEvent.NavigateBack -> onBack()
                     }
                 }
                 QuestionsScreen(
@@ -250,15 +248,7 @@ fun MainNavHost(
                         )
                     },
                     onNavigateToLibrary = { onNavigate(AppScreen.Library) },
-                    onNavigateBack = {
-                        onNavigate(
-                            AppScreen.Questions(
-                                screen.topicId,
-                                screen.libraryId,
-                                screen.libraryTitle
-                            )
-                        )
-                    }
+                    onNavigateBack = onBack
                 )
             }
             is AppScreen.Practice -> {
@@ -267,15 +257,7 @@ fun MainNavHost(
                     libraryTitle = screen.libraryTitle,
                     onNavigateToMySubmissions = { onNavigate(AppScreen.MySubmissions) },
                     onNavigateToLibrary = { onNavigate(AppScreen.Library) },
-                    onNavigateBack = {
-                        onNavigate(
-                            AppScreen.Questions(
-                                screen.topicId,
-                                screen.libraryId,
-                                screen.libraryTitle
-                            )
-                        )
-                    }
+                    onNavigateBack = onBack
                 )
             }
             is AppScreen.MySubmissions -> {
@@ -294,7 +276,7 @@ fun MainNavHost(
                     }
                     ObserveAsEvents(vm.events) { event ->
                         when (event) {
-                            is MySubmissionsEvent.NavigateBack -> onNavigate(AppScreen.Library)
+                            is MySubmissionsEvent.NavigateBack -> onBack()
                             is MySubmissionsEvent.ShowMessage -> { /* snackbar в T12 */ }
                         }
                     }

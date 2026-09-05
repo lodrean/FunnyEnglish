@@ -28,6 +28,7 @@ fun AppScaffold(
     authMode: AuthMode,
     settingsViewModel: SettingsViewModel,
     onNavigate: (AppScreen) -> Unit,
+    onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
     val showBottomNav = currentScreen is AppScreen.Library ||
@@ -76,6 +77,7 @@ fun AppScaffold(
                             authMode = authMode,
                             settingsViewModel = settingsViewModel,
                             onNavigate = onNavigate,
+                            onBack = onBack,
                             onLogout = onLogout
                         )
                     }

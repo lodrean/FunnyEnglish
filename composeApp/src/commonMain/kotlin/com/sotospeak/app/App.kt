@@ -5,10 +5,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import com.sotospeak.app.components.PlatformBackHandler
 import com.sotospeak.app.di.appModule
 import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.localization.Strings
+import com.sotospeak.app.navigation.AppBackStack
 import com.sotospeak.app.navigation.AppScaffold
 import com.sotospeak.app.navigation.AppScreen
 import com.sotospeak.app.navigation.rememberScreenTransition
@@ -104,10 +107,15 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
         mutableStateOf(appSettings.getString(KEY_ONBOARDING_COMPLETED, null) == "true")
     }
 
-    var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Splash) }
+    val backStack = rememberSaveable(saver = AppBackStack.Saver) { AppBackStack(AppScreen.Splash) }
+
+    // App-level системный «назад» (bd 5tf.3): экраны со своим PlatformBackHandler
+    // (Topics/Video/Questions/Training/Practice) composируются позже и перехватывают
+    // событие первыми; сюда событие доходит только с экранов без собственного back.
+    PlatformBackHandler(enabled = backStack.canGoBack) { backStack.pop() }
 
     AnimatedContent(
-        targetState = currentScreen,
+        targetState = backStack.current,
         transitionSpec = rememberScreenTransition(),
         label = "app_screen_transition"
     ) { screen ->
@@ -117,7 +125,9 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
             LaunchedEffect(authState.isLoading, authState.mode) {
                 if (!authState.isLoading) {
                     kotlinx.coroutines.delay(1200)
-                    currentScreen = when {
+                    // reset: из Splash «назад» не возвращается никуда
+                    backStack.reset(
+                        when {
                         !onboardingCompleted -> AppScreen.Onboarding
                         authState.mode == AuthMode.AUTHENTICATED || authState.mode == AuthMode.GUEST -> AppScreen.Library
                         else -> {
@@ -129,6 +139,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                             AppScreen.Library
                         }
                     }
+                    )
                 }
             }
         }
@@ -141,7 +152,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                     authViewModel.startGuestSession()
                     // Без явной навигации пользователь остался бы на онбординге —
                     // LaunchedEffect с переходом по mode существует только в ветке Splash.
-                    currentScreen = AppScreen.Library
+                    backStack.reset(AppScreen.Library)
                 }
             )
         }
@@ -154,17 +165,17 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                 if (authState.mode != initialMode &&
                     (authState.mode == AuthMode.AUTHENTICATED || authState.mode == AuthMode.GUEST)
                 ) {
-                    currentScreen = AppScreen.Library
+                    backStack.reset(AppScreen.Library)
                 }
             }
             LoginScreen(
                 state = authState,
                 onLogin = { email, password -> authViewModel.login(email, password) },
-                onNavigateToRegister = { currentScreen = AppScreen.Register },
+                onNavigateToRegister = { backStack.push(AppScreen.Register) },
                 onClearError = { authViewModel.clearError() },
                 onContinueAsGuest = {
                     authViewModel.startGuestSession()
-                    currentScreen = AppScreen.Library
+                    backStack.reset(AppScreen.Library)
                 },
                 onResendVerification = { email -> authViewModel.resendVerificationEmail(email) }
             )
@@ -173,7 +184,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
             val initialMode = remember { authState.mode }
             LaunchedEffect(authState.mode) {
                 if (authState.mode != initialMode && authState.mode == AuthMode.AUTHENTICATED) {
-                    currentScreen = AppScreen.Library
+                    backStack.reset(AppScreen.Library)
                 }
             }
             RegisterScreen(
@@ -181,7 +192,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                 onRegister = { email, password, name ->
                     authViewModel.register(email, password, name)
                 },
-                onNavigateToLogin = { currentScreen = AppScreen.Login },
+                onNavigateToLogin = { backStack.popOrPush(AppScreen.Login) },
                 onClearError = { authViewModel.clearError() },
                 onResendVerification = { email -> authViewModel.resendVerificationEmail(email) }
             )
@@ -189,26 +200,33 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
         else -> {
             when (authState.mode) {
                 AuthMode.UNKNOWN -> {
-                    LoginScreen(
-                        state = authState,
-                        onLogin = { email, password -> authViewModel.login(email, password) },
-                        onNavigateToRegister = { currentScreen = AppScreen.Register },
-                        onClearError = { authViewModel.clearError() },
-                        onContinueAsGuest = {
-                            authViewModel.startGuestSession()
-                            currentScreen = AppScreen.Library
-                        }
-                    )
+                    if (authState.isLoading) {
+                        // Процессная смерть на глубоком экране: стек восстановился,
+                        // а сессия ещё инициализируется — показываем Splash, не логин.
+                        SplashScreen(isLoading = true, isDarkTheme = useDarkTheme)
+                    } else {
+                        LoginScreen(
+                            state = authState,
+                            onLogin = { email, password -> authViewModel.login(email, password) },
+                            onNavigateToRegister = { backStack.push(AppScreen.Register) },
+                            onClearError = { authViewModel.clearError() },
+                            onContinueAsGuest = {
+                                authViewModel.startGuestSession()
+                                backStack.reset(AppScreen.Library)
+                            }
+                        )
+                    }
                 }
                 AuthMode.GUEST, AuthMode.AUTHENTICATED -> {
                     AppScaffold(
                         currentScreen = screen,
                         authMode = authState.mode,
                         settingsViewModel = settingsViewModel,
-                        onNavigate = { currentScreen = it },
+                        onNavigate = { backStack.push(it) },
+                        onBack = { backStack.pop() },
                         onLogout = {
                             authViewModel.logout()
-                            currentScreen = AppScreen.Login
+                            backStack.reset(AppScreen.Login)
                         }
                     )
 

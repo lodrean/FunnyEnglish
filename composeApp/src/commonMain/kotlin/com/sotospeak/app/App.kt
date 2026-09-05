@@ -96,6 +96,26 @@ private fun AppThemedContent() {
     }
 }
 
+// Guest-first (Playful Coach v1.1): возвращающийся пользователь без сессии сразу
+// попадает в библиотеку как гость; логин показывается только при входе в
+// авторизованную зону (Practice-гейт, профиль).
+// Вынесено из suspend-лямбды LaunchedEffect: `when` по sealed-типам внутри
+// coroutine state machine генерировал невалидный wasm (CompileError при
+// instantiateStreaming, bd qbq.8) — обходим баг кодогена Kotlin/Wasm 2.1.0.
+private fun resolveSplashTarget(
+    onboardingCompleted: Boolean,
+    mode: AuthMode,
+    startGuest: () -> Unit
+): AppScreen = when {
+    !onboardingCompleted -> AppScreen.Onboarding
+    mode == AuthMode.AUTHENTICATED || mode == AuthMode.GUEST -> AppScreen.Library
+    else -> {
+        // startGuestSession() обновляет mode синхронно — мигания Login нет.
+        startGuest()
+        AppScreen.Library
+    }
+}
+
 @Composable
 private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boolean) {
     val authViewModel: AuthViewModel = koinViewModel()
@@ -126,20 +146,12 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                 if (!authState.isLoading) {
                     kotlinx.coroutines.delay(1200)
                     // reset: из Splash «назад» не возвращается никуда
-                    backStack.reset(
-                        when {
-                        !onboardingCompleted -> AppScreen.Onboarding
-                        authState.mode == AuthMode.AUTHENTICATED || authState.mode == AuthMode.GUEST -> AppScreen.Library
-                        else -> {
-                            // Guest-first (Playful Coach v1.1): возвращающийся пользователь без
-                            // сессии сразу попадает в библиотеку как гость; логин показывается
-                            // только при входе в авторизованную зону (Practice-гейт, профиль).
-                            // startGuestSession() обновляет mode синхронно — мигания Login нет.
-                            authViewModel.startGuestSession()
-                            AppScreen.Library
-                        }
-                    }
+                    val target = resolveSplashTarget(
+                        onboardingCompleted = onboardingCompleted,
+                        mode = authState.mode,
+                        startGuest = { authViewModel.startGuestSession() }
                     )
+                    backStack.reset(target)
                 }
             }
         }

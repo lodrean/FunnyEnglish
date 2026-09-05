@@ -84,10 +84,118 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Response has token', function () {",
+                  "// nj2.7: login отдаёт ПАРУ токенов (access + refresh-JWT, ротация при /auth/refresh)",
+                  "pm.test('Response has token pair', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData).to.have.property('refreshToken');",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
                   "    pm.environment.set('token', jsonData.token);",
+                  "    pm.environment.set('refreshToken', jsonData.refreshToken);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token (rotation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// nj2.7: ротация — старый refresh отозван, отдаётся НОВАЯ пара",
+                  "pm.test('Refreshed token pair', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+                  "    pm.expect(jsonData.refreshToken).to.not.eql(pm.environment.get('refreshToken'));",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "    pm.environment.set('refreshToken', jsonData.refreshToken);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh with Access Token - 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{token}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// nj2.7: access-токен больше не принимается в /auth/refresh",
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error is INVALID_REFRESH_TOKEN', function () {",
+                  "    pm.expect(pm.response.json()).to.have.property('error', 'INVALID_REFRESH_TOKEN');",
                   "});"
                 ]
               }
@@ -97,20 +205,35 @@
       ]
     },
     {
-      "name": "Categories",
+      "name": "Session",
       "item": [
         {
-          "name": "Get All Categories",
+          "name": "Logout (revoke refresh)",
           "request": {
-            "method": "GET",
-            "header": [],
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{baseUrl}}/categories",
+              "raw": "{{baseUrl}}/auth/logout",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "categories"
+                "auth",
+                "logout"
               ]
             }
           },
@@ -118,12 +241,48 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// nj2.7: logout отзывает refresh-токен; идемпотентно — всегда 200",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Current API",
+      "item": [
+        {
+          "name": "Get Public Libraries (guest)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/speaking/libraries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "public",
+                "speaking",
+                "libraries"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
                 "exec": [
                   "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
                   "pm.test('Response is array', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.be.an('array');",
-                  "    if (jsonData.length > 0) pm.environment.set('categoryId', jsonData[0].id);",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
                   "});"
                 ]
               }
@@ -131,18 +290,17 @@
           ]
         },
         {
-          "name": "Get Tests by Category",
+          "name": "Access Admin Without Auth - 401",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/categories/{{categoryId}}/tests",
+              "raw": "{{baseUrl}}/admin/tests",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "categories",
-                "{{categoryId}}",
+                "admin",
                 "tests"
               ]
             }
@@ -151,128 +309,12 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 or 404', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});",
-                  "pm.test('Response is array when found', function () {",
-                  "    if (pm.response.code === 200) {",
-                  "        pm.expect(pm.response.json()).to.be.an('array');",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Tests",
-      "item": [
-        {
-          "name": "Get All Tests",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/tests",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "tests"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Response has content', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.be.an('array');",
-                  "    if (jsonData.length > 0) pm.environment.set('testId', jsonData[0].id);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get Test by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/tests/{{testId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "tests",
-                "{{testId}}"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// id берётся из предыдущего списка; на пустой БД допускаем 404",
-                  "pm.test('Status code is 200 or 404', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});",
-                  "pm.test('Response has id when found', function () {",
-                  "    if (pm.response.code === 200) {",
-                  "        var jsonData = pm.response.json();",
-                  "        pm.expect(jsonData).to.have.property('id');",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Leaderboard",
-      "item": [
-        {
-          "name": "Get Leaderboard",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/leaderboard?limit=10",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "leaderboard"
-              ],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Response has entries array', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('entries');",
-                  "    pm.expect(jsonData.entries).to.be.an('array');",
+                  "// nj2.7: аноним на защищённом эндпоинте = 401 UNAUTHORIZED (не 403)",
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+                  "pm.test('Error is Unauthorized', function () {",
+                  "    pm.expect(pm.response.json()).to.have.property('error', 'Unauthorized');",
                   "});"
                 ]
               }

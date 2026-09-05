@@ -43,22 +43,22 @@ export const Logo: React.FC<LogoProps> = ({
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#5B8DEF" />
-            <stop offset="0.5" stopColor="#9B7EDE" />
-            <stop offset="1" stopColor="#FF9F6B" />
+            <stop offset="0" stopColor={theme.palette.primary.main} />
+            <stop offset="0.5" stopColor={theme.palette.secondary.main} />
+            <stop offset="1" stopColor={theme.palette.speaking.record} />
           </linearGradient>
         </defs>
         {/* Microphone */}
-        <rect x="12" y="4" width="12" height="22" rx="6" fill="#FF9F6B" />
+        <rect x="12" y="4" width="12" height="22" rx="6" fill={theme.palette.speaking.record} />
         <path
           d="M6 20a12 12 0 0 0 24 0"
           fill="none"
-          stroke="#FF9F6B"
+          stroke={theme.palette.speaking.record}
           strokeWidth="3.5"
           strokeLinecap="round"
         />
-        <line x1="18" y1="32" x2="18" y2="37" stroke="#FF9F6B" strokeWidth="3.5" strokeLinecap="round" />
-        <line x1="12" y1="41" x2="24" y2="41" stroke="#FF9F6B" strokeWidth="3.5" strokeLinecap="round" />
+        <line x1="18" y1="32" x2="18" y2="37" stroke={theme.palette.speaking.record} strokeWidth="3.5" strokeLinecap="round" />
+        <line x1="12" y1="41" x2="24" y2="41" stroke={theme.palette.speaking.record} strokeWidth="3.5" strokeLinecap="round" />
         {/* Waveform */}
         <g fill={`url(#${gradientId})`}>
           <rect x="38" y="20" width="5" height="8" rx="2.5" />
@@ -97,22 +97,22 @@ export const Logo: React.FC<LogoProps> = ({
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#5B8DEF" />
-          <stop offset="0.5" stopColor="#9B7EDE" />
-          <stop offset="1" stopColor="#FF9F6B" />
+          <stop offset="0" stopColor={theme.palette.primary.main} />
+          <stop offset="0.5" stopColor={theme.palette.secondary.main} />
+          <stop offset="1" stopColor={theme.palette.speaking.record} />
         </linearGradient>
       </defs>
       {/* Microphone */}
-      <rect x="14" y="14" width="18" height="32" rx="9" fill="#FF9F6B" />
+      <rect x="14" y="14" width="18" height="32" rx="9" fill={theme.palette.speaking.record} />
       <path
         d="M5 38a18 18 0 0 0 36 0"
         fill="none"
-        stroke="#FF9F6B"
+        stroke={theme.palette.speaking.record}
         strokeWidth="5"
         strokeLinecap="round"
       />
-      <line x1="23" y1="56" x2="23" y2="63" stroke="#FF9F6B" strokeWidth="5" strokeLinecap="round" />
-      <line x1="14" y1="69" x2="32" y2="69" stroke="#FF9F6B" strokeWidth="5" strokeLinecap="round" />
+      <line x1="23" y1="56" x2="23" y2="63" stroke={theme.palette.speaking.record} strokeWidth="5" strokeLinecap="round" />
+      <line x1="14" y1="69" x2="32" y2="69" stroke={theme.palette.speaking.record} strokeWidth="5" strokeLinecap="round" />
       {/* Waveform */}
       <g fill={`url(#${gradientId})`}>
         <rect x="50" y="40" width="7" height="12" rx="3.5" />

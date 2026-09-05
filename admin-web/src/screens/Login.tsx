@@ -70,7 +70,7 @@ export const Login: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: (theme) =>
-          theme.palette.mode === 'dark' ? '#121212' : '#EEF3FF',
+          theme.palette.background.default, // light #EEF3FF / dark #121212 — токены темы (2oz.4)
         p: 2,
       }}
     >

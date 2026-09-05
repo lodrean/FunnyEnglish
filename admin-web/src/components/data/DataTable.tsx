@@ -500,7 +500,7 @@ export function DataTable<T>({
                 my: 0.25,
                 ...(action.danger && {
                   color: 'error.main',
-                  '&:hover': { backgroundColor: alpha('#E53935', 0.08) },
+                  '&:hover': { backgroundColor: (theme) => alpha(theme.palette.error.main, 0.08) },
                 }),
               }}
             >

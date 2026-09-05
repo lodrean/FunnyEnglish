@@ -3,15 +3,16 @@
  */
 
 import { useEffect } from 'react';
-import { useTheme } from './ThemeProvider';
+import { useTheme } from '@mui/material/styles';
 
 export const GlobalStyles: React.FC = () => {
-  const { isDarkMode } = useTheme();
+  const theme = useTheme();
 
   useEffect(() => {
-    document.body.style.backgroundColor = isDarkMode ? '#121212' : '#F5F5F5';
-    document.body.style.color = isDarkMode ? '#FFFFFF' : '#212121';
-  }, [isDarkMode]);
+    // Токены темы (2oz.4): light background.default #EEF3FF / dark #121212 (MUI default)
+    document.body.style.backgroundColor = theme.palette.background.default;
+    document.body.style.color = theme.palette.text.primary;
+  }, [theme]);
 
   return null;
 };

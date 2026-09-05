@@ -73,10 +73,12 @@ class SessionEvents {
 
 class PersistentTokenProvider(private val settings: Settings) : TokenProvider {
     private var cachedToken: String? = null
+    private var cachedRefreshToken: String? = null
 
     init {
-        // Load token from persistent storage on init
+        // Load tokens from persistent storage on init
         cachedToken = settings.getString(KEY_AUTH_TOKEN, null)
+        cachedRefreshToken = settings.getString(KEY_AUTH_REFRESH_TOKEN, null)
     }
 
     override fun getToken(): String? = cachedToken
@@ -90,7 +92,19 @@ class PersistentTokenProvider(private val settings: Settings) : TokenProvider {
         }
     }
 
+    override fun getRefreshToken(): String? = cachedRefreshToken
+
+    override fun setRefreshToken(token: String?) {
+        cachedRefreshToken = token
+        if (token != null) {
+            settings.putString(KEY_AUTH_REFRESH_TOKEN, token)
+        } else {
+            settings.remove(KEY_AUTH_REFRESH_TOKEN)
+        }
+    }
+
     companion object {
         private const val KEY_AUTH_TOKEN = "auth_token"
+        private const val KEY_AUTH_REFRESH_TOKEN = "auth_refresh_token"
     }
 }

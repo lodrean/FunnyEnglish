@@ -23,9 +23,15 @@ data class OAuthRequest(
     val avatarUrl: String? = null
 )
 
+/**
+ * Пара токенов (nj2.7): access — Bearer на API; refresh — одноразовый, для
+ * /auth/refresh (ротация при каждом обмене). Nullable + default: старый backend
+ * (до nj2.7) поле не отдаёт — клиент не должен падать на десериализации.
+ */
 @Serializable
 data class AuthResponse(
     val token: String,
+    val refreshToken: String? = null,
     val user: User
 )
 
@@ -34,7 +40,8 @@ data class AuthResponse(
 data class RegisterResponse(
     val user: User,
     val emailSent: Boolean = false,
-    val token: String? = null
+    val token: String? = null,
+    val refreshToken: String? = null
 )
 
 @Serializable

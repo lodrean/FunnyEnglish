@@ -18,6 +18,8 @@ interface AuthApi {
     suspend fun resendVerification(email: String): Result<Unit>
     suspend fun login(request: LoginRequest): Result<AuthResponse>
     suspend fun oauthLogin(provider: String, request: OAuthRequest): Result<AuthResponse>
+    /** Отзыв refresh-токена на backend (nj2.7). Идемпотентный, best-effort (всегда success). */
+    suspend fun logout(): Result<Unit>
     suspend fun getCurrentUser(): Result<User>
     suspend fun getUserProfile(): Result<UserProfile>
 }

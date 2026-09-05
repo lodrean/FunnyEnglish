@@ -116,31 +116,57 @@ class SoToSpeakApi(
     }
 
     /**
-     * Обмен access-токена (в т.ч. истёкшего, в пределах refresh-окна backend) на новый.
-     * true — токен обновлён; false — refresh не удался, токен очищен, вызван onSessionExpired.
+     * Обмен refresh-токена на новую пару (nj2.7: refresh одноразовый, ротация на
+     * каждом /auth/refresh; reuse ротированного → отзыв всех токенов + 401).
+     * true — пара обновлена; false — refresh не удался, токены очищены, вызван onSessionExpired.
      */
-    private suspend fun refreshAccessToken(token: String): Boolean {
+    private suspend fun refreshAccessToken(refreshToken: String): Boolean {
         return try {
             val response = client.post("/api/auth/refresh") {
-                setBody(RefreshTokenRequest(token))
+                setBody(RefreshTokenRequest(refreshToken))
             }.body<AuthResponse>()
+            // Порядок важен: refresh сохраняем ПЕРВЫМ. Он одноразовый — если процесс
+            // умрёт между двумя записями, сочетание «старый access + новый refresh»
+            // живо (access ещё в TTL); обратный порядок дал бы «новый access +
+            // отозванный refresh» → принудительный логин.
+            tokenProvider.setRefreshToken(response.refreshToken)
             tokenProvider.setToken(response.token)
-            AppLogger.d("HttpClient", "Access token refreshed via /auth/refresh")
+            AppLogger.d("HttpClient", "Token pair refreshed via /auth/refresh")
             true
         } catch (e: ClientRequestException) {
-            // 400/401 от backend: refresh-окно истекло или токен невалиден → сессия сбрасывается.
+            // 400/401 от backend: refresh невалид/ротирован/отозван → сессия сбрасывается.
             if (enableNetworkLogs) {
                 AppLogger.e("HttpClient", "Token refresh rejected (${e.response.status}), session cleared", e)
             }
+            tokenProvider.setRefreshToken(null)
             tokenProvider.setToken(null)
             onSessionExpired?.invoke()
             false
         } catch (e: Exception) {
-            // Сетевая ошибка (оффлайн и пр.) — НЕ разлогиниваем: токен остаётся, retry позже.
+            // Сетевая ошибка (оффлайн и пр.) — НЕ разлогиниваем: токены остаются, retry позже.
             if (enableNetworkLogs) {
                 AppLogger.e("HttpClient", "Token refresh failed (network), session kept", e)
             }
             false
+        }
+    }
+
+    /** Logout (nj2.7): отзыв refresh-токена на backend. Идемпотентный, best-effort —
+     *  локальную очистку делает вызывающий код независимо от результата. */
+    override suspend fun logout(): Result<Unit> {
+        val refreshToken = tokenProvider.getRefreshToken()
+        return try {
+            if (refreshToken != null) {
+                client.post("/api/auth/logout") {
+                    setBody(RefreshTokenRequest(refreshToken))
+                }
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            if (enableNetworkLogs) {
+                AppLogger.e("HttpClient", "Logout request failed (ignored, local session cleared anyway)", e)
+            }
+            Result.success(Unit)
         }
     }
 
@@ -285,14 +311,16 @@ class SoToSpeakApi(
         val error = result.exceptionOrNull() as? ApiException
         if (!refreshOn401 || error == null || error.code != 401) return result
 
-        val staleToken = tokenProvider.getToken() ?: return result
-        // Single-flight: параллельные 401 → один refresh; если токен уже сменился — просто retry.
+        // Refresh строится вокруг refresh-токена (nj2.7), не access: он и есть «пропуск» обмена.
+        val staleRefresh = tokenProvider.getRefreshToken() ?: return result
+        // Single-flight: параллельные 401 → один refresh; если refresh уже сменился (ротация
+        // другим потоком) — просто retry с новым access.
         val refreshed = refreshMutex.withLock {
-            val current = tokenProvider.getToken()
+            val current = tokenProvider.getRefreshToken()
             when {
                 current == null -> false            // сессию уже сбросили
-                current != staleToken -> true       // другой поток уже обновил токен
-                else -> refreshAccessToken(staleToken)
+                current != staleRefresh -> true     // другой поток уже обновил пару
+                else -> refreshAccessToken(staleRefresh)
             }
         }
         // Retry безопасен: 401 прилетает из JWT-фильтра ДО контроллера — тело запроса не выполнялось.
@@ -322,6 +350,10 @@ class SoToSpeakApi(
 interface TokenProvider {
     fun getToken(): String?
     fun setToken(token: String?)
+
+    /** Refresh-токен (nj2.7): хранится отдельно от access, ротация при каждом обмене. */
+    fun getRefreshToken(): String?
+    fun setRefreshToken(token: String?)
 }
 
 class ApiException(val code: Int, override val message: String, val errorCode: String? = null) : Exception(message)

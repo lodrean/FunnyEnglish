@@ -113,6 +113,7 @@ class AuthViewModel(
             authApi.login(LoginRequest(email.trim(), password.trim()))
                 .onSuccess { response ->
                     tokenProvider.setToken(response.token)
+                    response.refreshToken?.let { tokenProvider.setRefreshToken(it) }
                     val hasGuestProgress = guestRepo.hasProgress()
                     _state.value = _state.value.copy(
                         isLoading = false,
@@ -147,6 +148,7 @@ class AuthViewModel(
                         return@onSuccess
                     }
                     tokenProvider.setToken(response.token)
+                    response.refreshToken?.let { tokenProvider.setRefreshToken(it) }
                     val hasGuestProgress = guestRepo.hasProgress()
                     _state.value = _state.value.copy(
                         isLoading = false,
@@ -171,6 +173,7 @@ class AuthViewModel(
             authApi.oauthLogin(provider, OAuthRequest(token, email, displayName, avatarUrl))
                 .onSuccess { response ->
                     tokenProvider.setToken(response.token)
+                    response.refreshToken?.let { tokenProvider.setRefreshToken(it) }
                     val hasGuestProgress = guestRepo.hasProgress()
                     _state.value = _state.value.copy(
                         isLoading = false,
@@ -189,7 +192,11 @@ class AuthViewModel(
     }
 
     fun logout() {
+        // Отзыв refresh-токена на backend — best-effort и идемпотентно (nj2.7):
+        // локальная сессия чистится сразу, сетевые ошибки игнорируются.
+        viewModelScope.launch { authApi.logout() }
         tokenProvider.setToken(null)
+        tokenProvider.setRefreshToken(null)
         guestRepo.clearSession()
         _state.value = AuthState(mode = AuthMode.UNKNOWN)
     }
@@ -258,6 +265,7 @@ class AuthViewModel(
                 }
                 .onFailure {
                     tokenProvider.setToken(null)
+                    tokenProvider.setRefreshToken(null)
                     _state.value = AuthState(mode = AuthMode.UNKNOWN)
                 }
         }

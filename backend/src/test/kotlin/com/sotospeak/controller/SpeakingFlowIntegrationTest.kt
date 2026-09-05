@@ -57,6 +57,7 @@ import java.util.UUID
 @Transactional
 class SpeakingFlowIntegrationTest {
     // Валидный m4a-контент: ftyp-подпись на смещении 4 (bd FunnyEnglish-nj2.8, magic-bytes)
+    @Suppress("MagicNumber")
     private fun validM4a(): ByteArray {
         val b = ByteArray(1024)
         b[4] = 'f'.code.toByte(); b[5] = 't'.code.toByte(); b[6] = 'y'.code.toByte(); b[7] = 'p'.code.toByte()

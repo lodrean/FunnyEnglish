@@ -60,4 +60,51 @@ interface ProgressRepository : JpaRepository<Progress, UUID> {
         ORDER BY COUNT(p) DESC
     """)
     fun findPopularTests(): List<PopularTestProjection>
+
+    // wy7.3: все агрегаты статистики списка пользователей одним запросом
+    // (было 3 запроса × N пользователей в AdminUserController.getUsers)
+    @Query("""
+        SELECT p.user.id as userId, COUNT(p) as completed,
+               COALESCE(SUM(p.stars), 0) as stars,
+               COALESCE(SUM(CASE WHEN p.stars = 3 THEN 1 ELSE 0 END), 0) as perfect
+        FROM Progress p
+        WHERE p.user.id IN :userIds
+        GROUP BY p.user.id
+    """)
+    fun aggregateStatsByUserIds(userIds: Collection<UUID>): List<UserStatsProjection>
+
+    // wy7.3: 8 COUNT-ов дашборда одним round-trip (scalar subselects, H2+PG)
+    @Query(
+        value = """
+            SELECT
+                (SELECT COUNT(*) FROM users) AS total_users,
+                (SELECT COUNT(*) FROM tests) AS total_tests,
+                (SELECT COUNT(*) FROM tests WHERE is_published = TRUE) AS published_tests,
+                (SELECT COUNT(*) FROM questions) AS total_questions,
+                (SELECT COUNT(*) FROM answers) AS total_answers,
+                (SELECT COUNT(*) FROM progress) AS total_completions,
+                (SELECT COUNT(*) FROM categories) AS total_categories,
+                (SELECT COUNT(*) FROM achievements) AS total_achievements
+        """,
+        nativeQuery = true
+    )
+    fun countAdminTotals(): AdminTotalsProjection
+}
+
+interface UserStatsProjection {
+    fun getUserId(): UUID
+    fun getCompleted(): Long
+    fun getStars(): Long
+    fun getPerfect(): Long
+}
+
+interface AdminTotalsProjection {
+    fun getTotalUsers(): Long
+    fun getTotalTests(): Long
+    fun getPublishedTests(): Long
+    fun getTotalQuestions(): Long
+    fun getTotalAnswers(): Long
+    fun getTotalCompletions(): Long
+    fun getTotalCategories(): Long
+    fun getTotalAchievements(): Long
 }

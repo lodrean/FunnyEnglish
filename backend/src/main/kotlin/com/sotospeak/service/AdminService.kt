@@ -56,15 +56,18 @@ class AdminService(
                 )
             }
 
+        // wy7.3: 8 COUNT-ов одним запросом (scalar subselects); было 8 round-trip'ов.
+        // Kotlin-проекции — методы, не свойства (грабля №105)
+        val totals = progressRepository.countAdminTotals()
         return AdminAnalyticsResponse(
-            totalUsers = userRepository.count(),
-            totalTests = testRepository.count(),
-            publishedTests = testRepository.countByIsPublishedTrue(),
-            totalQuestions = questionRepository.count(),
-            totalAnswers = answerRepository.count(),
-            totalCompletions = progressRepository.count(),
-            totalCategories = categoryRepository.count(),
-            totalAchievements = achievementRepository.count(),
+            totalUsers = totals.getTotalUsers(),
+            totalTests = totals.getTotalTests(),
+            publishedTests = totals.getPublishedTests(),
+            totalQuestions = totals.getTotalQuestions(),
+            totalAnswers = totals.getTotalAnswers(),
+            totalCompletions = totals.getTotalCompletions(),
+            totalCategories = totals.getTotalCategories(),
+            totalAchievements = totals.getTotalAchievements(),
             topCategories = topCategories
         )
     }

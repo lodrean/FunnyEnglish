@@ -43,9 +43,43 @@ class UserService(
             .orElseThrow { NoSuchElementException("User not found") }
     }
 
+    /**
+     * Admin-список пользователей: фильтр в БД + статистика одним агрегат-запросом
+     * (wy7.3; было findAll + фильтр в памяти + 3 запроса статистики на каждого).
+     */
     @Transactional(readOnly = true)
-    fun getAllUsers(): List<User> {
-        return userRepository.findAllByOrderByCreatedAtDesc()
+    fun getAdminUserSummaries(query: String?, role: String?): List<AdminUserSummaryResponse> {
+        val q = query?.trim()?.takeIf { it.isNotEmpty() }
+        val roleFilter = role?.trim()?.takeIf { it.isNotEmpty() }
+        val users = userRepository.searchForAdmin(q, roleFilter)
+        if (users.isEmpty()) return emptyList()
+
+        val statsByUser = progressRepository
+            .aggregateStatsByUserIds(users.map { it.id })
+            .associateBy { it.getUserId() }
+
+        return users.map { user ->
+            val stats = statsByUser[user.id]
+            val (currentLevel, pointsToNext) = calculateLevelInfo(user.totalPoints)
+            AdminUserSummaryResponse(
+                id = user.id.toString(),
+                email = user.email,
+                displayName = user.displayName,
+                avatarUrl = user.avatarUrl,
+                role = user.role,
+                level = user.level,
+                totalPoints = user.totalPoints,
+                currentStreak = user.currentStreak,
+                createdAt = user.createdAt,
+                stats = UserStats(
+                    testsCompleted = stats?.getCompleted() ?: 0L,
+                    totalStars = stats?.getStars()?.toInt() ?: 0,
+                    perfectScores = stats?.getPerfect() ?: 0L,
+                    currentLevel = currentLevel,
+                    pointsToNextLevel = pointsToNext
+                )
+            )
+        }
     }
 
     @Transactional(readOnly = true)

@@ -16,6 +16,11 @@ interface TestRepository : JpaRepository<Test, UUID> {
 
     @EntityGraph(attributePaths = ["category", "questions"])
     fun findByIsPublishedTrueOrderByDisplayOrder(): List<Test>
+
+    // wy7.3: admin-список — questions одним fetch'ем (answers добирает batch-fetch=16);
+    // было findAll + lazy questions/answers построчно (N+1)
+    @EntityGraph(attributePaths = ["questions"])
+    fun findAllByOrderByDisplayOrderAsc(): List<Test>
     fun findByDifficultyAndIsPublishedTrueOrderByDisplayOrder(difficulty: Difficulty): List<Test>
     fun countByIsPublishedTrue(): Long
 

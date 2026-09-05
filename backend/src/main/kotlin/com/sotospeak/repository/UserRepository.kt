@@ -16,6 +16,16 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun existsByEmail(email: String): Boolean
     fun findAllByOrderByCreatedAtDesc(): List<User>
 
+    // wy7.3: поиск/фильтр admin-списка в БД (было findAll + фильтр в памяти).
+    // CAST у nullable-параметров обязателен для PostgreSQL (грабля №81).
+    @Query("""
+        SELECT u FROM User u
+        WHERE (CAST(:q AS String) IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', :q, '%')))
+          AND (CAST(:role AS String) IS NULL OR UPPER(u.role) = UPPER(:role))
+        ORDER BY u.createdAt DESC
+    """)
+    fun searchForAdmin(q: String?, role: String?): List<User>
+
     @Query("SELECT u FROM User u ORDER BY u.totalPoints DESC LIMIT :limit")
     fun findTopByTotalPoints(limit: Int): List<User>
 

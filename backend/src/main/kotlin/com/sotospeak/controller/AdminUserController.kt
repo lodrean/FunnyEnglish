@@ -25,29 +25,8 @@ class AdminUserController(
         @RequestParam(name = "q", required = false) query: String?,
         @RequestParam(name = "role", required = false) role: String?
     ): ResponseEntity<List<AdminUserSummaryResponse>> {
-        val users = userService.getAllUsers()
-        val filtered = users.filter { user ->
-            val matchesQuery = query.isNullOrBlank() ||
-                user.email.contains(query, ignoreCase = true) ||
-                user.displayName.contains(query, ignoreCase = true)
-            val matchesRole = role.isNullOrBlank() || user.role.equals(role, ignoreCase = true)
-            matchesQuery && matchesRole
-        }
-        val response = filtered.map { user ->
-            AdminUserSummaryResponse(
-                id = user.id.toString(),
-                email = user.email,
-                displayName = user.displayName,
-                avatarUrl = user.avatarUrl,
-                role = user.role,
-                level = user.level,
-                totalPoints = user.totalPoints,
-                currentStreak = user.currentStreak,
-                createdAt = user.createdAt,
-                stats = userService.getUserStats(user)
-            )
-        }
-        return ResponseEntity.ok(response)
+        // wy7.3: фильтр в БД + статистика batch-агрегатом (контракт ответа не менялся)
+        return ResponseEntity.ok(userService.getAdminUserSummaries(query, role))
     }
 
     @GetMapping("/{userId}")

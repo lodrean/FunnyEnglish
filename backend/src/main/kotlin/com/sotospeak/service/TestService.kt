@@ -155,8 +155,8 @@ class TestService(
 
     @Transactional(readOnly = true)
     fun getAllTestsForAdmin(): List<AdminTestDetailResponse> {
-        // TODO: Fix JSONB deserialization before loading questions
-        val tests = testRepository.findAll()
+        // wy7.3: EntityGraph(questions) + batch-fetch answers — без построчного lazy-лага
+        val tests = testRepository.findAllByOrderByDisplayOrderAsc()
         return tests.map { it.toAdminResponse(mediaUrlService::normalize) }
     }
 

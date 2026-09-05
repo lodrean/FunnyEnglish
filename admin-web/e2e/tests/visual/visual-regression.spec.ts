@@ -65,7 +65,6 @@ test.describe('Visual Regression - Authenticated Pages', () => {
     
     await expect(page).toHaveScreenshot('dashboard-page.png', {
       fullPage: false,
-      maxDiffPixels: 500, // Допускаем небольшие различия
       mask: [
         // Статистика, графики, лента активности и таблицы зависят от данных
         // (в прогоне другие тесты создают данные)
@@ -90,7 +89,6 @@ test.describe('Visual Regression - Responsive', () => {
     
     await expect(page).toHaveScreenshot('dashboard-mobile.png', {
       fullPage: false,
-      maxDiffPixels: 500,
       mask: [
         // Данные дашборда меняются по ходу прогона (другие тесты создают тесты/юзеров):
         // стат-карточки, графики, лента активности, таблицы
@@ -109,7 +107,6 @@ test.describe('Visual Regression - Responsive', () => {
     
     await expect(page).toHaveScreenshot('dashboard-tablet.png', {
       fullPage: false,
-      maxDiffPixels: 500,
       mask: [
         // Данные дашборда меняются по ходу прогона (другие тесты создают тесты/юзеров):
         // стат-карточки, графики, лента активности, таблицы

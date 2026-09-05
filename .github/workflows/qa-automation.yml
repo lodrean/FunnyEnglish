@@ -120,7 +120,7 @@ jobs:
         # demo-пользователь для шага Login коллекции (создаётся AdminUserInitializer'ом)
         DEMO_USER_ENABLED: "true"
       run: |
-        ./gradlew -p backend bootRun --no-daemon > backend-bootrun.log 2>&1 &
+        ./gradlew -p backend bootRun --no-daemon --no-configuration-cache > backend-bootrun.log 2>&1 &
         # Ждём health, а не фиксированный sleep (первая сборка > 60с)
         for i in $(seq 1 60); do
           if curl -sf http://localhost:8080/api/actuator/health > /dev/null 2>&1; then

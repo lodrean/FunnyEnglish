@@ -255,8 +255,6 @@ naming:
   MatchingDeclarationName:
     active: true
     mustBeFirst: true
-  MissingSerialVersionUID:
-    active: true
   NoNameShadowing:
     active: true
   NonBooleanPropertyPrefixedWithIs:
@@ -389,8 +387,6 @@ style:
     maxDestructuringEntries: 3
   EqualsNullCall:
     active: true
-  EqualsOnSignature:
-    active: false
   ExplicitCollectionElementAccessMethod:
     active: false
   ExplicitItLambdaParameter:
@@ -466,8 +462,6 @@ style:
     active: true
   OptionalUnit:
     active: false
-  OptionalWhenBraces:
-    active: false
   PreferToOverPairSyntax:
     active: false
   ProtectedMemberInFinalClass:
@@ -481,7 +475,8 @@ style:
   ReturnCount:
     active: true
     max: 2
-    excludedFunctions: "equals"
+    excludedFunctions:
+      - "equals"
     excludeLabeled: false
     excludeReturnFromLambda: true
     excludeGuardClauses: false

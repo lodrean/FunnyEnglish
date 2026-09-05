@@ -89,6 +89,19 @@ detekt {
     baseline = rootProject.file("config/detekt/baseline.xml")
 }
 
+// detekt-cli 1.23.7 собран на Kotlin 2.0.10; KGP(JVM) 2.1.0 применяет kotlin-bom
+// alignment ко ВСЕМ конфигурациям — CLI стартует со stdlib 2.1.0 и падает на своём
+// version-guard («detekt was compiled with Kotlin 2.0.10...», CI красный с qbq.5,
+// 2026-08-30; KMP-модуль composeApp alignment на detekt-конфигурацию не раскладывает).
+// Возвращаем detekt-конфигурации родные для CLI версии Kotlin.
+configurations.matching { it.name == "detekt" }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            useVersion("2.0.10")
+        }
+    }
+}
+
 // Пороги покрытия (koverVerify). Стартовые значения консервативные — поднимать
 // постепенно по факту измерений (прецедент: пороги vitest, грабля №88).
 // DSL Kover 0.9.1: имя правила — параметр конструктора rule(...); в bound доступны

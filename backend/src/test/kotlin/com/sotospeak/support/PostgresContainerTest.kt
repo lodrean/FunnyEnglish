@@ -5,7 +5,6 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
-import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
 /**
@@ -21,21 +20,23 @@ import org.testcontainers.junit.jupiter.Testcontainers
  * пропускаются (aborted), а не падают — гейт `:backend:test` на H2-профиле
  * остаётся зелёным на машинах без Docker.
  *
- * Контейнер и Spring-контекст один на JVM: все наследники с профилем
- * `integration-test` попадают в общий кэш контекстов.
+ * Контейнер — SINGLETON на JVM (apply { start() }, БЕЗ @Container): @Container
+ * на companion базового класса останавливал контейнер после первого
+ * наследника, а закэшированный Spring-контекст продолжал указывать на мёртвый
+ * порт — все тесты второго класса падали по 30с connection-timeout (CI красный
+ * с wy7.4, локально маскировалось skip'ами без Docker).
  */
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("integration-test")
 abstract class PostgresContainerTest {
 
     companion object {
-        @Container
-        @JvmStatic
         val postgres: PostgreSQLContainer<*> =
             PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
-            .withDatabaseName("sotospeak_integration")
-            .withUsername("test")
-            .withPassword("test")
+                .withDatabaseName("sotospeak_integration")
+                .withUsername("test")
+                .withPassword("test")
+                .apply { start() }
 
         @JvmStatic
         @DynamicPropertySource

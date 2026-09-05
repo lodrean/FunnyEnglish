@@ -1,5 +1,616 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues></CurrentIssues>
+  <CurrentIssues>
+    <ID>CognitiveComplexMethod:AudioTestService.kt$AudioTestService$@Transactional fun submitAudioTest(userId: String, request: SubmitAudioTestRequest): SubmitAudioTestResponse</ID>
+    <ID>CognitiveComplexMethod:StorageService.kt$StorageService$private fun validateFileType(extension: String, contentType: String?)</ID>
+    <ID>CognitiveComplexMethod:UserService.kt$UserService$@Transactional @CacheEvict(value = ["userProfiles"], key = "#userId") fun mergeGuestProgress( userId: String, request: MergeGuestProgressRequest ): MergeGuestProgressResponse</ID>
+    <ID>ComplexCondition:RateLimitingFilter.kt$RateLimitingFilter$method == "POST" &amp;&amp; (path.contains("/auth/login") || path.contains("/auth/register") || path.contains("/auth/refresh"))</ID>
+    <ID>ComplexCondition:StorageService.kt$StorageService$!isContentImage &amp;&amp; !isContentAudio &amp;&amp; !isContentVideo &amp;&amp; !isContentSubtitle</ID>
+    <ID>ComplexCondition:StorageService.kt$StorageService$!isImage &amp;&amp; !isAudio &amp;&amp; !isVideo &amp;&amp; !isSubtitle</ID>
+    <ID>CyclomaticComplexMethod:AudioTestService.kt$AudioTestService$@Transactional fun submitAudioTest(userId: String, request: SubmitAudioTestRequest): SubmitAudioTestResponse</ID>
+    <ID>CyclomaticComplexMethod:StorageService.kt$StorageService$private fun validateFileType(extension: String, contentType: String?)</ID>
+    <ID>CyclomaticComplexMethod:TestService.kt$TestService$@Transactional @CacheEvict(value = ["tests", "testDetails"], key = "#testId") fun updateTest(testId: String, request: UpdateTestRequest): AdminTestDetailResponse</ID>
+    <ID>CyclomaticComplexMethod:TestValidationService.kt$TestValidationService$@Transactional(readOnly = true) fun validateTest(testId: UUID, answers: List&lt;SubmitAnswerRequest&gt;): ValidationResult</ID>
+    <ID>CyclomaticComplexMethod:UserService.kt$UserService$@Transactional @CacheEvict(value = ["userProfiles"], key = "#userId") fun mergeGuestProgress( userId: String, request: MergeGuestProgressRequest ): MergeGuestProgressResponse</ID>
+    <ID>ForbiddenComment:AchievementService.kt$AchievementService$// TODO: Award XP</ID>
+    <ID>ForbiddenComment:AchievementService.kt$AchievementService$// TODO: Implement other conditions</ID>
+    <ID>ForbiddenComment:AchievementService.kt$AchievementService$// TODO: Send notification</ID>
+    <ID>ForbiddenComment:AdaptiveLessonService.kt$// TODO: Get from entity</ID>
+    <ID>ForbiddenComment:AdaptiveLessonService.kt$AdaptiveLessonService$// TODO: Calculate based on performance in lesson</ID>
+    <ID>ForbiddenComment:AdaptiveLessonService.kt$AdaptiveLessonService$// TODO: Identify from lesson performance</ID>
+    <ID>ForbiddenComment:AdaptiveLessonService.kt$AdaptiveLessonService$// TODO: Implement</ID>
+    <ID>ForbiddenComment:AdaptiveLessonService.kt$AdaptiveLessonService$// TODO: Implement question selection based on difficulty and weak areas</ID>
+    <ID>ForbiddenComment:QuestService.kt$// TODO: Store in entity</ID>
+    <ID>ForbiddenComment:QuestService.kt$QuestService$// TODO: Send notification</ID>
+    <ID>ForbiddenComment:XpService.kt$XpService$// TODO: Implement friends system</ID>
+    <ID>ForbiddenComment:XpService.kt$XpService$// TODO: Implement proper leaderboard query</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `admin analytics returns 200 with counters`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `admin settings returns 200`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `admin tests list returns 200`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `daily activity alias endpoint also works`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `daily activity returns exactly requested number of days`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `guest analytics returns 200 with conversion rate`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `level distribution returns 200`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `popular tests returns 200`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `prd metrics returns 200 with real aggregates`()</ID>
+    <ID>FunctionNaming:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$@Test fun `recent activity returns 200`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test @Disabled("Test has LAZY loading issues - needs investigation") fun `submit audio test - correct answers`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test @Disabled("Test has LAZY loading issues - needs investigation") fun `submit audio test - wrong answers`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `create audio test - admin success`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `create audio test - user forbidden`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `delete audio test - admin success`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `get published audio tests - success`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `get user progress - success`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `update audio test - admin success`()</ID>
+    <ID>FunctionNaming:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test fun `validate question timing - invalid range`()</ID>
+    <ID>FunctionNaming:AuthControllerIntegrationTest.kt$AuthControllerIntegrationTest$@Test fun `admin login with docker-compose credentials returns token and ADMIN role`()</ID>
+    <ID>FunctionNaming:AuthControllerIntegrationTest.kt$AuthControllerIntegrationTest$@Test fun `login with invalid password returns 401`()</ID>
+    <ID>FunctionNaming:AuthControllerIntegrationTest.kt$AuthControllerIntegrationTest$@Test fun `oauth login is disabled by default and returns 404`()</ID>
+    <ID>FunctionNaming:AuthControllerIntegrationTest.kt$AuthControllerIntegrationTest$@Test fun `role is resolved from DB, not from token claim`()</ID>
+    <ID>FunctionNaming:ClientLogControllerTest.kt$ClientLogControllerTest$@Test fun `admin logs требует ADMIN и фильтрует по level и platform`()</ID>
+    <ID>FunctionNaming:ClientLogControllerTest.kt$ClientLogControllerTest$@Test fun `batch больше 50 или пустой отклоняется`()</ID>
+    <ID>FunctionNaming:ClientLogControllerTest.kt$ClientLogControllerTest$@Test fun `длинные message и stackTrace обрезаются до лимитов`()</ID>
+    <ID>FunctionNaming:ClientLogControllerTest.kt$ClientLogControllerTest$@Test fun `отбрасывает записи с невалидным level и anonymousId, пакет не отклоняется`()</ID>
+    <ID>FunctionNaming:ClientLogControllerTest.kt$ClientLogControllerTest$@Test fun `принимает batch логов без авторизации и сохраняет в БД`()</ID>
+    <ID>FunctionNaming:EmailVerificationIntegrationTest.kt$EmailVerificationIntegrationTest$@Test fun `register без auto-login, login 403 до подтверждения, 200 после verify`()</ID>
+    <ID>FunctionNaming:EmailVerificationIntegrationTest.kt$EmailVerificationIntegrationTest$@Test fun `resend — 200 для любого email (anti-enumeration), новый токен для неподтверждённого`()</ID>
+    <ID>FunctionNaming:GuestEventControllerTest.kt$GuestEventControllerTest$@Test @org.springframework.transaction.annotation.Transactional fun `аналитика гостей считает агрегаты и конверсию`()</ID>
+    <ID>FunctionNaming:GuestEventControllerTest.kt$GuestEventControllerTest$@Test fun `batch больше 50 событий отклоняется`()</ID>
+    <ID>FunctionNaming:GuestEventControllerTest.kt$GuestEventControllerTest$@Test fun `отбрасывает события с невалидным anonymousId и score больше maxScore`()</ID>
+    <ID>FunctionNaming:GuestEventControllerTest.kt$GuestEventControllerTest$@Test fun `принимает batch событий и сохраняет в БД`()</ID>
+    <ID>FunctionNaming:GuestFlowE2ETest.kt$GuestFlowE2ETest$@Test fun `guest takes test then merges after registration`()</ID>
+    <ID>FunctionNaming:GuestFlowE2ETest.kt$GuestFlowE2ETest$@Test fun `public validate endpoint does not create progress in database`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `createSubmission - file larger than 5MB throws IllegalArgumentException`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `createSubmission - invalid duration throws IllegalArgumentException`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `createSubmission - topic not published or deleted throws NoSuchElementException`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `createSubmission - unique constraint violation on insert throws DuplicateSubmissionException`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `createSubmission success - saves with status NEW and storage url`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `editGrade - grade not found throws NoSuchElementException`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `editGrade success - fields updated, status untouched`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `gradeSubmission - already graded throws IllegalArgumentException`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `gradeSubmission - missing user does not fail and skips email`()</ID>
+    <ID>FunctionNaming:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$@Test fun `gradeSubmission success - grade created, status NEW to REVIEWED, reviewer set, email sent`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should add rate limit headers to successful response`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should allow request when under rate limit`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should apply stricter limit to register endpoint`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should block request when rate limit exceeded`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should ignore X-Forwarded-For when remote address is not a trusted proxy`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should ignore X-Real-IP when remote address is not a trusted proxy`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should not apply rate limiting to GET requests`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should not apply rate limiting to non-auth endpoints`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should return correct error response for rate limit`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should use X-Real-IP when remote address is trusted proxy`()</ID>
+    <ID>FunctionNaming:RateLimitingFilterTest.kt$RateLimitingFilterTest$@Test fun `should use rightmost untrusted IP from X-Forwarded-For when remote address is trusted proxy`()</ID>
+    <ID>FunctionNaming:RequestIdFilterTest.kt$RequestIdFilterTest$@Test fun `should clear MDC after request processing`()</ID>
+    <ID>FunctionNaming:RequestIdFilterTest.kt$RequestIdFilterTest$@Test fun `should clear MDC even when chain throws`()</ID>
+    <ID>FunctionNaming:RequestIdFilterTest.kt$RequestIdFilterTest$@Test fun `should echo valid incoming request id`()</ID>
+    <ID>FunctionNaming:RequestIdFilterTest.kt$RequestIdFilterTest$@Test fun `should generate request id when header is absent`()</ID>
+    <ID>FunctionNaming:RequestIdFilterTest.kt$RequestIdFilterTest$@Test fun `should replace invalid incoming request id to prevent log injection`()</ID>
+    <ID>FunctionNaming:RequestIdFilterTest.kt$RequestIdFilterTest$@Test fun `should replace too long incoming request id`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `anonymous on admin endpoint returns 401, not 403`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `anonymous on protected endpoint returns 401 UNAUTHORIZED`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `authenticated USER gets 403 on admin endpoint`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `expired access token does not break public endpoints`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `expired access token on protected endpoint returns 401 TOKEN_EXPIRED`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `login rate limit e2e - bucket exhaustion returns 429 with Retry-After`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `refresh token presented as Bearer returns 401`()</ID>
+    <ID>FunctionNaming:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$@Test fun `role claim in token is ignored - role comes from DB`()</ID>
+    <ID>FunctionNaming:SpeakingContentServiceTest.kt$SpeakingContentServiceTest$@Test fun `getPublishedLibraries - libraries without published topics are hidden`()</ID>
+    <ID>FunctionNaming:SpeakingContentServiceTest.kt$SpeakingContentServiceTest$@Test fun `getTopicDetail - soft-deleted topic is not found`()</ID>
+    <ID>FunctionNaming:SpeakingContentServiceTest.kt$SpeakingContentServiceTest$@Test fun `upsertVideo - create does not delete files, replace deletes old files best-effort`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin can batch reorder topic questions`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin can get submission by id and count by status`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin can get topic by id including drafts`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin can publish and unpublish via PATCH publish`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin grades submission, user sees REVIEWED with computed total`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin inbox filters by status with pagination`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `admin topic lifecycle - create, publish, soft delete`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `guest can read published libraries, unpublished are hidden`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `guest can read topic detail, unpublished topic returns 404`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `guest cannot submit practice recording`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `public endpoints return cache headers and honor If-None-Match`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `public topic detail is served from caffeine cache`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `publish and unpublish invalidate public content cache`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `regular user cannot access grading inbox`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `repeat grade POST rejected, PUT edits grade`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `user can submit practice recording`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `user cannot submit practice twice for same topic`()</ID>
+    <ID>FunctionNaming:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$@Test fun `user sees own submission in my list`()</ID>
+    <ID>FunctionNaming:TestServiceTest.kt$TestServiceTest$@Test fun `getTestById returns details for published test`()</ID>
+    <ID>FunctionNaming:TestServiceTest.kt$TestServiceTest$@Test fun `getTestById throws NoSuchElementException for missing test`()</ID>
+    <ID>FunctionNaming:TestServiceTest.kt$TestServiceTest$@Test fun `getTestById throws NoSuchElementException for unpublished draft`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `access token cannot be used as refresh token`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `anonymous request to protected endpoint returns 401`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `expired token on protected endpoint returns 401 with TOKEN_EXPIRED code`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `expired token on public endpoint returns 200, not 401`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `logout is idempotent for unknown or invalid tokens`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `logout revokes refresh token, subsequent refresh returns 401`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `no token on public endpoint still returns 200`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `refresh with expired refresh token returns 401`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `refresh with garbage token returns 401`()</ID>
+    <ID>FunctionNaming:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$@Test fun `register returns refresh token, refresh rotates it, reuse revokes the chain`()</ID>
+    <ID>FunctionNaming:UserControllerIntegrationTest.kt$UserControllerIntegrationTest$@Test fun `anonymous POST to merge-guest-progress should be rejected`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should award achievements`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should create new progress when no existing progress`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should handle nonexistent test`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should skip invalid scores`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should skip when guest score is not better`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should trigger level up when enough XP`()</ID>
+    <ID>FunctionNaming:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$@Test fun `mergeGuestProgress should update progress when guest score is better`()</ID>
+    <ID>FunctionNaming:UserServiceTest.kt$UserServiceTest$@Test fun `context loads`()</ID>
+    <ID>FunctionNaming:UserServiceTest.kt$UserServiceTest$@Test fun `test profile is active`()</ID>
+    <ID>FunctionOnlyReturningConstant:AdaptiveLessonService.kt$AdaptiveLessonService$private fun getQuestionForLesson(lesson: AdaptiveLesson): Question?</ID>
+    <ID>FunctionOnlyReturningConstant:QuestionService.kt$QuestionService$fun validateContent(type: QuestionType, content: JsonNode): Boolean</ID>
+    <ID>LongMethod:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test @Disabled("Test has LAZY loading issues - needs investigation") fun `submit audio test - correct answers`()</ID>
+    <ID>LongMethod:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$@Test @Disabled("Test has LAZY loading issues - needs investigation") fun `submit audio test - wrong answers`()</ID>
+    <ID>LongMethod:AudioTestService.kt$AudioTestService$@Transactional fun submitAudioTest(userId: String, request: SubmitAudioTestRequest): SubmitAudioTestResponse</ID>
+    <ID>LongMethod:FeatureToggleController.kt$FeatureToggleController$@GetMapping("/list") fun getAvailableFeatures(): ResponseEntity&lt;List&lt;FeatureInfo&gt;&gt;</ID>
+    <ID>LongMethod:PublicAdaptiveService.kt$PublicAdaptiveService$@Transactional(readOnly = true) fun createRandomLesson(categoryId: String?, durationMinutes: Int): AdaptiveLessonState</ID>
+    <ID>LongMethod:StreakService.kt$StreakService$@Transactional fun recordActivity(userId: UUID): StreakUpdateResult</ID>
+    <ID>LongMethod:UserService.kt$UserService$@Transactional @CacheEvict(value = ["userProfiles"], key = "#userId") fun mergeGuestProgress( userId: String, request: MergeGuestProgressRequest ): MergeGuestProgressResponse</ID>
+    <ID>LongParameterList:AdminService.kt$AdminService$( private val userRepository: UserRepository, private val testRepository: TestRepository, private val questionRepository: QuestionRepository, private val answerRepository: AnswerRepository, private val progressRepository: ProgressRepository, private val achievementRepository: AchievementRepository, private val categoryRepository: CategoryRepository, private val guestEventRepository: GuestEventRepository, private val practiceSubmissionRepository: PracticeSubmissionRepository )</ID>
+    <ID>LongParameterList:AudioTest.kt$AudioTest$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @Column(nullable = false) var title: String, @Column(columnDefinition = "TEXT") var description: String? = null, @Column(name = "audio_file_url", nullable = false, length = 500) var audioFileUrl: String, @Column(name = "duration_seconds", nullable = false) var durationSeconds: Int, @Column(nullable = false) var difficulty: Int = 1, // 1-5 @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "category_id") var category: Category? = null, @Column(name = "is_published", nullable = false) var isPublished: Boolean = false, @Column(name = "plays_limit") var playsLimit: Int? = null, // null means unlimited @OneToMany(mappedBy = "audioTest", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) @OrderBy("displayOrder ASC") var questions: MutableSet&lt;AudioTestQuestion&gt; = mutableSetOf(), @OneToMany(mappedBy = "audioTest", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) var transcripts: MutableSet&lt;AudioTranscript&gt; = mutableSetOf(), @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null, @UpdateTimestamp @Column(name = "updated_at", nullable = false) var updatedAt: Instant? = null )</ID>
+    <ID>LongParameterList:AudioTestProgress.kt$AudioTestProgress$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false) var user: User? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "audio_test_id", nullable = false) var audioTest: AudioTest? = null, @Column(nullable = false) var score: Int = 0, @Column(name = "max_score", nullable = false) var maxScore: Int = 0, @Column(nullable = false) var stars: Int = 0, @Column(name = "attempts_count", nullable = false) var attemptsCount: Int = 0, @Column(name = "best_score", nullable = false) var bestScore: Int = 0, @Column(name = "time_spent_seconds") var timeSpentSeconds: Int? = null, @Column(name = "plays_used", nullable = false) var playsUsed: Int = 0, @Column(name = "completed_at") var completedAt: Instant? = null, @UpdateTimestamp @Column(name = "last_attempt_at", nullable = false) var lastAttemptAt: Instant? = null )</ID>
+    <ID>LongParameterList:AudioTestQuestion.kt$AudioTestQuestion$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "audio_test_id", nullable = false) var audioTest: AudioTest? = null, @Enumerated(EnumType.STRING) @Column(name = "question_type", nullable = false, length = 50) var questionType: QuestionType, @Column(length = 500) var title: String? = null, @Column(columnDefinition = "TEXT") var text: String? = null, @Column(name = "start_time_seconds", nullable = false) var startTimeSeconds: Int, @Column(name = "end_time_seconds", nullable = false) var endTimeSeconds: Int, @Column(nullable = false) var points: Int = 1, @Column(name = "display_order", nullable = false) var displayOrder: Int = 0, @OneToMany(mappedBy = "question", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) @OrderBy("displayOrder ASC") var answers: MutableSet&lt;AudioTestAnswer&gt; = mutableSetOf(), @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null )</ID>
+    <ID>LongParameterList:AudioTestUserAnswer.kt$AudioTestUserAnswer$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "progress_id", nullable = false) var progress: AudioTestProgress? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "question_id", nullable = false) var question: AudioTestQuestion? = null, @Column(name = "selected_answer_ids") var selectedAnswerIds: MutableList&lt;UUID&gt; = mutableListOf(), @Column(name = "text_answer", columnDefinition = "TEXT") var textAnswer: String? = null, // For dictation/fill blank @Column(name = "is_correct", nullable = false) var isCorrect: Boolean = false, @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null )</ID>
+    <ID>LongParameterList:ClientLogController.kt$AdminLogController$( @RequestParam(required = false) level: String?, @RequestParam(required = false) platform: String?, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: Instant?, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: Instant?, @RequestParam(required = false) q: String?, @RequestParam(defaultValue = "0") page: Int, @RequestParam(defaultValue = "20") size: Int )</ID>
+    <ID>LongParameterList:ClientLogRepository.kt$ClientLogRepository$( @Param("level") level: ClientLogLevel?, @Param("platform") platform: String?, @Param("fromTs") fromTs: Instant?, @Param("toTs") toTs: Instant?, @Param("q") q: String?, pageable: Pageable )</ID>
+    <ID>LongParameterList:GamificationEntities.kt$AchievementEntity$( @Id val id: String, @Column(name = "code", unique = true, nullable = false) val code: String, @Column(name = "name", nullable = false) val name: String, @Column(name = "description", nullable = false) val description: String, @Column(name = "icon_url") val iconUrl: String? = null, @Column(name = "category", nullable = false) val category: String, @Column(name = "rarity", nullable = false) val rarity: String, @Column(name = "is_hidden", nullable = false) val isHidden: Boolean = false, @Column(name = "condition_type", nullable = false) val conditionType: String, @Column(name = "condition_target", nullable = false) val conditionTarget: Int, @Column(name = "points_reward", nullable = false) val pointsReward: Int = 0 )</ID>
+    <ID>LongParameterList:GamificationEntities.kt$Quest$( @Id val id: UUID = UUID.randomUUID(), @Column(name = "user_id", nullable = false) val userId: UUID, @Column(name = "title", nullable = false) val title: String, @Column(name = "description", nullable = false) val description: String, @Column(name = "quest_type", nullable = false) val questType: String, @Column(name = "target_value", nullable = false) val targetValue: Int, @Column(name = "current_value", nullable = false) var currentValue: Int = 0, @Column(name = "reward_xp", nullable = false) val rewardXp: Int, @Column(name = "reward_gems", nullable = false) val rewardGems: Int, @Column(name = "is_completed", nullable = false) var isCompleted: Boolean = false, @Column(name = "is_reward_claimed", nullable = false) var isRewardClaimed: Boolean = false, @Column(name = "completed_at") var completedAt: Instant? = null, @Column(name = "created_at", nullable = false) val createdAt: Instant = Instant.now(), @Column(name = "expires_at", nullable = false) val expiresAt: Instant )</ID>
+    <ID>LongParameterList:GamificationEntities.kt$UserAchievementEntity$( @Id val id: UUID = UUID.randomUUID(), @Column(name = "user_id", nullable = false) val userId: UUID, @Column(name = "achievement_id", nullable = false) val achievementId: String, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "achievement_id", insertable = false, updatable = false) val achievement: AchievementEntity? = null, @Column(name = "earned_at") var earnedAt: Instant? = null, @Column(name = "progress", nullable = false) var progress: Float = 0f, @Column(name = "is_earned", nullable = false) var isEarned: Boolean = false )</ID>
+    <ID>LongParameterList:GamificationEntities.kt$UserStreak$( @Id val userId: UUID, @Column(name = "current_streak", nullable = false) var currentStreak: Int = 0, @Column(name = "longest_streak", nullable = false) var longestStreak: Int = 0, @Column(name = "last_activity_date") var lastActivityDate: java.time.LocalDate? = null, @Column(name = "freezes_used_this_week", nullable = false) var freezesUsedThisWeek: Int = 0, @Column(name = "week_reset_at", nullable = false) var weekResetAt: Instant = Instant.now(), @Column(name = "previous_streak_before_break") var previousStreakBeforeBreak: Int? = null, @Column(name = "updated_at", nullable = false) var updatedAt: Instant = Instant.now() )</ID>
+    <ID>LongParameterList:Grade.kt$Grade$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "submission_id", nullable = false, unique = true) var submission: PracticeSubmission? = null, @Column(nullable = false) var grammar: Int, @Column(nullable = false) var vocabulary: Int, @Column(nullable = false) var pronunciation: Int, @Column(nullable = false) var fluency: Int, /** Generated column в БД — только чтение. * columnDefinition нужен для H2 (test profile, ddl-auto=create-drop): генерирует такую же * вычисляемую колонку, как Flyway-DDL в PostgreSQL. В prod (ddl-auto=validate) не используется. */ @Column( nullable = false, insertable = false, updatable = false, columnDefinition = "NUMERIC(4,2) GENERATED ALWAYS AS ((grammar + vocabulary + pronunciation + fluency) / 4.0)" ) var total: BigDecimal? = null, @Column(columnDefinition = "TEXT") var comment: String? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "reviewer_id", nullable = false) var reviewer: User? = null, @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null, @UpdateTimestamp @Column(name = "updated_at", nullable = false) var updatedAt: Instant? = null )</ID>
+    <ID>LongParameterList:Library.kt$Library$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @Column(nullable = false) var title: String, @Column(columnDefinition = "TEXT") var description: String? = null, @Column(name = "cover_url", length = 500) var coverUrl: String? = null, @Column(name = "display_order", nullable = false) var displayOrder: Int = 0, @Column(name = "is_published", nullable = false) var isPublished: Boolean = false, @OneToMany(mappedBy = "library", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) @OrderBy("displayOrder ASC") var topics: MutableSet&lt;Topic&gt; = mutableSetOf(), @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null, @UpdateTimestamp @Column(name = "updated_at", nullable = false) var updatedAt: Instant? = null )</ID>
+    <ID>LongParameterList:PracticeSubmission.kt$PracticeSubmission$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false) var user: User? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "topic_id", nullable = false) var topic: Topic? = null, @Column(name = "audio_url", nullable = false, length = 500) var audioUrl: String, @Column(name = "duration_sec", nullable = false) var durationSec: Int, @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) var status: SubmissionStatus = SubmissionStatus.NEW, @OneToOne(mappedBy = "submission", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) var grade: Grade? = null, @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null, @UpdateTimestamp @Column(name = "updated_at", nullable = false) var updatedAt: Instant? = null )</ID>
+    <ID>LongParameterList:PracticeSubmissionRepository.kt$PracticeSubmissionRepository$( @Param("status") status: SubmissionStatus?, @Param("userId") userId: UUID?, @Param("topicId") topicId: UUID?, @Param("dateFrom") dateFrom: Instant?, @Param("dateTo") dateTo: Instant?, pageable: Pageable )</ID>
+    <ID>LongParameterList:PracticeSubmissionService.kt$PracticeSubmissionService$( private val submissionRepository: PracticeSubmissionRepository, private val gradeRepository: GradeRepository, private val topicRepository: TopicRepository, private val userRepository: UserRepository, private val storageService: StorageService, private val mediaUrlService: MediaUrlService, private val emailService: EmailService )</ID>
+    <ID>LongParameterList:PracticeSubmissionService.kt$PracticeSubmissionService$( status: SubmissionStatus?, userId: UUID?, topicId: UUID?, dateFrom: Instant?, dateTo: Instant?, pageable: Pageable )</ID>
+    <ID>LongParameterList:Progress.kt$Progress$( @Id val id: UUID = UUID.randomUUID(), @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false) val user: User, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "test_id", nullable = false) val test: Test, @Column(nullable = false) var score: Int = 0, @Column(name = "max_score", nullable = false) var maxScore: Int, @Column(nullable = false) var stars: Int = 0, // 1-3 based on percentage @Column(name = "attempts_count", nullable = false) var attemptsCount: Int = 1, @Column(name = "best_score", nullable = false) var bestScore: Int = 0, @Column(name = "time_spent_seconds") var timeSpentSeconds: Int? = null, @Column(name = "completed_at", nullable = false) val completedAt: Instant = Instant.now(), @Column(name = "last_attempt_at", nullable = false) var lastAttemptAt: Instant = Instant.now() )</ID>
+    <ID>LongParameterList:ProgressService.kt$ProgressService$( private val progressRepository: ProgressRepository, private val testRepository: TestRepository, private val questionRepository: QuestionRepository, private val answerRepository: AnswerRepository, private val userService: UserService, private val achievementService: AchievementService, private val testValidationService: TestValidationService )</ID>
+    <ID>LongParameterList:QuestService.kt$QuestService$( userId: UUID, title: String, description: String, type: QuestType, target: Int, difficulty: QuestDifficulty, rewardXp: Int, rewardGems: Int )</ID>
+    <ID>LongParameterList:Question.kt$Question$( @Id val id: UUID = UUID.randomUUID(), @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "test_id") val test: Test? = null, @Enumerated(EnumType.STRING) @Column(nullable = false) val type: QuestionType, @Column(nullable = false) var title: String, @Column(name = "text", columnDefinition = "TEXT") var text: String? = null, // Legacy field, migrated to content @Column(name = "audio_url") var audioUrl: String? = null, // Legacy field, migrated to content @Column(name = "image_url") var imageUrl: String? = null, // Legacy field @Column(name = "media_url") var mediaUrl: String? = null, // For question media (image/audio/video) @Column(name = "display_order", nullable = false) var displayOrder: Int = 0, @Column(nullable = false) var points: Int = 1, /** * Гибкий JSON content - структура зависит от type * * NOTE: Временно отключено из-за проблем с десериализацией старых данных. * Используйте legacy поля: text, imageUrl, audioUrl, answers */ // @JdbcTypeCode(SqlTypes.JSON) // @Column(name = "content", columnDefinition = "jsonb") // val content: QuestionContent? = null, @Column(name = "time_limit_seconds") var timeLimitSeconds: Int? = null, @Column(name = "explanation", columnDefinition = "TEXT") var explanation: String? = null, @Column(name = "hint") var hint: String? = null, @Column(name = "grammar_note", columnDefinition = "TEXT") var grammarNote: String? = null, @Column(name = "is_published", nullable = false) var isPublished: Boolean = false, @Column(name = "created_at", nullable = false) val createdAt: Instant = Instant.now(), @Column(name = "updated_at", nullable = false) var updatedAt: Instant = Instant.now(), // Legacy relationship - answers now stored in content JSON @OneToMany(mappedBy = "question", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) val answers: MutableList&lt;Answer&gt; = mutableListOf() )</ID>
+    <ID>LongParameterList:QuestionService.kt$QuestionService$( private val questionRepository: QuestionRepository, private val testRepository: TestRepository, private val answerRepository: AnswerRepository, private val answerValidationService: AnswerValidationService, private val iwQuestionRepository: ImageWordMatchQuestionRepository, private val iwWordRepository: ImageWordMatchWordRepository, private val iwHotspotRepository: ImageWordMatchHotspotRepository, private val objectMapper: ObjectMapper )</ID>
+    <ID>LongParameterList:SpeakingAdminController.kt$SpeakingAdminController$( @RequestParam(required = false) status: SubmissionStatus?, @RequestParam(required = false) userId: UUID?, @RequestParam(required = false) topicId: UUID?, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateFrom: LocalDate?, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) dateTo: LocalDate?, @RequestParam(defaultValue = "0") page: Int, @RequestParam(defaultValue = "20") size: Int )</ID>
+    <ID>LongParameterList:Test.kt$Test$( @Id val id: UUID = UUID.randomUUID(), @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "category_id", nullable = false) var category: Category, @Column(nullable = false) var title: String, var description: String? = null, @Column(name = "thumbnail_url") var thumbnailUrl: String? = null, @Enumerated(EnumType.STRING) @Column(nullable = false) var difficulty: Difficulty = Difficulty.EASY, @Column(name = "points_reward", nullable = false) var pointsReward: Int = 10, @Column(name = "time_limit_seconds") var timeLimitSeconds: Int? = null, @Column(name = "is_published", nullable = false) var isPublished: Boolean = false, @Column(name = "display_order", nullable = false) var displayOrder: Int = 0, @Column(name = "created_at", nullable = false) val createdAt: Instant = Instant.now(), @Column(name = "updated_at", nullable = false) var updatedAt: Instant = Instant.now(), @OneToMany(mappedBy = "test", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) @OrderBy("displayOrder ASC") val questions: MutableList&lt;Question&gt; = mutableListOf() )</ID>
+    <ID>LongParameterList:TestService.kt$TestService$( private val testRepository: TestRepository, private val categoryRepository: CategoryRepository, private val questionRepository: QuestionRepository, private val answerRepository: AnswerRepository, private val progressRepository: ProgressRepository, private val mediaUrlService: MediaUrlService, private val iwQuestionRepository: ImageWordMatchQuestionRepository, private val iwWordRepository: ImageWordMatchWordRepository, private val iwHotspotRepository: ImageWordMatchHotspotRepository )</ID>
+    <ID>LongParameterList:Topic.kt$Topic$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "library_id", nullable = false) var library: Library? = null, @Column(nullable = false) var title: String, @Column(columnDefinition = "TEXT") var description: String? = null, @Column(name = "display_order", nullable = false) var displayOrder: Int = 0, @Column(name = "is_published", nullable = false) var isPublished: Boolean = false, /** Soft delete: не-null = топик архивирован, записи учеников сохраняются */ @Column(name = "deleted_at") var deletedAt: Instant? = null, @OneToOne(mappedBy = "topic", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) var video: Video? = null, @OneToMany(mappedBy = "topic", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY) @OrderBy("displayOrder ASC") var questions: MutableSet&lt;SpeakingQuestion&gt; = mutableSetOf(), @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null, @UpdateTimestamp @Column(name = "updated_at", nullable = false) var updatedAt: Instant? = null )</ID>
+    <ID>LongParameterList:User.kt$User$( @Id val id: UUID = UUID.randomUUID(), @Column(unique = true, nullable = false) var email: String, @Column(name = "password_hash") var passwordHash: String? = null, @Column(name = "display_name", nullable = false) var displayName: String, @Column(name = "avatar_url") var avatarUrl: String? = null, @Enumerated(EnumType.STRING) @Column(name = "auth_provider") var authProvider: AuthProvider = AuthProvider.EMAIL, @Column(name = "provider_id") var providerId: String? = null, @Column(nullable = false) var level: Int = 1, @Column(name = "total_points", nullable = false) var totalPoints: Int = 0, @Column(name = "current_streak", nullable = false) var currentStreak: Int = 0, @Column(name = "longest_streak", nullable = false) var longestStreak: Int = 0, @Column(name = "last_activity_date") var lastActivityDate: Instant? = null, @Column(name = "previous_streak_before_break") var previousStreakBeforeBreak: Int? = null, @Column(nullable = false) var role: String = "USER", @Column(name = "email_verified", nullable = false) var emailVerified: Boolean = false, @Column(name = "created_at", nullable = false) val createdAt: Instant = Instant.now(), @Column(name = "updated_at", nullable = false) var updatedAt: Instant = Instant.now(), @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY) val progress: MutableList&lt;Progress&gt; = mutableListOf(), @ManyToMany(fetch = FetchType.LAZY) @JoinTable( name = "user_achievements", joinColumns = [JoinColumn(name = "user_id")], inverseJoinColumns = [JoinColumn(name = "achievement_id")] ) val achievements: MutableSet&lt;AchievementEntity&gt; = mutableSetOf() )</ID>
+    <ID>LongParameterList:Video.kt$Video$( @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null, @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "topic_id", nullable = false, unique = true) var topic: Topic? = null, @Column(name = "video_url", nullable = false, length = 500) var videoUrl: String, /** WebVTT (.vtt) в MinIO; null = субтитров нет */ @Column(name = "subtitle_url", length = 500) var subtitleUrl: String? = null, @Column(name = "duration_seconds", nullable = false) var durationSeconds: Int, @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) val createdAt: Instant? = null, @UpdateTimestamp @Column(name = "updated_at", nullable = false) var updatedAt: Instant? = null )</ID>
+    <ID>LoopWithTooManyJumpStatements:UserService.kt$UserService$for</ID>
+    <ID>MagicNumber:AchievementService.kt$AchievementService$100</ID>
+    <ID>MagicNumber:AchievementService.kt$AchievementService$22</ID>
+    <ID>MagicNumber:AchievementService.kt$AchievementService$8</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.1f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.3f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.4f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.5f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.6f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.7f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$0.8f</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$10</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$3</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$4</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$5</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$50</ID>
+    <ID>MagicNumber:AdaptiveLessonService.kt$AdaptiveLessonService$7</ID>
+    <ID>MagicNumber:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT$7</ID>
+    <ID>MagicNumber:AdminService.kt$AdminService$48</ID>
+    <ID>MagicNumber:AdminService.kt$AdminService$7</ID>
+    <ID>MagicNumber:AnswerValidationService.kt$AnswerValidationService$10</ID>
+    <ID>MagicNumber:AnswerValidationService.kt$AnswerValidationService$100</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$0.1f</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$0.2f</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$0.3f</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$0.5f</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$100</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$100.0</ID>
+    <ID>MagicNumber:AudioTestController.kt$AudioTestController$8</ID>
+    <ID>MagicNumber:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$100</ID>
+    <ID>MagicNumber:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$3</ID>
+    <ID>MagicNumber:AudioTestProgress.kt$AudioTestProgress$100</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$0.8</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$10</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$100</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$20</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$3</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$5</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$60</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$80</ID>
+    <ID>MagicNumber:AudioTestService.kt$AudioTestService$95</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$10</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$100</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$1000</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$15</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$200</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$30</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$5</ID>
+    <ID>MagicNumber:CacheConfig.kt$CacheConfig$500</ID>
+    <ID>MagicNumber:ClientLogController.kt$AdminLogController$100</ID>
+    <ID>MagicNumber:ClientLogControllerTest.kt$ClientLogControllerTest$100_000</ID>
+    <ID>MagicNumber:ClientLogControllerTest.kt$ClientLogControllerTest$1024</ID>
+    <ID>MagicNumber:ClientLogControllerTest.kt$ClientLogControllerTest$10_000</ID>
+    <ID>MagicNumber:ClientLogControllerTest.kt$ClientLogControllerTest$16</ID>
+    <ID>MagicNumber:ClientLogControllerTest.kt$ClientLogControllerTest$4</ID>
+    <ID>MagicNumber:ClientLogControllerTest.kt$ClientLogControllerTest$51</ID>
+    <ID>MagicNumber:CorsConfig.kt$CorsConfig$3600L</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$0.2f</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$0.7</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$0.7f</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$0.8</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$0.9f</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$10</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$100</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$3</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$30</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$4</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$5</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$60</ID>
+    <ID>MagicNumber:DifficultyEngine.kt$DifficultyEngine$600</ID>
+    <ID>MagicNumber:EmailVerificationService.kt$EmailVerificationService$32</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$10</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$100</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$1000</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$20</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$50</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$500</ID>
+    <ID>MagicNumber:FeatureToggleController.kt$FeatureToggleController$900</ID>
+    <ID>MagicNumber:GuestEventController.kt$GuestEventRequest$86400</ID>
+    <ID>MagicNumber:GuestEventControllerTest.kt$GuestEventControllerTest$10</ID>
+    <ID>MagicNumber:GuestEventControllerTest.kt$GuestEventControllerTest$15</ID>
+    <ID>MagicNumber:GuestEventControllerTest.kt$GuestEventControllerTest$51</ID>
+    <ID>MagicNumber:GuestEventControllerTest.kt$GuestEventControllerTest$60</ID>
+    <ID>MagicNumber:GuestEventControllerTest.kt$GuestEventControllerTest$8</ID>
+    <ID>MagicNumber:GuestFlowE2ETest.kt$GuestFlowE2ETest$10</ID>
+    <ID>MagicNumber:GuestFlowE2ETest.kt$GuestFlowE2ETest$100</ID>
+    <ID>MagicNumber:GuestFlowE2ETest.kt$GuestFlowE2ETest$25</ID>
+    <ID>MagicNumber:GuestFlowE2ETest.kt$GuestFlowE2ETest$3</ID>
+    <ID>MagicNumber:ImageWordMatchContent.kt$HotspotData$0.05f</ID>
+    <ID>MagicNumber:ImageWordMatchContent.kt$ImageWordMatchContent$8</ID>
+    <ID>MagicNumber:ImageWordMatchContent.kt$WordData$50</ID>
+    <ID>MagicNumber:JwtAuthenticationFilter.kt$JwtAuthenticationFilter$7</ID>
+    <ID>MagicNumber:JwtService.kt$JwtService$32</ID>
+    <ID>MagicNumber:JwtService.kt$JwtService$604800000</ID>
+    <ID>MagicNumber:JwtService.kt$JwtService$86400000</ID>
+    <ID>MagicNumber:LeaderboardController.kt$LeaderboardController$100</ID>
+    <ID>MagicNumber:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$30</ID>
+    <ID>MagicNumber:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$61</ID>
+    <ID>MagicNumber:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$7</ID>
+    <ID>MagicNumber:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$8</ID>
+    <ID>MagicNumber:ProgressService.kt$ProgressService$3</ID>
+    <ID>MagicNumber:ProgressService.kt$ProgressService$5</ID>
+    <ID>MagicNumber:PublicAdaptiveService.kt$PublicAdaptiveService$10</ID>
+    <ID>MagicNumber:PublicAdaptiveService.kt$PublicAdaptiveService$3</ID>
+    <ID>MagicNumber:PublicAdaptiveService.kt$PublicAdaptiveService$4</ID>
+    <ID>MagicNumber:PublicAdaptiveService.kt$PublicAdaptiveService$5</ID>
+    <ID>MagicNumber:PublicAdaptiveService.kt$PublicAdaptiveService$6</ID>
+    <ID>MagicNumber:PublicAdaptiveService.kt$PublicAdaptiveService$7</ID>
+    <ID>MagicNumber:QuestionService.kt$QuestionService$100</ID>
+    <ID>MagicNumber:QuestionService.kt$QuestionService$8</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$0xFFFFFFFFL</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$10</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$100</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$12</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$20</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$255</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$3</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$32</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$4</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$429</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$5</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$6</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$60</ID>
+    <ID>MagicNumber:RateLimitingFilter.kt$RateLimitingFilter$8</ID>
+    <ID>MagicNumber:RateLimitingFilterTest.kt$RateLimitingFilterTest$10</ID>
+    <ID>MagicNumber:RateLimitingFilterTest.kt$RateLimitingFilterTest$429</ID>
+    <ID>MagicNumber:RateLimitingFilterTest.kt$RateLimitingFilterTest$6</ID>
+    <ID>MagicNumber:RequestIdFilterTest.kt$RequestIdFilterTest$64</ID>
+    <ID>MagicNumber:RequestIdFilterTest.kt$RequestIdFilterTest$65</ID>
+    <ID>MagicNumber:RequestLoggingFilter.kt$RequestLoggingFilter$1_000_000</ID>
+    <ID>MagicNumber:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$3600_000</ID>
+    <ID>MagicNumber:SecurityContractPostgresIT.kt$SecurityContractPostgresIT$5</ID>
+    <ID>MagicNumber:SpeakingAdminController.kt$SpeakingAdminController$100</ID>
+    <ID>MagicNumber:SpeakingContentServiceTest.kt$SpeakingContentServiceTest$3</ID>
+    <ID>MagicNumber:SpeakingContentServiceTest.kt$SpeakingContentServiceTest$3L</ID>
+    <ID>MagicNumber:SpeakingDtos.kt$GradeSubmissionRequest$10</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$1024</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$201</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$5</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$7</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$7.0</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$8</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$9</ID>
+    <ID>MagicNumber:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$9.0</ID>
+    <ID>MagicNumber:StorageService.kt$StorageService$50</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$0.5</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$100</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$14</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$30</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$5</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$6</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$60</ID>
+    <ID>MagicNumber:StreakService.kt$StreakService$7</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$100</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$24</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$36</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$4</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$5</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$6</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$60</ID>
+    <ID>MagicNumber:StudentGroupService.kt$StudentGroupService$7</ID>
+    <ID>MagicNumber:Test.kt$TestProgressSummary$100</ID>
+    <ID>MagicNumber:TestValidationService.kt$TestValidationService$100</ID>
+    <ID>MagicNumber:TestValidationService.kt$TestValidationService$3</ID>
+    <ID>MagicNumber:TestValidationService.kt$TestValidationService$60</ID>
+    <ID>MagicNumber:TestValidationService.kt$TestValidationService$80</ID>
+    <ID>MagicNumber:TestValidationService.kt$TestValidationService$95</ID>
+    <ID>MagicNumber:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$24</ID>
+    <ID>MagicNumber:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$3600_000</ID>
+    <ID>MagicNumber:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$7L</ID>
+    <ID>MagicNumber:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest$8L</ID>
+    <ID>MagicNumber:UserService.kt$UserService$100</ID>
+    <ID>MagicNumber:UserService.kt$UserService$3</ID>
+    <ID>MagicNumber:UserService.kt$UserService$5</ID>
+    <ID>MagicNumber:UserService.kt$UserService$60</ID>
+    <ID>MagicNumber:UserService.kt$UserService$80</ID>
+    <ID>MagicNumber:UserService.kt$UserService$95</ID>
+    <ID>MagicNumber:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$20</ID>
+    <ID>MagicNumber:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$5</ID>
+    <ID>MagicNumber:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$65</ID>
+    <ID>MagicNumber:UserServiceMergeGuestProgressTest.kt$UserServiceMergeGuestProgressTest$80</ID>
+    <ID>MagicNumber:Word.kt$UserWord$100</ID>
+    <ID>MagicNumber:XpService.kt$XpService$0.1</ID>
+    <ID>MagicNumber:XpService.kt$XpService$0.2</ID>
+    <ID>MagicNumber:XpService.kt$XpService$0.3</ID>
+    <ID>MagicNumber:XpService.kt$XpService$0.4</ID>
+    <ID>MagicNumber:XpService.kt$XpService$10</ID>
+    <ID>MagicNumber:XpService.kt$XpService$3</ID>
+    <ID>MagicNumber:XpService.kt$XpService$4</ID>
+    <ID>MagicNumber:XpService.kt$XpService$5</ID>
+    <ID>MagicNumber:XpService.kt$XpService$6</ID>
+    <ID>MagicNumber:XpService.kt$XpService$7</ID>
+    <ID>MagicNumber:XpService.kt$XpService$8</ID>
+    <ID>MagicNumber:XpService.kt$XpService$9</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$10</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$100</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$1000</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$1400</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$1900</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$250</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$2500</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$3</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$3200</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$4</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$450</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$5</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$6</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$7</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$700</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$8</ID>
+    <ID>MagicNumber:XpService.kt$XpService.Companion$9</ID>
+    <ID>MatchingDeclarationName:AchievementDto.kt$AchievementResponse</ID>
+    <ID>MaxLineLength:AdminService.kt$AdminService$/** Метрики PRD (Speaking Trainer §Metrics): practice/ученик/неделю, доля REVIEWED за 48ч, конверсия гость→регистрация. */</ID>
+    <ID>MaxLineLength:AudioTestIntegrationTest.kt$AudioTestIntegrationTest$assert(detailResponse.questions[0].answers.isNotEmpty()) { "Answers should not be empty, questions: ${detailResponse.questions}" }</ID>
+    <ID>MaxLineLength:AudioTestService.kt$AudioTestService$category = this.category?.let { CategoryResponse(it.id.toString(), it.name, it.description, it.iconUrl, it.tests.size) }</ID>
+    <ID>MaxLineLength:AudioTestService.kt$AudioTestService$require(question.endTimeSeconds - question.startTimeSeconds &gt;= 5) { "Question time range must be at least 5 seconds" }</ID>
+    <ID>MaxLineLength:AuthService.kt$AuthService$return RegisterResponse(user = savedUser.toResponse(), emailSent = false, token = token, refreshToken = refreshToken)</ID>
+    <ID>MaxLineLength:CategoryRepository.kt$CategoryRepository$@Query("SELECT c FROM Category c LEFT JOIN FETCH c.tests t WHERE c.isActive = true AND t.isPublished = true ORDER BY c.displayOrder")</ID>
+    <ID>MaxLineLength:GlobalExceptionHandler.kt$GlobalExceptionHandler$fun</ID>
+    <ID>MaxLineLength:GuestEventControllerTest.kt$GuestEventControllerTest$com.sotospeak.entity.GuestEvent(anonymousId = guest1, type = GuestEventType.TEST_COMPLETED, score = 5, maxScore = 10)</ID>
+    <ID>MaxLineLength:GuestEventRepository.kt$GuestEventRepository$@Query("UPDATE GuestEvent e SET e.convertedUserId = :userId WHERE e.anonymousId = :anonymousId AND e.convertedUserId IS NULL")</ID>
+    <ID>MaxLineLength:GuestFlowE2ETest.kt$GuestFlowE2ETest$"Public validation should not create database entries, but count changed from $initialProgressCount to $finalProgressCount"</ID>
+    <ID>MaxLineLength:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest$DataIntegrityViolationException("duplicate key value violates unique constraint uq_practice_submissions_user_topic")</ID>
+    <ID>MaxLineLength:RateLimitingFilter.kt$RateLimitingFilter$private val loginConfig = RateLimitConfig(envInt("RATE_LIMIT_LOGIN_CAPACITY", 5), 1, 12) // 5 per minute, refill 1 per 12s</ID>
+    <ID>MaxLineLength:RateLimitingFilter.kt$RateLimitingFilter$private val registerConfig = RateLimitConfig(envInt("RATE_LIMIT_REGISTER_CAPACITY", 3), 1, 20) // 3 per minute, refill 1 per 20s</ID>
+    <ID>MaxLineLength:RequestIdFilterTest.kt$RequestIdFilterTest$verify(response).setHeader(eq(RequestIdFilter.HEADER_NAME), argThat { it != null &amp;&amp; !it.contains("\r") &amp;&amp; !it.contains("\n") })</ID>
+    <ID>MaxLineLength:SecurityConfig.kt$SecurityConfig$fun</ID>
+    <ID>MaxLineLength:SpeakingContentServiceTest.kt$SpeakingContentServiceTest$service.upsertVideo(topicId, UpsertVideoRequest(videoUrl = "https://m/v1.mp4", subtitleUrl = null, durationSeconds = 95))</ID>
+    <ID>MaxLineLength:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest$GradeSubmissionRequest(grammar = 7, vocabulary = 8, pronunciation = 6, fluency = 7, comment = "Good ideas")</ID>
+    <ID>MaxLineLength:StorageService.kt$StorageService$logger.info("UPLOAD START: originalName=${file.originalFilename}, size=${file.size}, contentType=${file.contentType}, folder=$folder")</ID>
+    <ID>MaxLineLength:StorageService.kt$StorageService$val isContentSubtitle = normalizedContentType == "text/vtt" || normalizedContentType.startsWith("text/plain")</ID>
+    <ID>MayBeConst:DifficultyEngine.kt$DifficultyEngine.Companion$val MIN_QUESTIONS_BEFORE_ADJUSTMENT = 3</ID>
+    <ID>MayBeConst:DifficultyEngine.kt$DifficultyEngine.Companion$val SUCCESS_RATE_TOLERANCE = 0.05 // ±5% допуск</ID>
+    <ID>MayBeConst:DifficultyEngine.kt$DifficultyEngine.Companion$val TARGET_SUCCESS_RATE = 0.75 // 75% целевой показатель</ID>
+    <ID>NestedBlockDepth:JwtAuthenticationFilter.kt$JwtAuthenticationFilter$override fun doFilterInternal( request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain )</ID>
+    <ID>NestedBlockDepth:RateLimitingFilter.kt$RateLimitingFilter$private fun extractClientIp(request: HttpServletRequest): String</ID>
+    <ID>ReturnCount:AdaptiveLessonService.kt$AdaptiveLessonService$private fun generateRecommendation(userId: UUID, weakAreas: List&lt;WeakAreaDto&gt;): LessonRecommendation?</ID>
+    <ID>ReturnCount:CacheAdminController.kt$CacheAdminController$@GetMapping("/stats/{cacheName}") fun getCacheStats(@PathVariable cacheName: String): ResponseEntity&lt;CacheStats&gt;</ID>
+    <ID>ReturnCount:EmailVerificationService.kt$EmailVerificationService$@Transactional fun confirm(token: String): Boolean</ID>
+    <ID>ReturnCount:JwtAuthenticationFilter.kt$JwtAuthenticationFilter$override fun doFilterInternal( request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain )</ID>
+    <ID>ReturnCount:JwtAuthenticationFilter.kt$JwtAuthenticationFilter$private fun resolveRole(userId: String): String?</ID>
+    <ID>ReturnCount:MediaUrlService.kt$MediaUrlService$fun normalize(url: String?): String?</ID>
+    <ID>ReturnCount:RateLimitingFilter.kt$RateLimitingFilter$private fun extractClientIp(request: HttpServletRequest): String</ID>
+    <ID>ReturnCount:RateLimitingFilter.kt$RateLimitingFilter$private fun ipv4ToLong(ip: String): Long?</ID>
+    <ID>ReturnCount:RateLimitingFilter.kt$RateLimitingFilter$private fun parseTrustedProxy(entry: String): TrustedProxy?</ID>
+    <ID>ReturnCount:RateLimitingFilter.kt$RateLimitingFilter$private fun shouldApplyRateLimiting(path: String, method: String): Boolean</ID>
+    <ID>ReturnCount:RefreshTokenService.kt$RefreshTokenService$@Transactional fun revoke(rawToken: String)</ID>
+    <ID>ReturnCount:StorageService.kt$StorageService$private fun extractKey(url: String): String?</ID>
+    <ID>ReturnCount:StudentGroupService.kt$StudentGroupService$@Transactional fun joinGroupByCode(userId: UUID, inviteCode: String): JoinByCodeResponse</ID>
+    <ID>SpreadOperator:SoToSpeakApplication.kt$(*args)</ID>
+    <ID>SwallowedException:AchievementService.kt$AchievementService$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:JwtAuthenticationFilter.kt$JwtAuthenticationFilter$e: ExpiredJwtException</ID>
+    <ID>SwallowedException:JwtService.kt$JwtService$e: Exception</ID>
+    <ID>SwallowedException:JwtService.kt$JwtService$e: ExpiredJwtException</ID>
+    <ID>SwallowedException:PracticeSubmissionService.kt$PracticeSubmissionService$e: DataIntegrityViolationException</ID>
+    <ID>SwallowedException:SpeakingContentService.kt$SpeakingContentService$e: DataIntegrityViolationException</ID>
+    <ID>ThrowsCount:AuthService.kt$AuthService$@Transactional fun login(request: LoginRequest): AuthResponse</ID>
+    <ID>ThrowsCount:QuestService.kt$QuestService$@Transactional fun claimReward(userId: UUID, questId: String): QuestReward</ID>
+    <ID>ThrowsCount:RefreshTokenService.kt$RefreshTokenService$@Transactional fun rotate(rawToken: String): RotationResult</ID>
+    <ID>ThrowsCount:StorageService.kt$StorageService$private fun validateFileType(extension: String, contentType: String?)</ID>
+    <ID>TooGenericExceptionCaught:AdminController.kt$AdminController$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:JwtService.kt$JwtService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:StorageService.kt$StorageService$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:RequestIdFilterTest.kt$RequestIdFilterTest$throw RuntimeException("boom")</ID>
+    <ID>TooManyFunctions:AchievementService.kt$AchievementService</ID>
+    <ID>TooManyFunctions:AdaptiveLessonService.kt$AdaptiveLessonService</ID>
+    <ID>TooManyFunctions:AdminAnalyticsPostgresIT.kt$AdminAnalyticsPostgresIT : PostgresContainerTest</ID>
+    <ID>TooManyFunctions:AdminController.kt$AdminController</ID>
+    <ID>TooManyFunctions:AudioTestController.kt$AudioTestController</ID>
+    <ID>TooManyFunctions:AudioTestService.kt$AudioTestService</ID>
+    <ID>TooManyFunctions:DifficultyEngine.kt$DifficultyEngine</ID>
+    <ID>TooManyFunctions:GamificationController.kt$GamificationController</ID>
+    <ID>TooManyFunctions:JwtService.kt$JwtService</ID>
+    <ID>TooManyFunctions:PracticeSubmissionServiceTest.kt$PracticeSubmissionServiceTest</ID>
+    <ID>TooManyFunctions:ProgressRepository.kt$ProgressRepository : JpaRepository</ID>
+    <ID>TooManyFunctions:QuestionController.kt$QuestionController</ID>
+    <ID>TooManyFunctions:QuestionRepository.kt$QuestionRepository : JpaRepository</ID>
+    <ID>TooManyFunctions:QuestionService.kt$QuestionService</ID>
+    <ID>TooManyFunctions:RateLimitingFilter.kt$RateLimitingFilter : OncePerRequestFilter</ID>
+    <ID>TooManyFunctions:RateLimitingFilterTest.kt$RateLimitingFilterTest</ID>
+    <ID>TooManyFunctions:SpeakingAdminController.kt$SpeakingAdminController</ID>
+    <ID>TooManyFunctions:SpeakingContentService.kt$SpeakingContentService</ID>
+    <ID>TooManyFunctions:SpeakingFlowIntegrationTest.kt$SpeakingFlowIntegrationTest</ID>
+    <ID>TooManyFunctions:StreakService.kt$StreakService</ID>
+    <ID>TooManyFunctions:StudentGroupController.kt$StudentGroupController</ID>
+    <ID>TooManyFunctions:StudentGroupService.kt$StudentGroupService</ID>
+    <ID>TooManyFunctions:TokenRefreshIntegrationTest.kt$TokenRefreshIntegrationTest</ID>
+    <ID>TooManyFunctions:UserRepository.kt$UserRepository : JpaRepository</ID>
+    <ID>TooManyFunctions:UserService.kt$UserService</ID>
+    <ID>TooManyFunctions:WordRepository.kt$WordRepository : JpaRepository</ID>
+    <ID>UnusedImports:AdaptiveLessonController.kt$import com.sotospeak.shared.model.DifficultyLevel</ID>
+    <ID>UnusedImports:AdaptiveLessonController.kt$import com.sotospeak.shared.model.SkillType</ID>
+    <ID>UnusedImports:AdaptiveLessonRepository.kt$import java.time.Instant</ID>
+    <ID>UnusedImports:AdaptiveLessonRepository.kt$import org.springframework.data.jpa.repository.Modifying</ID>
+    <ID>UnusedImports:AdaptiveLessonRepository.kt$import org.springframework.transaction.annotation.Transactional</ID>
+    <ID>UnusedImports:AdaptiveLessonService.kt$import java.time.temporal.TemporalAdjusters</ID>
+    <ID>UnusedImports:AudioTestIntegrationTest.kt$import org.springframework.test.web.servlet.result.MockMvcResultMatchers</ID>
+    <ID>UnusedImports:AudioTestIntegrationTest.kt$import org.springframework.transaction.annotation.Transactional</ID>
+    <ID>UnusedImports:AudioTestService.kt$import com.sotospeak.entity.Category</ID>
+    <ID>UnusedImports:FeatureToggleController.kt$import java.util.UUID</ID>
+    <ID>UnusedImports:Question.kt$import org.hibernate.annotations.JdbcTypeCode</ID>
+    <ID>UnusedImports:Question.kt$import org.hibernate.type.SqlTypes</ID>
+    <ID>UnusedImports:QuestionService.kt$import org.springframework.data.domain.Page</ID>
+    <ID>UnusedImports:QuestionService.kt$import org.springframework.data.domain.Pageable</ID>
+    <ID>UnusedImports:SpeakingContentServiceTest.kt$import com.sotospeak.entity.speaking.Video</ID>
+    <ID>UnusedImports:SpeakingContentServiceTest.kt$import org.junit.jupiter.api.Assertions.assertTrue</ID>
+    <ID>UnusedImports:StudentGroupRepository.kt$import org.springframework.data.jpa.repository.Query</ID>
+    <ID>UnusedParameter:AchievementService.kt$AchievementService$stars: Int</ID>
+    <ID>UnusedParameter:AdaptiveLessonService.kt$AdaptiveLessonService$categoryId: String?</ID>
+    <ID>UnusedParameter:AdaptiveLessonService.kt$AdaptiveLessonService$lesson: AdaptiveLesson</ID>
+    <ID>UnusedParameter:AdaptiveLessonService.kt$AdaptiveLessonService$skillType: SkillType?</ID>
+    <ID>UnusedParameter:AdaptiveLessonService.kt$AdaptiveLessonService$userId: UUID</ID>
+    <ID>UnusedParameter:DifficultyEngine.kt$DifficultyEngine$currentLevel: DifficultyLevel</ID>
+    <ID>UnusedParameter:FeatureToggleController.kt$FeatureToggleController$@AuthenticationPrincipal principal: UserPrincipal</ID>
+    <ID>UnusedParameter:FeatureToggleController.kt$FeatureToggleController$@RequestBody request: FeatureOverrideRequest</ID>
+    <ID>UnusedParameter:GlobalExceptionHandler.kt$GlobalExceptionHandler$ex: AccessDeniedException</ID>
+    <ID>UnusedParameter:GlobalExceptionHandler.kt$GlobalExceptionHandler$ex: com.sotospeak.service.EmailNotVerifiedException</ID>
+    <ID>UnusedParameter:QuestService.kt$QuestService$difficulty: QuestDifficulty</ID>
+    <ID>UnusedParameter:QuestionService.kt$QuestionService$content: JsonNode</ID>
+    <ID>UnusedParameter:QuestionService.kt$QuestionService$id: UUID</ID>
+    <ID>UnusedParameter:QuestionService.kt$QuestionService$type: QuestionType</ID>
+    <ID>UnusedParameter:StreakService.kt$StreakService$activities: List&lt;UserActivity&gt;</ID>
+    <ID>UnusedParameter:StreakService.kt$StreakService$challengeId: String</ID>
+    <ID>UnusedParameter:StreakService.kt$StreakService$days: Int</ID>
+    <ID>UnusedParameter:StreakService.kt$StreakService$userId: UUID</ID>
+    <ID>UnusedParameter:XpService.kt$XpService$limit: Int</ID>
+    <ID>UnusedParameter:XpService.kt$XpService$userId: UUID</ID>
+    <ID>UtilityClassWithPublicConstructor:PostgresContainerTest.kt$PostgresContainerTest</ID>
+    <ID>WildcardImport:AchievementController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:AchievementService.kt$import com.sotospeak.shared.model.*</ID>
+    <ID>WildcardImport:AdaptiveLesson.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AdaptiveLessonController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AdaptiveLessonController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:AdaptiveLessonService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AdaptiveLessonService.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:AdminController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AdminController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:Answer.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AnswerValidationService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AudioTest.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AudioTestAnswer.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AudioTestController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AudioTestController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:AudioTestDtos.kt$import jakarta.validation.constraints.*</ID>
+    <ID>WildcardImport:AudioTestIntegrationTest.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AudioTestProgress.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AudioTestQuestion.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AudioTestService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AudioTestService.kt$import com.sotospeak.entity.audio.*</ID>
+    <ID>WildcardImport:AudioTestUserAnswer.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AudioTranscript.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:AuthController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:AuthController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:AuthService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:CacheAdminController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:Category.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:CategoryController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:ClientLog.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:ClientLogController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:ClientLogControllerTest.kt$import org.junit.jupiter.api.Assertions.*</ID>
+    <ID>WildcardImport:DailyTask.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:DifficultyEngine.kt$import kotlin.math.*</ID>
+    <ID>WildcardImport:EmailVerificationToken.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:FeatureToggleController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:GamificationController.kt$import com.sotospeak.service.*</ID>
+    <ID>WildcardImport:GamificationController.kt$import com.sotospeak.shared.model.*</ID>
+    <ID>WildcardImport:GamificationController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:GamificationEntities.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:GamificationRepositories.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:Grade.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:GuestEvent.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:GuestEventController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:GuestEventControllerTest.kt$import org.junit.jupiter.api.Assertions.*</ID>
+    <ID>WildcardImport:GuestFlowE2ETest.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:GuestFlowE2ETest.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:ImageWordMatchDtos.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:ImageWordMatchQuestionEntity.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:ImageWordMatchRepository.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:LeaderboardController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:Lesson.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:Library.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:MediaFile.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:Message.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:MessageController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:PracticeSubmission.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:Progress.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:ProgressService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:ProgressService.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:PublicAdaptiveController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:PublicAdaptiveService.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:PublicAdaptiveService.kt$import com.sotospeak.shared.model.*</ID>
+    <ID>WildcardImport:PublicTestController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:QuestService.kt$import com.sotospeak.shared.model.*</ID>
+    <ID>WildcardImport:QuestService.kt$import java.time.*</ID>
+    <ID>WildcardImport:Question.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:QuestionController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:QuestionController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:QuestionDtos.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:QuestionService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:QuestionService.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:QuestionService.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:RateLimitingFilterTest.kt$import org.mockito.Mockito.*</ID>
+    <ID>WildcardImport:RefreshToken.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:RequestIdFilterTest.kt$import org.mockito.Mockito.*</ID>
+    <ID>WildcardImport:SpeakingAdminController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:SpeakingAdminController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:SpeakingContentService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:SpeakingQuestion.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:StreakService.kt$import com.sotospeak.shared.model.*</ID>
+    <ID>WildcardImport:StreakService.kt$import java.time.*</ID>
+    <ID>WildcardImport:StudentGroup.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:StudentGroupController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:StudentGroupController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:StudentGroupService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:StudentGroupService.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:StudentGroupService.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:Test.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:TestController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:TestController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:TestDto.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:TestService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:TestService.kt$import com.sotospeak.entity.*</ID>
+    <ID>WildcardImport:TestService.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:TestServiceTest.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:Topic.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:User.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:UserController.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:UserController.kt$import org.springframework.web.bind.annotation.*</ID>
+    <ID>WildcardImport:UserService.kt$import com.sotospeak.dto.*</ID>
+    <ID>WildcardImport:UserServiceMergeGuestProgressTest.kt$import com.sotospeak.repository.*</ID>
+    <ID>WildcardImport:UserServiceMergeGuestProgressTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:UserServiceMergeGuestProgressTest.kt$import org.junit.jupiter.api.Assertions.*</ID>
+    <ID>WildcardImport:Video.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:Word.kt$import jakarta.persistence.*</ID>
+    <ID>WildcardImport:WordRepository.kt$import com.sotospeak.entity.*</ID>
+  </CurrentIssues>
 </SmellBaseline>

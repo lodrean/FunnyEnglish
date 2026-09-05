@@ -45,15 +45,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status: number | undefined = error.response?.status;
+    const requestUrl: string = error.config?.url ?? '';
+    // 401 от /auth/* (неверные креды и т.п.) — это ответ ФОРМЕ логина, а не истёкшая
+    // сессия: window.location.href='/login' делал полный reload и стирал Alert
+    // с ошибкой (гонка, стабильный красный в E2E). На /login редирект тоже бессмыслен.
+    const isAuthEndpoint = requestUrl.includes('/auth/');
+    const alreadyOnLogin = window.location.pathname === '/login';
+    if (status === 401 && !isAuthEndpoint && !alreadyOnLogin) {
       localStorage.removeItem('token');
       window.location.href = '/login';
-    } else {
+    } else if (status !== 401) {
       // Без тел ответов (приватность); 401 не логируем — это штатный редирект на логин
       const method = (error.config?.method ?? '?').toUpperCase();
       const url = error.config?.url ?? '?';
-      const status = error.response?.status ?? 'network';
-      logger.warn('ApiClient', `${method} ${url} -> ${status}`);
+      logger.warn('ApiClient', `${method} ${url} -> ${status ?? 'network'}`);
     }
     return Promise.reject(error);
   }

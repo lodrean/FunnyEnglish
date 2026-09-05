@@ -17,11 +17,13 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun findAllByOrderByCreatedAtDesc(): List<User>
 
     // wy7.3: поиск/фильтр admin-списка в БД (было findAll + фильтр в памяти).
-    // CAST у nullable-параметров обязателен для PostgreSQL (грабля №81).
+    // CAST у nullable-параметров обязателен для PostgreSQL (грабля №81) — причём на
+    // КАЖДОМ вхождении: некастованное вхождение внутри CONCAT/UPPER биндится как bytea
+    // («function lower(bytea) does not exist»), H2/MockMvc это не ловят.
     @Query("""
         SELECT u FROM User u
-        WHERE (CAST(:q AS String) IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', :q, '%')))
-          AND (CAST(:role AS String) IS NULL OR UPPER(u.role) = UPPER(:role))
+        WHERE (CAST(:q AS String) IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:q AS String), '%')) OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', CAST(:q AS String), '%')))
+          AND (CAST(:role AS String) IS NULL OR UPPER(u.role) = UPPER(CAST(:role AS String)))
         ORDER BY u.createdAt DESC
     """)
     fun searchForAdmin(q: String?, role: String?): List<User>

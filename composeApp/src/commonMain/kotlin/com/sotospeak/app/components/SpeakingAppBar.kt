@@ -3,6 +3,7 @@ package com.sotospeak.app.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +29,11 @@ fun SpeakingAppBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            // edge-to-edge: статус-бар прозрачный. На экранах с собственным Scaffold
+            // (Video) аппбар стоит у y=0 — без этого пада заголовок уезжает под статус-бар.
+            // На экранах внутри AppScaffold верхний инсет уже поглощён consumeWindowInsets —
+            // здесь statusBarsPadding() даёт 0, двойного отступа нет.
+            .statusBarsPadding()
             .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
             .testTag("app_bar")
     ) {

@@ -1,0 +1,20 @@
+# Изолированный стек для перегенерации visual-regression базлайнов (bd 9wf п.3).
+# Запуск: docker compose -p visualregen -f docker-compose.yml -f docker/visual-regen-override.yml up -d --build
+# Свежие тома (новый -p), порты вне конфликтов с dev/staging (8080 заблокирован Windows, грабля №107).
+# После использования: docker compose -p visualregen down -v
+services:
+  backend:
+    container_name: visualregen-backend
+    ports: !override []
+  admin:
+    container_name: visualregen-admin
+    ports: !override
+      - "3101:80"
+  postgres:
+    container_name: visualregen-postgres
+    ports: !override []
+  minio:
+    container_name: visualregen-minio
+    ports: !override []
+  minio-init:
+    container_name: visualregen-minio-init

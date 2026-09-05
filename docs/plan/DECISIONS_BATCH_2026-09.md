@@ -41,10 +41,12 @@
 
 ## 2. Навигация этап 2 — navigation-compose 2.8 (bd 5tf.4)
 
-Сейчас (этап 1, 5tf.3 in progress) — ручной BackStack + rememberSaveable.
+Сейчас (этап 1, 5tf.3 — сделан 2026-09-05) — ручной BackStack + rememberSaveable.
 Спека Part 2 v1.8 §1.1/§1.2 канонически описывает «навигацию без бэк-стека» —
-миграция на navigation-compose требует её правки. Дифф уже подготовлен:
-`.pipeline/20260830-033500/02-execute.md`.
+миграция на navigation-compose требует её правки. Дифф, подготовленный 2026-08-30,
+лежал в эфемерном `.pipeline/20260830-033500/` и не сохранился — при одобрении
+варианта A дифф готовится заново через OpenSpec change (суть: §1.1/§1.2 → бэк-стек
+AppBackStack, typed routes отложены до этапа 2).
 
 - **Вариант A:** одобрить дифф → после 5tf.3 делать этап 2 (typed routes,
   SavedStateHandle, deep links) через OpenSpec change.

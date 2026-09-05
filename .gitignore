@@ -123,3 +123,9 @@ maestro-cli
 videos/
 .media/
 
+
+# Марathon-run артефакты и корневые логи (bd qbq.2)
+.pipeline/
+/*.log
+kimi-export-*.md
+temp_*.js

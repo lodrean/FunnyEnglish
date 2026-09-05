@@ -18,18 +18,20 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      // Пороги по факту зелёного CI-прогона (артефакт coverage-final, run 33985994607):
+      // без e2e/ в отчёте — statements 47.7%, functions 49.2%, branches 82.8%.
+      // Консервативный запас вниз (грабля №88: пороги = 0 → мёртвые; расхождение
+      // Windows/CI давал случайный coverage- include e2e-скриптов Playwright).
       thresholds: {
-        // Пороги отключены до аудита базлайна: v8-coverage даёт разные итоги на
-        // Windows (87%) и Linux CI (34%) при одной конфигурации — требуется
-        // разбор baseline на CI, потом вернуть пороги (2026-08-08).
-        lines: 0,
-        functions: 0,
-        branches: 0,
-        statements: 0
+        lines: 40,
+        functions: 40,
+        branches: 75,
+        statements: 40
       },
       exclude: [
         'node_modules/',
         'src/test/',
+        'e2e/**',
         '**/*.d.ts',
         '**/*.config.*',
         '**/*.stories.tsx',

@@ -42,6 +42,7 @@ import { StatsCard } from '../components/data';
 import { getAdminAnalytics, getRecentActivity } from '../api/client';
 import { getSubmissions } from '../api/speakingApi';
 import type { RecentActivityItem } from '../types';
+import { formatRelativeTime } from '../utils/format';
 
 // Types — только реальные speaking-метрики (аудит D-1: моки запрещены)
 interface DashboardStats {
@@ -154,21 +155,6 @@ const getActivityTypeLabel = (type: Activity['type']): string => {
   return labels[type];
 };
 
-// Format relative time
-const formatRelativeTime = (timestamp: string): string => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();

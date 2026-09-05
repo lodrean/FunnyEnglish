@@ -3,7 +3,7 @@ import {
   formatDuration,
   formatDate,
   formatFileSize,
-} from '../utils/format';
+   formatRelativeTime } from '../utils/format';
 
 describe('format utilities', () => {
   describe('formatDuration', () => {
@@ -66,5 +66,29 @@ describe('format utilities', () => {
     it('should handle large files', () => {
       expect(formatFileSize(1024 * 1024 * 1024 * 2)).toContain('GB');
     });
+  });
+});
+
+describe('formatRelativeTime (bd b85.3 — единая реализация)', () => {
+  const now = Date.now();
+  const minsAgo = (m: number) => new Date(now - m * 60000).toISOString();
+  const daysAgo = (d: number) => new Date(now - d * 86400000).toISOString();
+
+  it('только что — «Just now»', () => {
+    expect(formatRelativeTime(new Date(now - 30000).toISOString())).toBe('Just now');
+  });
+  it('минуты — «5m ago»', () => {
+    expect(formatRelativeTime(minsAgo(5))).toBe('5m ago');
+  });
+  it('часы — «3h ago»', () => {
+    expect(formatRelativeTime(minsAgo(180))).toBe('3h ago');
+  });
+  it('дни (<7) — «2d ago»', () => {
+    expect(formatRelativeTime(daysAgo(2))).toBe('2d ago');
+  });
+  it('старше недели — локализованная дата', () => {
+    const out = formatRelativeTime(daysAgo(30));
+    expect(out).not.toContain('ago');
+    expect(out.length).toBeGreaterThan(4);
   });
 });

@@ -2,13 +2,16 @@ import '@testing-library/jest-dom';
 import { vi, afterEach } from 'vitest';
 
 // Mock import.meta.env
-global.import = {
+const globalWithImport = globalThis as typeof globalThis & {
+  import: { meta: { env: Record<string, string> } };
+};
+globalWithImport.import = {
   meta: {
     env: {
       VITE_API_URL: '/api',
     },
   },
-} as any;
+};
 
 // Mock localStorage
 const localStorageMock = {

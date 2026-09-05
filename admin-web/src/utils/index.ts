@@ -1,2 +1,2 @@
-export * from './formatters'
-export * from './validators'
+// bd b85.1: validators/formatters удалены (использовались только своими тестами);
+// живые форматтеры — utils/format.ts, импортируется напрямую потребителями.

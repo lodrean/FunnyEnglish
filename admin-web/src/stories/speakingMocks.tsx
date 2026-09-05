@@ -2,7 +2,6 @@
  * Общие моки и декораторы для Storybook-историй speaking-раздела (AW-T17).
  * Данные — через свежий QueryClient (retry: false) + setQueryData (без msw).
  */
-import React from 'react';
 import type { Decorator } from '@storybook/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

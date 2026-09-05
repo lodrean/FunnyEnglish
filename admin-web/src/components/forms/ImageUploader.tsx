@@ -294,10 +294,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             : alpha(theme.palette.action.hover, 0.02),
           opacity: disabled ? 0.5 : 1,
           transition: 'all 0.2s ease-in-out',
-          '&:hover': !disabled && {
+          '&:hover': !disabled ? {
             borderColor: 'primary.main',
             backgroundColor: alpha(theme.palette.primary.main, 0.05),
-          },
+          } : undefined,
           minWidth: 280,
           minHeight: 180,
           display: 'flex',

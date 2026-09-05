@@ -171,7 +171,7 @@ function RichTextEditorContent({
     ],
     content: value,
     editable: !disabled,
-    onUpdate: useCallback(({ editor }) => {
+    onUpdate: useCallback(({ editor }: { editor: { getHTML(): string } }) => {
       onChange(editor.getHTML());
     }, [onChange]),
   });

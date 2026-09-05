@@ -335,7 +335,7 @@ export function SearchInput({
         />
 
         {/* Dropdown */}
-        <Fade in={isDropdownOpen && hasDropdownContent}>
+        <Fade in={Boolean(isDropdownOpen && hasDropdownContent)}>
           <Paper
             elevation={4}
             sx={{

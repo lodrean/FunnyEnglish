@@ -10,6 +10,11 @@ vi.mock('../../../hooks/useSpeaking', () => ({
 }));
 
 import GradingNavBadge from '../GradingNavBadge';
+import { ThemeProvider } from '../../../theme/ThemeProvider';
+
+// StatusChip читает кастомную палитру theme.palette.speaking (augmentation) —
+// без app ThemeProvider тест падает (грабля №47)
+const renderBadge = (ui: React.ReactElement) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 describe('GradingNavBadge (G8)', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -18,13 +23,13 @@ describe('GradingNavBadge (G8)', () => {
     useSubmissionsMock.mockReturnValue({
       data: { content: [{}], totalElements: 7, totalPages: 7, page: 0, size: 1 },
     });
-    render(<GradingNavBadge />);
+    renderBadge(<GradingNavBadge />);
     expect(screen.getByTestId('grading-new-badge')).toHaveTextContent('7 new');
   });
 
   it('запрашивает именно NEW-статус', () => {
     useSubmissionsMock.mockReturnValue({ data: undefined });
-    render(<GradingNavBadge />);
+    renderBadge(<GradingNavBadge />);
     expect(useSubmissionsMock).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'NEW' })
     );
@@ -34,12 +39,12 @@ describe('GradingNavBadge (G8)', () => {
     useSubmissionsMock.mockReturnValue({
       data: { content: [], totalElements: 0, totalPages: 0, page: 0, size: 1 },
     });
-    const { unmount } = render(<GradingNavBadge />);
+    const { unmount } = renderBadge(<GradingNavBadge />);
     expect(screen.queryByTestId('grading-new-badge')).not.toBeInTheDocument();
 
     unmount();
     useSubmissionsMock.mockReturnValue({ data: undefined });
-    render(<GradingNavBadge />);
+    renderBadge(<GradingNavBadge />);
     expect(screen.queryByTestId('grading-new-badge')).not.toBeInTheDocument();
   });
 });

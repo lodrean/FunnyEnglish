@@ -6,6 +6,7 @@ package com.sotospeak.service.speaking
  * отсекает файлы, не являющиеся заявленным форматом (whitelist спеки:
  * m4a/aac/mp3/wav/ogg — SPEAKING_TRAINER_SPEC_PART2 §2.6).
  */
+@Suppress("MagicNumber") // байтовые подписи форматов — сами являются данными
 object AudioSignatureValidator {
 
     /** Первые байты, достаточные для всех проверяемых подписей. */

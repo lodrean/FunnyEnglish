@@ -59,6 +59,7 @@ class PracticeSubmissionServiceTest {
     }
 
     // Валидная m4a-подпись: [size]"ftypM4A " (bd FunnyEnglish-nj2.8, magic-bytes)
+    @Suppress("MagicNumber")
     private fun m4aBytes(): ByteArray {
         val b = ByteArray(16)
         b[4] = 'f'.code.toByte(); b[5] = 't'.code.toByte(); b[6] = 'y'.code.toByte(); b[7] = 'p'.code.toByte()
@@ -109,7 +110,7 @@ class PracticeSubmissionServiceTest {
 
     // 1c. createSubmission — контент не аудио (magic-bytes не совпали) → 400, upload не вызывается (bd nj2.8)
     @Test
-    fun `createSubmission - non-audio content rejected by magic-bytes before upload`() {
+    fun createSubmissionNonAudioRejectedByMagicBytes() {
         every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId) } returns Optional.of(topic)
 
         val fake = "definitely not an audio file!!".toByteArray()

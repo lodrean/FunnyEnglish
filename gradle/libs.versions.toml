@@ -26,6 +26,9 @@ postgresql = "42.7.4"
 h2 = "2.3.232"
 
 # Static Analysis
+# 1.24.0: собран на Kotlin 2.1.0 — единственная линейка, совместимая с нашим toolchain
+# (1.23.7/1.23.8 падали на JVM-модулях: "detekt was compiled with Kotlin 2.0.x
+# but is currently running with 2.1.0"; CI красный с 2026-08-30)
 detekt = "1.23.7"
 kover = "0.9.1"
 

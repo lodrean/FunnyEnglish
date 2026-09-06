@@ -44,15 +44,6 @@ include(":core:domain")
 include(":core:data")
 include(":core:presentation")
 
-// Feature API module for inter-feature communication
-include(":feature-api")
 
 // Feature modules (can be toggled on/off)
-include(":feature-home")
-include(":feature-auth")
-include(":feature-tests")
-include(":feature-profile")
-include(":feature-gamification")
 
-include(":feature-leaderboard")
-include(":feature-learning")

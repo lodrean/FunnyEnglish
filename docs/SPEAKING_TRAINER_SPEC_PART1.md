@@ -1,5 +1,7 @@
 # Speaking Trainer — Техническая спецификация (Part 1: Backend)
 
+> ⚠️ **ИСТОРИЧЕСКИЙ ДОКУМЕНТ (2026-09-06, bd i0r):** изначальная спека реализации пивота. Канон текущего поведения — `openspec/specs/` (v1.x). Здесь встречаются устаревшие формулировки — они перечёркнуты/помечены, НЕ удалялись для сохранения истории.
+
 **Feature ID:** SPEAKING-TRAINER-001
 **Version:** 1.2
 **Date:** 2026-08-02
@@ -147,7 +149,7 @@ backend/src/test/kotlin/com/sotospeak/
 **`practice_submissions`** — practice-записи учеников (Story 5, 7).
 `id UUID PK`, `user_id UUID NOT NULL FK → users(id) ON DELETE CASCADE`, `topic_id UUID NOT NULL FK → topics(id) ON DELETE RESTRICT` (нельзя физически удалить топик с записями — только soft delete), `audio_url VARCHAR(500) NOT NULL` (AAC/m4a в MinIO, папка `speaking/submissions`), `duration_sec INT NOT NULL CHECK (duration_sec BETWEEN 1 AND 60)` (клиент шлёт ~30; допуск на сервере до 60 с запасом), `status VARCHAR(20) NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW','REVIEWED'))`, `created_at/updated_at`.
 Индексы: `(status, created_at DESC)` — inbox учителя; `(user_id, created_at DESC)` — «мои отправки»; `(topic_id)` — фильтр inbox.
-Повторные отправки на один топик разрешены (PRD Edge Case) — уникального constraint на (user_id, topic_id) НЕТ.
+~~Повторные отправки на один топик разрешены (PRD Edge Case) — уникального constraint на (user_id, topic_id) НЕТ.~~ **УСТАРЕЛО (2026-09-06, bd i0r/qbq.1):** одна practice-запись на (user_id, topic_id) — UNIQUE-констрейнт (миграция V25), повторная отправка → 409 DUPLICATE_SUBMISSION. Канон: `openspec/specs/speaking-practice` v1.1.
 
 **`grades`** — оценка учителя по рубрике, 1:1 с submission (Story 7).
 `id UUID PK`, `submission_id UUID NOT NULL UNIQUE FK → practice_submissions(id) ON DELETE CASCADE`, `grammar/vocabulary/pronunciation/fluency INTEGER NOT NULL CHECK (BETWEEN 1 AND 10)`, `total NUMERIC(4,2) GENERATED ALWAYS AS ((grammar + vocabulary + pronunciation + fluency) / 4.0) STORED` (авто-усреднение на уровне БД — единый источник правды), `comment TEXT`, `reviewer_id UUID NOT NULL FK → users(id) ON DELETE RESTRICT`, `created_at/updated_at TIMESTAMPTZ` (updated_at — аудит редактирования оценки, PRD Story 7).

@@ -18,6 +18,7 @@ import {
   Article as ArticleIcon,
   SvgIconComponent,
 } from '@mui/icons-material';
+import { ROUTES } from '../../routes';
 
 /**
  * Navigation item interface
@@ -47,25 +48,25 @@ export const navItems: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    path: '/',
+    path: ROUTES.dashboard,
     icon: DashboardIcon,
   },
   {
     id: 'speaking',
     label: 'Speaking',
-    path: '/speaking',
+    path: ROUTES.speaking.root,
     icon: RecordVoiceOverIcon,
     children: [
       {
         id: 'speaking-libraries',
         label: 'Libraries',
-        path: '/speaking/libraries',
+        path: ROUTES.speaking.libraries,
         icon: MenuBookIcon,
       },
       {
         id: 'speaking-topics',
         label: 'Topics',
-        path: '/speaking/topics',
+        path: ROUTES.speaking.topics,
         icon: OndemandVideoIcon,
       },
     ],
@@ -73,32 +74,32 @@ export const navItems: NavItem[] = [
   {
     id: 'grading',
     label: 'Grading',
-    path: '/grading',
+    path: ROUTES.grading.root,
     icon: RateReviewIcon,
   },
   {
     id: 'users',
     label: 'Users',
-    path: '/users',
+    path: ROUTES.users.root,
     icon: PeopleIcon,
     children: [
       {
         id: 'students',
         label: 'Students',
-        path: '/users/students',
+        path: ROUTES.users.students,
         icon: PeopleIcon,
       },
       {
         id: 'admins',
         label: 'Admins',
-        path: '/users/admins',
+        path: ROUTES.users.admins,
         icon: AdminIcon,
         requiresAdmin: true,
       },
       {
         id: 'groups',
         label: 'Groups',
-        path: '/users/groups',
+        path: ROUTES.users.groups,
         icon: GroupsIcon,
       },
     ],
@@ -106,19 +107,19 @@ export const navItems: NavItem[] = [
   {
     id: 'analytics',
     label: 'Analytics',
-    path: '/analytics',
+    path: ROUTES.analytics.root,
     icon: AnalyticsIcon,
     children: [
       {
         id: 'reports',
         label: 'Reports',
-        path: '/analytics/reports',
+        path: ROUTES.analytics.reports,
         icon: AssessmentIcon,
       },
       {
         id: 'statistics',
         label: 'Statistics',
-        path: '/analytics/statistics',
+        path: ROUTES.analytics.statistics,
         icon: BarChartIcon,
       },
     ],
@@ -126,7 +127,7 @@ export const navItems: NavItem[] = [
   {
     id: 'logs',
     label: 'Logs',
-    path: '/logs',
+    path: ROUTES.logs,
     icon: ArticleIcon,
     requiresAdmin: true,
   },

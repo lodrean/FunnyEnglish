@@ -4,6 +4,7 @@
  */
 
 import { matchPath } from 'react-router-dom';
+import { ROUTES } from '../../routes';
 
 /**
  * Configuration for a nested route that should display a back button in the header.
@@ -22,27 +23,27 @@ export interface NestedRouteConfig {
  */
 export const nestedRoutes: NestedRouteConfig[] = [
   {
-    path: '/speaking/libraries/new',
-    parentPath: '/speaking/libraries',
+    path: ROUTES.speaking.libraryNew,
+    parentPath: ROUTES.speaking.libraries,
     title: 'New Library',
   },
   {
-    path: '/speaking/libraries/:id/edit',
-    parentPath: '/speaking/libraries',
+    path: ROUTES.speaking.libraryEdit,
+    parentPath: ROUTES.speaking.libraries,
     title: 'Edit Library',
   },
   {
-    path: '/speaking/topics/new',
-    parentPath: '/speaking/topics',
+    path: ROUTES.speaking.topicNew,
+    parentPath: ROUTES.speaking.topics,
     title: 'New Topic',
   },
   {
-    path: '/speaking/topics/:id/edit',
-    parentPath: '/speaking/topics',
+    path: ROUTES.speaking.topicEdit,
+    parentPath: ROUTES.speaking.topics,
     title: 'Edit Topic',
   },
   {
-    path: '/grading/submissions/:id',
+    path: ROUTES.grading.submission,
     parentPath: '/grading',
     title: 'Grading Detail',
   },

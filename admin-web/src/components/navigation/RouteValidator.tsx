@@ -8,26 +8,10 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getFlattenedNavItems } from './navItems';
+import { ALL_ROUTE_PATHS } from '../../routes';
 
-// List of all valid routes in the app
-const VALID_ROUTES = [
-  '/',
-  '/login',
-  '/speaking/libraries',
-  '/speaking/libraries/new',
-  '/speaking/libraries/:id/edit',
-  '/speaking/topics',
-  '/speaking/topics/new',
-  '/speaking/topics/:id/edit',
-  '/grading',
-  '/grading/submissions/:id',
-  '/users',
-  '/users/students',
-  '/users/admins',
-  '/users/groups',
-  '/analytics/reports',
-  '/analytics/statistics',
-];
+// Валидные пути — из единого источника (bd b85.2; раньше список протухал — не знал про /logs)
+const VALID_ROUTES: string[] = ALL_ROUTE_PATHS;
 
 export const RouteValidator: React.FC = () => {
   const location = useLocation();

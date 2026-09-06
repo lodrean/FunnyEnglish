@@ -6,6 +6,7 @@ import { ToastProvider, ErrorBoundary } from './components/feedback'
 import { AdminLayout } from './components/layout'
 import { useAuthStore } from './store/authStore'
 import { RouteValidator } from './components/navigation/RouteValidator'
+import { ROUTES } from './routes'
 import {
   Dashboard,
   Users,
@@ -43,7 +44,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   if (!isAuthenticated) {
     // Save intended URL to redirect back after login
     sessionStorage.setItem('intendedUrl', location.pathname + location.search)
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
   
   return <>{children}</>
@@ -75,7 +76,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       sessionStorage.removeItem('intendedUrl')
       return <Navigate to={intendedUrl} replace />
     }
-    return <Navigate to="/" replace />
+    return <Navigate to={ROUTES.dashboard} replace />
   }
   
   return <>{children}</>
@@ -103,7 +104,7 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route 
-              path="/login" 
+              path={ROUTES.login} 
               element={
                 <PublicRoute>
                   <Login />
@@ -124,41 +125,41 @@ function App() {
               <Route index element={<Dashboard />} />
               
               {/* Speaking Content */}
-              <Route path="speaking">
-                <Route index element={<Navigate to="/speaking/libraries" replace />} />
-                <Route path="libraries" element={<SpeakingLibraries />} />
-                <Route path="libraries/new" element={<SpeakingLibraryEditor />} />
-                <Route path="libraries/:id/edit" element={<SpeakingLibraryEditor />} />
-                <Route path="topics" element={<SpeakingTopics />} />
-                <Route path="topics/new" element={<SpeakingTopicEditor />} />
-                <Route path="topics/:id/edit" element={<SpeakingTopicEditor />} />
+              <Route path={ROUTES.speaking.root}>
+                <Route index element={<Navigate to={ROUTES.speaking.libraries} replace />} />
+                <Route path={ROUTES.speaking.libraries} element={<SpeakingLibraries />} />
+                <Route path={ROUTES.speaking.libraryNew} element={<SpeakingLibraryEditor />} />
+                <Route path={ROUTES.speaking.libraryEdit} element={<SpeakingLibraryEditor />} />
+                <Route path={ROUTES.speaking.topics} element={<SpeakingTopics />} />
+                <Route path={ROUTES.speaking.topicNew} element={<SpeakingTopicEditor />} />
+                <Route path={ROUTES.speaking.topicEdit} element={<SpeakingTopicEditor />} />
               </Route>
 
               {/* Grading */}
-              <Route path="grading">
+              <Route path={ROUTES.grading.root}>
                 <Route index element={<GradingInbox />} />
-                <Route path="submissions/:id" element={<GradingDetail />} />
+                <Route path={ROUTES.grading.submission} element={<GradingDetail />} />
               </Route>
 
               {/* User Management */}
-              <Route path="users" element={<Users />} />
-              <Route path="users/students" element={<Users />} />
-              <Route path="users/admins" element={<Users />} />
-              <Route path="users/groups" element={<Users />} />
+              <Route path={ROUTES.users.root} element={<Users />} />
+              <Route path={ROUTES.users.students} element={<Users />} />
+              <Route path={ROUTES.users.admins} element={<Users />} />
+              <Route path={ROUTES.users.groups} element={<Users />} />
               
               {/* Analytics */}
-              <Route path="analytics">
-                <Route index element={<Navigate to="/analytics/reports" replace />} />
-                <Route path="reports" element={<Analytics />} />
-                <Route path="statistics" element={<Analytics />} />
+              <Route path={ROUTES.analytics.root}>
+                <Route index element={<Navigate to={ROUTES.analytics.reports} replace />} />
+                <Route path={ROUTES.analytics.reports} element={<Analytics />} />
+                <Route path={ROUTES.analytics.statistics} element={<Analytics />} />
               </Route>
               
               {/* Client Logs (OpenSpec add-client-logging) */}
-              <Route path="logs" element={<ClientLogs />} />
+              <Route path={ROUTES.logs} element={<ClientLogs />} />
             </Route>
             
             {/* Catch all - redirect to login */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to={ROUTES.login} replace />} />
           </Routes>
         </AppInitializer>
         </ErrorBoundary>

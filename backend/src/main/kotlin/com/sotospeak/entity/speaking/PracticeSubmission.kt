@@ -10,13 +10,12 @@ import java.util.UUID
 enum class SubmissionStatus { NEW, REVIEWED }
 
 @Entity
-@Table(
-    name = "practice_submissions",
-    // UNIQUE (user_id, topic_id) — одна Practice-отправка на топик (Flyway V25; нужен и для H2 create-drop)
-    uniqueConstraints = [
-        UniqueConstraint(name = "uq_practice_submissions_user_topic", columnNames = ["user_id", "topic_id"])
-    ]
-)
+// bd h3l.2 (решение владельца 2026-09-06): жёсткий UNIQUE (user_id, topic_id) из V25 заменён
+// на ЧАСТИЧНЫЙ уникальный индекс (user_id, topic_id) WHERE status = 'NEW' (Flyway V27) —
+// после REVIEWED повторная отправка разрешена. Частичный индекс не выражается в @Table,
+// поэтому уникальность в БД управляется только миграцией (H2 create-drop в тестах обходится
+// сервисной проверкой existsByUserIdAndTopicIdAndStatus → 409).
+@Table(name = "practice_submissions")
 class PracticeSubmission(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

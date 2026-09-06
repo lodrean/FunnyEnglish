@@ -59,8 +59,10 @@ class PracticeSubmissionService(
         val topic = topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId)
             .orElseThrow { NoSuchElementException("Topic not found") }
 
-        // 1a. Одна попытка Practice на топик (Part 2 §2.6) — дубли отклоняем на уровне backend
-        submissionRepository.findFirstByUserIdAndTopicId(userId, topicId)?.let {
+        // 1a. Не более одной ОЖИДАЮЩЕЙ (NEW) попытки на топик (Part 2 §2.6 + bd h3l.2,
+        // решение владельца 2026-09-06): после REVIEWED повторная отправка разрешена.
+        // Race двух параллельных POST закрывает частичный уникальный индекс V27 → fallback ниже.
+        if (submissionRepository.existsByUserIdAndTopicIdAndStatus(userId, topicId, SubmissionStatus.NEW)) {
             throw DuplicateSubmissionException("Practice submission already exists for this topic")
         }
 

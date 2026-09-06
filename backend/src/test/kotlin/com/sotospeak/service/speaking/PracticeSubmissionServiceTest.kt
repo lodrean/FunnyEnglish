@@ -54,8 +54,8 @@ class PracticeSubmissionServiceTest {
         )
         ReflectionTestUtils.setField(service, "entityManager", entityManager)
         every { mediaUrlService.normalize(any()) } answers { firstArg() }
-        // Дефолт: дублей Practice-отправки нет (backend gate DUPLICATE_SUBMISSION, memory.md №79)
-        every { submissionRepository.findFirstByUserIdAndTopicId(any(), any()) } returns null
+        // Дефолт: ожидающих (NEW) Practice-отправок нет (bd h3l.2: после REVIEWED повторная разрешена)
+        every { submissionRepository.existsByUserIdAndTopicIdAndStatus(any(), any(), any()) } returns false
     }
 
     // Валидная m4a-подпись: [size]"ftypM4A " (bd FunnyEnglish-nj2.8, magic-bytes)
@@ -106,6 +106,35 @@ class PracticeSubmissionServiceTest {
         assertThrows<com.sotospeak.exception.DuplicateSubmissionException> {
             service.createSubmission(userId, topicId, 30, audioFile())
         }
+    }
+
+    // 1b-2. bd h3l.2: ожидающая (NEW) отправка существует → 409
+    @Test
+    fun createSubmissionPendingExistsThrowsDuplicate() {
+        every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId) } returns Optional.of(topic)
+        every {
+            submissionRepository.existsByUserIdAndTopicIdAndStatus(userId, topicId, SubmissionStatus.NEW)
+        } returns true
+
+        assertThrows<com.sotospeak.exception.DuplicateSubmissionException> {
+            service.createSubmission(userId, topicId, 30, audioFile())
+        }
+        verify(exactly = 0) { storageService.uploadFile(any(), any()) }
+    }
+
+    // 1b-3. bd h3l.2: предыдущая отправка REVIEWED → повторная разрешена
+    @Test
+    fun createSubmissionAllowedAfterReviewed() {
+        every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId) } returns Optional.of(topic)
+        // existsBy...AndStatus(NEW) = false: прежняя отправка уже REVIEWED
+        every { storageService.uploadFile(any(), "speaking/submissions/u_$userId") } returns
+            "https://media.example.com/sotospeak/speaking/submissions/u_$userId/def.m4a"
+        every { userRepository.getReferenceById(userId) } returns
+            User(email = "student@test.com", displayName = "Student")
+        every { submissionRepository.saveAndFlush(any()) } answers { firstArg() }
+
+        val result = service.createSubmission(userId, topicId, 30, audioFile())
+        assertEquals("NEW", result.status)
     }
 
     // 1c. createSubmission — контент не аудио (magic-bytes не совпали) → 400, upload не вызывается (bd nj2.8)

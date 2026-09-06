@@ -54,6 +54,9 @@ interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID>
 
     fun findFirstByUserIdAndTopicId(userId: UUID, topicId: UUID): PracticeSubmission?
 
+    /** bd h3l.2: есть ли ОЖИДАЮЩАЯ (NEW) запись — повторная отправка разрешена только после REVIEWED. */
+    fun existsByUserIdAndTopicIdAndStatus(userId: UUID, topicId: UUID, status: SubmissionStatus): Boolean
+
     fun countByStatus(status: SubmissionStatus): Long
 
     /** Отправок за период (для метрики PRD «practice-отправок/ученик/неделю») */

@@ -242,10 +242,11 @@ class SpeakingFlowIntegrationTest {
 
     // 4b. USER: повторный POST по тому же топику → 409 DUPLICATE_SUBMISSION
     @Test
-    fun `user cannot submit practice twice for same topic`() {
+    fun `resubmit after review allowed, duplicate while NEW rejected`() {
         val topic = seedPublishedContent()
-        submitAs(userToken, topic.id!!)
+        val submissionId = submitAs(userToken, topic.id!!)
 
+        // Пока запись NEW — повторная отклоняется 409
         val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())
         mockMvc.multipart(HttpMethod.POST, "/speaking/submissions") {
             this.file(file)
@@ -255,6 +256,21 @@ class SpeakingFlowIntegrationTest {
         }.andExpect {
             status { isConflict() }
             jsonPath("$.error") { value("DUPLICATE_SUBMISSION") }
+        }
+
+        // Учитель оценивает → статус REVIEWED
+        gradeAs(adminToken, submissionId, GradeSubmissionRequest(8, 8, 8, 8, null))
+
+        // bd h3l.2 (решение владельца 2026-09-06): после REVIEWED повторная разрешена
+        val resubmit = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())
+        mockMvc.multipart(HttpMethod.POST, "/speaking/submissions") {
+            this.file(resubmit)
+            param("topicId", topic.id.toString())
+            param("durationSec", "25")
+            header("Authorization", "Bearer $userToken")
+        }.andExpect {
+            status { isCreated() }
+            jsonPath("$.status") { value("NEW") }
         }
     }
 

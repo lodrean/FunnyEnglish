@@ -20,7 +20,7 @@ data class QuestionsState(
     val topicTitle: String = "",
     val questions: List<SpeakingQuestion> = emptyList(),
     val isGuest: Boolean = false,          // Practice заблокирован для гостя (PRD Story 3)
-    val hasSubmitted: Boolean = false,     // Practice уже пройден для этого топика
+    val hasSubmitted: Boolean = false,     // есть ОЖИДАЮЩАЯ (NEW) отправка; после REVIEWED Practice доступна снова (bd h3l.2)
     val error: UiText? = null
 )
 
@@ -78,10 +78,12 @@ class QuestionsViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null, hasSubmitted = false)
             val detailDeferred = async { repository.getTopicDetail(topicId) }
+            // bd h3l.2 (решение владельца 2026-09-06): CTA активна, только пока есть
+            // ОЖИДАЮЩАЯ (NEW) отправка; после REVIEWED повторная Practice разрешена.
             val hasSubmitted = if (!_state.value.isGuest) {
                 repository.getMySubmissions()
                     .getOrNull()
-                    ?.any { it.topicId == topicId }
+                    ?.any { it.topicId == topicId && it.status == "NEW" }
                     ?: false
             } else {
                 false

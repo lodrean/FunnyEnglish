@@ -32,13 +32,10 @@ class SecurityConfig(
                     // Public endpoints (paths without /api context path)
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
-                    // NOTE: /public/** covers live guest endpoints (/public/speaking/**, /public/guest-events,
-                    // /public/logs) AND legacy /public/tests, /public/adaptive — narrowing requires owner
-                    // decision in bd FunnyEnglish-8zm (GuestFlowE2ETest depends on public test validation).
+                    // Live guest endpoints: /public/speaking/**, /public/guest-events, /public/logs.
+                    // (bd 8zm, 2026-09-06: legacy /public/tests, /public/adaptive удалены вместе
+                    // с контроллерами — сужение /public/** больше не требуется.)
                     .requestMatchers("/public/**").permitAll()
-                    // Legacy pre-pivot routes (AR-5, bd FunnyEnglish-8zm) removed from permitAll:
-                    // GET /categories/**, GET /tests/**, GET /api/audio-tests/**, /leaderboard/**
-                    // now require authentication.
 
                     // Admin endpoints (hasAuthority because JwtAuthFilter adds ROLE_ prefix)
                     .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")

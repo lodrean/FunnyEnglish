@@ -80,37 +80,6 @@ class AchievementService(
     /**
      * Получить статистику достижений
      */
-    @Transactional(readOnly = true)
-    fun getAchievementStats(userId: UUID): com.sotospeak.controller.AchievementStats {
-        val userAchievements = userAchievementRepository.findByUserId(userId)
-        val earnedCount = userAchievements.count { it.isEarned }
-        val totalCount = achievementRepository.count()
-        
-        val achievements = getUserAchievements(userId.toString())
-        val categoryProgress = AchievementCategory.entries.associate { category ->
-            val categoryAchievements = achievements.filter { 
-                val entity = achievementRepository.findById(it.id).orElse(null)
-                entity != null && entity.category == category.name
-            }
-            val earnedInCategory = categoryAchievements.count { it.earned }
-            val percentage = if (categoryAchievements.isNotEmpty()) {
-                (earnedInCategory * 100) / categoryAchievements.size
-            } else 0
-            
-            category to com.sotospeak.controller.CategoryStat(
-                earned = earnedInCategory,
-                total = categoryAchievements.size,
-                percentage = percentage
-            )
-        }
-        
-        return com.sotospeak.controller.AchievementStats(
-            totalEarned = earnedCount,
-            totalAvailable = totalCount.toInt(),
-            categoryProgress = categoryProgress
-        )
-    }
-    
     /**
      * Проверить и разблокировать достижения при событии
      */

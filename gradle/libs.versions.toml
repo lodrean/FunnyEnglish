@@ -22,6 +22,10 @@ springDependencyManagement = "1.1.7"
 
 # Database
 flyway = "10.22.0"
+
+# API docs
+# 2.8.x — линейка для Spring Boot 3.4 (springdoc-openapi-starter-webmvc-ui)
+springdoc = "2.8.13"
 postgresql = "42.7.4"
 h2 = "2.3.232"
 
@@ -148,6 +152,8 @@ dropshots = { module = "com.dropbox.dropshots:dropshots", version.ref = "dropsho
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+
+springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

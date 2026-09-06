@@ -69,14 +69,22 @@ const roleToApi: Record<string, string> = {
   admin: 'ADMIN',
 };
 
-// Fetch users from API (серверный поиск q и фильтр role)
-const fetchUsers = async (search: string, role: string): Promise<UserListItem[]> => {
-  const users = await getAdminUsers({
+// Fetch users from API (серверные поиск q, фильтр role и пагинация — bd wy7.6)
+const fetchUsers = async (
+  search: string,
+  role: string,
+  page: number,
+  size: number
+): Promise<{ rows: UserListItem[]; total: number }> => {
+  const usersPage = await getAdminUsers({
     query: search || undefined,
     role: roleToApi[role],
+    page,
+    size,
   });
+  const users = usersPage.content;
   
-  return users.map((user: AdminUserSummary) => {
+  const rows: UserListItem[] = users.map((user: AdminUserSummary) => {
     // Split displayName into first/last name (best effort)
     const nameParts = user.displayName.split(' ');
     const firstName = nameParts[0] || '';
@@ -107,6 +115,7 @@ const fetchUsers = async (search: string, role: string): Promise<UserListItem[]>
       totalPoints: user.totalPoints,
     };
   });
+  return { rows, total: usersPage.totalElements };
 };
 
 // Создание/редактирование/удаление пользователей backend не поддерживает
@@ -176,11 +185,19 @@ const Users: React.FC = () => {
   const [messageType, setMessageType] = useState<'MESSAGE' | 'COMMENT'>('MESSAGE');
   const [messageTestId, setMessageTestId] = useState<string>('');
   
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const debouncedSearch = useDebouncedValue(filters.search);
-  const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['users', debouncedSearch, filters.role],
-    queryFn: () => fetchUsers(debouncedSearch, filters.role),
+  // смена фильтров — на первую страницу
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch, filters.role]);
+  const { data: usersPage, isLoading, error } = useQuery({
+    queryKey: ['users', debouncedSearch, filters.role, page, pageSize],
+    queryFn: () => fetchUsers(debouncedSearch, filters.role, page, pageSize),
   });
+  const users = usersPage?.rows ?? [];
+  const totalUsers = usersPage?.total ?? 0;
 
   // Детали выбранного ученика (результаты тестов) для диалога сообщения
   const { data: messageUserDetail } = useQuery({
@@ -221,7 +238,7 @@ const Users: React.FC = () => {
     sendMessageMutation.reset();
   };
 
-  // Поиск и фильтр роли — серверные (queryFn выше); статус — клиентский
+  // Поиск, фильтр роли и пагинация — серверные (queryFn выше); статус — клиентский в пределах страницы
   const filteredUsers = users.filter((user) => !filters.status || user.status === filters.status);
 
   const handleOpenDrawer = (user: UserListItem) => {
@@ -445,6 +462,16 @@ const Users: React.FC = () => {
         onRowClick={(user) => handleOpenDrawer(user)}
         emptyState={<Typography color="text.secondary">No users found</Typography>}
         stickyHeader
+        pagination={{
+          page,
+          pageSize,
+          total: totalUsers,
+          onPageChange: setPage,
+          onPageSizeChange: (ps) => {
+            setPageSize(ps);
+            setPage(0);
+          },
+        }}
       />
 
       {/* User Details Drawer (read-only: API не поддерживает редактирование) */}

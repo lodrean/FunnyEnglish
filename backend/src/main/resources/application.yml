@@ -73,6 +73,12 @@ server:
   servlet:
     context-path: /api
 
+# OpenAPI/Swagger (bd wy7.6): /v3/api-docs + /swagger-ui — read-only документация
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    tags-sorter: alpha
+
 app:
   jwt:
     secret: ${JWT_SECRET:} # REQUIRED: min 32 chars, set via env variable

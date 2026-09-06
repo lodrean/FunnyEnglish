@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.request.WebRequest
@@ -29,13 +30,33 @@ class SpeakingPublicController(
     private val contentService: SpeakingContentService
 ) {
 
+    // bd wy7.6: аддитивные limit/offset (необязательные; без них — полный список, контракт не ломает-
+    // ся). Контент учительский (десятки записей), ETag+кэш ограничивают нагрузку; параметры — задел
+    // на рост библиотеки.
     @GetMapping("/libraries")
-    fun getLibraries(webRequest: WebRequest): ResponseEntity<List<LibraryResponse>> =
-        cached(contentService.getPublishedLibraries(), webRequest)
+    fun getLibraries(
+        webRequest: WebRequest,
+        @RequestParam(required = false) limit: Int?,
+        @RequestParam(required = false) offset: Int?,
+    ): ResponseEntity<List<LibraryResponse>> =
+        cached(applySlice(contentService.getPublishedLibraries(), offset, limit), webRequest)
 
     @GetMapping("/libraries/{id}/topics")
-    fun getTopics(webRequest: WebRequest, @PathVariable id: UUID): ResponseEntity<List<TopicListItemResponse>> =
-        cached(contentService.getPublishedTopics(id), webRequest)
+    fun getTopics(
+        webRequest: WebRequest,
+        @PathVariable id: UUID,
+        @RequestParam(required = false) limit: Int?,
+        @RequestParam(required = false) offset: Int?,
+    ): ResponseEntity<List<TopicListItemResponse>> =
+        cached(applySlice(contentService.getPublishedTopics(id), offset, limit), webRequest)
+
+    private fun <T> applySlice(list: List<T>, offset: Int?, limit: Int?): List<T> {
+        if (offset == null && limit == null) return list
+        val from = (offset ?: 0).coerceAtLeast(0)
+        if (from >= list.size) return emptyList()
+        val to = if (limit != null && limit >= 0) (from + limit).coerceAtMost(list.size) else list.size
+        return list.subList(from, to)
+    }
 
     @GetMapping("/topics/{id}")
     fun getTopic(webRequest: WebRequest, @PathVariable id: UUID): ResponseEntity<TopicDetailResponse> =

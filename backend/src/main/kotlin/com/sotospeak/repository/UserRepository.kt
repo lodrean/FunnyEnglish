@@ -3,6 +3,8 @@ package com.sotospeak.repository
 import com.sotospeak.entity.AuthProvider
 import com.sotospeak.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Page
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.Instant
@@ -24,9 +26,8 @@ interface UserRepository : JpaRepository<User, UUID> {
         SELECT u FROM User u
         WHERE (CAST(:q AS String) IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:q AS String), '%')) OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', CAST(:q AS String), '%')))
           AND (CAST(:role AS String) IS NULL OR UPPER(u.role) = UPPER(CAST(:role AS String)))
-        ORDER BY u.createdAt DESC
     """)
-    fun searchForAdmin(q: String?, role: String?): List<User>
+    fun searchForAdmin(q: String?, role: String?, pageable: Pageable): Page<User>
 
     @Query("SELECT u FROM User u ORDER BY u.totalPoints DESC LIMIT :limit")
     fun findTopByTotalPoints(limit: Int): List<User>

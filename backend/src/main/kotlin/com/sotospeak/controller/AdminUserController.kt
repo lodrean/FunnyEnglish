@@ -6,6 +6,9 @@ import com.sotospeak.dto.toResponse
 import com.sotospeak.service.AchievementService
 import com.sotospeak.service.ProgressService
 import com.sotospeak.service.UserService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,10 +26,13 @@ class AdminUserController(
     @GetMapping
     fun getUsers(
         @RequestParam(name = "q", required = false) query: String?,
-        @RequestParam(name = "role", required = false) role: String?
-    ): ResponseEntity<List<AdminUserSummaryResponse>> {
-        // wy7.3: фильтр в БД + статистика batch-агрегатом (контракт ответа не менялся)
-        return ResponseEntity.ok(userService.getAdminUserSummaries(query, role))
+        @RequestParam(name = "role", required = false) role: String?,
+        @RequestParam(name = "page", required = false, defaultValue = "0") page: Int,
+        @RequestParam(name = "size", required = false, defaultValue = "50") size: Int,
+    ): ResponseEntity<Page<AdminUserSummaryResponse>> {
+        // wy7.6: серверная пагинация (Page-контракт; сортировка createdAt DESC)
+        val pageable = PageRequest.of(page.coerceAtLeast(0), size.coerceIn(1, 100), Sort.by(Sort.Direction.DESC, "createdAt"))
+        return ResponseEntity.ok(userService.getAdminUserSummaries(query, role, pageable))
     }
 
     @GetMapping("/{userId}")

@@ -76,15 +76,27 @@ export const getCurrentUser = async (): Promise<User> => {
   return response.data;
 };
 
-// Users - Admin
+// Users - Admin (bd wy7.6: серверная пагинация — Spring Page-контракт)
+export interface AdminUserPage {
+  content: AdminUserSummary[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // текущая страница (0-based)
+  size: number;
+}
+
 export const getAdminUsers = async (options: {
   query?: string;
   role?: string;
-} = {}): Promise<AdminUserSummary[]> => {
-  const response = await api.get<AdminUserSummary[]>('/admin/users', {
+  page?: number;
+  size?: number;
+} = {}): Promise<AdminUserPage> => {
+  const response = await api.get<AdminUserPage>('/admin/users', {
     params: {
       q: options.query,
       role: options.role,
+      page: options.page,
+      size: options.size,
     },
   });
   return response.data;

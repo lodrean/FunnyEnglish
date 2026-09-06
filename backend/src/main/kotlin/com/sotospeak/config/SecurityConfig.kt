@@ -32,6 +32,10 @@ class SecurityConfig(
                     // Public endpoints (paths without /api context path)
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
+                    // OpenAPI/Swagger UI (bd wy7.6): read-only документация контрактов
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/swagger-ui.html").permitAll()
                     // Live guest endpoints: /public/speaking/**, /public/guest-events, /public/logs.
                     // (bd 8zm, 2026-09-06: legacy /public/tests, /public/adaptive удалены вместе
                     // с контроллерами — сужение /public/** больше не требуется.)

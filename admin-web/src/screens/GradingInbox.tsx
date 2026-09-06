@@ -79,10 +79,12 @@ export default function GradingInbox() {
   // Опции фильтра учеников — поиск по admin users с debounce
   const [studentInput, setStudentInput] = useState('');
   const debouncedStudentQuery = useDebouncedValue(studentInput);
-  const { data: studentOptions, isFetching: studentsLoading } = useQuery({
+  // bd wy7.6: /admin/users отдаёт Spring Page — серверный поиск, берём content
+  const { data: studentPage, isFetching: studentsLoading } = useQuery({
     queryKey: ['admin', 'users', debouncedStudentQuery],
-    queryFn: () => getAdminUsers({ query: debouncedStudentQuery || undefined }),
+    queryFn: () => getAdminUsers({ query: debouncedStudentQuery || undefined, size: 100 }),
   });
+  const studentOptions = studentPage?.content ?? [];
 
   // Опции фильтра топиков — все топики, клиентский фильтр по вводу
   const { data: topicOptions } = useSpeakingTopics();

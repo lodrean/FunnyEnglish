@@ -8,6 +8,9 @@ import com.sotospeak.repository.GuestEventRepository
 import com.sotospeak.repository.ProgressRepository
 import com.sotospeak.repository.TestRepository
 import com.sotospeak.repository.UserRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
@@ -48,14 +51,14 @@ class UserService(
      * (wy7.3; было findAll + фильтр в памяти + 3 запроса статистики на каждого).
      */
     @Transactional(readOnly = true)
-    fun getAdminUserSummaries(query: String?, role: String?): List<AdminUserSummaryResponse> {
+    fun getAdminUserSummaries(query: String?, role: String?, pageable: Pageable): Page<AdminUserSummaryResponse> {
         val q = query?.trim()?.takeIf { it.isNotEmpty() }
         val roleFilter = role?.trim()?.takeIf { it.isNotEmpty() }
-        val users = userRepository.searchForAdmin(q, roleFilter)
-        if (users.isEmpty()) return emptyList()
+        val users = userRepository.searchForAdmin(q, roleFilter, pageable)
+        if (users.isEmpty) return Page.empty(pageable)
 
         val statsByUser = progressRepository
-            .aggregateStatsByUserIds(users.map { it.id })
+            .aggregateStatsByUserIds(users.content.map { it.id })
             .associateBy { it.getUserId() }
 
         return users.map { user ->

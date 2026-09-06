@@ -242,7 +242,7 @@ class SpeakingFlowIntegrationTest {
 
     // 4b. USER: повторный POST по тому же топику → 409 DUPLICATE_SUBMISSION
     @Test
-    fun `resubmit after review allowed, duplicate while NEW rejected`() {
+    fun resubmitAfterReviewAllowedDuplicateWhileNewRejected() {
         val topic = seedPublishedContent()
         val submissionId = submitAs(userToken, topic.id!!)
 

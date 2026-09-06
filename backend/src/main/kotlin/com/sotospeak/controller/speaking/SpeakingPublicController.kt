@@ -51,11 +51,11 @@ class SpeakingPublicController(
         cached(applySlice(contentService.getPublishedTopics(id), offset, limit), webRequest)
 
     private fun <T> applySlice(list: List<T>, offset: Int?, limit: Int?): List<T> {
-        if (offset == null && limit == null) return list
         val from = (offset ?: 0).coerceAtLeast(0)
-        if (from >= list.size) return emptyList()
-        val to = if (limit != null && limit >= 0) (from + limit).coerceAtMost(list.size) else list.size
-        return list.subList(from, to)
+        val to = limit?.takeIf { it >= 0 }
+            ?.let { (from + it).coerceAtMost(list.size) }
+            ?: list.size
+        return if (from in list.indices && to > from) list.subList(from, to) else emptyList()
     }
 
     @GetMapping("/topics/{id}")

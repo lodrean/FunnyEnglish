@@ -9,7 +9,6 @@ import com.sotospeak.repository.ProgressRepository
 import com.sotospeak.repository.TestRepository
 import com.sotospeak.repository.UserRepository
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable

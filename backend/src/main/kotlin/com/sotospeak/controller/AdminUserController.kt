@@ -23,6 +23,12 @@ class AdminUserController(
     private val progressService: ProgressService,
     private val achievementService: AchievementService
 ) {
+    private companion object {
+        const val DEFAULT_PAGE = 0
+        const val MIN_PAGE_SIZE = 1
+        const val MAX_PAGE_SIZE = 100
+    }
+
     @GetMapping
     fun getUsers(
         @RequestParam(name = "q", required = false) query: String?,
@@ -31,7 +37,9 @@ class AdminUserController(
         @RequestParam(name = "size", required = false, defaultValue = "50") size: Int,
     ): ResponseEntity<Page<AdminUserSummaryResponse>> {
         // wy7.6: серверная пагинация (Page-контракт; сортировка createdAt DESC)
-        val pageable = PageRequest.of(page.coerceAtLeast(0), size.coerceIn(1, 100), Sort.by(Sort.Direction.DESC, "createdAt"))
+        val safePage = page.coerceAtLeast(DEFAULT_PAGE)
+        val safeSize = size.coerceIn(MIN_PAGE_SIZE, MAX_PAGE_SIZE)
+        val pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"))
         return ResponseEntity.ok(userService.getAdminUserSummaries(query, role, pageable))
     }
 

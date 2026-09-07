@@ -1,16 +1,19 @@
 package com.sotospeak.service.speaking
 
 import com.sotospeak.dto.AdminSubmissionResponse
+import com.sotospeak.dto.GradeAuditResponse
 import com.sotospeak.dto.GradeResponse
 import com.sotospeak.dto.GradeSubmissionRequest
 import com.sotospeak.dto.SubmissionResponse
 import com.sotospeak.dto.toAdminResponse
 import com.sotospeak.dto.toResponse
 import com.sotospeak.entity.speaking.Grade
+import com.sotospeak.entity.speaking.GradeAudit
 import com.sotospeak.entity.speaking.PracticeSubmission
 import com.sotospeak.entity.speaking.SubmissionStatus
 import com.sotospeak.exception.DuplicateSubmissionException
 import com.sotospeak.repository.UserRepository
+import com.sotospeak.repository.speaking.GradeAuditRepository
 import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
@@ -34,6 +37,7 @@ import java.util.UUID
  */
 @Service
 @Transactional
+@Suppress("LongParameterList")
 class PracticeSubmissionService(
     private val submissionRepository: PracticeSubmissionRepository,
     private val gradeRepository: GradeRepository,
@@ -41,7 +45,8 @@ class PracticeSubmissionService(
     private val userRepository: UserRepository,
     private val storageService: StorageService,
     private val mediaUrlService: MediaUrlService,
-    private val emailService: EmailService
+    private val emailService: EmailService,
+    private val gradeAuditRepository: GradeAuditRepository
 ) {
     @PersistenceContext
     private lateinit var entityManager: EntityManager
@@ -154,6 +159,19 @@ class PracticeSubmissionService(
         submissionRepository.save(submission)
         // total — generated column: refresh, чтобы подтянуть вычисленное в БД значение
         entityManager.refresh(grade)
+        // Аудит: первичная оценка (bd h3l.10)
+        gradeAuditRepository.save(
+            GradeAudit(
+                submission = submission,
+                reviewer = grade.reviewer,
+                action = GradeAudit.ACTION_CREATE,
+                grammar = grade.grammar,
+                vocabulary = grade.vocabulary,
+                pronunciation = grade.pronunciation,
+                fluency = grade.fluency,
+                comment = grade.comment
+            )
+        )
         // Уведомление ученику «Ваша запись проверена» (bd h3l.1; метрика PRD «REVIEWED за 48ч»).
         // Только первичный grading (POST); editGrade (PUT) письмо не шлёт, чтобы не спамить при правках.
         // @Async + runCatching внутри EmailService — сбой SMTP не откатывает grading.
@@ -181,8 +199,27 @@ class PracticeSubmissionService(
         gradeRepository.saveAndFlush(grade)
         // total — generated column: refresh после пересчёта в БД
         entityManager.refresh(grade)
+        // Аудит: редактирование (bd h3l.10)
+        gradeAuditRepository.save(
+            GradeAudit(
+                submission = grade.submission,
+                reviewer = grade.reviewer,
+                action = GradeAudit.ACTION_EDIT,
+                grammar = grade.grammar,
+                vocabulary = grade.vocabulary,
+                pronunciation = grade.pronunciation,
+                fluency = grade.fluency,
+                comment = grade.comment
+            )
+        )
         return grade.toResponse()
     }
+
+    /** История изменений оценки (bd h3l.10) — от новой к старой. */
+    @Transactional(readOnly = true)
+    fun getGradeHistory(submissionId: UUID): List<GradeAuditResponse> =
+        gradeAuditRepository.findBySubmissionIdOrderByCreatedAtDesc(submissionId)
+            .map { it.toResponse() }
 
     // ============== Helpers ==============
 

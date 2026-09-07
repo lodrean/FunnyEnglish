@@ -9,11 +9,13 @@ const {
   useTopicQuestionsMock,
   useSaveGradeMock,
   useSubmissionsMock,
+  useGradeHistoryMock,
 } = vi.hoisted(() => ({
   useSubmissionMock: vi.fn(),
   useTopicQuestionsMock: vi.fn(),
   useSaveGradeMock: vi.fn(),
   useSubmissionsMock: vi.fn(),
+  useGradeHistoryMock: vi.fn(),
 }));
 
 vi.mock('../../hooks/useSpeaking', async (importOriginal) => {
@@ -24,6 +26,7 @@ vi.mock('../../hooks/useSpeaking', async (importOriginal) => {
     useTopicQuestions: () => useTopicQuestionsMock(),
     useSaveGrade: () => useSaveGradeMock(),
     useSubmissions: (filters: unknown) => useSubmissionsMock(filters),
+    useGradeHistory: (id?: string) => useGradeHistoryMock(id),
   };
 });
 
@@ -106,6 +109,7 @@ beforeEach(() => {
   });
   useSaveGradeMock.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   useSubmissionsMock.mockReturnValue(newList([sub1, sub2, sub3]));
+  useGradeHistoryMock.mockReturnValue({ data: [] });
 });
 
 describe('GradingDetail', () => {
@@ -138,6 +142,26 @@ describe('GradingDetail', () => {
     fireEvent.click(screen.getByTestId('skip-submission-button'));
 
     expect(screen.getByTestId('inbox-page')).toBeInTheDocument();
+  });
+
+  it('история оценок (bd h3l.10): аккордеон с CREATE/EDIT-записями при наличии истории', () => {
+    useGradeHistoryMock.mockReturnValue({
+      data: [
+        { id: 'a2', submissionId: 'sub-1', action: 'EDIT', reviewerName: 'Teacher', grammar: 9, vocabulary: 8, pronunciation: 9, fluency: 8, total: 8.5, comment: 'revised', createdAt: '2026-09-07T10:00:00Z' },
+        { id: 'a1', submissionId: 'sub-1', action: 'CREATE', reviewerName: 'Teacher', grammar: 7, vocabulary: 7, pronunciation: 7, fluency: 7, total: 7.0, comment: 'first', createdAt: '2026-09-07T09:00:00Z' },
+      ],
+    });
+    renderDetail('/grading/submissions/sub-1');
+    expect(screen.getByTestId('grade-history')).toHaveTextContent('История оценок (2)');
+    const entries = screen.getAllByTestId('grade-history-entry');
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toHaveTextContent('Правка · 8.5');
+    expect(entries[1]).toHaveTextContent('Оценка · 7');
+  });
+
+  it('история оценок скрыта, пока оценок не было', () => {
+    renderDetail('/grading/submissions/sub-1');
+    expect(screen.queryByTestId('grade-history')).not.toBeInTheDocument();
   });
 
   it('hotkeys (bd h3l.4): → открывает следующую NEW-запись очереди', () => {

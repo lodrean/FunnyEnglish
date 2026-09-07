@@ -188,6 +188,11 @@ class SpeakingAdminController(
             submissionService.gradeSubmission(id, request, UUID.fromString(userPrincipal.userId))
         )
 
+    /** История изменений оценки (bd h3l.10) — от новой к старой. */
+    @GetMapping("/submissions/{id}/grade/history")
+    fun getGradeHistory(@PathVariable id: UUID): ResponseEntity<List<GradeAuditResponse>> =
+        ResponseEntity.ok(submissionService.getGradeHistory(id))
+
     @PutMapping("/submissions/{id}/grade")
     fun editGrade(
         @PathVariable id: UUID,

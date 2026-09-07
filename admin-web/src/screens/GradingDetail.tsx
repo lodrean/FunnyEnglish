@@ -27,12 +27,13 @@ import { PageLoader } from '../components/feedback/PageLoader';
 import { useToast } from '../hooks';
 import {
   speakingKeys,
+  useGradeHistory,
   useSaveGrade,
   useSubmission,
   useSubmissions,
   useTopicQuestions,
 } from '../hooks/useSpeaking';
-import type { Grade, GradeRequest } from '../api/speakingApi';
+import type { Grade, GradeAuditEntry, GradeRequest } from '../api/speakingApi';
 import { formatMmSs } from '../utils/format';
 
 /** Инициалы для .avatar (мокап frame-grading): первые буквы 1–2 слов имени */
@@ -62,6 +63,9 @@ export default function GradingDetail() {
 
   // «Пропустить» (G4, client-side): лента NEW для перехода к следующей записи без оценки
   const { data: newSubmissions } = useSubmissions({ status: 'NEW', page: 0, size: 100 });
+
+  // История изменений оценки (bd h3l.10) — показываем после первой оценки
+  const { data: gradeHistory } = useGradeHistory(id);
 
   const handleSkip = () => {
     const list = newSubmissions?.content ?? [];
@@ -199,7 +203,7 @@ export default function GradingDetail() {
           </Box>
         </Grid>
 
-        {/* Правая колонка: рубрика */}
+        {/* Правая колонка: рубрика + история оценок */}
         <Grid item xs={12} md={5}>
           {/* key — ремонт формы при смене режима NEW → REVIEWED / обновлении оценки */}
           <RubricForm
@@ -209,6 +213,28 @@ export default function GradingDetail() {
             onSave={handleSaveGrade}
             onSkip={handleSkip}
           />
+
+          {(gradeHistory?.length ?? 0) > 0 && (
+            <Accordion defaultExpanded={false} sx={{ mt: 2 }} data-testid="grade-history">
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>История оценок ({gradeHistory?.length})</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <List dense disablePadding>
+                  {gradeHistory?.map((entry: GradeAuditEntry) => (
+                    <ListItem key={entry.id} disableGutters data-testid="grade-history-entry">
+                      <ListItemText
+                        primary={`${entry.action === 'EDIT' ? 'Правка' : 'Оценка'} · ${entry.total} · ${entry.reviewerName}`}
+                        secondary={`${entry.grammar}/${entry.vocabulary}/${entry.pronunciation}/${entry.fluency}${
+                          entry.comment ? ` · ${entry.comment}` : ''
+                        }${entry.createdAt ? ` · ${format(new Date(entry.createdAt), 'dd.MM.yyyy HH:mm')}` : ''}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
+          )}
         </Grid>
       </Grid>
     </Box>

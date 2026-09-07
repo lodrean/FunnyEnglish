@@ -460,3 +460,26 @@ export const updateGrade = async (submissionId: string, data: GradeRequest): Pro
   const response = await api.put<BackendGrade>(`/admin/speaking/submissions/${submissionId}/grade`, data);
   return mapGrade(response.data);
 };
+
+// ==================== Аудит-лог оценок (bd h3l.10) ====================
+
+export interface GradeAuditEntry {
+  id: string;
+  submissionId: string;
+  action: 'CREATE' | 'EDIT';
+  reviewerName: string;
+  grammar: number;
+  vocabulary: number;
+  pronunciation: number;
+  fluency: number;
+  total: number;
+  comment?: string;
+  createdAt?: string;
+}
+
+export const getGradeHistory = async (submissionId: string): Promise<GradeAuditEntry[]> => {
+  const response = await api.get<GradeAuditEntry[]>(
+    `/admin/speaking/submissions/${submissionId}/grade/history`,
+  );
+  return response.data;
+};

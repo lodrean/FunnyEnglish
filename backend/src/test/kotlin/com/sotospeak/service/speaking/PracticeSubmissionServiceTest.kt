@@ -3,10 +3,12 @@ package com.sotospeak.service.speaking
 import com.sotospeak.dto.GradeSubmissionRequest
 import com.sotospeak.entity.User
 import com.sotospeak.entity.speaking.Grade
+import com.sotospeak.entity.speaking.GradeAudit
 import com.sotospeak.entity.speaking.PracticeSubmission
 import com.sotospeak.entity.speaking.SubmissionStatus
 import com.sotospeak.entity.speaking.Topic
 import com.sotospeak.repository.UserRepository
+import com.sotospeak.repository.speaking.GradeAuditRepository
 import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
@@ -38,6 +40,8 @@ class PracticeSubmissionServiceTest {
     private val emailService = mockk<EmailService>(relaxed = true)
     private val entityManager = mockk<EntityManager>(relaxed = true)
 
+    private val gradeAuditRepository: GradeAuditRepository = mockk(relaxed = true)
+
     private lateinit var service: PracticeSubmissionService
 
     private val userId = UUID.randomUUID()
@@ -50,10 +54,12 @@ class PracticeSubmissionServiceTest {
     fun setup() {
         service = PracticeSubmissionService(
             submissionRepository, gradeRepository, topicRepository,
-            userRepository, storageService, mediaUrlService, emailService
+            userRepository, storageService, mediaUrlService, emailService,
+            gradeAuditRepository
         )
         ReflectionTestUtils.setField(service, "entityManager", entityManager)
         every { mediaUrlService.normalize(any()) } answers { firstArg() }
+        every { gradeAuditRepository.save(any<GradeAudit>()) } answers { firstArg() }
         // Дефолт: ожидающих (NEW) Practice-отправок нет (bd h3l.2: после REVIEWED повторная разрешена)
         every { submissionRepository.existsByUserIdAndTopicIdAndStatus(any(), any(), any()) } returns false
     }

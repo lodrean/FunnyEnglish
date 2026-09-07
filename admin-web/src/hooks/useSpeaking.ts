@@ -19,6 +19,7 @@ import {
   deleteSpeakingTopic,
   deleteTopicQuestion,
   getAllSpeakingTopics,
+  getGradeHistory,
   getSpeakingLibraries,
   getSpeakingTopics,
   getSubmissions,
@@ -55,6 +56,7 @@ export const speakingKeys = {
   submissions: (filters: SubmissionFilters) => ['speaking', 'submissions', filters] as const,
   submissionsAll: ['speaking', 'submissions'] as const,
   submission: (id: string) => ['speaking', 'submissions', 'detail', id] as const,
+  gradeHistory: (id: string) => ['speaking', 'submissions', id, 'grade-history'] as const,
 };
 
 // ==================== Libraries ====================
@@ -251,3 +253,10 @@ export const useSaveGrade = (submissionId: string, mode: 'create' | 'edit') => {
     },
   });
 };
+
+export const useGradeHistory = (submissionId?: string) =>
+  useQuery({
+    queryKey: speakingKeys.gradeHistory(submissionId ?? ''),
+    enabled: !!submissionId,
+    queryFn: () => getGradeHistory(submissionId!),
+  });

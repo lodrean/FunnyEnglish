@@ -2,6 +2,7 @@ package com.sotospeak.service
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.util.unit.DataSize
 import org.springframework.web.multipart.MultipartFile
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.core.sync.RequestBody
@@ -18,12 +19,17 @@ class StorageService(
     private val s3Client: S3Client,
     @Value("\${app.s3.bucket}") private val bucket: String,
     @Value("\${app.s3.endpoint}") private val endpoint: String,
-    @Value("\${app.s3.public-url}") private val publicUrl: String
+    @Value("\${app.s3.public-url}") private val publicUrl: String,
+    // Пер-типовый лимит видео (bd FunnyEnglish-7qf): общий multipart-кап 200MB не
+    // должен быть единственной защитой — видео отсекается раньше записи в S3.
+    @Value("\${app.upload.max-video-size:200MB}") private val maxVideoSize: DataSize
 ) {
     private val logger = LoggerFactory.getLogger(StorageService::class.java)
     private val allowedImageExtensions = setOf("jpg", "jpeg", "png", "webp", "gif", "bmp")
     private val allowedAudioExtensions = setOf("mp3", "wav", "ogg", "m4a", "aac", "flac")
-    private val allowedVideoExtensions = setOf("mp4", "webm", "mov", "m4v")
+    // Whitelist видео сужен до mp4/webm (bd FunnyEnglish-7qf): mov/m4v — устаревшие
+    // контейнеры, фронтенд-плеер и транскодинг-путь (h3l.7) на них не рассчитаны.
+    private val allowedVideoExtensions = setOf("mp4", "webm")
     private val allowedSubtitleExtensions = setOf("vtt")
 
     fun uploadFile(file: MultipartFile, folder: String): String {
@@ -43,6 +49,7 @@ class StorageService(
         logger.debug("Normalized folder: $normalizedFolder, safeFileName: $safeFileName, extension: $extension")
         
         validateFileType(extension, file.contentType)
+        validateVideoUpload(extension, file)
         
         val key = buildString {
             append(normalizedFolder)
@@ -138,6 +145,19 @@ class StorageService(
         }
 
         return cleanedPath.trim('/').ifEmpty { null }
+    }
+
+    /** Лимит размера + magic-bytes для видео — до записи в S3 (bd FunnyEnglish-7qf). */
+    private fun validateVideoUpload(extension: String, file: MultipartFile) {
+        if (extension !in allowedVideoExtensions) return
+
+        if (file.size > maxVideoSize.toBytes()) {
+            throw IllegalArgumentException("Video file too large (max ${maxVideoSize.toMegabytes()} MB)")
+        }
+        val header = VideoSignatureValidator.readHeader(file.inputStream)
+        if (!VideoSignatureValidator.isAllowedVideo(header)) {
+            throw IllegalArgumentException("Video content does not match allowed formats (mp4/webm)")
+        }
     }
 
     private fun validateFileType(extension: String, contentType: String?) {

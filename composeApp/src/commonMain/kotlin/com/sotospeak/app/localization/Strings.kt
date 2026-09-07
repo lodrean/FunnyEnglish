@@ -84,6 +84,7 @@ interface AppStrings {
     val registerCta: String
     val submittedButton: String
     val practiceModeButton: String
+    val practiceExplainer: String
     val questionOfUpperTemplate: String  // "ВОПРОС {0} ИЗ {1}"
     fun questionOfUpper(current: Int, total: Int): String =
         questionOfUpperTemplate
@@ -260,6 +261,7 @@ object RussianStrings : AppStrings {
     override val registerCta = "Зарегистрироваться"
     override val submittedButton = "Отправлено · мои записи"
     override val practiceModeButton = "Практика · 30 сек"
+    override val practiceExplainer = "Training — три попытки · Practice — одна запись, сразу учителю"
     override val questionOfUpperTemplate = "ВОПРОС {0} ИЗ {1}"
 
     // VideoScreen
@@ -400,6 +402,7 @@ object EnglishStrings : AppStrings {
     override val registerCta = "Sign Up"
     override val submittedButton = "Submitted · my recordings"
     override val practiceModeButton = "Practice · 30 sec"
+    override val practiceExplainer = "Training — three attempts · Practice — one recording, straight to the teacher"
     override val questionOfUpperTemplate = "QUESTION {0} OF {1}"
 
     // VideoScreen

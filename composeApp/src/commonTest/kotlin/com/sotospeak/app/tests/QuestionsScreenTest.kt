@@ -102,6 +102,12 @@ class QuestionsScreenTest : BaseUiTest() {
     }
 
     @Test
+    fun practiceExplainerVisibleForAuthorizedUser() = runTest(
+        content = { QuestionsScreenForTest(state = mockQuestionsState(isGuest = false)) }
+    ) {
+        onNodeWithTag("practice_explainer", useUnmergedTree = true).assertIsDisplayed()
+    }
+
     fun clickOnPracticeButtonCallsOnStartPractice() = runTest(
         content = { QuestionsScreenForTest(state = mockQuestionsState(isGuest = false)) }
     ) {

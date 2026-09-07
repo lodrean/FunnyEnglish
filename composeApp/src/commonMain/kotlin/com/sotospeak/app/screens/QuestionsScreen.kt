@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.sotospeak.app.components.ErrorMessage
@@ -194,30 +195,43 @@ private fun QuestionsContent(
                 }
             } else {
                 val practiceIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                Button(
+                // QA1 (bd 0zl): мокап frame-questions — outlined secondary (не filled record)
+                OutlinedButton(
                     onClick = onStartPractice,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                         .speakingPressable(practiceIsrc)
                         .testTag("mode_practice_button"),
-                    colors = ButtonDefaults.buttonColors(containerColor = speaking.record),
+                    border = BorderStroke(1.dp, speaking.secondary),
                     interactionSource = practiceIsrc
                 ) {
                     Icon(
                         imageVector = Icons.Default.Mic,
                         contentDescription = null,
-                        tint = speaking.onRecord,
+                        tint = speaking.secondary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         strings.practiceModeButton,
                         fontWeight = FontWeight.SemiBold,
-                        color = speaking.onRecord   // тёмный текст на record (WCAG AA)
+                        color = speaking.secondary
                     )
                 }
             }
+
+            // QA2 (bd 0zl): explainer-подсказка режимов, как в мокапе frame-questions
+            Text(
+                strings.practiceExplainer,
+                style = MaterialTheme.typography.labelSmall,
+                color = speaking.textMuted,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .testTag("practice_explainer")
+            )
         }
     }
 }

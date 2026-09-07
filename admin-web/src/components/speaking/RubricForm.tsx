@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   Box,
   Button,
+  Chip,
   Paper,
   Slider,
   TextField,
@@ -19,6 +20,14 @@ const CRITERIA = [
 type CriterionKey = (typeof CRITERIA)[number]['key'];
 
 const MAX_COMMENT_LENGTH = 2000;
+
+/** Шаблоны комментариев (bd h3l.4, потоковая проверка §4.2.2) — вставка одним кликом */
+const COMMENT_TEMPLATES = [
+  'Well done!',
+  'Watch your verb tenses.',
+  'Focus on word stress.',
+  'Keep practicing every day!',
+] as const;
 
 interface RubricFormProps {
   /** Заполнено при status = REVIEWED — режим просмотра с кнопкой «Edit grade» */
@@ -154,6 +163,25 @@ export default function RubricForm({ grade, isSaving, onSave, onSkip }: RubricFo
           {total.toFixed(1)}
         </Typography>
       </Box>
+
+      {/* Шаблоны комментариев: клик добавляет текст в поле (bd h3l.4) */}
+      {!disabled && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }} data-testid="comment-templates">
+          {COMMENT_TEMPLATES.map((template) => (
+            <Chip
+              key={template}
+              label={template}
+              size="small"
+              onClick={() =>
+                setComment((prev) =>
+                  ((prev ? `${prev.trimEnd()} ` : '') + template).slice(0, MAX_COMMENT_LENGTH)
+                )
+              }
+              data-testid="comment-template-chip"
+            />
+          ))}
+        </Box>
+      )}
 
       <TextField
         label="Comment"

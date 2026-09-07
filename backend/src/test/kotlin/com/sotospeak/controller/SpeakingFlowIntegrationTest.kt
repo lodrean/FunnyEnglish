@@ -10,12 +10,17 @@ import com.sotospeak.dto.CreateTopicRequest
 import com.sotospeak.dto.GradeSubmissionRequest
 import com.sotospeak.dto.UpdateTopicRequest
 import com.sotospeak.entity.User
+import com.sotospeak.entity.speaking.Grade
 import com.sotospeak.entity.speaking.Library
 import com.sotospeak.entity.speaking.SpeakingQuestion
 import com.sotospeak.entity.speaking.Topic
 import com.sotospeak.entity.speaking.Video
 import com.sotospeak.repository.UserRepository
+import com.sotospeak.entity.speaking.PracticeSubmission
+import com.sotospeak.entity.speaking.SubmissionStatus
+import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.LibraryRepository
+import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
 import com.sotospeak.security.JwtService
 import com.sotospeak.service.StorageService
@@ -87,6 +92,12 @@ class SpeakingFlowIntegrationTest {
 
     @Autowired
     private lateinit var cacheManager: CacheManager
+
+    @Autowired
+    private lateinit var practiceSubmissionRepository: PracticeSubmissionRepository
+
+    @Autowired
+    private lateinit var gradeRepository: GradeRepository
 
     /**
      * StorageService замокан через @Primary-бин (mockk умеет final Kotlin-классы,
@@ -665,7 +676,117 @@ class SpeakingFlowIntegrationTest {
             .andExpect { status { isOk() } }
     }
 
+    // bd h3l.4: grading-аналитика — средние по рубрике, NEW-очередь, распределение по топикам.
+    // Сидинг через репозитории (не HTTP): лимитер upload (10/мин/IP) в полном сьюте флакает 429.
+    @Test
+    @Suppress("MagicNumber")
+    fun gradingAnalyticsReflectsGradedSubmissions() {
+        val topic = seedPublishedContent()
+        seedGradedSubmission(topic, grammar = 7, vocabulary = 8, pronunciation = 6, fluency = 7)
+
+        mockMvc.get("/admin/speaking/grading/analytics") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.averages.grammar") { value(7.0) }
+            jsonPath("$.averages.vocabulary") { value(8.0) }
+            jsonPath("$.averages.pronunciation") { value(6.0) }
+            jsonPath("$.averages.fluency") { value(7.0) }
+            jsonPath("$.averages.total") { value(7.0) }
+            jsonPath("$.newCount") { value(0) }
+            jsonPath("$.reviewedCount") { value(1) }
+            jsonPath("$.avgReviewTimeMinutes") { value(0.0) }
+            jsonPath("$.byTopic[0].topicId") { value(topic.id.toString()) }
+            jsonPath("$.byTopic[0].gradeCount") { value(1) }
+            jsonPath("$.byTopic[0].avgTotal") { value(7.0) }
+        }
+
+        // USER → 403 (admin-поверхность)
+        mockMvc.get("/admin/speaking/grading/analytics") {
+            header("Authorization", "Bearer $userToken")
+        }.andExpect { status { isForbidden() } }
+    }
+
+    // bd h3l.4: CSV-экспорт оценённых записей (включая экранирование кавычек в комментарии)
+    @Test
+    @Suppress("LongMethod", "MagicNumber")
+    fun gradingCsvExportContainsHeaderAndGradedRow() {
+        val topic = seedPublishedContent()
+        val submission = seedGradedSubmission(
+            topic, grammar = 8, vocabulary = 7, pronunciation = 7, fluency = 8,
+            comment = """Ok "pace" man, keep going"""
+        )
+
+        val result = mockMvc.get("/admin/speaking/grading/export.csv") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+            content { contentTypeCompatibleWith("text/csv") }
+        }.andReturn().response
+
+        val body = result.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)
+        check(body.startsWith("﻿")) { "CSV must start with BOM" }
+        val csvHeader = "submission_id,topic,user_email,submitted_at,reviewed_at," +
+            "grammar,vocabulary,pronunciation,fluency,total,comment"
+        check(body.contains(csvHeader)) { "header missing: $body" }
+        check(body.contains(submission.id.toString())) { "submission row missing" }
+        check(body.contains("My Morning Routine")) { "topic title missing" }
+        // кавычки в комментарии экранируются удвоением, поле берётся в кавычки из-за запятой
+        val escapedNeedle = "\"Ok \"\"pace\"\" man, keep going\""
+        check(body.contains(escapedNeedle)) { "comment escaping: $body" }
+    }
+
+    // bd h3l.4: CSV-экспорт пуст при отсутствии оценок (только заголовок)
+    @Test
+    fun gradingCsvExportEmptyWithoutGrades() {
+        mockMvc.get("/admin/speaking/grading/export.csv") {
+            header("Authorization", "Bearer $adminToken")
+        }.andExpect {
+            status { isOk() }
+        }.andReturn().response.getContentAsString(java.nio.charset.StandardCharsets.UTF_8).let { body ->
+            check(body.count { it == '\n' } == 1) { "expected header-only CSV, got: $body" }
+        }
+    }
+
     // ============== helpers ==============
+
+    /** Сеет REVIEWED-запись с оценкой минуя HTTP (rate-limit upload флакает в сьюте). */
+    @Suppress("LongParameterList")
+    private fun seedGradedSubmission(
+        topic: Topic,
+        grammar: Int,
+        vocabulary: Int,
+        pronunciation: Int,
+        fluency: Int,
+        comment: String? = null
+    ): PracticeSubmission {
+        val user = userRepository.findByEmail("speaking-user@test.com")!!
+        val submission = practiceSubmissionRepository.save(
+            PracticeSubmission(
+                user = user,
+                topic = topic,
+                audioUrl = publicAudioUrl,
+                durationSec = 30,
+                status = SubmissionStatus.REVIEWED
+            )
+        )
+        val admin = userRepository.findByEmail("speaking-admin@test.com")!!
+        val grade = gradeRepository.save(
+            Grade(
+                submission = submission,
+                grammar = grammar,
+                vocabulary = vocabulary,
+                pronunciation = pronunciation,
+                fluency = fluency,
+                comment = comment,
+                reviewer = admin
+            )
+        )
+        // обе стороны OneToOne выставляем явно: в рамках одной persistence context
+        // inverse-side (`submission.grade`) сам не подтянется
+        submission.grade = grade
+        return practiceSubmissionRepository.saveAndFlush(submission)
+    }
 
     private fun submitAs(token: String, topicId: UUID): String {
         val file = MockMultipartFile("file", "rec.m4a", "audio/m4a", validM4a())

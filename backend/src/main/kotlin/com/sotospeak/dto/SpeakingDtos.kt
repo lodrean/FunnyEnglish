@@ -278,3 +278,28 @@ fun PracticeSubmission.toAdminResponse() = AdminSubmissionResponse(
     grade = grade?.toResponse(),
     createdAt = createdAt
 )
+
+// ============ Grading-аналитика (bd FunnyEnglish-h3l.4, PROJECT-REVIEW §4.2.1) ============
+
+data class CriterionAverages(
+    val grammar: Double?,
+    val vocabulary: Double?,
+    val pronunciation: Double?,
+    val fluency: Double?,
+    val total: Double?
+)
+
+data class TopicGradeDistribution(
+    val topicId: String,
+    val topicTitle: String,
+    val gradeCount: Long,
+    val avgTotal: Double?
+)
+
+data class GradingAnalyticsResponse(
+    val averages: CriterionAverages,
+    val newCount: Long,
+    val reviewedCount: Long,
+    val avgReviewTimeMinutes: Double?,
+    val byTopic: List<TopicGradeDistribution>
+)

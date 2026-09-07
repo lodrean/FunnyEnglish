@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -70,6 +70,28 @@ export default function GradingDetail() {
     if (next) navigate(`/grading/submissions/${next.id}`);
     else navigate('/grading');
   };
+
+  // Потоковая проверка (bd h3l.4, §4.2.2): ←/→ листают очередь NEW.
+  // В полях ввода стрелки не перехватываем — там они двигают курсор.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return;
+      }
+      const list = newSubmissions?.content ?? [];
+      const idx = list.findIndex((s) => s.id === id);
+      if (idx < 0) return;
+      const neighbor = e.key === 'ArrowRight' ? list[idx + 1] : list[idx - 1];
+      if (neighbor) navigate(`/grading/submissions/${neighbor.id}`);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [id, newSubmissions, navigate]);
 
   const handleSaveGrade = async (data: GradeRequest) => {
     if (!id || !submission) return;
@@ -147,6 +169,9 @@ export default function GradingDetail() {
           </Box>
           <StatusChip status={status} data-testid="submission-status-chip" />
         </Box>
+        <Typography variant="caption" color="text.secondary" data-testid="hotkeys-hint">
+          Подсказка: ← / → листают очередь NEW (вне полей ввода)
+        </Typography>
       </Paper>
 
       <Grid container spacing={3}>

@@ -33,6 +33,7 @@ import {
   RateReview as ReviewIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
+import GradingAnalyticsSection from '../components/speaking/GradingAnalyticsSection';
 import {
   getAdminAnalytics,
   getAdminDailyActivity,
@@ -720,6 +721,9 @@ const Analytics: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Grading-аналитика speaking (bd h3l.4, §4.2.1): средние, NEW-очередь, CSV */}
+      <GradingAnalyticsSection />
     </Box>
   );
 };

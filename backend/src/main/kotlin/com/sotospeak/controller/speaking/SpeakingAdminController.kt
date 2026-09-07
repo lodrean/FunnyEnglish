@@ -3,6 +3,7 @@ package com.sotospeak.controller.speaking
 import com.sotospeak.dto.*
 import com.sotospeak.entity.speaking.SubmissionStatus
 import com.sotospeak.security.UserPrincipal
+import com.sotospeak.service.speaking.GradingAnalyticsService
 import com.sotospeak.service.speaking.PracticeSubmissionService
 import com.sotospeak.service.speaking.SpeakingContentService
 import jakarta.validation.Valid
@@ -27,7 +28,8 @@ import java.util.UUID
 @PreAuthorize("hasRole('ADMIN')")
 class SpeakingAdminController(
     private val contentService: SpeakingContentService,
-    private val submissionService: PracticeSubmissionService
+    private val submissionService: PracticeSubmissionService,
+    private val gradingAnalyticsService: GradingAnalyticsService
 ) {
 
     // ============== Libraries ==============
@@ -195,4 +197,16 @@ class SpeakingAdminController(
         ResponseEntity.ok(
             submissionService.editGrade(id, request, UUID.fromString(userPrincipal.userId))
         )
+
+    // ============== Grading-аналитика (bd h3l.4, §4.2.1) ==============
+
+    @GetMapping("/grading/analytics")
+    fun getGradingAnalytics(): ResponseEntity<GradingAnalyticsResponse> =
+        ResponseEntity.ok(gradingAnalyticsService.getAnalytics())
+
+    @GetMapping("/grading/export.csv", produces = ["text/csv;charset=UTF-8"])
+    fun exportGradingCsv(): ResponseEntity<ByteArray> =
+        ResponseEntity.ok()
+            .header("Content-Disposition", "attachment; filename=grading-export.csv")
+            .body(gradingAnalyticsService.exportCsv().toByteArray(Charsets.UTF_8))
 }

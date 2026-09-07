@@ -94,6 +94,21 @@ describe('RubricForm', () => {
     expect(onSave.mock.calls[0][0]).not.toHaveProperty('totalScore');
   });
 
+  it('шаблоны комментариев (bd h3l.4): клик по чипу дописывает текст в комментарий', () => {
+    render(<RubricForm isSaving={false} onSave={() => {}} />);
+    const chips = screen.getAllByTestId('comment-template-chip');
+    expect(chips.length).toBeGreaterThan(0);
+    fireEvent.click(chips[0]);
+    fireEvent.click(chips[1]);
+    const field = screen.getByTestId('rubric-comment').querySelector('textarea')!;
+    expect(field).toHaveValue('Well done! Watch your verb tenses.');
+  });
+
+  it('шаблоны комментариев скрыты в режиме REVIEWED (форма disabled)', () => {
+    render(<RubricForm grade={reviewedGrade} isSaving={false} onSave={() => {}} />);
+    expect(screen.queryByTestId('comment-templates')).not.toBeInTheDocument();
+  });
+
   it('режим REVIEWED: prefill + disabled до клика «Edit grade», отображение аудита', () => {
     render(<RubricForm grade={reviewedGrade} isSaving={false} onSave={() => {}} />);
 

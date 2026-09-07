@@ -140,6 +140,24 @@ describe('GradingDetail', () => {
     expect(screen.getByTestId('inbox-page')).toBeInTheDocument();
   });
 
+  it('hotkeys (bd h3l.4): → открывает следующую NEW-запись очереди', () => {
+    renderDetail('/grading/submissions/sub-1');
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(screen.getByTestId('student-name')).toHaveTextContent('Ivan Petrov');
+  });
+
+  it('hotkeys (bd h3l.4): ← возвращается к предыдущей NEW-записи', () => {
+    renderDetail('/grading/submissions/sub-2');
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    expect(screen.getByTestId('student-name')).toHaveTextContent('Анна Смирнова');
+  });
+
+  it('hotkeys (bd h3l.4): → на последней NEW-записи не уводит из detail', () => {
+    renderDetail('/grading/submissions/sub-3');
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(screen.getByTestId('student-name')).toHaveTextContent('Maria Sidorova');
+  });
+
   it('«Пропустить» без NEW-записей в ленте возвращает в inbox', () => {
     useSubmissionsMock.mockReturnValue(newList([]));
     renderDetail('/grading/submissions/sub-1');

@@ -21,6 +21,18 @@ interface ReviewedTimestamps {
 @Repository
 interface PracticeSubmissionRepository : JpaRepository<PracticeSubmission, UUID> {
 
+    /** Все оценённые записи с деталями — экспорт CSV grading-аналитики (bd h3l.4, §4.2.1). */
+    @Query("""
+        SELECT s FROM PracticeSubmission s
+        LEFT JOIN FETCH s.user
+        LEFT JOIN FETCH s.topic
+        LEFT JOIN FETCH s.grade g
+        LEFT JOIN FETCH g.reviewer
+        WHERE s.status = :status
+        ORDER BY s.createdAt DESC
+    """)
+    fun findAllReviewedWithDetails(@Param("status") status: SubmissionStatus): List<PracticeSubmission>
+
     @Query("""
         SELECT s FROM PracticeSubmission s
         LEFT JOIN FETCH s.user

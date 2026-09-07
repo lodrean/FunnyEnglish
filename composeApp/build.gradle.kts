@@ -69,10 +69,8 @@ kotlin {
     sourceSets {
         val desktopMain by getting
         
-        // Disable WASM tests (kotest not supported)
-        wasmJsTest {
-            kotlin.setSrcDirs(emptyList<File>())
-        }
+        // WASM-тесты (bd qbq.7): только чистая платформенная логика (kotlin.test).
+        // commonTest (kotest/Compose UI) на wasm не гоняется — фильтр в tasks.wasmJsTest.
 
         androidMain.dependencies {
             implementation(compose.preview)
@@ -292,6 +290,14 @@ tasks.register<Test>("uiTest") {
     classpath = dt.get().classpath
     include("**/tests/**")
 }
+
+// WASM-тесты (bd qbq.7): гоняем ТОЛЬКО wasm-специфичные тесты
+// (com.sotospeak.app.wasm.*) — commonTest (kotest/Compose UI) на wasm не запускается.
+tasks.matching { it.name == "wasmJsTest" || it.name == "wasmJsBrowserTest" || it.name == "wasmJsNodeTest" }
+    .configureEach {
+        val task = this as? org.gradle.api.tasks.testing.AbstractTestTask
+        task?.filter?.includeTestsMatching("com.sotospeak.app.wasm.*")
+    }
 
 // WASM distribution task (prod bundle → build/wasm-dist)
 apply(from = "build-wasm-distribution.gradle.kts")

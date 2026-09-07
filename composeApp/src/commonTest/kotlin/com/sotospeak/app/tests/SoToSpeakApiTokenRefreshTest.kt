@@ -57,7 +57,7 @@ class SoToSpeakApiTokenRefreshTest {
             when {
                 path.endsWith("/api/auth/refresh") ->
                     when {
-                        refreshNetworkError -> throw java.io.IOException("network down")
+                        refreshNetworkError -> throw TestNetworkException()
                         refreshSucceeds -> respond(authResponseJson("new-refresh"), HttpStatusCode.OK, jsonHeaders)
                         else -> respond(
                             """{"error":"Bad request","message":"Refresh token invalid"}""",
@@ -181,3 +181,6 @@ class SoToSpeakApiTokenRefreshTest {
         assertEquals(0, logoutCalls, "без refresh-токена logout в сеть не ходит")
     }
 }
+
+/** Multiplatform-замена java.io.IOException для выброса из MockEngine (bd qbq.7: wasmJsTest-компиляция commonTest). */
+private class TestNetworkException : RuntimeException("network down")

@@ -172,10 +172,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           ml: variant === 'info' ? 0 : 7,
         }}
       >
+        {/* a11y (bd b85.5): фокус на «Отмене» — Enter в диалоге удаления не подтверждает действие */}
         <Button
           onClick={onCancel}
           variant="outlined"
           disabled={loading}
+          autoFocus
           sx={{
             textTransform: 'none',
             fontWeight: 500,
@@ -189,7 +191,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           variant="contained"
           color={color.button as 'error' | 'warning' | 'primary'}
           disabled={loading}
-          autoFocus
           sx={{
             textTransform: 'none',
             fontWeight: 500,

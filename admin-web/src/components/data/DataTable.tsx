@@ -435,9 +435,10 @@ export function DataTable<T>({
                       onClick={(e) => e.stopPropagation()}
                       sx={{ backgroundColor: 'background.paper' }}
                     >
-                      <Tooltip title="Actions">
+                      <Tooltip title="Действия">
                         <IconButton
                           size="small"
+                          aria-label="Действия"
                           onClick={(e) => handleActionsOpen(e, row)}
                           sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
                           data-testid={`row-actions-${id}`}

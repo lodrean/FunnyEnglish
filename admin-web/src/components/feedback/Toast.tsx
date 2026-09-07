@@ -127,6 +127,7 @@ const ToastItem: React.FC<ToastProps> = ({
           action={
             <IconButton
               size="small"
+              aria-label="Закрыть уведомление"
               onClick={handleClose}
               sx={{
                 color: 'inherit',

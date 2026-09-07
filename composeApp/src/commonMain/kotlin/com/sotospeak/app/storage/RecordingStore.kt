@@ -59,6 +59,17 @@ class RecordingStore(
     fun recordedTopicIds(kind: RecordingKind): Set<String> =
         loadAll().asSequence().filter { it.kind == kind }.map { it.topicId }.toSet()
 
+    /** Есть ли запись сегодня (любой тип) — индикатор «Цель на сегодня» (bd h3l.14). */
+    fun hasRecordingToday(
+        todayEpochMs: Long = Clock.System.now().toEpochMilliseconds(),
+        timeZone: TimeZone = TimeZone.currentSystemDefault()
+    ): Boolean {
+        val today = Instant.fromEpochMilliseconds(todayEpochMs).toLocalDateTime(timeZone).date
+        return loadAll().any {
+            Instant.fromEpochMilliseconds(it.createdAtEpochMs).toLocalDateTime(timeZone).date == today
+        }
+    }
+
     /**
      * Локальный streak «дней с записью» (bd FunnyEnglish-h3l.6): подряд идущие
      * дни, в которые была TRAINING-запись, считая от сегодня. Сегодня без записи

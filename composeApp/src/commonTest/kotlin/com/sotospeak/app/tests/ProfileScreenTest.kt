@@ -137,6 +137,18 @@ class ProfileScreenTest : BaseUiTest() {
         onNodeWithTag("profile_stat_streak", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithText("дней с записью", useUnmergedTree = true).assertIsDisplayed()
     }
+
+    // ============================================
+    // Цель на сегодня (bd h3l.14)
+    // ============================================
+
+    @Test
+    fun dailyGoalCardShowsDoneState() = runTest(
+        content = { FunnyTheme { ProfileScreenForTest(dailyGoalDone = true) } }
+    ) {
+        onNodeWithTag("profile_daily_goal", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("Цель на сегодня выполнена ✓", useUnmergedTree = true).assertIsDisplayed()
+    }
 }
 
 // ============================================
@@ -168,11 +180,16 @@ private val mockUserProfile = UserProfile(
 private fun ProfileScreenForTest(
     submissionsCount: Int = 0,
     topicsCompleted: Int = 0,
-    recordingStreak: Int = 0
+    recordingStreak: Int = 0,
+    dailyGoalDone: Boolean = false
 ) {
     FunnyTheme {
         ProfileScreen(
-            state = ProfileState(userProfile = mockUserProfile, recordingStreak = recordingStreak),
+            state = ProfileState(
+                userProfile = mockUserProfile,
+                recordingStreak = recordingStreak,
+                dailyGoalDone = dailyGoalDone
+            ),
             isGuest = false,
             submissionsCount = submissionsCount,
             topicsCompleted = topicsCompleted,

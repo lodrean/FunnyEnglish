@@ -191,6 +191,27 @@ fun ProfileScreen(
                     .testTag("profile_stat_streak")
             )
 
+            // Цель на сегодня (bd h3l.14): 1 запись в день, без backend
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("profile_daily_goal"),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.outlinedCardColors(containerColor = speaking.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Text(
+                    text = if (state.dailyGoalDone) "Цель на сегодня выполнена ✓" else "Цель на сегодня: 1 запись",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = speaking.text,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             // Переключатель темы

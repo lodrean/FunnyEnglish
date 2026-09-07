@@ -63,6 +63,20 @@ fun TopicsScreen(
         modifier = modifier.testTag("topics_screen")
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // Мягкое напоминание (bd h3l.14): после 18:00 записи сегодня ещё нет
+            if (state.eveningReminderVisible) {
+                Text(
+                    text = strings.topicsEveningReminder,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .background(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.medium)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .testTag("topics_reminder_banner")
+                )
+            }
             when {
                 state.isLoading && state.topics.isEmpty() -> ListSkeleton()
                 state.error != null && state.topics.isEmpty() -> ErrorMessage(

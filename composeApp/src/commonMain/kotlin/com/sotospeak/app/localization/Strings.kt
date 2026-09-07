@@ -89,6 +89,7 @@ interface AppStrings {
     val submissionsFilterNew: String
     val submissionsFilterReviewed: String
     val topicsProgressTitle: String
+    val topicsEveningReminder: String
     val questionOfUpperTemplate: String  // "ВОПРОС {0} ИЗ {1}"
     fun questionOfUpper(current: Int, total: Int): String =
         questionOfUpperTemplate
@@ -270,6 +271,7 @@ object RussianStrings : AppStrings {
     override val submissionsFilterNew = "На проверке"
     override val submissionsFilterReviewed = "Оценено"
     override val topicsProgressTitle = "Прогресс по темам"
+    override val topicsEveningReminder = "Ещё не записывался сегодня — 1 минута практики не помешает!"
     override val questionOfUpperTemplate = "ВОПРОС {0} ИЗ {1}"
 
     // VideoScreen
@@ -415,6 +417,7 @@ object EnglishStrings : AppStrings {
     override val submissionsFilterNew = "In review"
     override val submissionsFilterReviewed = "Graded"
     override val topicsProgressTitle = "Topic progress"
+    override val topicsEveningReminder = "No recording today — one minute of practice won't hurt!"
     override val questionOfUpperTemplate = "QUESTION {0} OF {1}"
 
     // VideoScreen

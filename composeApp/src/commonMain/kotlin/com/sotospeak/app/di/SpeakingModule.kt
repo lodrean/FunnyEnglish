@@ -21,7 +21,7 @@ val speakingModule = module {
     single { SpeakingRepository(get(), get()) }
     factory { com.sotospeak.shared.platform.AudioPlayer() }   // прослушивание записей
     viewModel { LibraryViewModel(get()) }            // repository (сеть + прогресс тем, DC-2)
-    viewModel { TopicsViewModel(get(), get()) }      // repository + Settings
+    viewModel { TopicsViewModel(get(), get(), get()) }  // repository + Settings + RecordingStore (bd h3l.14)
     viewModel { QuestionsViewModel(get()) }
     viewModel { VideoViewModel(get(), get()) }       // repository + Settings (topic_watched_*)
     viewModel { TrainingViewModel(get(), get()) }    // repository + AudioPlayer

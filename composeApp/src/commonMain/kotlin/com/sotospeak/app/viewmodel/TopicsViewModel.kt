@@ -3,9 +3,13 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.app.error.UiText
 import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.platform.Settings
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +22,9 @@ data class TopicsState(
     val isLoading: Boolean = false,
     val libraryTitle: String = "",
     val topics: List<TopicUiModel> = emptyList(),
-    val error: UiText? = null
+    val error: UiText? = null,
+    /** Мягкое напоминание (bd h3l.14): после 18:00 записи сегодня ещё нет. */
+    val eveningReminderVisible: Boolean = false
 )
 
 /** UI-модель топика: DTO + локальный прогресс из Settings (просмотрен / есть training-записи) */
@@ -47,7 +53,12 @@ sealed interface TopicsEvent {
 
 class TopicsViewModel(
     private val repository: SpeakingRepository,
-    private val settings: Settings
+    private val settings: Settings,
+    private val recordingStore: RecordingStore,
+    private val nowHourProvider: () -> Int = {
+        kotlinx.datetime.Clock.System.now()
+            .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).hour
+    }
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TopicsState())
@@ -82,8 +93,11 @@ class TopicsViewModel(
             _state.value = _state.value.copy(isLoading = true, error = null)
             repository.getTopics(libraryId)
                 .onSuccess { topics ->
+                    // Мягкое напоминание (bd h3l.14): после 18:00 записи сегодня нет
+                    val reminder = nowHourProvider() >= 18 && !recordingStore.hasRecordingToday()
                     _state.value = _state.value.copy(
                         isLoading = false,
+                        eveningReminderVisible = reminder,
                         topics = topics.map { dto ->
                             TopicUiModel(
                                 id = dto.id,

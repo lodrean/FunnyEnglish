@@ -149,3 +149,91 @@ class RecordingStoreTest {
         )
     }
 }
+
+// ==================== streakDays (bd h3l.6) ====================
+
+/** epochMs полудня указанной даты в UTC (детерминированно для streak-тестов; без String.format — грабля №38). */
+private fun utcNoon(year: Int, month: Int, day: Int): Long {
+    fun p2(v: Int) = if (v < 10) "0$v" else "$v"
+    return kotlinx.datetime.Instant.parse("$year-${p2(month)}-${p2(day)}T12:00:00Z").toEpochMilliseconds()
+}
+
+class RecordingStoreStreakTest {
+
+    private fun newStore(): RecordingStore {
+        val settings = Settings("test_speaking_streak_${Clock.System.now().toEpochMilliseconds()}")
+        return RecordingStore(settings, RecordingFileStorage())
+    }
+
+    private fun trainingAt(store: RecordingStore, epochMs: Long, topicId: String = "t1") {
+        store.add(
+            RecordingMeta(
+                filePath = "/tmp/rec_streak_${epochMs}_${Clock.System.now().toEpochMilliseconds()}.m4a",
+                topicId = topicId,
+                attemptNumber = 1,
+                kind = RecordingKind.TRAINING,
+                durationMs = 10_000,
+                timerLimitSeconds = 80,
+                createdAtEpochMs = epochMs
+            )
+        )
+    }
+
+    private val utc = kotlinx.datetime.TimeZone.UTC
+
+    @Test
+    fun streakCountsConsecutiveDaysIncludingToday() {
+        val store = newStore()
+        trainingAt(store, utcNoon(2026, 9, 5))
+        trainingAt(store, utcNoon(2026, 9, 6))
+        trainingAt(store, utcNoon(2026, 9, 7))
+
+        val streak = store.streakDays(todayEpochMs = utcNoon(2026, 9, 7), timeZone = utc)
+        assertEquals(3, streak)
+    }
+
+    @Test
+    fun todayWithoutRecordingDoesNotBreakStreak() {
+        val store = newStore()
+        trainingAt(store, utcNoon(2026, 9, 6))
+        trainingAt(store, utcNoon(2026, 9, 7))
+
+        val streak = store.streakDays(todayEpochMs = utcNoon(2026, 9, 8), timeZone = utc)
+        assertEquals(2, streak)
+    }
+
+    @Test
+    fun gapBreaksStreak() {
+        val store = newStore()
+        trainingAt(store, utcNoon(2026, 9, 4))
+        trainingAt(store, utcNoon(2026, 9, 6))
+        trainingAt(store, utcNoon(2026, 9, 7))
+
+        val streak = store.streakDays(todayEpochMs = utcNoon(2026, 9, 7), timeZone = utc)
+        assertEquals(2, streak)
+    }
+
+    @Test
+    fun practiceRecordingsDoNotCount() {
+        val store = newStore()
+        store.add(
+            RecordingMeta(
+                filePath = "/tmp/rec_practice.m4a",
+                topicId = "t1",
+                attemptNumber = 0,
+                kind = RecordingKind.PRACTICE,
+                durationMs = 10_000,
+                timerLimitSeconds = 30,
+                createdAtEpochMs = utcNoon(2026, 9, 7)
+            )
+        )
+
+        assertEquals(0, store.streakDays(todayEpochMs = utcNoon(2026, 9, 7), timeZone = utc))
+    }
+
+    @Test
+    fun emptyStoreZeroStreak() {
+        val store = newStore()
+        assertEquals(0, store.streakDays(todayEpochMs = utcNoon(2026, 9, 7), timeZone = utc))
+    }
+}

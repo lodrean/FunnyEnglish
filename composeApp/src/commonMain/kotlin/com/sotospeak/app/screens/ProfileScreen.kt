@@ -182,6 +182,17 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Локальный streak «дней с записью» (bd h3l.6) — считается из RecordingStore, без backend
+            StatCard(
+                number = state.recordingStreak,
+                label = "дней с записью",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("profile_stat_streak")
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Переключатель темы
             ThemeSelector(
                 selected = themeMode,

@@ -2,6 +2,11 @@ package com.sotospeak.app.storage
 
 import com.sotospeak.shared.platform.Settings
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -53,6 +58,35 @@ class RecordingStore(
      */
     fun recordedTopicIds(kind: RecordingKind): Set<String> =
         loadAll().asSequence().filter { it.kind == kind }.map { it.topicId }.toSet()
+
+    /**
+     * Локальный streak «дней с записью» (bd FunnyEnglish-h3l.6): подряд идущие
+     * дни, в которые была TRAINING-запись, считая от сегодня. Сегодня без записи
+     * streak не рвёт — считаем от вчера (сгорит завтра). Ограничен TTL prune
+     * (30 дней, bd 5tf.7): записи старше удаляются и из streak выпадают.
+     */
+    fun streakDays(
+        todayEpochMs: Long = Clock.System.now().toEpochMilliseconds(),
+        timeZone: TimeZone = TimeZone.currentSystemDefault()
+    ): Int {
+        val days = loadAll().asSequence()
+            .filter { it.kind == RecordingKind.TRAINING }
+            .map { Instant.fromEpochMilliseconds(it.createdAtEpochMs).toLocalDateTime(timeZone).date }
+            .toSet()
+        if (days.isEmpty()) return 0
+
+        var day = Instant.fromEpochMilliseconds(todayEpochMs).toLocalDateTime(timeZone).date
+        if (day !in days) {
+            day = day.minus(1, DateTimeUnit.DAY)
+            if (day !in days) return 0
+        }
+        var streak = 0
+        while (day in days) {
+            streak++
+            day = day.minus(1, DateTimeUnit.DAY)
+        }
+        return streak
+    }
 
     fun add(meta: RecordingMeta) {
         saveAll(loadAll() + meta)

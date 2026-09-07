@@ -3,6 +3,7 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.error.UiText
+import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.app.error.toUiText
 import com.sotospeak.shared.api.AuthApi
 import com.sotospeak.shared.contracts.GuestSession
@@ -17,12 +18,15 @@ data class ProfileState(
     val isLoading: Boolean = false,
     val userProfile: UserProfile? = null,
     val guestSession: GuestSession? = null,
-    val error: UiText? = null
+    val error: UiText? = null,
+    /** Локальный streak «дней с записью» (bd h3l.6) — считается из RecordingStore. */
+    val recordingStreak: Int = 0
 )
 
 class ProfileViewModel(
     private val authApi: AuthApi,
-    private val guestRepo: GuestProgressRepository
+    private val guestRepo: GuestProgressRepository,
+    private val recordingStore: RecordingStore
 ) : ViewModel() {
 
     private val _profileState = MutableStateFlow(ProfileState())
@@ -33,7 +37,8 @@ class ProfileViewModel(
             _profileState.value = _profileState.value.copy(
                 isLoading = true,
                 error = null,
-                guestSession = guestRepo.getSession()
+                guestSession = guestRepo.getSession(),
+                recordingStreak = recordingStore.streakDays()
             )
 
             authApi.getUserProfile()

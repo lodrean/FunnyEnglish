@@ -121,6 +121,22 @@ class ProfileScreenTest : BaseUiTest() {
         waitForIdle()
         assertTrue(ProfileClicks.login, "onLoginClick должен быть вызван")
     }
+
+    // ============================================
+    // Streak «дней с записью» (bd h3l.6)
+    // ============================================
+
+    @Test
+    fun profileShowsRecordingStreakCard() = runTest(
+        content = {
+            FunnyTheme {
+                ProfileScreenForTest(recordingStreak = 5)
+            }
+        }
+    ) {
+        onNodeWithTag("profile_stat_streak", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("дней с записью", useUnmergedTree = true).assertIsDisplayed()
+    }
 }
 
 // ============================================
@@ -151,11 +167,12 @@ private val mockUserProfile = UserProfile(
 @Composable
 private fun ProfileScreenForTest(
     submissionsCount: Int = 0,
-    topicsCompleted: Int = 0
+    topicsCompleted: Int = 0,
+    recordingStreak: Int = 0
 ) {
     FunnyTheme {
         ProfileScreen(
-            state = ProfileState(userProfile = mockUserProfile),
+            state = ProfileState(userProfile = mockUserProfile, recordingStreak = recordingStreak),
             isGuest = false,
             submissionsCount = submissionsCount,
             topicsCompleted = topicsCompleted,

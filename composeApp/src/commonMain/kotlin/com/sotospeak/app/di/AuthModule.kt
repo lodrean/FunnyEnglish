@@ -8,5 +8,5 @@ import org.koin.dsl.module
 /** Авторизация, гостевая сессия и профиль пользователя. */
 val authModule = module {
     viewModel { AuthViewModel(get(), get(), get(), get(), get(), get()) }   // AuthApi + GuestApi + …
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
 }

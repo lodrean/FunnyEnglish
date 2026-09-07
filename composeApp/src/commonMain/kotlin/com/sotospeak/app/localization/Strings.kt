@@ -85,6 +85,10 @@ interface AppStrings {
     val submittedButton: String
     val practiceModeButton: String
     val practiceExplainer: String
+    val submissionsFilterAll: String
+    val submissionsFilterNew: String
+    val submissionsFilterReviewed: String
+    val topicsProgressTitle: String
     val questionOfUpperTemplate: String  // "ВОПРОС {0} ИЗ {1}"
     fun questionOfUpper(current: Int, total: Int): String =
         questionOfUpperTemplate
@@ -262,6 +266,10 @@ object RussianStrings : AppStrings {
     override val submittedButton = "Отправлено · мои записи"
     override val practiceModeButton = "Практика · 30 сек"
     override val practiceExplainer = "Training — три попытки · Practice — одна запись, сразу учителю"
+    override val submissionsFilterAll = "Все"
+    override val submissionsFilterNew = "На проверке"
+    override val submissionsFilterReviewed = "Оценено"
+    override val topicsProgressTitle = "Прогресс по темам"
     override val questionOfUpperTemplate = "ВОПРОС {0} ИЗ {1}"
 
     // VideoScreen
@@ -403,6 +411,10 @@ object EnglishStrings : AppStrings {
     override val submittedButton = "Submitted · my recordings"
     override val practiceModeButton = "Practice · 30 sec"
     override val practiceExplainer = "Training — three attempts · Practice — one recording, straight to the teacher"
+    override val submissionsFilterAll = "All"
+    override val submissionsFilterNew = "In review"
+    override val submissionsFilterReviewed = "Graded"
+    override val topicsProgressTitle = "Topic progress"
     override val questionOfUpperTemplate = "QUESTION {0} OF {1}"
 
     // VideoScreen

@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performScrollTo
 import com.sotospeak.app.di.mockPendingUploads
 import com.sotospeak.app.di.mockSpeakingSubmissions
 import com.sotospeak.app.screens.MySubmissionsScreen
+import com.sotospeak.app.viewmodel.SubmissionsFilter
 import com.sotospeak.app.viewmodel.MySubmissionsState
 import com.sotospeak.designsystem.theme.FunnyTheme
 import kotlin.test.Test
@@ -33,6 +34,26 @@ class MySubmissionsScreenTest : BaseUiTest() {
     // ============================================
     // 1. Список и статусы
     // ============================================
+
+    @Test
+    fun filterChipsAreVisible() = runTest(
+        content = { MySubmissionsScreenForTest() }
+    ) {
+        onNodeWithTag("submissions_filter_chip_ALL", useUnmergedTree = true).assertExists()
+        onNodeWithTag("submissions_filter_chip_NEW", useUnmergedTree = true).assertExists()
+        onNodeWithTag("submissions_filter_chip_REVIEWED", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun reviewFilterHidesNewSubmissions() = runTest(
+        content = {
+            MySubmissionsScreenForTest(
+                state = MySubmissionsState(submissions = mockSpeakingSubmissions, filter = SubmissionsFilter.REVIEWED)
+            )
+        }
+    ) {
+        onNodeWithTag("submission_item_sub-1", useUnmergedTree = true).assertDoesNotExist()
+    }
 
     @Test
     fun submissionItemsAndStatusesAreVisible() = runTest(

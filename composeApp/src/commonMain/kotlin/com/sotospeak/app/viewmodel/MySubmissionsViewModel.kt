@@ -16,13 +16,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
+/** Фильтр списка отправок (bd h3l.9, §4.3.5) */
+enum class SubmissionsFilter { ALL, NEW, REVIEWED }
+
+/** Прогресс по теме: первый и последний суммарный балл оценённых попыток (bd h3l.9, §4.1.2). */
+data class TopicProgress(
+    val topicId: String,
+    val topicTitle: String,
+    val firstTotal: Double,
+    val lastTotal: Double
+)
+
 /** Спека Part 2 §2.7 */
 data class MySubmissionsState(
     val isLoading: Boolean = false,
     val submissions: List<SpeakingSubmission> = emptyList(),  // новые сверху
     val pendingUploads: List<RecordingMeta> = emptyList(),    // локальные неотправленные (offline retry)
     val playingAudioUrl: String? = null,
-    val error: UiText? = null
+    val error: UiText? = null,
+    val filter: SubmissionsFilter = SubmissionsFilter.ALL,
+    /** Темы с ≥2 оценёнными попытками: 6.2 → 7.1 (новые сверху → первая попытка слева). */
+    val topicsProgress: List<TopicProgress> = emptyList()
 )
 
 sealed interface MySubmissionsAction {
@@ -30,6 +44,7 @@ sealed interface MySubmissionsAction {
     data class OnRetryPending(val path: String) : MySubmissionsAction
     data class OnPlayAudio(val url: String) : MySubmissionsAction
     data object OnStopAudio : MySubmissionsAction
+    data class OnFilterChange(val filter: SubmissionsFilter) : MySubmissionsAction
     data object OnBack : MySubmissionsAction
 }
 
@@ -69,6 +84,7 @@ class MySubmissionsViewModel(
                 audioPlayer.stop()
                 _state.value = _state.value.copy(playingAudioUrl = null)
             }
+            is MySubmissionsAction.OnFilterChange -> _state.value = _state.value.copy(filter = action.filter)
             is MySubmissionsAction.OnBack -> _events.trySend(MySubmissionsEvent.NavigateBack)
         }
     }
@@ -80,9 +96,11 @@ class MySubmissionsViewModel(
             repository.pendingPracticeUploads().forEach { retryPending(it.filePath) }
             repository.getMySubmissions()
                 .onSuccess { submissions ->
+                    val sorted = submissions.sortedByDescending { it.createdAt }
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        submissions = submissions.sortedByDescending { it.createdAt },
+                        submissions = sorted,
+                        topicsProgress = computeTopicsProgress(sorted),
                         pendingUploads = repository.pendingPracticeUploads()
                     )
                 }
@@ -95,6 +113,25 @@ class MySubmissionsViewModel(
                 }
         }
     }
+
+    /**
+     * Прогресс по темам (bd h3l.9, §4.1.2): темы с ≥2 оценёнными попытками,
+     * первый → последний балл. Список приходит «новые сверху», поэтому хронология — реверс.
+     */
+    private fun computeTopicsProgress(submissions: List<SpeakingSubmission>): List<TopicProgress> =
+        submissions
+            .filter { it.grade != null }
+            .groupBy { it.topicId }
+            .mapNotNull { (topicId, sameTopic) ->
+                if (sameTopic.size < 2) return@mapNotNull null
+                val chronological = sameTopic.sortedWith { a, b -> a.createdAt.orEmpty().compareTo(b.createdAt.orEmpty()) }
+                TopicProgress(
+                    topicId = topicId,
+                    topicTitle = chronological.first().topicTitle,
+                    firstTotal = chronological.first().grade!!.total,
+                    lastTotal = chronological.last().grade!!.total
+                )
+            }
 
     private val inFlightUploads = mutableSetOf<String>()
 

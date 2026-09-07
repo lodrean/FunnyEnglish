@@ -1,5 +1,6 @@
 package com.sotospeak.app.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.viewmodel.MySubmissionsState
+import com.sotospeak.app.viewmodel.SubmissionsFilter
 import com.sotospeak.designsystem.animations.ListSkeleton
 import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
@@ -40,6 +42,7 @@ fun MySubmissionsScreen(
     onRetryPending: (String) -> Unit,
     onPlayAudio: (String) -> Unit,
     onStopAudio: () -> Unit,
+    onFilterChange: (SubmissionsFilter) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
@@ -73,7 +76,8 @@ fun MySubmissionsScreen(
                     state = state,
                     onRetryPending = onRetryPending,
                     onPlayAudio = onPlayAudio,
-                    onStopAudio = onStopAudio
+                    onStopAudio = onStopAudio,
+                    onFilterChange = onFilterChange
                 )
             }
         }
@@ -108,16 +112,67 @@ private fun SubmissionsList(
     onRetryPending: (String) -> Unit,
     onPlayAudio: (String) -> Unit,
     onStopAudio: () -> Unit,
+    onFilterChange: (SubmissionsFilter) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
     val strings = LocalAppStrings.current
+
+    // bd h3l.9 (§4.3.5): фильтр статусов — клиентский (объёмы малы, сервер не нагружаем)
+    val visibleSubmissions = when (state.filter) {
+        SubmissionsFilter.ALL -> state.submissions
+        SubmissionsFilter.NEW -> state.submissions.filter { it.status == "NEW" }
+        SubmissionsFilter.REVIEWED -> state.submissions.filter { it.status == "REVIEWED" }
+    }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Фильтр статусов (bd h3l.9): Все / На проверке / Оценено
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SubmissionsFilterChip("submissions_filter_chip_ALL", strings.submissionsFilterAll, state.filter == SubmissionsFilter.ALL) {
+                    onFilterChange(SubmissionsFilter.ALL)
+                }
+                SubmissionsFilterChip("submissions_filter_chip_NEW", strings.submissionsFilterNew, state.filter == SubmissionsFilter.NEW) {
+                    onFilterChange(SubmissionsFilter.NEW)
+                }
+                SubmissionsFilterChip("submissions_filter_chip_REVIEWED", strings.submissionsFilterReviewed, state.filter == SubmissionsFilter.REVIEWED) {
+                    onFilterChange(SubmissionsFilter.REVIEWED)
+                }
+            }
+        }
+
+        // Прогресс по темам (bd h3l.9, §4.1.2): «6.2 → 7.1» для тем с ≥2 оценками
+        if (state.topicsProgress.isNotEmpty()) {
+            item {
+                Column(modifier = Modifier.fillMaxWidth().testTag("topics_progress")) {
+                    Text(
+                        strings.topicsProgressTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = speaking.text
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    state.topicsProgress.forEach { progress ->
+                        Text(
+                            text = "${progress.topicTitle}: ${formatTotal(progress.firstTotal)} → ${formatTotal(progress.lastTotal)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = speaking.textMuted,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("topic_progress_\${progress.topicId}")
+                        )
+                    }
+                }
+            }
+        }
+
         // Секция «Не отправлено» (offline retry, спека §6.4)
         if (state.pendingUploads.isNotEmpty()) {
             item {
@@ -162,7 +217,7 @@ private fun SubmissionsList(
             }
         }
 
-        items(state.submissions, key = { it.id }) { submission ->
+        items(visibleSubmissions, key = { it.id }) { submission ->
             SubmissionCard(
                 submission = submission,
                 isPlaying = state.playingAudioUrl == submission.audioUrl,
@@ -186,6 +241,30 @@ private fun SubmissionsList(
         }
     }
 }
+
+@Composable
+private fun SubmissionsFilterChip(
+    tag: String,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val speaking = LocalSpeakingColors.current
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        modifier = Modifier.testTag(tag),
+        label = { Text(label) },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    )
+}
+
+private fun formatTotal(total: Double): String =
+    (kotlin.math.round(total * 10) / 10).toString()
 
 @Composable
 private fun SubmissionCard(

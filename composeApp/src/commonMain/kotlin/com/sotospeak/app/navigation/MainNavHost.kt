@@ -24,6 +24,7 @@ import com.sotospeak.app.viewmodel.LibraryEvent
 import com.sotospeak.app.viewmodel.LibraryViewModel
 import com.sotospeak.app.viewmodel.MessagesViewModel
 import com.sotospeak.app.viewmodel.MySubmissionsAction
+import com.sotospeak.app.viewmodel.SubmissionsFilter
 import com.sotospeak.app.viewmodel.MySubmissionsEvent
 import com.sotospeak.app.viewmodel.MySubmissionsViewModel
 import com.sotospeak.app.viewmodel.ProfileViewModel
@@ -289,7 +290,10 @@ fun MainNavHost(
                         onPlayAudio = { url ->
                             vm.onAction(MySubmissionsAction.OnPlayAudio(url))
                         },
-                        onStopAudio = { vm.onAction(MySubmissionsAction.OnStopAudio) }
+                        onStopAudio = { vm.onAction(MySubmissionsAction.OnStopAudio) },
+                        onFilterChange = { filter ->
+                            vm.onAction(MySubmissionsAction.OnFilterChange(filter))
+                        }
                     )
                 }
             }

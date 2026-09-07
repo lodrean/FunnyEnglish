@@ -2,6 +2,7 @@ package com.sotospeak.service
 
 import com.sotospeak.entity.UserStreak
 import com.sotospeak.repository.UserStreakRepository
+import com.sotospeak.repository.XpHistoryRepository
 import com.sotospeak.shared.model.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,10 +16,14 @@ import java.util.*
  */
 @Service
 class StreakService(
-    private val userStreakRepository: UserStreakRepository
+    private val userStreakRepository: UserStreakRepository,
+    private val xpHistoryRepository: XpHistoryRepository
 ) {
     companion object {
         val MILESTONES = listOf(7, 14, 30, 60, 100, 200, 365)
+
+        /** Лимит выборки XP-истории для активностей (хватает с запасом на 30 дней). */
+        const val XP_HISTORY_FETCH_LIMIT = 200
         const val FREEZES_PER_WEEK = 1
         const val RECOVERY_WINDOW_HOURS = 48
     }
@@ -202,10 +207,12 @@ class StreakService(
         }
     }
 
+    /** Активность = записи XP-истории за последние [days] дней (bd wy7.9 — была заглушкой). */
     private fun getRecentActivities(userId: UUID, days: Int): List<UserActivity> {
-        // This would typically query an activity repository
-        // For now, return empty list - in production this should query actual activity data
-        return emptyList()
+        val since = LocalDate.now().minusDays(days.toLong()).atStartOfDay().toInstant(ZoneOffset.UTC)
+        return xpHistoryRepository.findRecentByUserId(userId, XP_HISTORY_FETCH_LIMIT)
+            .filter { it.createdAt >= since }
+            .map { UserActivity(timestamp = it.createdAt, xpEarned = it.amount, activityType = it.source) }
     }
 
     private fun buildWeeklyCalendar(userId: UUID, activities: List<UserActivity>): List<DayStatus> {
@@ -213,11 +220,15 @@ class StreakService(
         val userStreak = getOrCreateUserStreak(userId)
         val activityDates = getActivityDates(userId, 7)
         val freezeDates = getFreezeDates(userId, 7)
-        
+        // XP по дням из реальной активности (bd wy7.9 — было 0)
+        val xpByDate = activities.groupBy {
+            it.timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
+        }.mapValues { (_, dayActivities) -> dayActivities.sumOf { it.xpEarned } }
+
         return (0..6).map { daysAgo ->
             val date = today.minusDays(daysAgo.toLong())
             val dateStr = date.toString()
-            
+
             val status = when {
                 date == today && activityDates.contains(date) -> StreakDayStatus.TODAY_COMPLETED
                 date == today && !activityDates.contains(date) -> StreakDayStatus.TODAY_PENDING
@@ -225,11 +236,11 @@ class StreakService(
                 activityDates.contains(date) -> StreakDayStatus.COMPLETED
                 else -> StreakDayStatus.MISSED
             }
-            
+
             DayStatus(
                 date = dateStr,
                 status = status,
-                xpEarned = 0 // Would be populated from actual activity data
+                xpEarned = xpByDate[date] ?: 0
             )
         }.reversed()
     }

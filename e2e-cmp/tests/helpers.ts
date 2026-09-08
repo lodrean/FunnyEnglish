@@ -36,11 +36,11 @@ export const POS = {
   firstTopic: { x: 640, y: 115 },
   // Аппбары без стрелки «назад» (мокап, 2026-08-08) — «назад» = клавиша Escape (см. pressBack)
   videoGoToQuestions: { x: 640, y: 611 },    // CTA «Перейти к вопросам» (после редизайна видео-экрана c47 CTA прижата к низу, центр ≈611; было 665 — клик промахивался, bd qbq.8)
-  questionsTrainingGuest: { x: 640, y: 285 },// «Тренировка · 3 попытки» (гость — выше гейта)
+  questionsTrainingGuest: { x: 640, y: 243 }, // «Тренировка · 3 попытки» (гость; bd 0zl: explainer снизу перецентрировал колонку — грабля №113)
   questionsTrainingAuth: { x: 640, y: 607 }, // «Тренировка · 3 попытки» (авторизованный)
   questionsPracticeAuth: { x: 640, y: 676 }, // «Практика · 30 сек» (авторизованный)
-  gateRegister: { x: 640, y: 597 },          // «Зарегистрироваться» в SpeakingGate (Questions, M3 card)
-  gateLogin: { x: 640, y: 656 },             // «Войти» в SpeakingGate (Questions)
+  gateRegister: { x: 640, y: 577 },          // «Зарегистрироваться» в SpeakingGate (bd 0zl: explainer сдвинул гейт вверх)
+  gateLogin: { x: 640, y: 621 },             // «Войти» в SpeakingGate (bd 0zl recalib)
   // Навигация wide (1280px) — M3 NavigationRail слева (Q4, спека §5); bottom nav — только compact
   railLibrary: { x: 40, y: 300 },
   railMySubmissions: { x: 40, y: 360 },      // «Отправки»

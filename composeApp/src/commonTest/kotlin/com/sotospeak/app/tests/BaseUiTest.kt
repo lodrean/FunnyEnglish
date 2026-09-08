@@ -76,6 +76,8 @@ abstract class BaseUiTest : KoinTest {
          */
         val testModule = module {
             // Моки подключаются здесь при необходимости
+            // bd h3l.13: WordBook для карточки слова в VideoScreen
+            single { com.sotospeak.app.storage.WordBook(com.sotospeak.shared.platform.Settings("test_wordbook")) }
         }
 
         /**

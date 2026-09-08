@@ -17,7 +17,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
@@ -35,7 +37,11 @@ fun TranscriptPanel(
     cues: List<SubtitleCue>,
     positionMs: Long,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState(),
+    /** Сохранённые в словарь слова (bd h3l.13) — подчёркнуты. */
+    savedWords: Set<String> = emptySet(),
+    /** Тап по слову транскрипта (bd h3l.13): слово + предложение-контекст. */
+    onWordClick: ((word: String, context: String) -> Unit)? = null
 ) {
     val speaking = LocalSpeakingColors.current
     val reduceMotion = LocalReduceMotion.current
@@ -55,19 +61,37 @@ fun TranscriptPanel(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         itemsIndexed(cues, key = { _, cue -> cue.startMs }) { cueIndex, cue ->
-            Text(
-                text = buildTranscriptText(
-                    cue = cue,
-                    positionMs = positionMs,
-                    spokenColor = speaking.text,
-                    unspokenColor = speaking.textMuted,
-                    reduceMotion = reduceMotion
-                ),
-                style = SpeakingTextStyles.SubtitleText,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("transcript_cue_$cueIndex")
+            val annotated = buildTranscriptText(
+                cue = cue,
+                positionMs = positionMs,
+                spokenColor = speaking.text,
+                unspokenColor = speaking.textMuted,
+                reduceMotion = reduceMotion,
+                savedWords = savedWords
             )
+            if (onWordClick != null) {
+                // bd h3l.13: тап по слову транскрипта — карточка слова
+                ClickableText(
+                    text = annotated,
+                    style = SpeakingTextStyles.SubtitleText,
+                    onClick = { offset ->
+                        annotated.getStringAnnotations(TAG_WORD, offset, offset)
+                            .firstOrNull()
+                            ?.let { annotation -> onWordClick(annotation.item, cue.text) }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("transcript_cue_$cueIndex")
+                )
+            } else {
+                Text(
+                    text = annotated,
+                    style = SpeakingTextStyles.SubtitleText,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("transcript_cue_$cueIndex")
+                )
+            }
         }
     }
 }
@@ -76,12 +100,15 @@ fun TranscriptPanel(
  * AnnotatedString cue: слова через пробел, цвет — по таймингу слова относительно positionMs.
  * Текущее слово — плавный lerp muted→text + полужирный (точка отслеживания).
  */
+internal const val TAG_WORD = "word"
+
 internal fun buildTranscriptText(
     cue: SubtitleCue,
     positionMs: Long,
     spokenColor: Color,
     unspokenColor: Color,
-    reduceMotion: Boolean
+    reduceMotion: Boolean,
+    savedWords: Set<String> = emptySet()
 ): AnnotatedString = buildAnnotatedString {
     // Fallback для cue без слов — заливка целого cue по его окну
     if (cue.words.isEmpty()) {
@@ -101,8 +128,18 @@ internal fun buildTranscriptText(
     cue.words.forEachIndexed { index, word ->
         val isCurrent = positionMs in word.startMs until word.endMs
         val color = wordColor(word, positionMs, spokenColor, unspokenColor, reduceMotion)
-        pushStyle(SpanStyle(color = color, fontWeight = if (isCurrent) FontWeight.Bold else null))
+        val normalizedWord = word.text.trim('.', ',', '!', '?', ';', ':').lowercase()
+        val isSaved = normalizedWord in savedWords
+        pushStringAnnotation(TAG_WORD, normalizedWord)
+        pushStyle(
+            SpanStyle(
+                color = color,
+                fontWeight = if (isCurrent) FontWeight.Bold else null,
+                textDecoration = if (isSaved) TextDecoration.Underline else null
+            )
+        )
         append(word.text)
+        pop()
         pop()
         if (index != cue.words.lastIndex) append(' ')
     }

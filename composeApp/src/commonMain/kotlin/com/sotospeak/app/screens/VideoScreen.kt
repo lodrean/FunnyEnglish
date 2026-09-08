@@ -78,6 +78,12 @@ fun VideoScreen(
 
     // Полноэкранный режим (спека §2.3, v1.7) — состояние локально для экрана, НЕ в VM
     var isFullscreen by rememberSaveable { mutableStateOf(false) }
+
+    // bd h3l.13: карточка слова из транскрипта — слово + контекст + сохранение в WordBook
+    val wordBook: com.sotospeak.app.storage.WordBook = org.koin.compose.koinInject()
+    var wordCard by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var wordBookVersion by remember { mutableIntStateOf(0) }
+    val savedWords = remember(wordBookVersion) { wordBook.list().map { it.word }.toSet() }
     VideoFullscreenEffect(enabled = isFullscreen)
 
     // Стрелки в аппбаре нет (мокап frame-video) — системная кнопка/жест «назад»;
@@ -120,11 +126,45 @@ fun VideoScreen(
                 onToggleSubtitles = onToggleSubtitles,
                 onRetryVideo = onRetryVideo,
                 onGoToQuestions = onGoToQuestions,
+                savedWords = savedWords,
+                onWordSelect = { word, context -> wordCard = word to context },
                 // В fullscreen Scaffold-insets игнорируем — видео edge-to-edge
                 modifier = if (isFullscreen) Modifier else Modifier.padding(padding)
             )
         }
     }
+
+        // Карточка слова (bd h3l.13): слово, контекст, сохранение в личный словарь
+        wordCard?.let { (word, context) ->
+            val isSaved = wordBook.contains(word)
+            AlertDialog(
+                onDismissRequest = { wordCard = null },
+                title = { Text(word, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("word_card_word")) },
+                text = {
+                    Text(
+                        strings.wordCardContextLabel + " «" + context + "»",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (isSaved) wordBook.remove(word) else wordBook.add(word, context, kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
+                            wordBookVersion++
+                        },
+                        modifier = Modifier.testTag(if (isSaved) "word_card_remove" else "word_card_save")
+                    ) {
+                        Text(if (isSaved) strings.wordCardRemove else strings.wordCardSave)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { wordCard = null }) {
+                        Text(strings.close)
+                    }
+                },
+                modifier = Modifier.testTag("word_card")
+            )
+        }
 }
 
 @Composable
@@ -137,6 +177,8 @@ private fun VideoContent(
     onToggleSubtitles: () -> Unit,
     onRetryVideo: () -> Unit,
     onGoToQuestions: () -> Unit,
+    savedWords: Set<String>,
+    onWordSelect: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
@@ -360,7 +402,9 @@ private fun VideoContent(
                 TranscriptPanel(
                     cues = state.subtitleCues,
                     positionMs = playerState.positionMs,
-                    modifier = Modifier.heightIn(max = transcriptMaxHeight)
+                    modifier = Modifier.heightIn(max = transcriptMaxHeight),
+                    savedWords = savedWords,
+                    onWordClick = onWordSelect
                 )
             }
         }
@@ -397,7 +441,9 @@ private fun VideoContent(
         } // !isFullscreen
         }
     }
+
 }
+
 
 /**
  * Центральный слот контролов плеера по мокапу frame-video:

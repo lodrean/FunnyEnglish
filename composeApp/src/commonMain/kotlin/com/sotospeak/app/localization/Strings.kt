@@ -91,6 +91,10 @@ interface AppStrings {
     val topicsProgressTitle: String
     val topicsEveningReminder: String
     val offlineBanner: String
+    val wordCardSave: String
+    val wordCardRemove: String
+    val wordCardContextLabel: String
+    val close: String
     val questionOfUpperTemplate: String  // "ВОПРОС {0} ИЗ {1}"
     fun questionOfUpper(current: Int, total: Int): String =
         questionOfUpperTemplate
@@ -274,6 +278,10 @@ object RussianStrings : AppStrings {
     override val topicsProgressTitle = "Прогресс по темам"
     override val topicsEveningReminder = "Ещё не записывался сегодня — 1 минута практики не помешает!"
     override val offlineBanner = "Нет сети — показаны сохранённые данные"
+    override val wordCardSave = "Сохранить в словарь"
+    override val wordCardRemove = "Убрать из словаря"
+    override val wordCardContextLabel = "Встречается в:"
+    override val close = "Закрыть"
     override val questionOfUpperTemplate = "ВОПРОС {0} ИЗ {1}"
 
     // VideoScreen
@@ -421,6 +429,10 @@ object EnglishStrings : AppStrings {
     override val topicsProgressTitle = "Topic progress"
     override val topicsEveningReminder = "No recording today — one minute of practice won't hurt!"
     override val offlineBanner = "Offline — showing saved data"
+    override val wordCardSave = "Save to vocabulary"
+    override val wordCardRemove = "Remove from vocabulary"
+    override val wordCardContextLabel = "Found in:"
+    override val close = "Close"
     override val questionOfUpperTemplate = "QUESTION {0} OF {1}"
 
     // VideoScreen

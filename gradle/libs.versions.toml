@@ -43,6 +43,7 @@ androidx-compose-ui-test = "1.7.6"
 androidx-test-runner = "1.6.2"
 dropshots = "0.6.0"
 mockk = "1.13.13"
+androidxWork = "2.10.0"
 kotlinx-coroutines-test = "1.9.0"
 koin-test = "4.0.0"
 
@@ -150,6 +151,7 @@ androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", v
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
 dropshots = { module = "com.dropbox.dropshots:dropshots", version.ref = "dropshots" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "androidxWork" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 

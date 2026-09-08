@@ -2,6 +2,7 @@ package com.sotospeak.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sotospeak.app.data.PracticeRetryService
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.error.UiText
 import com.sotospeak.app.error.toUiText
@@ -133,52 +134,25 @@ class MySubmissionsViewModel(
                 )
             }
 
+    private val retryService = PracticeRetryService(repository, fileStorage)
+
     private val inFlightUploads = mutableSetOf<String>()
 
     private fun retryPending(filePath: String) {
-        // M3-фикс (review): без in-flight guard быстрые повторные вызовы (OnRefresh +
-        // ручной retry) создавали дубли submissions на backend
+        // M3-фикс (review): in-flight guard против дублей (OnRefresh + ручной retry)
         if (!inFlightUploads.add(filePath)) return
-        val meta = repository.findRecording(filePath) ?: run {
-            inFlightUploads.remove(filePath)
-            return
-        }
         viewModelScope.launch {
-            try {
-                val bytes = try {
-                    fileStorage.readBytes(filePath)
-                } catch (e: Exception) {
-                    _events.trySend(MySubmissionsEvent.ShowMessage("Файл записи не найден"))
-                    repository.removeRecording(filePath)   // файла нет — чистим мету
-                    return@launch
+            val sent = retryService.retryOne(filePath)
+            inFlightUploads.remove(filePath)
+            _state.value = _state.value.copy(pendingUploads = repository.pendingPracticeUploads())
+            if (sent) {
+                _events.trySend(MySubmissionsEvent.ShowMessage("Запись отправлена учителю"))
+                repository.getMySubmissions().onSuccess { submissions ->
+                    _state.value = _state.value.copy(
+                        submissions = submissions.sortedByDescending { it.createdAt },
+                        topicsProgress = computeTopicsProgress(submissions.sortedByDescending { it.createdAt })
+                    )
                 }
-                repository.submitPractice(
-                    topicId = meta.topicId,
-                    durationSec = (meta.durationMs / 1000).toInt().coerceAtLeast(1),
-                    audioBytes = bytes,
-                    fileName = filePath.substringAfterLast('/')
-                )
-                    .onSuccess {
-                        repository.markRecordingUploaded(filePath)
-                        repository.removeRecording(filePath)   // уже в MinIO — освобождаем место
-                        _state.value = _state.value.copy(
-                            pendingUploads = repository.pendingPracticeUploads()
-                        )
-                        _events.trySend(MySubmissionsEvent.ShowMessage("Запись отправлена учителю"))
-                        // Обновим список — новая отправка должна появиться
-                        repository.getMySubmissions().onSuccess { submissions ->
-                            _state.value = _state.value.copy(
-                                submissions = submissions.sortedByDescending { it.createdAt }
-                            )
-                        }
-                    }
-                    .onFailure {
-                        _state.value = _state.value.copy(
-                            pendingUploads = repository.pendingPracticeUploads()
-                        )
-                    }
-            } finally {
-                inFlightUploads.remove(filePath)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.sotospeak.app.di
 
+import com.sotospeak.app.data.PracticeRetryService
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.OfflineCache
@@ -24,6 +25,7 @@ val speakingModule = module {
     factory { com.sotospeak.shared.platform.AudioPlayer() }   // прослушивание записей
     single { OfflineCache(get()) }                    // офлайн-кэш снапшотов (bd h3l.8)
     single { WordBook(get()) }                        // личный словарь слов (bd h3l.13)
+    single { PracticeRetryService(get(), get()) }     // фоновый retry practice (bd h3l.19)
     viewModel { LibraryViewModel(get(), get()) }            // repository + offlineCache (сеть + прогресс тем, DC-2)
     viewModel { TopicsViewModel(get(), get(), get(), get()) }  // + offlineCache (bd h3l.8)
     viewModel { QuestionsViewModel(get()) }

@@ -116,4 +116,5 @@ dependencies {
     implementation(projects.composeApp)
     implementation(libs.androidx.activity.compose)
     implementation(libs.napier)
+    implementation(libs.koin.core) // старт Koin в Application до compose (bd h3l.19)
 }

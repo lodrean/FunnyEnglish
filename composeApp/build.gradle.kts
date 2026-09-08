@@ -77,6 +77,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.napier)
+            // Фоновый retry Practice-записей (bd FunnyEnglish-h3l.19)
+            implementation(libs.androidx.work.runtime)
             // Видеоплеер Speaking-тренажёра (спека Part 2 §3.1, v1.7: Compose-first)
             implementation(libs.androidx.media3.exoplayer)
             implementation(libs.androidx.media3.ui.compose)
@@ -124,6 +126,8 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.napier)
+            // Фоновый retry Practice-записей (bd FunnyEnglish-h3l.19)
+            implementation(libs.androidx.work.runtime)
         }
 
         val wasmJsMain by getting

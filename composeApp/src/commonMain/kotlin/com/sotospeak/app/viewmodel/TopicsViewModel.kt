@@ -3,9 +3,11 @@ package com.sotospeak.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
+import com.sotospeak.app.storage.OfflineCache
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.app.error.UiText
 import com.sotospeak.app.error.toUiText
+import com.sotospeak.shared.contracts.SpeakingTopicListItem
 import com.sotospeak.shared.platform.Settings
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -23,6 +25,8 @@ data class TopicsState(
     val libraryTitle: String = "",
     val topics: List<TopicUiModel> = emptyList(),
     val error: UiText? = null,
+    /** bd h3l.8: сеть недоступна, показан офлайн-кэш */
+    val offlineData: Boolean = false,
     /** Мягкое напоминание (bd h3l.14): после 18:00 записи сегодня ещё нет. */
     val eveningReminderVisible: Boolean = false
 )
@@ -55,6 +59,7 @@ class TopicsViewModel(
     private val repository: SpeakingRepository,
     private val settings: Settings,
     private val recordingStore: RecordingStore,
+    private val offlineCache: OfflineCache,
     private val nowHourProvider: () -> Int = {
         kotlinx.datetime.Clock.System.now()
             .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).hour
@@ -93,6 +98,11 @@ class TopicsViewModel(
             _state.value = _state.value.copy(isLoading = true, error = null)
             repository.getTopics(libraryId)
                 .onSuccess { topics ->
+                    offlineCache.save(
+                        OfflineCache.KEY_TOPICS_PREFIX + libraryId,
+                        topics,
+                        kotlinx.serialization.builtins.ListSerializer(SpeakingTopicListItem.serializer())
+                    )
                     // Мягкое напоминание (bd h3l.14): после 18:00 записи сегодня нет
                     val reminder = nowHourProvider() >= 18 && !recordingStore.hasRecordingToday()
                     _state.value = _state.value.copy(
@@ -112,10 +122,33 @@ class TopicsViewModel(
                     )
                 }
                 .onFailure { error ->
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        error = error.toUiText()
+                    // bd h3l.8: сеть недоступна — показываем кэш вместо пустого экрана
+                    val cached = offlineCache.load(
+                        OfflineCache.KEY_TOPICS_PREFIX + libraryId,
+                        kotlinx.serialization.builtins.ListSerializer(SpeakingTopicListItem.serializer())
                     )
+                    if (cached != null) {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            topics = cached.map { dto ->
+                                TopicUiModel(
+                                    id = dto.id,
+                                    title = dto.title,
+                                    durationSeconds = dto.durationSeconds ?: 0,
+                                    questionCount = dto.questionCount,
+                                    hasSubtitles = dto.hasSubtitles,
+                                    isWatched = settings.getString("topic_watched_${dto.id}", null) == "true",
+                                    hasLocalRecordings = repository.listRecordings(dto.id).isNotEmpty()
+                                )
+                            },
+                            offlineData = true
+                        )
+                    } else {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = error.toUiText()
+                        )
+                    }
                 }
         }
     }

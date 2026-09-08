@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.error.UiText
 import com.sotospeak.app.error.toUiText
+import com.sotospeak.app.storage.OfflineCache
 import com.sotospeak.shared.contracts.SpeakingLibrary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -22,7 +23,9 @@ data class LibraryState(
     val libraries: List<SpeakingLibrary> = emptyList(),
     /** libraryId → число топиков с training-записями (DC-2: бейдж «N пройдено», прогресс-бар) */
     val completedTopics: Map<String, Int> = emptyMap(),
-    val error: UiText? = null
+    val error: UiText? = null,
+    /** bd h3l.8: сеть недоступна, показан офлайн-кэш */
+    val offlineData: Boolean = false
 )
 
 sealed interface LibraryAction {
@@ -36,7 +39,8 @@ sealed interface LibraryEvent {
 }
 
 class LibraryViewModel(
-    private val repository: SpeakingRepository
+    private val repository: SpeakingRepository,
+    private val offlineCache: OfflineCache
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
@@ -64,14 +68,33 @@ class LibraryViewModel(
                 .onSuccess { libraries ->
                     // Пустые темы фильтруем на клиенте как страховку (backend тоже фильтрует)
                     val visible = libraries.filter { it.topicCount > 0 }
-                    _state.value = _state.value.copy(isLoading = false, libraries = visible)
+                    offlineCache.save(
+                        OfflineCache.KEY_LIBRARIES,
+                        visible,
+                        kotlinx.serialization.builtins.ListSerializer(SpeakingLibrary.serializer())
+                    )
+                    _state.value = _state.value.copy(isLoading = false, libraries = visible, offlineData = false)
                     loadProgress(visible)
                 }
                 .onFailure { error ->
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        error = error.toUiText()
+                    // bd h3l.8: сеть недоступна — показываем кэш вместо пустого экрана
+                    val cached = offlineCache.load(
+                        OfflineCache.KEY_LIBRARIES,
+                        kotlinx.serialization.builtins.ListSerializer(SpeakingLibrary.serializer())
                     )
+                    if (cached != null) {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            libraries = cached,
+                            offlineData = true
+                        )
+                        loadProgress(cached)
+                    } else {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = error.toUiText()
+                        )
+                    }
                 }
         }
     }

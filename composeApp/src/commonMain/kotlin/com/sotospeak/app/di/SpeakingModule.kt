@@ -2,6 +2,7 @@ package com.sotospeak.app.di
 
 import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.storage.RecordingFileStorage
+import com.sotospeak.app.storage.OfflineCache
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.app.viewmodel.LibraryViewModel
 import com.sotospeak.app.viewmodel.MySubmissionsViewModel
@@ -20,8 +21,9 @@ val speakingModule = module {
     // Единая точка доступа speaking-VM к сети и метаданным записей (bd FunnyEnglish-5tf.5)
     single { SpeakingRepository(get(), get()) }
     factory { com.sotospeak.shared.platform.AudioPlayer() }   // прослушивание записей
-    viewModel { LibraryViewModel(get()) }            // repository (сеть + прогресс тем, DC-2)
-    viewModel { TopicsViewModel(get(), get(), get()) }  // repository + Settings + RecordingStore (bd h3l.14)
+    single { OfflineCache(get()) }                    // офлайн-кэш снапшотов (bd h3l.8)
+    viewModel { LibraryViewModel(get(), get()) }            // repository + offlineCache (сеть + прогресс тем, DC-2)
+    viewModel { TopicsViewModel(get(), get(), get(), get()) }  // + offlineCache (bd h3l.8)
     viewModel { QuestionsViewModel(get()) }
     viewModel { VideoViewModel(get(), get()) }       // repository + Settings (topic_watched_*)
     viewModel { TrainingViewModel(get(), get()) }    // repository + AudioPlayer

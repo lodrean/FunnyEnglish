@@ -63,6 +63,20 @@ fun TopicsScreen(
         modifier = modifier.testTag("topics_screen")
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // bd h3l.8: сеть недоступна — показан офлайн-кэш
+            if (state.offlineData) {
+                Text(
+                    text = strings.offlineBanner,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.medium)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .testTag("offline_banner")
+                )
+            }
             // Мягкое напоминание (bd h3l.14): после 18:00 записи сегодня ещё нет
             if (state.eveningReminderVisible) {
                 Text(

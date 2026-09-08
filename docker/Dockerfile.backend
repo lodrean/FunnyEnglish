@@ -4,6 +4,9 @@
 
 FROM eclipse-temurin:21-jdk-alpine
 
+# ffprobe/ffmpeg — валидация видео при загрузке (bd FunnyEnglish-h3l.7)
+RUN apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 # Copy pre-built JAR (must be built locally before docker build)

@@ -17,6 +17,7 @@ import java.util.UUID
 @Service
 class StorageService(
     private val s3Client: S3Client,
+    private val mediaProbeService: MediaProbeService,
     @Value("\${app.s3.bucket}") private val bucket: String,
     @Value("\${app.s3.endpoint}") private val endpoint: String,
     @Value("\${app.s3.public-url}") private val publicUrl: String,
@@ -50,6 +51,7 @@ class StorageService(
         
         validateFileType(extension, file.contentType)
         validateVideoUpload(extension, file)
+        validateVideoCodecs(extension, file)
         
         val key = buildString {
             append(normalizedFolder)
@@ -145,6 +147,27 @@ class StorageService(
         }
 
         return cleanedPath.trim('/').ifEmpty { null }
+    }
+
+    /**
+     * ffprobe-валидация кодеков видео (bd FunnyEnglish-h3l.7): плеер ученика
+     * (ExoPlayer/HTML5) не проигрывает экзотические кодеки — отсекаем на загрузке.
+     * Файл пишется во временный файл (Spring multipart уже кладёт его на диск),
+     * ffprobe недоступен → fail-open. Сам транскодинг — bd-остаток (async-джоба).
+     */
+    private fun validateVideoCodecs(extension: String, file: MultipartFile) {
+        if (extension !in allowedVideoExtensions) return
+        val tempFile = kotlin.io.path.createTempFile(prefix = "upload_", suffix = ".$extension")
+        try {
+            file.transferTo(tempFile)
+            val probe = mediaProbeService.probe(tempFile) ?: return
+            val reason = mediaProbeService.rejectReason(extension, probe)
+            if (reason != null) {
+                throw IllegalArgumentException(reason)
+            }
+        } finally {
+            java.nio.file.Files.deleteIfExists(tempFile)
+        }
     }
 
     /** Лимит размера + magic-bytes для видео — до записи в S3 (bd FunnyEnglish-7qf). */

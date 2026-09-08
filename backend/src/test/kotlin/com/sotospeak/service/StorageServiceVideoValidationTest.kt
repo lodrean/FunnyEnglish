@@ -1,5 +1,6 @@
 package com.sotospeak.service
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -16,11 +17,17 @@ class StorageServiceVideoValidationTest {
 
     private val s3Client: S3Client = mockk(relaxed = true)
 
+    private val mediaProbeService: MediaProbeService = mockk {
+        // probe по умолчанию недоступен (fail-open) — видео-кейсы кодеков не срабатывают
+        every { probe(any()) } returns null
+    }
+
     private fun storageService(maxVideoSize: String = "100MB") = StorageService(
         s3Client = s3Client,
         bucket = "sotospeak",
         endpoint = "http://localhost:9000",
         publicUrl = "http://localhost:9000",
+        mediaProbeService = mediaProbeService,
         maxVideoSize = DataSize.parse(maxVideoSize)
     )
 

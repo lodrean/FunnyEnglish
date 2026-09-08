@@ -18,6 +18,9 @@ import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
 import com.sotospeak.service.EmailService
+import com.sotospeak.service.StreakService
+import com.sotospeak.service.XpService
+import com.sotospeak.shared.model.XpSource
 import com.sotospeak.service.MediaUrlService
 import com.sotospeak.service.StorageService
 import jakarta.persistence.EntityManager
@@ -46,13 +49,18 @@ class PracticeSubmissionService(
     private val storageService: StorageService,
     private val mediaUrlService: MediaUrlService,
     private val emailService: EmailService,
-    private val gradeAuditRepository: GradeAuditRepository
+    private val gradeAuditRepository: GradeAuditRepository,
+    private val xpService: XpService,
+    private val streakService: StreakService
 ) {
     @PersistenceContext
     private lateinit var entityManager: EntityManager
 
     companion object {
         const val MAX_AUDIO_SIZE_BYTES = 5L * 1024 * 1024 // 5 МБ (PRD: ~1–2 МБ на запись)
+        const val XP_PER_SUBMISSION = 10                  // bd h3l.15
+        const val XP_PER_EXCELLENT = 25                   // bd h3l.15: total ≥ 8
+        const val EXCELLENT_TOTAL_THRESHOLD = 8.0
         const val MAX_DURATION_SEC = 60                    // клиент шлёт ~30, допуск с запасом
     }
 
@@ -96,12 +104,26 @@ class PracticeSubmissionService(
             durationSec = durationSec,
             status = SubmissionStatus.NEW
         )
-        return try {
-            submissionRepository.saveAndFlush(submission).toResponse().normalized()
+        val saved = try {
+            submissionRepository.saveAndFlush(submission)
         } catch (e: DataIntegrityViolationException) {
             // Fallback на race двух параллельных POST: UNIQUE (user_id, topic_id) (V25) → тот же 409-гейт
             throw DuplicateSubmissionException("Practice submission already exists for this topic")
         }
+
+        // Геймификация на реальных данных speaking (bd h3l.15): streak «дней с записью»
+        // + XP за отправку. runCatching — сбой геймификации не ломает загрузку.
+        runCatching {
+            streakService.recordActivity(userId)
+            xpService.addXp(
+                userId = userId,
+                amount = XP_PER_SUBMISSION,
+                source = XpSource.PRACTICE_SUBMISSION,
+                description = "Practice: ${topic.title}"
+            )
+        }
+
+        return saved.toResponse().normalized()
     }
 
     @Transactional(readOnly = true)
@@ -159,6 +181,19 @@ class PracticeSubmissionService(
         submissionRepository.save(submission)
         // total — generated column: refresh, чтобы подтянуть вычисленное в БД значение
         entityManager.refresh(grade)
+        // Геймификация (bd h3l.15): бонус XP за отличную практику (total ≥ 8)
+        runCatching {
+            val studentId = submission.user?.id
+            if (studentId != null && (grade.total?.toDouble() ?: 0.0) >= EXCELLENT_TOTAL_THRESHOLD) {
+                xpService.addXp(
+                    userId = studentId,
+                    amount = XP_PER_EXCELLENT,
+                    source = XpSource.PRACTICE_EXCELLENT,
+                    description = "Excellent practice: ${submission.topic?.title.orEmpty()}"
+                )
+            }
+        }
+
         // Аудит: первичная оценка (bd h3l.10)
         gradeAuditRepository.save(
             GradeAudit(

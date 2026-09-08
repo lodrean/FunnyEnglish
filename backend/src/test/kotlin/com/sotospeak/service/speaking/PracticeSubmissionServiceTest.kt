@@ -2,6 +2,7 @@ package com.sotospeak.service.speaking
 
 import com.sotospeak.dto.GradeSubmissionRequest
 import com.sotospeak.entity.User
+import com.sotospeak.shared.model.XpSource
 import com.sotospeak.entity.speaking.Grade
 import com.sotospeak.entity.speaking.GradeAudit
 import com.sotospeak.entity.speaking.PracticeSubmission
@@ -13,6 +14,8 @@ import com.sotospeak.repository.speaking.GradeRepository
 import com.sotospeak.repository.speaking.PracticeSubmissionRepository
 import com.sotospeak.repository.speaking.TopicRepository
 import com.sotospeak.service.EmailService
+import com.sotospeak.service.StreakService
+import com.sotospeak.service.XpService
 import com.sotospeak.service.MediaUrlService
 import com.sotospeak.service.StorageService
 import io.mockk.every
@@ -41,6 +44,8 @@ class PracticeSubmissionServiceTest {
     private val entityManager = mockk<EntityManager>(relaxed = true)
 
     private val gradeAuditRepository: GradeAuditRepository = mockk(relaxed = true)
+    private val xpService: XpService = mockk(relaxed = true)
+    private val streakService: StreakService = mockk(relaxed = true)
 
     private lateinit var service: PracticeSubmissionService
 
@@ -55,11 +60,13 @@ class PracticeSubmissionServiceTest {
         service = PracticeSubmissionService(
             submissionRepository, gradeRepository, topicRepository,
             userRepository, storageService, mediaUrlService, emailService,
-            gradeAuditRepository
+            gradeAuditRepository, xpService, streakService
         )
         ReflectionTestUtils.setField(service, "entityManager", entityManager)
         every { mediaUrlService.normalize(any()) } answers { firstArg() }
         every { gradeAuditRepository.save(any<GradeAudit>()) } answers { firstArg() }
+        every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(any()) } returns Optional.of(topic)
+        // bd h3l.15: геймификация мокается, verify в профильных тестах
         // Дефолт: ожидающих (NEW) Practice-отправок нет (bd h3l.2: после REVIEWED повторная разрешена)
         every { submissionRepository.existsByUserIdAndTopicIdAndStatus(any(), any(), any()) } returns false
     }
@@ -285,6 +292,24 @@ class PracticeSubmissionServiceTest {
 
         assertThrows<NoSuchElementException> {
             service.editGrade(submissionId, gradeRequest(), reviewerId = UUID.randomUUID())
+        }
+    }
+
+    @Test
+    fun gamificationAwardedOnSubmission() {
+        every { topicRepository.findByIdAndIsPublishedTrueAndDeletedAtIsNull(topicId) } returns Optional.of(topic)
+        every { storageService.uploadFile(any(), "speaking/submissions/u_$userId") } returns
+            "https://media.example.com/sotospeak/speaking/submissions/u_$userId/abc.m4a"
+        every { userRepository.getReferenceById(userId) } returns
+            User(email = "student@test.com", displayName = "Student")
+        every { submissionRepository.saveAndFlush(any()) } answers { firstArg() }
+
+        val file = audioFile()
+        service.createSubmission(userId, topicId, 30, file)
+
+        verify(exactly = 1) { streakService.recordActivity(userId) }
+        verify(exactly = 1) {
+            xpService.addXp(userId, PracticeSubmissionService.XP_PER_SUBMISSION, XpSource.PRACTICE_SUBMISSION, any())
         }
     }
 }

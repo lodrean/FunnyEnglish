@@ -12,6 +12,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.UUID
 
 @Service
@@ -37,7 +39,7 @@ class StorageService(
         logger.info("=".repeat(50))
         logger.info("UPLOAD START: originalName=${file.originalFilename}, size=${file.size}, contentType=${file.contentType}, folder=$folder")
         logger.info("S3 Config: endpoint=$endpoint, bucket=$bucket, publicUrl=$publicUrl")
-        
+
         val normalizedFolder = folder.trim().trim('/').ifEmpty { "media" }
         val originalName = file.originalFilename?.trim().orEmpty()
         val safeFileName = originalName
@@ -46,37 +48,38 @@ class StorageService(
             .trim()
             .ifEmpty { "file" }
         val extension = safeFileName.substringAfterLast('.', "").lowercase()
-        
+
         logger.debug("Normalized folder: $normalizedFolder, safeFileName: $safeFileName, extension: $extension")
-        
+
         validateFileType(extension, file.contentType)
         validateVideoUpload(extension, file)
-        validateVideoCodecs(extension, file)
-        
+
+        val video = prepareVideoUpload(file, extension)
+
         val key = buildString {
             append(normalizedFolder)
             append('/')
             append(UUID.randomUUID())
-            if (extension.isNotEmpty()) {
+            if (video.extension.isNotEmpty()) {
                 append('.')
-                append(extension.lowercase())
+                append(video.extension.lowercase())
             }
         }
-        
+
         logger.info("Uploading to S3: bucket=$bucket, key=$key")
 
         try {
             val request = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
-                .contentType(file.contentType ?: "application/octet-stream")
-                .contentLength(file.size)
+                .contentType(video.contentType)
+                .contentLength(video.size)
                 .build()
 
-            file.inputStream.use { input ->
-                s3Client.putObject(request, RequestBody.fromInputStream(input, file.size))
+            Files.newInputStream(video.path).use { input ->
+                s3Client.putObject(request, RequestBody.fromInputStream(input, video.size))
             }
-            
+
             val url = buildObjectUrl(key)
             logger.info("UPLOAD SUCCESS: $url")
             logger.info("=".repeat(50))
@@ -84,6 +87,8 @@ class StorageService(
         } catch (e: Exception) {
             logger.error("Failed to upload file to S3: bucket=$bucket, key=$key", e)
             throw IllegalStateException("Failed to upload file: ${e.message}", e)
+        } finally {
+            video.cleanup()
         }
     }
 
@@ -99,6 +104,50 @@ class StorageService(
         }.onFailure { error ->
             logger.warn("Failed to delete object from S3 for url={}", url, error)
             throw IllegalStateException("Unable to delete file")
+        }
+    }
+
+    /** Источник загрузки: temp-файл (оригинал или транскод) + расширение ключа + cleanup. */
+    private class PreparedUpload(
+        val path: Path,
+        val size: Long,
+        val contentType: String,
+        val extension: String
+    ) {
+        fun cleanup() {
+            Files.deleteIfExists(path)
+        }
+    }
+
+    /**
+     * Видео: temp-копия → ffprobe → при неподдерживаемом кодеке транскодинг
+     * в h264/aac mp4 вместо отказа (bd FunnyEnglish-h3l.18). probe недоступен
+     * (fail-open) → загружаем оригинал как есть.
+     */
+    private fun prepareVideoUpload(file: MultipartFile, extension: String): PreparedUpload {
+        val temp = kotlin.io.path.createTempFile(prefix = "upload_", suffix = ".$extension")
+        try {
+            file.transferTo(temp)
+            val probe = mediaProbeService.probe(temp)
+            val reason = probe?.let { mediaProbeService.rejectReason(extension, it) }
+                ?: return PreparedUpload(temp, file.size, file.contentType ?: "application/octet-stream", extension)
+
+            logger.info("Кодек не поддерживается ({}), транскодинг в mp4", reason)
+            val transcoded = kotlin.io.path.createTempFile(prefix = "transcoded_", suffix = ".mp4")
+            if (!mediaProbeService.transcodeToMp4(temp, transcoded)) {
+                Files.deleteIfExists(transcoded)
+                Files.deleteIfExists(temp)
+                throw IllegalArgumentException(reason)
+            }
+            return PreparedUpload(
+                path = transcoded,
+                size = Files.size(transcoded),
+                contentType = "video/mp4",
+                extension = "mp4"
+            )
+        } catch (e: Exception) {
+            Files.deleteIfExists(temp)
+            throw e
         }
     }
 
@@ -147,27 +196,6 @@ class StorageService(
         }
 
         return cleanedPath.trim('/').ifEmpty { null }
-    }
-
-    /**
-     * ffprobe-валидация кодеков видео (bd FunnyEnglish-h3l.7): плеер ученика
-     * (ExoPlayer/HTML5) не проигрывает экзотические кодеки — отсекаем на загрузке.
-     * Файл пишется во временный файл (Spring multipart уже кладёт его на диск),
-     * ffprobe недоступен → fail-open. Сам транскодинг — bd-остаток (async-джоба).
-     */
-    private fun validateVideoCodecs(extension: String, file: MultipartFile) {
-        if (extension !in allowedVideoExtensions) return
-        val tempFile = kotlin.io.path.createTempFile(prefix = "upload_", suffix = ".$extension")
-        try {
-            file.transferTo(tempFile)
-            val probe = mediaProbeService.probe(tempFile) ?: return
-            val reason = mediaProbeService.rejectReason(extension, probe)
-            if (reason != null) {
-                throw IllegalArgumentException(reason)
-            }
-        } finally {
-            java.nio.file.Files.deleteIfExists(tempFile)
-        }
     }
 
     /** Лимит размера + magic-bytes для видео — до записи в S3 (bd FunnyEnglish-7qf). */

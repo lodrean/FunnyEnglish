@@ -10,7 +10,12 @@ import java.nio.file.Files
 @Suppress("MagicNumber")
 class MediaProbeServiceTest {
 
-    private val service = MediaProbeService(ffprobePath = "ffprobe-definitely-missing", probeTimeoutSeconds = 1)
+    private val service = MediaProbeService(
+        ffprobePath = "ffprobe-definitely-missing",
+        ffmpegPath = "ffmpeg-definitely-missing",
+        probeTimeoutSeconds = 1,
+        transcodeTimeoutSeconds = 1
+    )
 
     @Test
     fun parsesFfprobeJsonDump() {

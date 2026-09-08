@@ -29,7 +29,9 @@ data class MediaProbeResult(
 @Service
 class MediaProbeService(
     @Value("\${app.media.ffprobe-path:ffprobe}") private val ffprobePath: String,
-    @Value("\${app.media.probe-timeout-seconds:15}") private val probeTimeoutSeconds: Long
+    @Value("\${app.media.ffmpeg-path:ffmpeg}") private val ffmpegPath: String,
+    @Value("\${app.media.probe-timeout-seconds:15}") private val probeTimeoutSeconds: Long,
+    @Value("\${app.media.transcode-timeout-seconds:300}") private val transcodeTimeoutSeconds: Long
 ) {
     private val logger = LoggerFactory.getLogger(MediaProbeService::class.java)
     private val objectMapper = ObjectMapper()
@@ -101,6 +103,28 @@ class MediaProbeService(
                 "Видеокодек '$codec' не поддерживается плеером — " +
                     "перекодируйте в ${allowed.firstOrNull() ?: "H.264"}"
         }
+    }
+
+    /**
+     * Транскодинг в h264/aac mp4 (bd FunnyEnglish-h3l.18): ffmpeg в контейнере,
+     * синхронно при загрузке (админ ждёт, но файл гарантированно играется).
+     * false — ffmpeg недоступен или транскодинг не удался (тогда загрузка отклоняется).
+     */
+    fun transcodeToMp4(source: Path, target: Path): Boolean = try {
+        val process = ProcessBuilder(
+            ffmpegPath, "-y", "-i", source.toAbsolutePath().toString(),
+            "-c:v", "libx264", "-preset", "fast", "-c:a", "aac",
+            "-movflags", "+faststart", target.toAbsolutePath().toString()
+        ).redirectErrorStream(true).start()
+        process.inputStream.readBytes() // потребляем вывод, иначе ffmpeg блокируется
+        val finished = process.waitFor(transcodeTimeoutSeconds, TimeUnit.SECONDS)
+        if (!finished) process.destroyForcibly()
+        val ok = finished && process.exitValue() == 0 && java.nio.file.Files.exists(target)
+        if (!ok) logger.warn("ffmpeg транскодинг не удался (exit={})", if (finished) process.exitValue() else "timeout")
+        ok
+    } catch (e: IOException) {
+        logger.warn("ffmpeg недоступен ({}): {}", ffmpegPath, e.message)
+        false
     }
 
     companion object {

@@ -67,6 +67,29 @@ class StorageServiceVideoValidationTest {
     }
 
     @Test
+    fun unsupportedCodecTranscodedToMp4() {
+        every { mediaProbeService.probe(any()) } returns MediaProbeResult("mpeg4", "aac", listOf("mp4"))
+        every { mediaProbeService.rejectReason(any(), any()) } returns "Видеокодек 'mpeg4' не поддерживается плеером"
+        every { mediaProbeService.transcodeToMp4(any(), any()) } answers {
+            val target = secondArg<java.nio.file.Path>()
+            java.nio.file.Files.write(target, mp4Header + ByteArray(32))
+            true
+        }
+        val url = storageService().uploadFile(videoFile("clip.mp4", mp4Header + ByteArray(64)), "media")
+        assertTrue(url.endsWith(".mp4"))
+        verify(exactly = 1) { s3Client.putObject(any<PutObjectRequest>(), any<RequestBody>()) }
+    }
+
+    @Test
+    fun transcodeFailureRejectsUpload() {
+        every { mediaProbeService.probe(any()) } returns MediaProbeResult("mpeg4", null, listOf("mp4"))
+        every { mediaProbeService.rejectReason(any(), any()) } returns "Видеокодек 'mpeg4' не поддерживается плеером"
+        every { mediaProbeService.transcodeToMp4(any(), any()) } returns false
+        val big = videoFile("clip.mp4", mp4Header + ByteArray(64))
+        assertThrows(IllegalArgumentException::class.java) { storageService().uploadFile(big, "media") }
+    }
+
+    @Test
     fun legacyMovExtensionRejected() {
         val mov = videoFile("clip.mov", mp4Header + ByteArray(64), "video/quicktime")
         assertThrows(IllegalArgumentException::class.java) { storageService().uploadFile(mov, "media") }

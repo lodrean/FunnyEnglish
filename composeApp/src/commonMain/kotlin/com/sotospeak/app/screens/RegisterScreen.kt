@@ -228,7 +228,7 @@ fun RegisterScreen(
 
 /**
  * Состояние «Проверьте почту» после регистрации (email-верификация flag=on).
- * Стиль Playful Coach: SpeakingGate 📬 + resend + ссылка на логин.
+ * Стиль Playful Coach: SpeakingGate (Send-иконка, V2 без emoji) + resend + ссылка на логин.
  */
 @Composable
 private fun CheckEmailContent(
@@ -252,7 +252,6 @@ private fun CheckEmailContent(
     ) {
         Spacer(modifier = Modifier.height(48.dp))
         com.sotospeak.app.components.SpeakingGate(
-            emoji = "📬",
             title = "Проверьте почту",
             text = "Мы отправили письмо со ссылкой на $email. Перейдите по ней, чтобы подтвердить аккаунт и войти.",
             modifier = Modifier.fillMaxWidth()

@@ -40,25 +40,21 @@ import com.sotospeak.designsystem.animations.speakingPressable
 import com.sotospeak.designsystem.theme.SpeakingShapes
 
 private data class OnboardingSlide(
-    val icon: ImageVector,
     val title: String,
     val description: String
 )
 
-/** 3 слайда value-prop по мокапу frame-onboarding (Playful Coach v1.1). */
+/** 3 слайда value-prop (тексты НЕ меняются — Maestro-флоу завязаны, грабля №122). */
 private val slides = listOf(
     OnboardingSlide(
-        icon = SpeakingIcons.Play,
         title = "Смотри видео",
         description = "Короткие видео с субтитрами на живые темы — от знакомства до уверенного small talk"
     ),
     OnboardingSlide(
-        icon = SpeakingIcons.Mic,
         title = "Тренируйся вслух",
         description = "Отвечай на вопросы голосом — три попытки, записи остаются только на твоём устройстве"
     ),
     OnboardingSlide(
-        icon = SpeakingIcons.Send,
         title = "Отправь учителю",
         description = "Лучшие записи отправляй учителю и получай оценки с разбором ошибок"
     )
@@ -87,26 +83,20 @@ fun OnboardingScreen(
             .padding(bottom = 24.dp)
             .testTag("onboarding_screen")
     ) {
-        // .onb-illu: карточка 180dp на primaryContainer, radius-card-large
+        // Живое превью (редизайн V2, B15): слайд показывает продукт, а не иконку
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(180.dp)
-                    .background(speaking.primaryContainer, SpeakingShapes.CardLarge)
-                    .testTag("onboarding_illustration_card"),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = slide.icon,
-                    contentDescription = slide.title,
-                    modifier = Modifier.size(88.dp),
-                    tint = speaking.primary
-                )
+            val previewModifier = Modifier
+                .fillMaxWidth()
+                .testTag("onboarding_illustration_card")
+            when (page) {
+                0 -> VideoPreview(previewModifier)
+                1 -> TrainingPreview(previewModifier)
+                else -> GradePreview(previewModifier)
             }
         }
 

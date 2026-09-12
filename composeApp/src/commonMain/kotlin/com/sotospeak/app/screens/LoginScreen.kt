@@ -138,7 +138,6 @@ fun LoginScreen(
         if (state.emailNotVerified) {
             Spacer(modifier = Modifier.height(16.dp))
             com.sotospeak.app.components.SpeakingGate(
-                emoji = "📬",
                 title = "Подтвердите почту",
                 text = "На $email отправлено письмо со ссылкой. Подтвердите email и войдите снова.",
                 modifier = Modifier

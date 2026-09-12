@@ -113,17 +113,17 @@ fun SpeakingField(
 }
 
 /**
- * Гейт (locked/empty state) — C6: M3 Filled Card (surfaceContainerHigh, shape large 22)
- * с кругом 120dp на secondaryContainer, заголовком titleMedium и действиями.
- * Иконка [icon] (например SpeakingIcons.Lock) ИЛИ emoji [emoji].
+ * Гейт (locked/empty state) — C6 (V2: без emoji, UX-точка 6): M3 Filled Card
+ * (surfaceContainerHigh, shape large 22) с кругом 120dp на secondaryContainer,
+ * векторной иконкой (по умолчанию Send — «отправь учителю»), заголовком titleMedium
+ * и действиями.
  */
 @Composable
 fun SpeakingGate(
     title: String?,
     text: String,
     modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
-    emoji: String? = null,
+    icon: ImageVector = com.sotospeak.designsystem.icons.SpeakingIcons.Send,
     actions: @Composable ColumnScope.() -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
@@ -146,16 +146,12 @@ fun SpeakingGate(
                     .background(speaking.secondaryContainer, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = speaking.secondary,
-                        modifier = Modifier.size(48.dp)
-                    )
-                } else if (emoji != null) {
-                    Text(text = emoji, fontSize = 56.sp)
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = speaking.onSecondaryContainer,
+                    modifier = Modifier.size(48.dp)
+                )
             }
             if (title != null) {
                 Text(

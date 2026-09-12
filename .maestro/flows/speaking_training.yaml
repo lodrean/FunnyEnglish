@@ -10,12 +10,22 @@ appId: com.sotospeak.app
       android.permission.RECORD_AUDIO: allow
 
 # Онбординг → гость
+# Онбординг после clearState: сплэш на холодном старте держится >10с —
+# when-условие успевает скипнуть подфлоу (грабля №54). Ждём слайд безусловно.
+- extendedWaitUntil:
+    visible: "Смотри видео"
+    timeout: 30000
 - runFlow:
-    when:
-      visible: "Смотри видео"
     file: ../subflows/onboarding_guest.yaml
 
 # Library — стартовый экран (E2E-библиотеки могут быть сверху — скроллим до seed)
+# Холодный старт: первый запрос Library может таймаутить — ретраим
+- runFlow:
+    when:
+      visible: "Попробовать снова"
+    commands:
+      - tapOn: "Попробовать снова"
+
 - extendedWaitUntil:
     visible: ".*Библиотека тем.*"
     timeout: 20000

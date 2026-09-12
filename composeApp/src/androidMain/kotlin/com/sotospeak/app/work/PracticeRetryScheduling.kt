@@ -7,7 +7,6 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.sotospeak.app.data.PracticeRetryService
 import java.util.concurrent.TimeUnit
 
 /**

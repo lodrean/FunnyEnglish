@@ -13,6 +13,13 @@ appId: com.sotospeak.app
     file: ../subflows/onboarding_guest.yaml
 
 # Стартовый экран после пивота — Библиотека speaking-тренажёра
+# Холодный старт: первый запрос Library может таймаутить — ретраим
+- runFlow:
+    when:
+      visible: "Попробовать снова"
+    commands:
+      - tapOn: "Попробовать снова"
+
 - extendedWaitUntil:
     visible: ".*Библиотека тем.*"
     timeout: 20000

@@ -279,7 +279,6 @@ private fun TrainingScreenForTest(state: TrainingState = mockTrainingState()) {
     FunnyTheme {
         TrainingScreen(
             state = state,
-            topicId = "topic-1",
             recorderState = VoiceRecorderState.Idle,
             micPermission = state.micPermission,
             onStartRecording = { TrainingClicks.startRecording = true },

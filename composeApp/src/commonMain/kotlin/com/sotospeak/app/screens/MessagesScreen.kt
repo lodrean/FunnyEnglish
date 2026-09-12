@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.viewmodel.MessagesState
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.shared.contracts.Message
 import com.sotospeak.shared.contracts.MessageType
 
@@ -45,7 +44,7 @@ fun MessagesScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = SpeakingIcons.ChevronLeft,
                             contentDescription = "Назад"
                         )
                     }

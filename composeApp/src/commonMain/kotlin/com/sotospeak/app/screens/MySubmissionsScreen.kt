@@ -4,10 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -198,7 +194,7 @@ private fun SubmissionsList(
                         },
                         leadingContent = {
                             Icon(
-                                Icons.Default.CloudUpload,
+                                SpeakingIcons.Upload,
                                 contentDescription = null,
                                 tint = speaking.statusNew
                             )
@@ -311,7 +307,7 @@ private fun SubmissionCard(
                         modifier = Modifier.testTag("play_submission_${submission.id}")
                     ) {
                         Icon(
-                            imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                            imageVector = if (isPlaying) SpeakingIcons.Stop else SpeakingIcons.Play,
                             contentDescription = if (isPlaying) strings.playbackStopDesc else strings.playbackListenDesc,
                             tint = speaking.waveformPlayback
                         )

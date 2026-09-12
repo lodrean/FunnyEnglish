@@ -14,6 +14,15 @@
    - **Инструмент**: изменения оформляем через **OpenSpec** (`openspec/`, инициализирован 2026-07-31): новая фича/изменение → `/skill:openspec-propose` (Kimi) или `/opsx:propose` (Claude) → proposal + delta-specs + tasks → реализация → `openspec archive`. Действующие спеки продукта пока живут в `docs/` (PRD, SPEAKING_TRAINER_SPEC_PART1–3) и версионируются вручную; канонические «текущее поведение системы» спеки накапливаются в `openspec/specs/` по мере архивации изменений.
 6. **Дисциплинарные скиллы** (`.kimi/skills/`, портированы из obra/superpowers, MIT): **`verification-before-completion`** — не заявляй об успехе/готовности без свежего вывода проверочной команды (реальный exit code, без пайпов!); **`systematic-debugging`** — любой баг/падение сначала через 4-фазный поиск root cause, ≥3 неудачных фикса → стоп и обсуждение архитектуры с пользователем; **`tdd-discipline`** — RED-GREEN для доменной/data/backend-логики (исключения: Compose-UI, прототипы, конфиги).
 
+## Дизайн-шоукейс: обязательный флоу при работе с дизайн-системой
+
+Шоукейс (bd `FunnyEnglish-0uo`, 2026-09-07, по образцу tele2-selfcare-android) — dev-only витрина дизайн-системы в `composeApp/src/commonMain/kotlin/com/sotospeak/app/screens/showcase/`. Доступен только в debug/qa-сборках: гейт `AppConfig.debugToolsEnabled`, вход — Профиль → 7 тапов по версии → Debug Menu → «Дизайн-система (шоукейс)» (маршрут `AppScreen.DesignShowcase`, в MainNavHost при выключенном флаге — заглушка).
+
+1. **Добавил/изменил токен или переиспользуемый UI-компонент приложения → синхронизируй шоукейс в той же задаче**: обнови демо соответствующей секции или заведи новую. Шоукейс — витрина дизайн-системы; расхождение с ней = баг.
+2. **Новая секция**: (а) элемент в enum `ShowcaseSection` (заголовок — RU); (б) демо-композабл `sections/XSection.kt` на базе `ShowcaseScaffold` + хелперы `ShowcaseDemoKit` (`DemoCard`/`SwatchGrid`, hex без `String.format`); (в) ветка в exhaustive `when` `ShowcaseSectionScreen` (без неё сборка не пройдёт); (г) testTag `showcase_section_<ИмяЭлемента>`.
+3. **Ограничения шоукейса**: токены ТОЛЬКО читаем (сгенерированные `SpeakingColorScheme.kt`/`SpeakingTokens.kt`/`tokens.json` руками не править — см. memory.md); без DI/ViewModel — состояние `rememberSaveable` СТРОКАМИ (enum-сейвинг на desktop/wasm ненадёжен); WASM-безопасность (грабли №38/№112); секции с бесконечными анимациями (RecordingKit/Loaders) в UI-тестах не открывать (грабля №49).
+4. **Гейты перед закрытием**: `./gradlew :composeApp:desktopTest :composeApp:detekt :composeApp:compileKotlinWasmJs --no-configuration-cache` + живая проверка на эмуляторе со скриншотами индекса/секций в обеих темах (правило владельца о живом тестировании; физ. MIUI-устройство для тапов не годится — блокирует input-инъекции, грабля №96; рецепт — memory.md «Рецепт живого Android-гейта»).
+
 This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
 
 > **Architecture in one line:** Issues live in a local Dolt database

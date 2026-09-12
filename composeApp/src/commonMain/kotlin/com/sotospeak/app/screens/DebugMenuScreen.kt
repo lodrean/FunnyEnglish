@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.app.di.API_BASE_URL_OVERRIDE_KEY
 import com.sotospeak.app.di.AppConfig
 import com.sotospeak.app.util.LogUploader
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import com.sotospeak.shared.platform.Settings
 import com.sotospeak.shared.platform.getPlatformName
@@ -63,6 +62,7 @@ import kotlinx.coroutines.launch
 fun DebugMenuScreen(
     appConfig: AppConfig,
     logUploader: LogUploader,
+    onShowcaseOpen: () -> Unit,
     onBack: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
@@ -84,7 +84,7 @@ fun DebugMenuScreen(
                 title = { Text("Debug Menu", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(SpeakingIcons.ChevronLeft, contentDescription = "Назад")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = speaking.background)
@@ -177,6 +177,13 @@ fun DebugMenuScreen(
                 border = actionBorder,
                 modifier = Modifier.testTag("debug_flush_logs_button")
             ) { Text("Отправить логи (в очереди: $pendingLogs)") }
+
+            // Шоукейс дизайн-системы (доступен только в debug/qa — этот экран сам за гейтом)
+            OutlinedButton(
+                onClick = onShowcaseOpen,
+                border = actionBorder,
+                modifier = Modifier.testTag("debug_showcase_button")
+            ) { Text("Дизайн-система (шоукейс)") }
 
             status?.let {
                 Text(

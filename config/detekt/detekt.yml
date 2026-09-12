@@ -80,6 +80,9 @@ complexity:
     active: true
     functionThreshold: 6
     constructorThreshold: 7
+    # state+callbacks сигнатуры композаблов длинные по идиоме Compose (bd 62g)
+    ignoreAnnotated:
+      - 'Composable'
   MethodOverloading:
     active: false
   NamedArguments:
@@ -245,6 +248,12 @@ naming:
     active: true
     functionPattern: '[a-z][a-zA-Z0-9]*'
     excludeClassPattern: '$^'
+    # PascalCase @Composable/@Preview-функции — идиома Compose (bd 62g);
+    # @Test backtick-имена — идиома тестов (№114: detekt матчит имя с бэктиками)
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
+      - 'Test'
   FunctionParameterNaming:
     active: true
   InvalidPackageDeclaration:
@@ -425,7 +434,9 @@ style:
       - '1'
       - '2'
     ignoreHashCodeFunction: true
-    ignorePropertyDeclaration: false
+    # true с 2026-09-11 (bd 62g): SpeakingIcons и аналогичные файлы хранят координаты
+    # SVG-путей (arcTo/lineTo) в properties — это данные, не магия (прецедент №114)
+    ignorePropertyDeclaration: true
     ignoreLocalVariableDeclaration: false
     ignoreConstantDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
@@ -527,6 +538,10 @@ style:
   UnusedPrivateMember:
     active: true
     allowedNames: "(_|ignored|expected|serialVersionUID)"
+    # приватные @Preview-композаблы не вызываются из кода — это их роль (bd 62g)
+    ignoreAnnotated:
+      - 'Preview'
+
   UseAnyOrNoneInsteadOfFind:
     active: true
   UseArrayLiteralsInAnnotations:

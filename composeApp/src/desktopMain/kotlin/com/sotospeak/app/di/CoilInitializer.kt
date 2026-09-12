@@ -1,7 +1,6 @@
 package com.sotospeak.app.di
 
 import coil3.ImageLoader
-import coil3.PlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache

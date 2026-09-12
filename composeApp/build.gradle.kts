@@ -279,10 +279,26 @@ kover {
 }
 
 // detekt подключён 2026-08-30 (bd FunnyEnglish-qbq.5, аудит AR-7, грабля №8).
-// Baseline общий с backend: config/detekt/baseline.xml (см. комментарий в backend/build.gradle.kts).
+// Baseline ОТДЕЛЬНЫЙ от backend (baseline-compose.xml): detektBaseline ПЕРЕЗАПИСЫВАЕТ
+// файл целиком — общий файл стирал бы записи другого модуля при регенерации.
+// Source-набор задан явно: дефолтный detekt-таск смотрит только src/main/kotlin,
+// для KMP он всегда NO-SOURCE (bd 62g, грабля №126) — до 2026-09-11 зонтичный
+// «:composeApp:detekt зелёный» в CI и bd-гейтах ничего не проверял.
 detekt {
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    baseline = rootProject.file("config/detekt/baseline.xml")
+    baseline = rootProject.file("config/detekt/baseline-compose.xml")
+    source.setFrom(
+        "src/commonMain/kotlin",
+        "src/androidMain/kotlin",
+        "src/desktopMain/kotlin",
+        "src/iosMain/kotlin",
+        "src/wasmJsMain/kotlin",
+        "src/commonTest/kotlin",
+        "src/androidTest/kotlin",
+        "src/androidInstrumentedTest/kotlin",
+        "src/desktopTest/kotlin",
+        "src/wasmJsTest/kotlin",
+    )
 }
 
 // Separate task for UI tests (делегирует конфигурацию desktopTest с фильтром **/tests/**)

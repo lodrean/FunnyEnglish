@@ -1,14 +1,11 @@
 package com.sotospeak.app
 
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import coil3.compose.LocalPlatformContext
 import com.sotospeak.app.di.InitializeCoil
 import com.sotospeak.app.di.provideAppConfig
 import io.github.aakira.napier.Antilog
-import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.LogLevel
 import io.github.aakira.napier.Napier
 import java.io.File

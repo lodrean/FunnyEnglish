@@ -1,0 +1,400 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CognitiveComplexMethod:App.kt$@Composable private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boolean)</ID>
+    <ID>CognitiveComplexMethod:AppScaffold.kt$@Composable fun AppScaffold( currentScreen: AppScreen, authMode: AuthMode, settingsViewModel: SettingsViewModel, submissionsBadgeCount: Int = 0, onSubmissionsOpened: () -&gt; Unit = {}, onNavigate: (AppScreen) -&gt; Unit, onBack: () -&gt; Unit, onLogout: () -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:DesignShowcaseScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DesignShowcaseScreen(onBack: () -&gt; Unit)</ID>
+    <ID>CognitiveComplexMethod:LibraryScreen.kt$@Composable internal fun TrailAxis( nodeState: TrailNodeState, isFirst: Boolean, isLast: Boolean )</ID>
+    <ID>CognitiveComplexMethod:LoginScreen.kt$@Composable fun LoginScreen( state: AuthState, onLogin: (String, String) -&gt; Unit, onNavigateToRegister: () -&gt; Unit, onClearError: () -&gt; Unit, onContinueAsGuest: (() -&gt; Unit)? = null, onResendVerification: (String) -&gt; Unit = {} )</ID>
+    <ID>CognitiveComplexMethod:MainNavHost.kt$@Composable fun MainNavHost( currentScreen: AppScreen, authMode: AuthMode, settingsViewModel: SettingsViewModel, onNavigate: (AppScreen) -&gt; Unit, onBack: () -&gt; Unit, onLogout: () -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:MessagesScreen.kt$@Composable private fun MessageCard( message: Message, onMarkAsRead: () -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:OnboardingScreen.kt$@Composable fun OnboardingScreen( onFinish: () -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:PracticeScreen.kt$@Composable fun PracticeRoute( topicId: String, libraryTitle: String, onNavigateToMySubmissions: () -&gt; Unit, onNavigateToLibrary: () -&gt; Unit, onNavigateBack: () -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:PracticeViewModel.kt$PracticeViewModel$fun onAction(action: PracticeAction)</ID>
+    <ID>CognitiveComplexMethod:RegisterScreen.kt$@Composable fun RegisterScreen( state: AuthState, onRegister: (String, String, String) -&gt; Unit, onNavigateToLogin: () -&gt; Unit, onClearError: () -&gt; Unit, onResendVerification: (String) -&gt; Unit = {} )</ID>
+    <ID>CognitiveComplexMethod:SpeakingRecording.kt$@Composable fun SpeakingRecordButton( isRecording: Boolean, enabled: Boolean, onClick: () -&gt; Unit, testTag: String, modifier: Modifier = Modifier, contentDescription: String = if (isRecording) "Остановить запись" else "Начать запись" )</ID>
+    <ID>CognitiveComplexMethod:SpeakingRecording.kt$@Composable fun SpeakingTimerRing( remainingSeconds: Int, totalSeconds: Int, arcColor: Color, timeText: String, modifier: Modifier = Modifier, size: Dp = 176.dp, timerTextStyle: TextStyle = SpeakingTextStyles.TimerDisplay, caption: String? = null, timerTestTag: String? = null )</ID>
+    <ID>CognitiveComplexMethod:TopicsScreen.kt$@Composable private fun TopicsList( topics: List&lt;TopicUiModel&gt;, onTopicClick: (String) -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:TrainingScreen.kt$@Composable private fun AttemptCard( index: Int, durationMs: Long, isPlaying: Boolean, onPlay: () -&gt; Unit )</ID>
+    <ID>CognitiveComplexMethod:TrainingScreen.kt$@Composable private fun TrainingContent( state: TrainingState, micPermission: MicPermissionState, onStartRecording: () -&gt; Unit, onStopRecording: () -&gt; Unit, onPlayRecording: (String) -&gt; Unit, onStopPlayback: () -&gt; Unit, onGoToPractice: () -&gt; Unit, onRestartAttempts: () -&gt; Unit, onBackToLibrary: () -&gt; Unit, onOpenSettings: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>CognitiveComplexMethod:TranscriptPanel.kt$internal fun buildTranscriptText( cue: SubtitleCue, positionMs: Long, spokenColor: Color, unspokenColor: Color, reduceMotion: Boolean, savedWords: Set&lt;String&gt; = emptySet() ): AnnotatedString</ID>
+    <ID>CognitiveComplexMethod:VideoScreen.kt$@Composable private fun ControlBarContent( playerState: VideoPlayerState, subtitlesOn: Boolean, onPlayPause: () -&gt; Unit, onSeek: (Float) -&gt; Unit, onToggleCc: () -&gt; Unit, isFullscreen: Boolean, onToggleFullscreen: () -&gt; Unit, contentColor: Color, modifier: Modifier = Modifier )</ID>
+    <ID>CognitiveComplexMethod:VideoScreen.kt$@Composable private fun VideoContent( state: VideoState, playerState: VideoPlayerState, controller: VideoPlayerController, isFullscreen: Boolean, onToggleFullscreen: () -&gt; Unit, onToggleSubtitles: () -&gt; Unit, onRetryVideo: () -&gt; Unit, onGoToQuestions: () -&gt; Unit, savedWords: Set&lt;String&gt;, onWordSelect: (String, String) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>CognitiveComplexMethod:VideoScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun VideoScreen( state: VideoState, controller: VideoPlayerController, onToggleSubtitles: () -&gt; Unit, onVideoStarted: () -&gt; Unit, onVideoError: () -&gt; Unit, onRetryVideo: () -&gt; Unit, onGoToQuestions: () -&gt; Unit, onBack: () -&gt; Unit, modifier: Modifier = Modifier, libraryTitle: String = "" )</ID>
+    <ID>CognitiveComplexMethod:WebVttParser.kt$WebVttParser$fun parse(vtt: String): List&lt;SubtitleCue&gt;</ID>
+    <ID>CyclomaticComplexMethod:App.kt$@Composable private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boolean)</ID>
+    <ID>CyclomaticComplexMethod:MainNavHost.kt$@Composable fun MainNavHost( currentScreen: AppScreen, authMode: AuthMode, settingsViewModel: SettingsViewModel, onNavigate: (AppScreen) -&gt; Unit, onBack: () -&gt; Unit, onLogout: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:PracticeViewModel.kt$PracticeViewModel$fun onAction(action: PracticeAction)</ID>
+    <ID>CyclomaticComplexMethod:SpeakingRecording.kt$@Composable fun SpeakingRecordButton( isRecording: Boolean, enabled: Boolean, onClick: () -&gt; Unit, testTag: String, modifier: Modifier = Modifier, contentDescription: String = if (isRecording) "Остановить запись" else "Начать запись" )</ID>
+    <ID>CyclomaticComplexMethod:TrainingViewModel.kt$TrainingViewModel$fun onAction(action: TrainingAction)</ID>
+    <ID>CyclomaticComplexMethod:VideoScreen.kt$@Composable private fun VideoContent( state: VideoState, playerState: VideoPlayerState, controller: VideoPlayerController, isFullscreen: Boolean, onToggleFullscreen: () -&gt; Unit, onToggleSubtitles: () -&gt; Unit, onRetryVideo: () -&gt; Unit, onGoToQuestions: () -&gt; Unit, savedWords: Set&lt;String&gt;, onWordSelect: (String, String) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>CyclomaticComplexMethod:VideoScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun VideoScreen( state: VideoState, controller: VideoPlayerController, onToggleSubtitles: () -&gt; Unit, onVideoStarted: () -&gt; Unit, onVideoError: () -&gt; Unit, onRetryVideo: () -&gt; Unit, onGoToQuestions: () -&gt; Unit, onBack: () -&gt; Unit, modifier: Modifier = Modifier, libraryTitle: String = "" )</ID>
+    <ID>CyclomaticComplexMethod:WebVttParser.kt$WebVttParser$fun parse(vtt: String): List&lt;SubtitleCue&gt;</ID>
+    <ID>EmptyFunctionBlock:CoilInitializer.kt$&lt;no name provided&gt;${}</ID>
+    <ID>LargeClass:SpeakingIcons.kt$SpeakingIcons</ID>
+    <ID>LongMethod:App.kt$@Composable private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boolean)</ID>
+    <ID>LongMethod:ButtonsSection.kt$@Composable fun ButtonsSection(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:ColorsSection.kt$@Composable fun ColorsSection(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:DebugMenuScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DebugMenuScreen( appConfig: AppConfig, logUploader: LogUploader, onShowcaseOpen: () -&gt; Unit, onBack: () -&gt; Unit )</ID>
+    <ID>LongMethod:DesignShowcaseScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DesignShowcaseScreen(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:IconsSection.kt$@Composable fun IconsSection(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:LibraryScreen.kt$@Composable internal fun ContinuePathCard( topic: ContinueTopic, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:LibraryScreen.kt$@Composable private fun ThemeCard( library: SpeakingLibrary, completedTopics: Int, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:LoginScreen.kt$@Composable fun LoginScreen( state: AuthState, onLogin: (String, String) -&gt; Unit, onNavigateToRegister: () -&gt; Unit, onClearError: () -&gt; Unit, onContinueAsGuest: (() -&gt; Unit)? = null, onResendVerification: (String) -&gt; Unit = {} )</ID>
+    <ID>LongMethod:MainNavHost.kt$@Composable fun MainNavHost( currentScreen: AppScreen, authMode: AuthMode, settingsViewModel: SettingsViewModel, onNavigate: (AppScreen) -&gt; Unit, onBack: () -&gt; Unit, onLogout: () -&gt; Unit )</ID>
+    <ID>LongMethod:MessagesScreen.kt$@Composable private fun MessageCard( message: Message, onMarkAsRead: () -&gt; Unit )</ID>
+    <ID>LongMethod:MySubmissionsScreen.kt$@Composable private fun SubmissionCard( submission: SpeakingSubmission, isPlaying: Boolean, onPlay: () -&gt; Unit )</ID>
+    <ID>LongMethod:MySubmissionsScreen.kt$@Composable private fun SubmissionsList( state: MySubmissionsState, onRetryPending: (String) -&gt; Unit, onPlayAudio: (String) -&gt; Unit, onStopAudio: () -&gt; Unit, onFilterChange: (SubmissionsFilter) -&gt; Unit = {}, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:NavigationSection.kt$@Composable fun NavigationSection(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:OnboardingPreviews.kt$@Composable internal fun TrainingPreview(modifier: Modifier = Modifier)</ID>
+    <ID>LongMethod:OnboardingPreviews.kt$@Composable internal fun VideoPreview(modifier: Modifier = Modifier)</ID>
+    <ID>LongMethod:OnboardingScreen.kt$@Composable fun OnboardingScreen( onFinish: () -&gt; Unit )</ID>
+    <ID>LongMethod:PracticeScreen.kt$@Composable fun PracticeRoute( topicId: String, libraryTitle: String, onNavigateToMySubmissions: () -&gt; Unit, onNavigateToLibrary: () -&gt; Unit, onNavigateBack: () -&gt; Unit )</ID>
+    <ID>LongMethod:PracticeScreen.kt$@Composable private fun PracticeContent( state: PracticeState, onStart: () -&gt; Unit, onStopEarly: () -&gt; Unit, onRetryUpload: () -&gt; Unit, onBackToLibrary: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:PracticeScreen.kt$@Composable private fun ReadyPhase( state: PracticeState, onStart: () -&gt; Unit, onRetryUpload: () -&gt; Unit )</ID>
+    <ID>LongMethod:PracticeScreen.kt$@Composable private fun SentPhase(onBackToLibrary: () -&gt; Unit)</ID>
+    <ID>LongMethod:PracticeScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun PracticeScreen( state: PracticeState, onStart: () -&gt; Unit, // экран: recorder.start(...) onStopEarly: () -&gt; Unit, // экран: recorder.stop() → автоотправка onRetryUpload: () -&gt; Unit, onBackToLibrary: () -&gt; Unit, onRetry: () -&gt; Unit, onBack: () -&gt; Unit, modifier: Modifier = Modifier, libraryTitle: String = "", /** Test hook: диалог «Прервать запись?» открыт сразу (стрелки «назад» в UI больше нет, * системный back на desktop-тестах не эмулируется) */ initialShowBackConfirm: Boolean = false )</ID>
+    <ID>LongMethod:PracticeViewModel.kt$PracticeViewModel$fun onAction(action: PracticeAction)</ID>
+    <ID>LongMethod:PracticeViewModel.kt$PracticeViewModel$private fun upload(filePath: String, durationSec: Int)</ID>
+    <ID>LongMethod:ProfileScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ProfileScreen( state: ProfileState, isGuest: Boolean = false, submissionsCount: Int = 0, topicsCompleted: Int = 0, themeMode: com.sotospeak.app.viewmodel.AppThemeMode = com.sotospeak.app.viewmodel.AppThemeMode.SYSTEM, onThemeSelected: (com.sotospeak.app.viewmodel.AppThemeMode) -&gt; Unit = {}, onLoad: () -&gt; Unit, onLogout: () -&gt; Unit, onRegisterClick: () -&gt; Unit = {}, onLoginClick: (() -&gt; Unit)? = null, onOpenSettings: () -&gt; Unit = {}, /** Версия приложения (debug/qa-сборки); 7 тапов по ней — скрытое debug-меню */ versionLabel: String? = null, onDebugMenuOpen: () -&gt; Unit = {} )</ID>
+    <ID>LongMethod:ProfileScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun GuestProfileStub( onRegisterClick: () -&gt; Unit, onLoginClick: (() -&gt; Unit)?, versionLabel: String? = null, onDebugMenuOpen: () -&gt; Unit = {} )</ID>
+    <ID>LongMethod:QuestionsScreen.kt$@Composable private fun QuestionsContent( state: QuestionsState, onStartTraining: () -&gt; Unit, onStartPractice: () -&gt; Unit, onLoginClick: () -&gt; Unit, onRegisterClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:RecordingKitSection.kt$@Composable fun RecordingKitSection(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:RegisterScreen.kt$@Composable fun RegisterScreen( state: AuthState, onRegister: (String, String, String) -&gt; Unit, onNavigateToLogin: () -&gt; Unit, onClearError: () -&gt; Unit, onResendVerification: (String) -&gt; Unit = {} )</ID>
+    <ID>LongMethod:RegisterScreen.kt$@Composable private fun CheckEmailContent( email: String, isLoading: Boolean, resent: Boolean, onResend: () -&gt; Unit, onNavigateToLogin: () -&gt; Unit )</ID>
+    <ID>LongMethod:SettingsScreen.kt$@Composable fun SettingsScreen( state: SettingsState, onBack: () -&gt; Unit, onToggleNotifications: (Boolean) -&gt; Unit, onToggleSound: (Boolean) -&gt; Unit, onToggleHaptics: (Boolean) -&gt; Unit, onToggleAutoPlay: (Boolean) -&gt; Unit, onLanguageSelected: (AppLanguage) -&gt; Unit, onThemeSelected: (AppThemeMode) -&gt; Unit, onLogout: () -&gt; Unit )</ID>
+    <ID>LongMethod:SpacingSection.kt$@Composable fun SpacingSection(onBack: () -&gt; Unit)</ID>
+    <ID>LongMethod:SpeakingRecording.kt$@Composable fun SpeakingRecordButton( isRecording: Boolean, enabled: Boolean, onClick: () -&gt; Unit, testTag: String, modifier: Modifier = Modifier, contentDescription: String = if (isRecording) "Остановить запись" else "Начать запись" )</ID>
+    <ID>LongMethod:SpeakingRecording.kt$@Composable fun SpeakingTimerRing( remainingSeconds: Int, totalSeconds: Int, arcColor: Color, timeText: String, modifier: Modifier = Modifier, size: Dp = 176.dp, timerTextStyle: TextStyle = SpeakingTextStyles.TimerDisplay, caption: String? = null, timerTestTag: String? = null )</ID>
+    <ID>LongMethod:TopicsScreen.kt$@Composable private fun TopicsList( topics: List&lt;TopicUiModel&gt;, onTopicClick: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:TopicsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun TopicsScreen( state: TopicsState, onTopicClick: (String) -&gt; Unit, onRetry: () -&gt; Unit, onBack: () -&gt; Unit, modifier: Modifier = Modifier, libraryTitle: String = "" )</ID>
+    <ID>LongMethod:TrainingScreen.kt$@Composable fun TrainingRoute( topicId: String, libraryTitle: String, onNavigateToPractice: () -&gt; Unit, onNavigateToLibrary: () -&gt; Unit, onNavigateBack: () -&gt; Unit )</ID>
+    <ID>LongMethod:TrainingScreen.kt$@Composable private fun AttemptCard( index: Int, durationMs: Long, isPlaying: Boolean, onPlay: () -&gt; Unit )</ID>
+    <ID>LongMethod:TrainingScreen.kt$@Composable private fun TrainingContent( state: TrainingState, micPermission: MicPermissionState, onStartRecording: () -&gt; Unit, onStopRecording: () -&gt; Unit, onPlayRecording: (String) -&gt; Unit, onStopPlayback: () -&gt; Unit, onGoToPractice: () -&gt; Unit, onRestartAttempts: () -&gt; Unit, onBackToLibrary: () -&gt; Unit, onOpenSettings: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:TrainingViewModel.kt$TrainingViewModel$fun onAction(action: TrainingAction)</ID>
+    <ID>LongMethod:VideoScreen.kt$@Composable private fun ControlBarContent( playerState: VideoPlayerState, subtitlesOn: Boolean, onPlayPause: () -&gt; Unit, onSeek: (Float) -&gt; Unit, onToggleCc: () -&gt; Unit, isFullscreen: Boolean, onToggleFullscreen: () -&gt; Unit, contentColor: Color, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:VideoScreen.kt$@Composable private fun VideoContent( state: VideoState, playerState: VideoPlayerState, controller: VideoPlayerController, isFullscreen: Boolean, onToggleFullscreen: () -&gt; Unit, onToggleSubtitles: () -&gt; Unit, onRetryVideo: () -&gt; Unit, onGoToQuestions: () -&gt; Unit, savedWords: Set&lt;String&gt;, onWordSelect: (String, String) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:VideoScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun VideoScreen( state: VideoState, controller: VideoPlayerController, onToggleSubtitles: () -&gt; Unit, onVideoStarted: () -&gt; Unit, onVideoError: () -&gt; Unit, onRetryVideo: () -&gt; Unit, onGoToQuestions: () -&gt; Unit, onBack: () -&gt; Unit, modifier: Modifier = Modifier, libraryTitle: String = "" )</ID>
+    <ID>LongParameterList:TrainingScreenTest.kt$( recorder: RecorderUiState = RecorderUiState.Idle, remainingSeconds: Int = 0, attempts: List&lt;com.sotospeak.app.storage.RecordingMeta&gt; = emptyList(), attemptNumber: Int = 1, isFinished: Boolean = false, micPermission: MicPermissionState = MicPermissionState.Granted )</ID>
+    <ID>LongParameterList:TranscriptPanel.kt$( cue: SubtitleCue, positionMs: Long, spokenColor: Color, unspokenColor: Color, reduceMotion: Boolean, savedWords: Set&lt;String&gt; = emptySet() )</ID>
+    <ID>LoopWithTooManyJumpStatements:WebVttParser.kt$WebVttParser$while</ID>
+    <ID>MagicNumber:App.kt$1200</ID>
+    <ID>MagicNumber:AppBarSection.kt$11</ID>
+    <ID>MagicNumber:AppBarSection.kt$21</ID>
+    <ID>MagicNumber:AppBarSection.kt$3</ID>
+    <ID>MagicNumber:AppBarSection.kt$5</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$11</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$12</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$16</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$3</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$36</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$8</ID>
+    <ID>MagicNumber:ClientLoggingTest.kt$ClientLoggingTest$10</ID>
+    <ID>MagicNumber:ClientLoggingTest.kt$ClientLoggingTest$3</ID>
+    <ID>MagicNumber:ClientLoggingTest.kt$ClientLoggingTest$5</ID>
+    <ID>MagicNumber:ClientLoggingTest.kt$ClientLoggingTest$50</ID>
+    <ID>MagicNumber:ClientLoggingTest.kt$ClientLoggingTest$60</ID>
+    <ID>MagicNumber:CoilInitializer.kt$0.25</ID>
+    <ID>MagicNumber:CoilInitializer.kt$1024</ID>
+    <ID>MagicNumber:CoilInitializer.kt$256L</ID>
+    <ID>MagicNumber:DebugMenuScreen.kt$3_000</ID>
+    <ID>MagicNumber:DebugMenuScreen.kt$5_000</ID>
+    <ID>MagicNumber:ErrorMappingTest.kt$ErrorMappingTest$400</ID>
+    <ID>MagicNumber:ErrorMappingTest.kt$ErrorMappingTest$401</ID>
+    <ID>MagicNumber:ErrorMappingTest.kt$ErrorMappingTest$403</ID>
+    <ID>MagicNumber:ErrorMappingTest.kt$ErrorMappingTest$404</ID>
+    <ID>MagicNumber:ErrorMappingTest.kt$ErrorMappingTest$502</ID>
+    <ID>MagicNumber:ErrorMappingTest.kt$ErrorMappingTest$503</ID>
+    <ID>MagicNumber:FadingEdgeText.kt$1.2f</ID>
+    <ID>MagicNumber:GroupsViewModel.kt$GroupsViewModel$4</ID>
+    <ID>MagicNumber:IconsSection.kt$4</ID>
+    <ID>MagicNumber:LibraryScreen.kt$3f</ID>
+    <ID>MagicNumber:LibraryScreenTest.kt$LibraryScreenTest$11</ID>
+    <ID>MagicNumber:LibraryScreenTest.kt$LibraryScreenTest$21</ID>
+    <ID>MagicNumber:LibraryScreenTest.kt$LibraryScreenTest$3</ID>
+    <ID>MagicNumber:LibraryScreenTest.kt$LibraryScreenTest$6</ID>
+    <ID>MagicNumber:LoadingSkeleton.kt$1500</ID>
+    <ID>MagicNumber:LoadingSkeleton.kt$200</ID>
+    <ID>MagicNumber:LoadingSkeleton.kt$3</ID>
+    <ID>MagicNumber:LoadingSkeleton.kt$3000</ID>
+    <ID>MagicNumber:Main.kt$500</ID>
+    <ID>MagicNumber:MessagesScreen.kt$5</ID>
+    <ID>MagicNumber:MySubmissionsScreen.kt$10</ID>
+    <ID>MagicNumber:MySubmissionsScreen.kt$11</ID>
+    <ID>MagicNumber:MySubmissionsScreen.kt$16</ID>
+    <ID>MagicNumber:MySubmissionsScreen.kt$3</ID>
+    <ID>MagicNumber:NavigationSection.kt$0.4f</ID>
+    <ID>MagicNumber:OnboardingPreviews.kt$8</ID>
+    <ID>MagicNumber:OnboardingPreviews.kt$9</ID>
+    <ID>MagicNumber:OnboardingUserFlowTest.kt$OnboardingUserFlowTest$3</ID>
+    <ID>MagicNumber:PracticeRetryScheduling.kt$PracticeRetryScheduling$24</ID>
+    <ID>MagicNumber:PracticeRetryScheduling.kt$PracticeRetryScheduling$30</ID>
+    <ID>MagicNumber:PracticeViewModel.kt$PracticeViewModel$1000</ID>
+    <ID>MagicNumber:ProfileScreen.kt$2_000</ID>
+    <ID>MagicNumber:RecordingSessionController.kt$RecordingSessionController$1000</ID>
+    <ID>MagicNumber:RecordingStore.kt$RecordingStore$6</ID>
+    <ID>MagicNumber:RecordingStorePruneFileTest.kt$RecordingStorePruneFileTest$16</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$10</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$2026</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$3</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$4</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$5</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$6</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$7</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$8</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreStreakTest$9</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreTest$123</ID>
+    <ID>MagicNumber:RecordingStoreTest.kt$RecordingStoreTest$3</ID>
+    <ID>MagicNumber:ScreenTransition.kt$200</ID>
+    <ID>MagicNumber:ScreenTransition.kt$300</ID>
+    <ID>MagicNumber:ShowcaseDemoKit.kt$0xFF</ID>
+    <ID>MagicNumber:ShowcaseDemoKit.kt$16</ID>
+    <ID>MagicNumber:ShowcaseDemoKit.kt$4</ID>
+    <ID>MagicNumber:ShowcaseDemoKit.kt$8</ID>
+    <ID>MagicNumber:SoToSpeakApiTokenRefreshTest.kt$SoToSpeakApiTokenRefreshTest$401</ID>
+    <ID>MagicNumber:SpacingSection.kt$0.4f</ID>
+    <ID>MagicNumber:SpeakingAppBar.kt$10</ID>
+    <ID>MagicNumber:SpeakingAppBar.kt$100</ID>
+    <ID>MagicNumber:SpeakingAppBar.kt$11</ID>
+    <ID>MagicNumber:SpeakingAppBar.kt$14</ID>
+    <ID>MagicNumber:SpeakingAppBar.kt$4</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0x80000000</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF006C4C</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF101424</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF161A2E</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF181D36</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF1A2F5E</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF1F2440</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF262B49</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF2B3152</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF2D3561</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF2E3556</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF2E3E6E</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF3B6FD4</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF3D4568</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF46366F</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF58609A</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF5B3FA8</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF5B8DEF</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF8FB3F5</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF9AA0C4</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFF9B7EDE</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFB79EED</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFB9C7EE</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFD4DDF5</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFD8E2FA</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFDDE8FD</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFE2E9FB</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFE53935</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFE5DCFF</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFE8EAF6</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFE9EFFE</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFEEF3FF</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFF6F8FF</ID>
+    <ID>MagicNumber:SpeakingColorScheme.kt$0xFFFFFFFF</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.08f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.12f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.25f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.35f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.5f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.6f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.7f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$0.9f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$1.618f</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$10</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$100</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$11</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$14</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$4</ID>
+    <ID>MagicNumber:SpeakingRecording.kt$45</ID>
+    <ID>MagicNumber:SplashScreen.kt$0.75f</ID>
+    <ID>MagicNumber:Strings.kt$RussianStrings$10</ID>
+    <ID>MagicNumber:Strings.kt$RussianStrings$100</ID>
+    <ID>MagicNumber:Strings.kt$RussianStrings$11</ID>
+    <ID>MagicNumber:Strings.kt$RussianStrings$14</ID>
+    <ID>MagicNumber:Strings.kt$RussianStrings$4</ID>
+    <ID>MagicNumber:TimerAlert.android.kt$120</ID>
+    <ID>MagicNumber:TimerAlert.android.kt$70</ID>
+    <ID>MagicNumber:TopicsScreen.kt$60</ID>
+    <ID>MagicNumber:TopicsViewModel.kt$TopicsViewModel$18</ID>
+    <ID>MagicNumber:TrainingScreen.kt$1000</ID>
+    <ID>MagicNumber:TrainingScreen.kt$60</ID>
+    <ID>MagicNumber:TrainingTimerTest.kt$TrainingTimerTest$3</ID>
+    <ID>MagicNumber:TrainingTimerTest.kt$TrainingTimerTest$30</ID>
+    <ID>MagicNumber:TrainingTimerTest.kt$TrainingTimerTest$4</ID>
+    <ID>MagicNumber:TrainingTimerTest.kt$TrainingTimerTest$50</ID>
+    <ID>MagicNumber:TrainingTimerTest.kt$TrainingTimerTest$80</ID>
+    <ID>MagicNumber:TrainingViewModel.kt$TrainingViewModel.Companion$30</ID>
+    <ID>MagicNumber:TrainingViewModel.kt$TrainingViewModel.Companion$50</ID>
+    <ID>MagicNumber:TrainingViewModel.kt$TrainingViewModel.Companion$80</ID>
+    <ID>MagicNumber:TranscriptHighlightTest.kt$TranscriptHighlightTest$0.01f</ID>
+    <ID>MagicNumber:TranscriptHighlightTest.kt$TranscriptHighlightTest$1000</ID>
+    <ID>MagicNumber:TranscriptHighlightTest.kt$TranscriptHighlightTest$1500</ID>
+    <ID>MagicNumber:TranscriptHighlightTest.kt$TranscriptHighlightTest$2000</ID>
+    <ID>MagicNumber:TranscriptHighlightTest.kt$TranscriptHighlightTest$5000</ID>
+    <ID>MagicNumber:TranscriptHighlightTest.kt$TranscriptHighlightTest$999</ID>
+    <ID>MagicNumber:UiText.kt$401</ID>
+    <ID>MagicNumber:UiText.kt$403</ID>
+    <ID>MagicNumber:UiText.kt$404</ID>
+    <ID>MagicNumber:UiText.kt$500</ID>
+    <ID>MagicNumber:UiText.kt$599</ID>
+    <ID>MagicNumber:VideoPlayerController.wasmJs.kt$VideoPlayerController$1000.0</ID>
+    <ID>MagicNumber:VideoPlayerController.wasmJs.kt$VideoPlayerController$3</ID>
+    <ID>MagicNumber:VideoScreen.kt$0.45f</ID>
+    <ID>MagicNumber:VideoScreen.kt$0xFF1A2E42</ID>
+    <ID>MagicNumber:VideoScreen.kt$0xFFFFD666</ID>
+    <ID>MagicNumber:VideoScreen.kt$1000</ID>
+    <ID>MagicNumber:VideoScreen.kt$16f</ID>
+    <ID>MagicNumber:VideoScreen.kt$9f</ID>
+    <ID>MagicNumber:VideoScreenTest.kt$1000</ID>
+    <ID>MagicNumber:VideoScreenTest.kt$2000</ID>
+    <ID>MagicNumber:VideoScreenTest.kt$3000</ID>
+    <ID>MagicNumber:VideoScreenTest.kt$4000</ID>
+    <ID>MagicNumber:VideoScreenTest.kt$5000</ID>
+    <ID>MagicNumber:VideoScreenTest.kt$6000</ID>
+    <ID>MagicNumber:VoiceRecorder.android.kt$VoiceRecorder$44_100</ID>
+    <ID>MagicNumber:VoiceRecorder.android.kt$VoiceRecorder$96_000</ID>
+    <ID>MagicNumber:WebVttParser.kt$WebVttParser$1_000</ID>
+    <ID>MagicNumber:WebVttParser.kt$WebVttParser$3</ID>
+    <ID>MagicNumber:WebVttParser.kt$WebVttParser$3_600_000</ID>
+    <ID>MagicNumber:WebVttParser.kt$WebVttParser$60_000</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$1000L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$10_000L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$1200L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$2000L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$2500L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$2800L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$3</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$3000L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$4000L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$400L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$500L</ID>
+    <ID>MagicNumber:WebVttParserTest.kt$WebVttParserTest$63_250L</ID>
+    <ID>MagicNumber:WordBookTest.kt$WordBookTest$42</ID>
+    <ID>MatchingDeclarationName:DesignShowcaseScreen.kt$ShowcaseThemeMode</ID>
+    <ID>MatchingDeclarationName:Main.kt$FileAndConsoleLogger : Antilog</ID>
+    <ID>MatchingDeclarationName:MicPermission.kt$MicPermissionState</ID>
+    <ID>MatchingDeclarationName:RecordingFileStorage.android.kt$RecordingFileStorage</ID>
+    <ID>MatchingDeclarationName:RecordingFileStorage.desktop.kt$RecordingFileStorage</ID>
+    <ID>MatchingDeclarationName:RecordingFileStorage.ios.kt$RecordingFileStorage</ID>
+    <ID>MatchingDeclarationName:RecordingFileStorage.wasmJs.kt$RecordingFileStorage</ID>
+    <ID>MatchingDeclarationName:VideoPlayerController.android.kt$VideoPlayerController</ID>
+    <ID>MatchingDeclarationName:VideoPlayerController.desktop.kt$VideoPlayerController</ID>
+    <ID>MatchingDeclarationName:VideoPlayerController.ios.kt$VideoPlayerController</ID>
+    <ID>MatchingDeclarationName:VideoPlayerController.wasmJs.kt$VideoPlayerController</ID>
+    <ID>MatchingDeclarationName:VoiceRecorder.desktop.kt$VoiceRecorder</ID>
+    <ID>MatchingDeclarationName:VoiceRecorder.ios.kt$VoiceRecorder</ID>
+    <ID>MatchingDeclarationName:VoiceRecorder.wasmJs.kt$VoiceRecorder</ID>
+    <ID>MaxLineLength:CoreModule.kt$// Событие «сессия истекла» (refresh не удался): API (single) → AuthViewModel (viewModel), без циклической зависимости</ID>
+    <ID>MaxLineLength:LibraryScreen.kt$val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }</ID>
+    <ID>MaxLineLength:LoginScreen.kt$val loginIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }</ID>
+    <ID>MaxLineLength:Main.kt$private</ID>
+    <ID>MaxLineLength:MediaHttpClientTest.kt$MediaHttpClientTest$assertEquals(HttpStatusCode.NotFound, response.status, "expectSuccess=false: статус отдаётся, а не бросается")</ID>
+    <ID>MaxLineLength:MySubmissionsScreen.kt$SubmissionsFilterChip</ID>
+    <ID>MaxLineLength:MySubmissionsScreen.kt$contentDescription = if (isPlaying) strings.playbackStopDesc else strings.playbackListenDesc</ID>
+    <ID>MaxLineLength:MySubmissionsScreen.kt$text = "${progress.topicTitle}: ${formatTotal(progress.firstTotal)} → ${formatTotal(progress.lastTotal)}"</ID>
+    <ID>MaxLineLength:MySubmissionsViewModel.kt$MySubmissionsViewModel$val chronological = sameTopic.sortedWith { a, b -&gt; a.createdAt.orEmpty().compareTo(b.createdAt.orEmpty()) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$val nextIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }</ID>
+    <ID>MaxLineLength:PracticeScreenTest.kt$PracticeScreenTest$"В отличие от Training, эта запись уйдёт учителю автоматически сразу после остановки таймера — изменить её нельзя"</ID>
+    <ID>MaxLineLength:QuestionsScreen.kt$val practiceIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }</ID>
+    <ID>MaxLineLength:QuestionsScreen.kt$val trainingIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }</ID>
+    <ID>MaxLineLength:QuestionsViewModel.kt$QuestionsState$val hasSubmitted: Boolean = false</ID>
+    <ID>MaxLineLength:RegisterScreen.kt$val registerIsrc = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }</ID>
+    <ID>MaxLineLength:SoToSpeakApiTokenRefreshTest.kt$SoToSpeakApiTokenRefreshTest$assertTrue(refreshBody.contains("stale-refresh"), "в /auth/refresh должен уходить refresh-токен, было: $refreshBody")</ID>
+    <ID>MaxLineLength:SpeakingColorScheme.kt$/** M3 shapes-шкала Playful Coach — DSM-5 §2: small=12(chip), medium=16(button), large=22(card), extraLarge=28(sheet/dialog) */</ID>
+    <ID>MaxLineLength:SpeakingModule.kt$viewModel { SubmissionsBadgeViewModel(get(), get(), get()) }</ID>
+    <ID>MaxLineLength:SpeakingRecording.kt$animationSpec = if (reduceMotion) snap() else tween(SpeakingMotion.DurationMedium, easing = SpeakingMotion.EasingM3Standard)</ID>
+    <ID>MaxLineLength:Strings.kt$EnglishStrings$override val practiceAutoSendNote = "Unlike Training, this recording will be sent to the teacher automatically as soon as the timer stops — it can't be changed"</ID>
+    <ID>MaxLineLength:Strings.kt$EnglishStrings$override val submissionsExplainer = "Re-submitting for a topic is not allowed — after REVIEWED the topic can only be replayed in Training"</ID>
+    <ID>MaxLineLength:Strings.kt$RussianStrings$override val practiceAutoSendNote = "В отличие от Training, эта запись уйдёт учителю автоматически сразу после остановки таймера — изменить её нельзя"</ID>
+    <ID>MaxLineLength:Strings.kt$RussianStrings$override val submissionsExplainer = "Повторная отправка по топику запрещена — после REVIEWED топик можно только переиграть в Training"</ID>
+    <ID>MaxLineLength:TopicsScreen.kt$text = "${strings.questionsCount(topic.questionCount)} · ${strings.videoLabel} ${formatDuration(topic.durationSeconds)}"</ID>
+    <ID>MaxLineLength:TrainingScreen.kt$animationSpec = tween(durationMillis = durationMs.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), easing = LinearEasing)</ID>
+    <ID>MaxLineLength:TrainingViewModel.kt$TrainingAction$OnInterruption : TrainingAction</ID>
+    <ID>MaxLineLength:VideoScreen.kt$"${formatTimer((playerState.positionMs / 1000).toInt())} / ${formatTimer((playerState.durationMs / 1000).toInt())}"</ID>
+    <ID>MaxLineLength:VideoScreen.kt$if (isSaved) wordBook.remove(word) else wordBook.add(word, context, kotlinx.datetime.Clock.System.now().toEpochMilliseconds())</ID>
+    <ID>ReturnCount:LibraryViewModel.kt$LibraryViewModel$private suspend fun findContinueTopic(libraries: List&lt;SpeakingLibrary&gt;): ContinueTopic?</ID>
+    <ID>ReturnCount:MySubmissionsScreen.kt$private fun formatSubmissionDate(iso: String?): String</ID>
+    <ID>ReturnCount:PracticeRetryService.kt$PracticeRetryService$suspend fun retryOne(filePath: String): Boolean</ID>
+    <ID>ReturnCount:PracticeRetryWorker.kt$PracticeRetryWorker$override suspend fun doWork(): Result</ID>
+    <ID>ReturnCount:PracticeViewModel.kt$PracticeViewModel$fun onAction(action: PracticeAction)</ID>
+    <ID>ReturnCount:ProfileScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ProfileScreen( state: ProfileState, isGuest: Boolean = false, submissionsCount: Int = 0, topicsCompleted: Int = 0, themeMode: com.sotospeak.app.viewmodel.AppThemeMode = com.sotospeak.app.viewmodel.AppThemeMode.SYSTEM, onThemeSelected: (com.sotospeak.app.viewmodel.AppThemeMode) -&gt; Unit = {}, onLoad: () -&gt; Unit, onLogout: () -&gt; Unit, onRegisterClick: () -&gt; Unit = {}, onLoginClick: (() -&gt; Unit)? = null, onOpenSettings: () -&gt; Unit = {}, /** Версия приложения (debug/qa-сборки); 7 тапов по ней — скрытое debug-меню */ versionLabel: String? = null, onDebugMenuOpen: () -&gt; Unit = {} )</ID>
+    <ID>ReturnCount:RecordingStore.kt$RecordingStore$fun streakDays( todayEpochMs: Long = Clock.System.now().toEpochMilliseconds(), timeZone: TimeZone = TimeZone.currentSystemDefault() ): Int</ID>
+    <ID>ReturnCount:VoiceRecorder.android.kt$VoiceRecorder$actual fun start(outputFileName: String)</ID>
+    <ID>SwallowedException:MySubmissionsScreenTest.kt$MySubmissionsScreenTest$e: Throwable</ID>
+    <ID>SwallowedException:OfflineCache.kt$OfflineCache$e: Exception</ID>
+    <ID>SwallowedException:PracticeRetryService.kt$PracticeRetryService$e: Exception</ID>
+    <ID>SwallowedException:PracticeRetryWorker.kt$PracticeRetryWorker$e: Exception</ID>
+    <ID>SwallowedException:PracticeRetryWorker.kt$PracticeRetryWorker$e: IOException</ID>
+    <ID>SwallowedException:PracticeScreenTest.kt$PracticeScreenTest$e: Throwable</ID>
+    <ID>SwallowedException:PracticeViewModel.kt$PracticeViewModel$e: Exception</ID>
+    <ID>SwallowedException:QuestionsScreenTest.kt$QuestionsScreenTest$e: Throwable</ID>
+    <ID>SwallowedException:TrainingScreenTest.kt$TrainingScreenTest$e: Throwable</ID>
+    <ID>SwallowedException:VoiceRecorder.android.kt$VoiceRecorder$e: IOException</ID>
+    <ID>SwallowedException:VoiceRecorder.android.kt$VoiceRecorder$e: IllegalStateException</ID>
+    <ID>SwallowedException:VoiceRecorder.android.kt$VoiceRecorder$e: RuntimeException</ID>
+    <ID>SwallowedException:WordBook.kt$WordBook$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DebugMenuScreen.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Main.kt$FileAndConsoleLogger$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MySubmissionsScreenTest.kt$MySubmissionsScreenTest$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:OfflineCache.kt$OfflineCache$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PracticeRetryService.kt$PracticeRetryService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PracticeRetryWorker.kt$PracticeRetryWorker$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PracticeScreenTest.kt$PracticeScreenTest$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:PracticeViewModel.kt$PracticeViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:QuestionsScreenTest.kt$QuestionsScreenTest$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:TrainingScreenTest.kt$TrainingScreenTest$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:VoiceRecorder.android.kt$VoiceRecorder$e: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:WordBook.kt$WordBook$e: Exception</ID>
+    <ID>TooManyFunctions:AccessibilityUtils.kt$AccessibilityUtils</ID>
+    <ID>TooManyFunctions:AppPreviews.kt$com.sotospeak.app.preview.AppPreviews.kt</ID>
+    <ID>TooManyFunctions:AuthViewModel.kt$AuthViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:BasePage.kt$BasePage</ID>
+    <ID>TooManyFunctions:ClientLoggingTest.kt$ClientLoggingTest</ID>
+    <ID>TooManyFunctions:LibraryScreen.kt$com.sotospeak.app.screens.LibraryScreen.kt</ID>
+    <ID>TooManyFunctions:LoadingSkeleton.kt$com.sotospeak.designsystem.animations.LoadingSkeleton.kt</ID>
+    <ID>TooManyFunctions:LoginPage.kt$LoginPage : BasePage</ID>
+    <ID>TooManyFunctions:MySubmissionsScreen.kt$com.sotospeak.app.screens.MySubmissionsScreen.kt</ID>
+    <ID>TooManyFunctions:PracticeScreenTest.kt$PracticeScreenTest : BaseUiTest</ID>
+    <ID>TooManyFunctions:RecordingStore.kt$RecordingStore</ID>
+    <ID>TooManyFunctions:RecordingStoreTest.kt$RecordingStoreTest</ID>
+    <ID>TooManyFunctions:ScreenshotTest.kt$ScreenshotTest</ID>
+    <ID>TooManyFunctions:SpeakingRepository.kt$SpeakingRepository</ID>
+    <ID>TooManyFunctions:Strings.kt$AppStrings</ID>
+    <ID>TooManyFunctions:TrainingScreenTest.kt$TrainingScreenTest : BaseUiTest</ID>
+    <ID>TooManyFunctions:WebVttParserTest.kt$WebVttParserTest</ID>
+    <ID>UnusedImports:OnboardingScreen.kt$import androidx.compose.material3.Icon</ID>
+    <ID>UnusedImports:OnboardingScreen.kt$import androidx.compose.ui.graphics.vector.ImageVector</ID>
+    <ID>UnusedImports:OnboardingScreen.kt$import com.sotospeak.designsystem.icons.SpeakingIcons</ID>
+    <ID>UnusedImports:OnboardingScreen.kt$import com.sotospeak.designsystem.theme.SpeakingShapes</ID>
+    <ID>UnusedParameter:TrainingScreen.kt$recorderState: com.sotospeak.app.recorder.VoiceRecorderState</ID>
+    <ID>WildcardImport:AccessibilityUtils.kt$import androidx.compose.ui.semantics.*</ID>
+    <ID>WildcardImport:App.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:AuthViewModel.kt$import com.sotospeak.shared.contracts.*</ID>
+    <ID>WildcardImport:BasePage.kt$import androidx.compose.ui.test.*</ID>
+    <ID>WildcardImport:Common.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:Common.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:Common.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:LibraryScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:LibraryScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:MessagesScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:MessagesScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:MySubmissionsScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:MySubmissionsScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:PracticeScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:PracticeScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:PracticeScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:QuestionsScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:QuestionsScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:TestMocks.kt$import com.sotospeak.shared.contracts.*</ID>
+    <ID>WildcardImport:TopicsScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:TopicsScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:TrainingScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:TrainingScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:TrainingScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:VideoScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:VideoScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:VideoScreen.kt$import androidx.compose.runtime.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

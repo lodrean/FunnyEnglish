@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -49,6 +51,7 @@ import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.components.LoadingIndicator
 import com.sotospeak.app.components.SpeakingGate
 import com.sotospeak.app.viewmodel.ProfileState
+import com.sotospeak.designsystem.icons.SpeakingIcons
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
 import kotlinx.coroutines.delay
 
@@ -70,6 +73,7 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     onRegisterClick: () -> Unit = {},
     onLoginClick: (() -> Unit)? = null,
+    onOpenSettings: () -> Unit = {},
     /** Версия приложения (debug/qa-сборки); 7 тапов по ней — скрытое debug-меню */
     versionLabel: String? = null,
     onDebugMenuOpen: () -> Unit = {}
@@ -116,6 +120,9 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .consumeWindowInsets(padding)
+                // act-row + строка настроек (редизайн V1) делают контент выше вьюпорта —
+                // скролл обязателен (в Column с verticalScroll weight() запрещён, грабля №56)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -182,14 +189,26 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Локальный streak «дней с записью» (bd h3l.6) — считается из RecordingStore, без backend
-            StatCard(
-                number = state.recordingStreak,
-                label = "дней с записью",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("profile_stat_streak")
-            )
+            // Кольцо активности + стрик (редизайн V1 «Путь спикера», act-card row)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ActivityRingCard(
+                    activeDays = state.weeklyActiveDays,
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("profile_activity_ring")
+                )
+                StreakCard(
+                    streak = state.recordingStreak,
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("profile_stat_streak")
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Цель на сегодня (bd h3l.14): 1 запись в день, без backend
             OutlinedCard(
@@ -221,7 +240,17 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Вход в настройки (редизайн V1: раньше экран не имел пути в UI)
+            SettingsEntryRow(
+                onClick = onOpenSettings,
+                modifier = Modifier.fillMaxWidth().testTag("profile_settings_entry")
+            )
+
+            // weight(1f)-спейсер убран: контент скроллится (act-row + настройки
+            // не влезают в вьюпорт — «Выйти» уезжала за границу, ловил desktopTest)
+            Spacer(modifier = Modifier.height(16.dp))
 
             // M3 OutlinedButton с error-цветами (бывш. SpeakingDangerGhostButton, C3)
             OutlinedButton(
@@ -286,7 +315,161 @@ private fun StatCard(
     }
 }
 
-/** Гостевой профиль по frame-profile-guest: 📬 + CTA регистрации/входа. */
+/** act-card «Активность» (редизайн V1): кольцо активных дней за неделю, «N из 7». */
+@Composable
+private fun ActivityRingCard(
+    activeDays: Int,
+    modifier: Modifier = Modifier
+) {
+    val speaking = LocalSpeakingColors.current
+    OutlinedCard(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = speaking.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                ProgressRing(
+                    progress = if (activeDays in 0..7) activeDays / 7f else 0f,
+                    size = 54.dp,
+                    strokeWidth = 6.dp,
+                    color = speaking.success,
+                    track = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+                Text(
+                    text = "$activeDays",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = speaking.text
+                )
+            }
+            Text(
+                text = "активность",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = speaking.text
+            )
+            Text(
+                text = "дней с записью за неделю",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = speaking.textMuted,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/** act-card «Стрик» (редизайн V1): дни подряд с записью (bd h3l.6). */
+@Composable
+private fun StreakCard(
+    streak: Int,
+    modifier: Modifier = Modifier
+) {
+    val speaking = LocalSpeakingColors.current
+    OutlinedCard(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = speaking.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(
+                modifier = Modifier.size(54.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = streak.toString(),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = speaking.statusNew
+                )
+            }
+            Text(
+                text = "стрик",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = speaking.text
+            )
+            Text(
+                text = "дней подряд",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = speaking.textMuted,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * Строка-вход в настройки (DS v3.2.0 B13 setrow): иконка в квадратике
+ * primaryContainer r11, заголовок + подзаголовок, chevron вправо.
+ */
+@Composable
+internal fun SettingsEntryRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val speaking = LocalSpeakingColors.current
+    Row(
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .background(speaking.primaryContainer, MaterialTheme.shapes.small),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = SpeakingIcons.Gear,
+                contentDescription = null,
+                tint = speaking.onPrimaryContainer,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Настройки",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = speaking.text
+            )
+            Text(
+                text = "Уведомления, звук, вибрация",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = speaking.textMuted
+            )
+        }
+        Icon(
+            imageVector = SpeakingIcons.ChevronRight,
+            contentDescription = null,
+            tint = speaking.textMuted,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+/** Гостевой профиль по frame-profile-guest (V2: Send-иконка, без emoji) + CTA регистрации/входа. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GuestProfileStub(
@@ -313,7 +496,6 @@ private fun GuestProfileStub(
             contentAlignment = Alignment.Center
         ) {
             SpeakingGate(
-                emoji = "📬",
                 title = null,
                 text = "Зарегистрируйся, чтобы отправлять записи учителю и видеть оценки",
                 modifier = Modifier.fillMaxWidth()

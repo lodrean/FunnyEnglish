@@ -233,7 +233,6 @@ class ScreenshotTest {
                 remainingSeconds = 80,
                 micPermission = MicPermissionState.Granted
             ),
-            topicId = "topic-1",
             recorderState = VoiceRecorderState.Idle,
             micPermission = MicPermissionState.Granted,
             onStartRecording = {},

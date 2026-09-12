@@ -48,4 +48,7 @@ sealed class AppScreen {
 
     /** Скрытое debug-меню (QA/debug-сборки): вход — 7 тапов по версии в профиле */
     @Serializable data object DebugMenu : AppScreen()
+
+    /** Шоукейс дизайн-системы (QA/debug-сборки): вход — из Debug-меню */
+    @Serializable data object DesignShowcase : AppScreen()
 }

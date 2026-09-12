@@ -1,10 +1,12 @@
 # So to Speak Design System Specification
 
-## Version 3.1.1 — Playful Coach × Material 3
-**Date:** 2026-08-10
-**Причина patch-версии:** errata DSM-5 §1.1 (утверждена владельцем 2026-08-08, M3_PIXEL_REPORT): dark `onPrimary`/`onSecondary` `#FFFFFF` → `#1A2F5E` (WCAG FAIL на `#8FB3F5`/`#B79EED`); ссылки на токены v1.3.0 → v1.3.1.
+## Version 3.3.0 — Playful Coach × Material 3
+**Date:** 2026-09-11
+**Причина minor-версии:** редизайн «Путь спикера» V2 (bd `FunnyEnglish-txx`, OpenSpec `add-speaker-path-redesign-v2`): новый brand-компонент B15 — живые превью онбординга (мини-плеер / мини-Training / мини-оценка из настоящих компонентов DS на токенах v1.3.1); правило «no emoji as UI» распространено на `SpeakingGate` (📬 → SpeakingIcons.Send в цветном круге). Дифф утверждён владельцем 2026-09-11 (постановка V2 дословно из передаточного документа V1 §4.4/§6).
 **Target:** Android (Compose Multiplatform) + Admin-web (React/MUI)
-**Причина minor-версии:** новые компоненты `SpeakingAppBar` и `FadingEdgeText`, правило токенов статус-чипов (dark theme), список топиков по frame-topics. Дифф утверждён владельцем 2026-08-08 (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v3.0 — M3-редизайн (`docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md`).
+**Minor v3.2.0:** редизайн «Путь спикера» V1 (деливераблы auto-designer, копия — `docs/design/redesign-speaker-path-v1/`): авторитет V1-пакета для 9 экранов (library/topics/video/questions/training/practice/submissions/profile/settings); `SpeakingAppBar` получает опциональную back-кнопку (отмена «БЕЗ navigationIcon» из мокапов v2.0); новые brand-компоненты B10–B14 (нав-бейдж, continue/trail-библиотека, hero-вопрос, setrow, путь уровней). Токены НЕ меняются (v1.3.1): значения прототипа маппятся на существующие токены (правило §1.1). Дифф утверждён владельцем 2026-09-08 (план внедрения, ADR-007); OpenSpec: `openspec/changes/add-speaker-path-redesign/`.
+**Patch v3.1.1:** errata DSM-5 §1.1 (утверждена владельцем 2026-08-08, M3_PIXEL_REPORT): dark `onPrimary`/`onSecondary` `#FFFFFF` → `#1A2F5E` (WCAG FAIL на `#8FB3F5`/`#B79EED`); ссылки на токены v1.3.0 → v1.3.1.
+**Minor v3.1:** новые компоненты `SpeakingAppBar` и `FadingEdgeText`, правило токенов статус-чипов (dark theme), список топиков по frame-topics. Дифф утверждён владельцем 2026-08-08 (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v3.0 — M3-редизайн (`docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md`).
 
 ---
 
@@ -13,12 +15,35 @@
 | Артефакт | Роль |
 |---|---|
 | `.docs/design-system/tokens.json` **v1.3.1** | **Канонические токены** (HEX 1:1 обязателен во всех реализациях) |
-| `.docs/design-system/mockups.html` **v2.0** | Эталонные мокапы экранов (15 фреймов, light+dark) — **поведенческие требования авторитетны** |
+| `docs/design/redesign-speaker-path-v1/` **V1** | **Эталонные макеты 9 экранов** «Путь спикера» (холст 11 шотов + интерактивный прототип + UX-ревью + передаточный документ) — авторитет вёрстки/компоновки для library, topics, video, questions, training, practice, submissions, profile, settings (v3.2.0); поведение и флоу — по Part 2/OpenSpec |
+| `.docs/design-system/mockups.html` **v2.0** | Эталонные мокапы прочих экранов (онбординг/авторизация и др.) — **поведенческие требования авторитетны** |
 | `.docs/design-system/styleguide.html` **v2.0** | M3-компоненты в фирменной теме + brand-блок (rec-кнопка, таймер-кольцо, waveform) |
 | `.docs/design-system/icons.svg` | Иконки (stroke 2 round / fill) |
 | `docs/design/M3_REPLACEMENT_REGISTRY.md` | Реестр замен «компонент/экран → M3-аналог» (обязательный спутник спеки) |
 | `docs/design/M3_IMPLEMENTATION_MAPPING.md` | Механический маппинг Compose M3 + MUI 6 (импровизация в коде запрещена) |
 | `docs/DESIGN_BRIEF_SPEAKING_TRAINER.md` | Дизайн-бриф пивота |
+
+### 1.1 Правило маппинга значений прототипа V1 (v3.2.0)
+
+Прототип V1 использует CSS-переменные, часть которых не имеет прямого аналога в `tokens.json`
+v1.3.1. `tokens.json` НЕ расширяется; в реализации значения маппятся на существующие токены:
+
+| Прототип | Токен v1.3.1 |
+|---|---|
+| `--navbg` (фон навбара) | `surfaceContainer` (light `#E9EFFE` / dark `#1F2440`) |
+| `--navactive` (активный pill) | `primaryContainer` (light `#DDE8FD` / dark `#2E3E6E`) |
+| `--track` (треки прогресса) | `surfaceContainerHigh #E2E9FB` (dark `#262B49`) |
+| `--line`/`--outline` | `outlineVariant #D4DDF5` / `outline #B9C7EE` (dark `#2E3556`/тёмный) |
+| `--page`/`--card2` | `background #EEF3FF` / `surfaceContainerLow #F6F8FF` |
+| `--pink` (плашки записи) | `recordContainer #FFE3D1` (dark `#59311C`) |
+| `--peachink` | `onRecordContainer` (light `#8A3B0E`) |
+| `--green`/`--greenc`/`--greendeep` | `success #43A047` + `statusReviewed`-пара |
+| `--orange`/`--orangec`/`--orangedeep` | `warning #FB8C00` + `statusNew`-пара |
+| `--violet`/`--vc`/`--vdeep` | `secondary`/`secondaryContainer`/`onSecondaryContainer` |
+| lvl-чипы 80/50/30 | `timer.level80 #4A7FE8` / `level50 #8A68D6` / `level30 #D97238` |
+| conic/mini-кольца | дуги `primary`/`success` на треке `surfaceContainerHigh` |
+
+Новые HEX в коде запрещены (как и прежде — «HEX 1:1, без вычислений на глаз»).
 
 ## 2. Токены (v1.3.0)
 
@@ -101,8 +126,14 @@
 - B4 — ThemeCover (градиент по хешу id + инициалы);
 - B5/B6 — CheckPopAppear / recPulse (brand-моушен);
 - B7 — REC-индикатор;
-- B8 — `SpeakingAppBar` (v3.1): заголовок (titleMedium, ExtraBold) + breadcrumb-подзаголовок (labelSmall, textMuted, SemiBold), БЕЗ navigationIcon (мокап); «назад» — системный (`PlatformBackHandler`);
-- B9 — `FadingEdgeText` (v3.1): перенос по словам (без разрыва слов), максимум 3 строки, при переполнении — затухание градиентом в цвет фона вместо многоточия; применяется в списках тем/топиков.
+- B8 — `SpeakingAppBar` (v3.2): заголовок (titleMedium, ExtraBold) + breadcrumb-подзаголовок (labelSmall, textMuted, SemiBold); опциональная back-кнопка (v3.2, редизайн V1: круг 40dp, surface-фон, рамка outlineVariant, иконка ChevronLeft) на флоу-экранах Topics/Video/Questions/Training/Practice/Settings; без параметра — как в v3.1; «назад» системным (`PlatformBackHandler`) сохраняется;
+- B9 — `FadingEdgeText` (v3.1): перенос по словам (без разрыва слов), максимум 3 строки, при переполнении — затухание градиентом в цвет фона вместо многоточия; применяется в списках тем/топиков;
+- B10 — нав-бейдж (v3.2): оранжевый круг (warning), белый текст 11sp/800, обводка цветом фона навбара; счётчик новых оценок на вкладке «Отправки»;
+- B11 — библиотека «путь» (v3.2): карточка «Продолжить путь» (primaryStrong, r22, eyebrow + название топика + conic-кольцо прогресса белой дугой) и вертикальный trail (ось 3dp outlineVariant, узлы 13dp: пройдено — success, новая тема — record, трек — surfaceContainerHigh);
+- B12 — hero-вопрос (v3.2): карточка r22 с eyebrow «ВОПРОС N ИЗ M» (caps, warning) и текстом QuestionText; компаньон — компактные строки остальных вопросов (номер primary + текст textMuted);
+- B13 — setrow (v3.2): строка настройки r16 — иконка 34dp в квадратике r11 primaryContainer, заголовок 14/800 + подзаголовок 11px textMuted, справа Switch/chevron;
+- B14 — путь уровней (v3.2): сегменты-чипы A1→B2 (пройден — success-пара, текущий — primaryContainer с двойным кольцом primary, следующий — surfaceContainerLow/textMuted), соединители 2dp; рендер только при наличии данных;
+- B15 — живые превью онбординга (v3.3): слайды рендерят мини-версии настоящих компонентов — VideoPreview (тёмная карточка плеера: play-круг, CC-бейдж, peach-прогресс, транскрипт-строка с mark `recordContainer`/`onRecordContainer`), TrainingPreview (чип уровня `timer.level80`, таймер-кольцо, squircle rec-кнопка, waveform), GradePreview (score `primaryStrong`, 4 бара критериев, success-плашка); только токены, без emoji и material-иконок (WASM-дисциплина №75).
 
 | Платформа | Файлы |
 |---|---|
@@ -135,7 +166,7 @@
 
 ## 7. Дизайн-конформити
 
-Реестр расхождений приложение ↔ мокапы и E2E-прогоны (скриншоты, pixel-diff): `docs/qa/design-conformance/REPORT.md`. **Сверка — против v2.0-артефактов** (`mockups.html` v2.0, 15 фреймов light+dark; `styleguide.html` v2.0); процедура прежняя (аудит DC-1…DC-7 против v1.x закрыт 2026-08-01, эпик bd `So to Speak-qnr`). E2E-скрипты: `e2e-cmp/shoot-app2.js`, `shoot-app-auth.js`.
+Реестр расхождений приложение ↔ мокапы и E2E-прогоны (скриншоты, pixel-diff): `docs/qa/design-conformance/REPORT.md`. **Сверка 9 экранов «Путь спикера» — против V1-пакета** (`docs/design/redesign-speaker-path-v1/`, v3.2.0); прочие экраны — против v2.0-артефактов (`mockups.html` v2.0, 15 фреймов light+dark; `styleguide.html` v2.0); процедура прежняя (аудит DC-1…DC-7 против v1.x закрыт 2026-08-01, эпик bd `So to Speak-qnr`). E2E-скрипты: `e2e-cmp/shoot-app2.js`, `shoot-app-auth.js`.
 
 ---
 
@@ -146,6 +177,8 @@
 - **Gamification-компоненты DS 1.x** — удалены из кодовой базы 2026-08-07 (M3-редизайн, Q2); архив — git-история.
 
 **Changelog:**
+- v3.3.0 (2026-09-11): редизайн V2 — B15 живые превью онбординга (VideoPreview/TrainingPreview/GradePreview из токенов); `SpeakingGate` без emoji (📬 → Send в цветном круге) в GuestProfile/Login/Register; правило «no emoji as UI» на гейты. OpenSpec `add-speaker-path-redesign-v2`, bd `FunnyEnglish-txx`.
+- v3.2.0 (2026-09-08): редизайн «Путь спикера» V1 — авторитет V1-пакета для 9 экранов (§1, §7); §1.1 правило маппинга значений прототипа на токены v1.3.1 (токены не меняются); B8 + back-кнопка (отмена «БЕЗ navigationIcon»); новые brand-компоненты B10–B14; back-кнопки на флоу-экранах, бейдж «Отправки», вход в настройки из профиля (OpenSpec `add-speaker-path-redesign`, bd `FunnyEnglish-d1e`).
 - v3.1.1 (2026-08-10): errata DSM-5 §1.1 (утв. владельцем 2026-08-08): dark `onPrimary`/`onSecondary` = `#1A2F5E`; токены v1.3.1; mockups v2.1 (тексты CTA frame-questions эталонно из приложения по Q5, replay-оверлей frame-video).
 - v3.0 (2026-08-07): компонентная база Material 3; токены v1.3.0 (M3-роли, state layers, tonal elevation, M3-motion); правило light primary=primaryStrong; brand-кастом B1–B7; NavigationRail на wide (Q4); архивация legacy-геймификации (Q2) и дубликатов Common.kt (Q3). Дифф: `docs/plan/M3_DESIGN_SYSTEM_SPEC_DIFF.md` (утверждён владельцем).
 - v2.1 (2026-08-02): добавлен §3 «Светлая/тёмная тема» — behavior для admin-web (`sotospeak-theme-mode`, toggle в Header) и приложения (`theme_mode`=`system`/`light`/`dark`, default `system`).

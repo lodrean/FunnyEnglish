@@ -2,13 +2,13 @@
 ## Клиент: composeApp (Android-first)
 
 **Feature ID:** SPEAKING-TRAINER-001
-**Version:** 1.8 (2026-08-12: §2.3 — overlay-субтитры в fullscreen: активный cue поверх видео в нижней части экрана над control-bar (при субтитрах включены; WASM — невидим под DOM-video). По запросу владельца. v1.7 (2026-08-12: §2.3 — полноэкранный режим видео (кнопка `vc_fullscreen` в control-bar; Android: ландшафт + immersive; выход — кнопка/«назад»; плеер и позиция сохраняются); §3.1/§3.2 — Android-плеер мигрирован на media3-ui-compose/material3 1.11.0: `Player` (ContentFrame + слоты top/center/bottom) вместо AndroidView+PlayerView, кастомные контролы мокапа сохранены в слотах; MainActivity получил `configChanges`. Дифф утверждён владельцем (план `~/.kimi/plans/nebula-psylocke-atom.md`, bd `FunnyEnglish-did`, ADR-007). v1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
-**Date:** 2026-08-12
+**Version:** 1.9 (2026-09-08: редизайн «Путь спикера» V1 (`docs/design/redesign-speaker-path-v1/`, DESIGN_SYSTEM_SPEC v3.2.0, bd `FunnyEnglish-d1e`; OpenSpec `add-speaker-path-redesign`): §1 — back-кнопка в аппбаре флоу-экранов (семантика = существующий onBack, системный handler не меняется), бейдж новых оценок на «Отправках», вход в Settings из Profile, Library «путь» с continue-карточкой (tap → Questions активного топика), §2.1/§2.4 — layout по V1 (hero-вопрос + dual CTA); MVI-контракты, правила попыток и guest-гейты без изменений. v1.8 (2026-08-12: §2.3 — overlay-субтитры в fullscreen: активный cue поверх видео в нижней части экрана над control-bar (при субтитрах включены; WASM — невидим под DOM-video). По запросу владельца. v1.7 (2026-08-12: §2.3 — полноэкранный режим видео (кнопка `vc_fullscreen` в control-bar; Android: ландшафт + immersive; выход — кнопка/«назад»; плеер и позиция сохраняются); §3.1/§3.2 — Android-плеер мигрирован на media3-ui-compose/material3 1.11.0: `Player` (ContentFrame + слоты top/center/bottom) вместо AndroidView+PlayerView, кастомные контролы мокапа сохранены в слотах; MainActivity получил `configChanges`. Дифф утверждён владельцем (план `~/.kimi/plans/nebula-psylocke-atom.md`, bd `FunnyEnglish-did`, ADR-007). v1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
+**Date:** 2026-09-08
 **Estimated Effort:** 8–12 дней
 **Связанные документы:**
 - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md`
 - Backend-спека (Part 1): `docs/SPEAKING_TRAINER_SPEC_PART1.md` — эндпоинты и DTO берутся оттуда, здесь не переопределяются
-- Дизайн-система (авторитетна по флоу Training/Practice/Video): `.docs/design-system/` (tokens.json, mockups.html, icons.svg)
+- Дизайн-система: DESIGN_SYSTEM_SPEC v3.2.0; макеты 9 экранов — V1-пакет «Путь спикера» `docs/design/redesign-speaker-path-v1/` (авторитет вёрстки), прочие экраны — `.docs/design-system/` (tokens.json, mockups.html, icons.svg)
 - Конвенции и грабли: `memory.md`
 
 ---
@@ -110,13 +110,21 @@ sealed class AppScreen {
 | Экран | onBack | Доп. переходы |
 |---|---|---|
 | Onboarding | — | 3 слайда («Смотри видео» → «Тренируйся вслух» → «Отправь учителю»), иллюстрации — векторные иконки `SpeakingIcons.*` (Play/Mic/Send) для совместимости с WASM canvas; CTA «Далее»×2 → «Начать» → `Library`; показывается только при первом запуске (`onboarding_completed` в Settings) |
-| Library | `Home` | `Topics(libraryId)` по клику на тему; заголовок «Библиотека тем» |
-| Topics | `Library` | `Video(topicId)` по клику на топик — сразу видео (bottom-sheet удалён, DC-5) |
+| Library | `Home` | `Topics(libraryId)` по клику на тему; карточка «Продолжить путь» (v1.9) — сразу `Questions(topicId)` последнего активного топика (незавершённый Training/Practice, иначе первый непройденный); заголовок «Темы» (V1-макет) |
+| Topics | `Library` | `Video(topicId)` по клику на топик — сразу видео (bottom-sheet удалён, DC-5); Food-on-the-road-кейс (топик без видео) — сразу `Questions` |
 | Video | `Topics(libraryId)` | mode-chips «С субтитрами/Без субтитров» на экране; `Questions(topicId)` — кнопка «Перейти к вопросам» (доступна всегда, PRD Story 2; в error-стабе плеера — «К вопросам») |
 | Questions | `Video(topicId)` или `Topics` | `Training(topicId)` / `Practice(topicId)` (гость → SpeakingGate: «Зарегистрироваться»/«Войти») |
 | Training | `Questions(topicId)` | `Library` — кнопка «К библиотеке» (PRD: «из любого места Training можно вернуться в Library») |
 | Practice | `Questions(topicId)` (запрещён во время записи — см. §6) | `MySubmissions` после успешной отправки |
 | MySubmissions | `Library` | — |
+| Settings | `Profile` (v1.9: вход — строка «Настройки» в Profile) | — |
+
+> v1.9 (редизайн V1): на экранах Topics/Video/Questions/Training/Practice/Settings в аппбаре
+> отображается back-кнопка (`SpeakingAppBar(onBack = ...)`); её действие ИДЕНТИЧНО `onBack`
+> из таблицы выше (в Practice во время записи — тот же диалог §6). Системный
+> `PlatformBackHandler` не меняется. Бейдж на вкладке «Отправки» (число оценённых после
+> локальной метки `submissions_last_seen`, гаснет при открытии вкладки) —
+> OpenSpec `app-navigation`.
 
 > ⚠️ Грабля «залипший экран» (memory.md, запись 2026-07-27 про onboarding): при переходах из VM-событий всегда выставлять `currentScreen` явно — никаких LaunchedEffect-«автопереходов» по косвенным признакам.
 
@@ -179,6 +187,14 @@ sealed interface LibraryEvent {
 ```
 
 Загрузка — `api.getSpeakingLibraries()` при входе (LaunchedEffect в App.kt) и по `OnRefresh` (pull-to-refresh). Пустые темы (topicCount == 0) фильтруются на клиенте как страховка (backend тоже фильтрует — Part 1).
+
+> **Layout v1.9 (редизайн V1 «путь»)**: заголовок «Темы» + подзаголовок «Выбери, о чём
+> поговорим»; карточка «Продолжить путь» (первым элементом, tap → `Questions` активного
+> топика); темы — вертикальным trail-списком с прогрессом (обложка ThemeCover, «N топиков ·
+> M из N», линейный прогресс, мини-кольцо процента, чип «Новая»). Контракт MVI не меняется;
+> прогресс темы вычисляется клиентом из существующих данных (topic progress + локальные
+> записи); continue-цель — из `RecordingStore`/прогресса топиков, при отсутствии данных
+> карточка скрывается.
 
 ### 2.2 TopicsScreen
 
@@ -276,6 +292,11 @@ sealed interface QuestionsEvent {
 }
 ```
 > Событие `ShowLoginCta` удалено (2026-08-01, guest-first): гейт гостя — не VM-событие, а перманентный `SpeakingGate` в нижней зоне экрана с прямыми колбэками `onRegisterClick`/`onLoginClick`.
+
+> **Layout v1.9 (редизайн V1)**: hero-карточка текущего вопроса (eyebrow «ВОПРОС N ИЗ M» +
+> QuestionText) и компактный список остальных; два CTA — «Training · 3 попытки» и
+> «Practice · 30 секунд» — с примечанием «Training остаётся на устройстве · Practice
+> отправится учителю». Контракты MVI и guest-гейт без изменений.
 
 ### 2.5 TrainingScreen
 

@@ -99,6 +99,25 @@ class RecordingStore(
         return streak
     }
 
+    /**
+     * Активные дни за последнюю неделю (редизайн V1 «Путь спикера», кольцо
+     * активности в профиле): TRAINING-записи сгруппированы по календарному дню,
+     * считаем дни в интервале (сегодня-6 .. сегодня].
+     */
+    fun weeklyActiveDays(
+        todayEpochMs: Long = Clock.System.now().toEpochMilliseconds(),
+        timeZone: TimeZone = TimeZone.currentSystemDefault()
+    ): Int {
+        val today = Instant.fromEpochMilliseconds(todayEpochMs).toLocalDateTime(timeZone).date
+        val weekStart = today.minus(6, DateTimeUnit.DAY)
+        return loadAll().asSequence()
+            .filter { it.kind == RecordingKind.TRAINING }
+            .map { Instant.fromEpochMilliseconds(it.createdAtEpochMs).toLocalDateTime(timeZone).date }
+            .filter { it in weekStart..today }
+            .toSet()
+            .size
+    }
+
     fun add(meta: RecordingMeta) {
         saveAll(loadAll() + meta)
     }

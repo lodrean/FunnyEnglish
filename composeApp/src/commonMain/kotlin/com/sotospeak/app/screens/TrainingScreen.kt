@@ -2,19 +2,11 @@ package com.sotospeak.app.screens
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,12 +32,8 @@ import com.sotospeak.app.viewmodel.RecorderUiState
 import com.sotospeak.app.viewmodel.TrainingState
 import com.sotospeak.app.viewmodel.TrainingViewModel
 import com.sotospeak.designsystem.icons.SpeakingIcons
-import com.sotospeak.designsystem.accessibility.LocalReduceMotion
 import com.sotospeak.designsystem.theme.LocalSpeakingColors
-import com.sotospeak.designsystem.theme.SpeakingElevation
-import com.sotospeak.designsystem.theme.SpeakingMotion
 import com.sotospeak.designsystem.theme.SpeakingShapes
-import com.sotospeak.designsystem.theme.SpeakingTextStyles
 
 /**
  * Экран Training (спека Part 2 §2.5, §5.3; дизайн Playful Coach v1.1):
@@ -59,7 +47,6 @@ import com.sotospeak.designsystem.theme.SpeakingTextStyles
 @Composable
 fun TrainingScreen(
     state: TrainingState,
-    topicId: String,
     recorderState: com.sotospeak.app.recorder.VoiceRecorderState,
     micPermission: MicPermissionState,
     onStartRecording: () -> Unit,       // экран: recorder.start(fileName)
@@ -77,19 +64,20 @@ fun TrainingScreen(
 ) {
     val speaking = LocalSpeakingColors.current
 
-    // Стрелки в аппбаре нет (мокап frame-training) — системная кнопка/жест «назад»
+    // Back-кнопка аппбара (V1) и системная кнопка/жест ведут одинаково на onBack
     com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            // Мокап frame-training: h1 «Training», sub — «Тема · Топик», без стрелки назад
+            // V1-макет: h1 «Тренировка», sub — «Тема · Топик», back-кнопка
             SpeakingAppBar(
                 title = "Training",
                 subtitle = listOfNotNull(
                     libraryTitle.ifBlank { null },
                     state.topicTitle.ifBlank { null }
-                ).joinToString(" · ").ifBlank { null }
+                ).joinToString(" · ").ifBlank { null },
+                onBack = onBack
             )
         },
         modifier = modifier.testTag("training_screen")
@@ -103,7 +91,6 @@ fun TrainingScreen(
             )
             else -> TrainingContent(
                 state = state,
-                recorderState = recorderState,
                 micPermission = micPermission,
                 onStartRecording = onStartRecording,
                 onStopRecording = onStopRecording,
@@ -122,7 +109,6 @@ fun TrainingScreen(
 @Composable
 private fun TrainingContent(
     state: TrainingState,
-    recorderState: com.sotospeak.app.recorder.VoiceRecorderState,
     micPermission: MicPermissionState,
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
@@ -688,7 +674,6 @@ fun TrainingRoute(
     Box(modifier = Modifier.fillMaxSize()) {
         TrainingScreen(
             state = state,
-            topicId = topicId,
             libraryTitle = libraryTitle,
             recorderState = recorderState,
             micPermission = micPermission,

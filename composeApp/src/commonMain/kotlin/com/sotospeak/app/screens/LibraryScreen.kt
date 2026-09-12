@@ -1,19 +1,27 @@
 package com.sotospeak.app.screens
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,6 +30,7 @@ import com.sotospeak.app.components.EmptyState
 import com.sotospeak.app.components.ErrorMessage
 import com.sotospeak.app.localization.LocalAppStrings
 import com.sotospeak.app.localization.RussianStrings
+import com.sotospeak.app.viewmodel.ContinueTopic
 import com.sotospeak.app.viewmodel.LibraryState
 import com.sotospeak.designsystem.animations.ListSkeleton
 import com.sotospeak.designsystem.animations.speakingPressable
@@ -44,6 +53,7 @@ fun LibraryScreen(
     state: LibraryState,
     onLoad: () -> Unit,
     onLibraryClick: (String) -> Unit,
+    onContinueClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) { onLoad() }
@@ -87,7 +97,8 @@ fun LibraryScreen(
             )
             else -> LibraryList(
                 state = state,
-                onLibraryClick = onLibraryClick
+                onLibraryClick = onLibraryClick,
+                onContinueClick = onContinueClick
             )
         }
     }
@@ -96,7 +107,8 @@ fun LibraryScreen(
 @Composable
 private fun LibraryList(
     state: LibraryState,
-    onLibraryClick: (String) -> Unit
+    onLibraryClick: (String) -> Unit,
+    onContinueClick: () -> Unit
 ) {
     val speaking = LocalSpeakingColors.current
     val strings = LocalAppStrings.current
@@ -123,22 +135,241 @@ private fun LibraryList(
                 )
             }
         }
-        items(state.libraries, key = { it.id }) { library ->
-            ThemeCard(
-                library = library,
-                completedTopics = state.completedTopics[library.id] ?: 0,
-                onClick = { onLibraryClick(library.id) }
+        // «Продолжить путь» (редизайн V1): последний активный топик, тап — сразу к вопросам
+        state.continueTopic?.let { topic ->
+            item(key = "continue_card") {
+                ContinuePathCard(
+                    topic = topic,
+                    onClick = onContinueClick
+                )
+            }
+        }
+        // Темы — вертикальный «путь» (редизайн V1): ось с узлами слева от карточек.
+        // height(IntrinsicSize.Min) обязателен: TrailAxis использует fillMaxHeight,
+        // без интринсиков он растягивается на maxHeight контейнера (весь вьюпорт
+        // LazyColumn) — карточки разъезжаются, узел улетает (поймано живым прогоном).
+        itemsIndexed(state.libraries, key = { _, library -> library.id }) { index, library ->
+            val completed = state.completedTopics[library.id] ?: 0
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+            ) {
+                TrailAxis(
+                    nodeState = trailNodeState(
+                        completed = completed,
+                        total = library.topicCount
+                    ),
+                    isFirst = index == 0,
+                    isLast = index == state.libraries.lastIndex
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                ThemeCard(
+                    library = library,
+                    completedTopics = completed,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onLibraryClick(library.id) }
+                )
+            }
+        }
+    }
+}
+
+/** Состояние узла «пути» темы (редизайн V1): пройдена / в процессе / новая. */
+private fun trailNodeState(completed: Int, total: Int): TrailNodeState = when {
+    total > 0 && completed >= total -> TrailNodeState.DONE
+    completed > 0 -> TrailNodeState.CURRENT
+    else -> TrailNodeState.FRESH
+}
+
+internal enum class TrailNodeState { DONE, CURRENT, FRESH }
+
+/**
+ * Ось «пути»: линия 3dp (outlineVariant) + узел 13dp. Пройдено — success,
+ * есть движение — primary, новая тема — record (персиковый маркер «начни здесь»).
+ */
+@Composable
+internal fun TrailAxis(
+    nodeState: TrailNodeState,
+    isFirst: Boolean,
+    isLast: Boolean
+) {
+    val speaking = LocalSpeakingColors.current
+    val nodeColor = when (nodeState) {
+        TrailNodeState.DONE -> speaking.statusReviewed
+        TrailNodeState.CURRENT -> speaking.primary
+        TrailNodeState.FRESH -> speaking.statusNew
+    }
+    val axisColor = MaterialTheme.colorScheme.outlineVariant
+    Box(
+        modifier = Modifier
+            .width(20.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Линия оси: до и после узла; у первой/последней темы линия обрывается у узла
+        Column(
+            modifier = Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .clip(MaterialTheme.shapes.small)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(
+                        axisColor,
+                        // верхняя половина у первой темы скрыта
+                        RoundedCornerShape(
+                            topStartPercent = if (isFirst) 50 else 0,
+                            topEndPercent = if (isFirst) 50 else 0
+                        )
+                    )
+                    .alpha(if (isFirst) 0f else 1f)
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(
+                        axisColor,
+                        RoundedCornerShape(
+                            bottomStartPercent = if (isLast) 50 else 0,
+                            bottomEndPercent = if (isLast) 50 else 0
+                        )
+                    )
+                    .alpha(if (isLast) 0f else 1f)
+            )
+        }
+        Box(
+            modifier = Modifier
+                .size(13.dp)
+                .background(nodeColor, RoundedCornerShape(percent = 50))
+                .border(3.dp, speaking.background, RoundedCornerShape(percent = 50))
+        )
+    }
+}
+
+/**
+ * Синяя карточка «Продолжить путь» (редизайн V1, DS v3.2.0 B11): primaryStrong-фон,
+ * eyebrow, название топика, мета попыток и кольцо прогресса (белая дуга).
+ */
+@Composable
+internal fun ContinuePathCard(
+    topic: ContinueTopic,
+    onClick: () -> Unit
+) {
+    val speaking = LocalSpeakingColors.current
+    val strings = LocalAppStrings.current
+    val progress = if (topic.attemptsDone in 0..2) topic.attemptsDone / 3f else 0f
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = SpeakingMotion.tweenMedium(),
+        label = "continue_progress"
+    )
+
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("library_continue_card"),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = speaking.primaryStrong)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = strings.continuePathEyebrow,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 1.2.sp,
+                    color = speaking.onPrimary.copy(alpha = 0.7f)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = topic.topicTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = speaking.onPrimary,
+                    modifier = Modifier.testTag("continue_topic_title")
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = strings.continueAttemptsMeta(topic.attemptsDone),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = speaking.onPrimary.copy(alpha = 0.7f)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            ProgressRing(
+                progress = animatedProgress,
+                size = 56.dp,
+                strokeWidth = 6.dp,
+                color = speaking.onPrimary,
+                track = speaking.onPrimary.copy(alpha = 0.25f),
+                modifier = Modifier.testTag("continue_progress_ring")
             )
         }
     }
 }
 
-/** Карточка темы по мокапу: тайл 64dp с инициалами, мета-строка, прогресс-бар, chevron. */
+/** Кольцо прогресса (редизайн V1): дуга на треке, старт сверху. */
+@Composable
+internal fun ProgressRing(
+    progress: Float,
+    size: androidx.compose.ui.unit.Dp,
+    strokeWidth: androidx.compose.ui.unit.Dp,
+    color: Color,
+    track: Color,
+    modifier: Modifier = Modifier
+) {
+    val animated by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = SpeakingMotion.tweenMedium(),
+        label = "progress_ring"
+    )
+    Box(modifier = modifier.size(size), contentAlignment = Alignment.Center) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val stroke = strokeWidth.toPx()
+            val inset = stroke / 2
+            val diameter = this.size.minDimension - stroke
+            drawArc(
+                color = track,
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = Size(diameter, diameter),
+                style = Stroke(width = stroke, cap = StrokeCap.Round)
+            )
+            drawArc(
+                color = color,
+                startAngle = -90f,
+                sweepAngle = 360f * animated,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = Size(diameter, diameter),
+                style = Stroke(width = stroke, cap = StrokeCap.Round)
+            )
+        }
+    }
+}
+
+/** Карточка темы (редизайн V1): обложка 54dp, мета-строка, прогресс-бар, мини-кольцо. */
 @Composable
 private fun ThemeCard(
     library: SpeakingLibrary,
     completedTopics: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val speaking = LocalSpeakingColors.current
     val strings = LocalAppStrings.current
@@ -155,7 +386,7 @@ private fun ThemeCard(
     ElevatedCard(
         onClick = onClick,
         interactionSource = interactionSource,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .speakingPressable(interactionSource, pressedScale = 0.98f)   // H: :active scale(.98) из мокапа
             .testTag("library_card_${library.id}"),
@@ -204,24 +435,26 @@ private fun ThemeCard(
                     modifier = Modifier.testTag("theme_progress_${library.id}")
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = SpeakingIcons.ChevronRight,
-                contentDescription = null,
-                tint = speaking.textMuted,
-                modifier = Modifier.size(24.dp)
+            Spacer(modifier = Modifier.width(12.dp))
+            ProgressRing(
+                progress = progress,
+                size = 40.dp,
+                strokeWidth = 5.dp,
+                color = speaking.primary,
+                track = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier.testTag("theme_ring_${library.id}")
             )
         }
     }
 }
 
-/** Тайл 64×64 с градиентом (хеш по id темы) и инициалами названия — как в мокапе. */
+/** Тайл 54×54 (редизайн V1) с градиентом (хеш по id темы) и инициалами названия. */
 @Composable
 private fun ThemeCover(title: String, seed: String, modifier: Modifier = Modifier) {
     val gradient = THEME_GRADIENTS[abs(seed.hashCode()) % THEME_GRADIENTS.size]
     Box(
         modifier = modifier
-            .size(64.dp)
+            .size(54.dp)
             .clip(SpeakingShapes.Chip)
             .background(Brush.linearGradient(gradient)),
         contentAlignment = Alignment.Center
@@ -229,7 +462,7 @@ private fun ThemeCover(title: String, seed: String, modifier: Modifier = Modifie
         Text(
             text = themeInitials(title),
             color = Color.White,
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold
         )
     }

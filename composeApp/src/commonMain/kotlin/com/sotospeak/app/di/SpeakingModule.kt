@@ -10,6 +10,7 @@ import com.sotospeak.app.viewmodel.LibraryViewModel
 import com.sotospeak.app.viewmodel.MySubmissionsViewModel
 import com.sotospeak.app.viewmodel.PracticeViewModel
 import com.sotospeak.app.viewmodel.QuestionsViewModel
+import com.sotospeak.app.viewmodel.SubmissionsBadgeViewModel
 import com.sotospeak.app.viewmodel.TopicsViewModel
 import com.sotospeak.app.viewmodel.TrainingViewModel
 import com.sotospeak.app.viewmodel.VideoViewModel
@@ -33,4 +34,5 @@ val speakingModule = module {
     viewModel { TrainingViewModel(get(), get()) }    // repository + AudioPlayer
     viewModel { PracticeViewModel(get(), get(), get()) } // + RecordingFileStorage + TokenProvider
     viewModel { MySubmissionsViewModel(get(), get(), get()) } // repository + fileStorage + AudioPlayer
+    viewModel { SubmissionsBadgeViewModel(get(), get(), get()) } // бейдж «Отправки» (редизайн V1); TokenProvider — гость без запроса (иначе 401 в консоль e2e)
 }

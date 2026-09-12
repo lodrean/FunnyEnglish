@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.sotospeak.app.screens.ProfileScreen
 import com.sotospeak.app.viewmodel.ProfileState
 import com.sotospeak.designsystem.theme.FunnyTheme
@@ -62,6 +63,10 @@ class ProfileScreenTest : BaseUiTest() {
     fun logoutButtonCallsOnLogout() = runTest(
         content = { ProfileScreenForTest() }
     ) {
+        // Редизайн V1: контент выше вьюпорта (act-row + строка настроек) — скроллим к кнопке
+        // (performScrollTo кидает AssertionError, если узел уже виден — грабля №16)
+        onNodeWithTag("profile_logout_button", useUnmergedTree = true)
+            .performScrollTo()
         onNodeWithTag("profile_logout_button", useUnmergedTree = true)
             .assertIsDisplayed()
             .performClick()
@@ -123,7 +128,7 @@ class ProfileScreenTest : BaseUiTest() {
     }
 
     // ============================================
-    // Streak «дней с записью» (bd h3l.6)
+    // Активность/стрик (bd h3l.6, редизайн V1 «Путь спикера»)
     // ============================================
 
     @Test
@@ -134,8 +139,11 @@ class ProfileScreenTest : BaseUiTest() {
             }
         }
     ) {
+        // V1: act-row — кольцо активности + карточка стрика («стрик», «дней подряд»)
         onNodeWithTag("profile_stat_streak", useUnmergedTree = true).assertIsDisplayed()
-        onNodeWithText("дней с записью", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag("profile_activity_ring", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("стрик", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("дней подряд", useUnmergedTree = true).assertIsDisplayed()
     }
 
     // ============================================

@@ -21,6 +21,8 @@ data class ProfileState(
     val error: UiText? = null,
     /** Локальный streak «дней с записью» (bd h3l.6) — считается из RecordingStore. */
     val recordingStreak: Int = 0,
+    /** Активные дни за неделю 0..7 (редизайн V1: кольцо активности в профиле). */
+    val weeklyActiveDays: Int = 0,
     /** Цель на сегодня (bd h3l.14): запись сегодня уже есть. */
     val dailyGoalDone: Boolean = false
 )
@@ -41,6 +43,7 @@ class ProfileViewModel(
                 error = null,
                 guestSession = guestRepo.getSession(),
                 recordingStreak = recordingStore.streakDays(),
+                weeklyActiveDays = recordingStore.weeklyActiveDays(),
                 dailyGoalDone = recordingStore.hasRecordingToday()
             )
 

@@ -7,10 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -72,20 +69,21 @@ fun PracticeScreen(
         }
     }
 
-    // Стрелки в аппбаре нет (мокап frame-practice) — системная кнопка/жест «назад»
-    // проходит через тот же handleBack с диалогом-подтверждением (спека §6.1)
+    // Back-кнопка аппбара (V1) и системная кнопка/жест «назад»
+    // проходят через один handleBack с диалогом-подтверждением (спека §6.1)
     com.sotospeak.app.components.PlatformBackHandler(onBack = handleBack)
 
     Scaffold(
         containerColor = speaking.background,
-        // Мокап frame-practice: h1 «Practice», sub — «Тема · Топик», без стрелки назад
+        // V1-макет: h1 «Practice», sub — «Тема · Топик», back-кнопка
         topBar = {
             com.sotospeak.app.components.SpeakingAppBar(
                 title = "Practice",
                 subtitle = listOfNotNull(
                     libraryTitle.ifBlank { null },
                     state.topicTitle.ifBlank { null }
-                ).joinToString(" · ").ifBlank { null }
+                ).joinToString(" · ").ifBlank { null },
+                onBack = handleBack
             )
         },
         modifier = modifier.testTag("practice_screen")

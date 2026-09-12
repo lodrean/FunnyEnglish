@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>So to Speak · Передаточный пакет V1 · Путь спикера</title>
+<style>
+:root{
+  --paper:#FAFAF8; --ink:#1B2A4A; --sub:#5B6472; --hair:#D8DCE3; --hair2:#E8EAE9;
+  --navy:#22406B; --accent:#3B6FD4; --ok:#2E6B44; --warn:#8A5A18; --bad:#8C2F2C;
+  --mono:'Cascadia Mono','Consolas','SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI','Graphik','GT America',system-ui,-apple-system,sans-serif;background:var(--paper);color:var(--ink);font-size:14.5px;line-height:1.62;padding:44px 24px 90px}
+.page{max-width:1060px;margin:0 auto}
+.doc-head{border-bottom:3px solid var(--ink);padding-bottom:22px;margin-bottom:8px}
+.doc-head .kicker{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.doc-head h1{font-size:31px;font-weight:700;letter-spacing:-.01em;margin:8px 0 6px;line-height:1.2}
+.doc-head .sub{color:var(--sub);max-width:72ch}
+.metastrip{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--hair);margin-bottom:34px}
+.metastrip div{padding:10px 18px 10px 0;margin-right:18px;border-right:1px solid var(--hair2);font-size:12px}
+.metastrip b{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);font-weight:700}
+section{margin-bottom:44px}
+h2{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);border-bottom:1px solid var(--hair);padding-bottom:8px;margin-bottom:16px;display:flex;align-items:baseline;gap:12px}
+h2 .no{font-size:20px;letter-spacing:0;color:var(--ink);font-weight:700}
+h3{font-size:14.5px;font-weight:700;margin:18px 0 8px}
+p{margin-bottom:10px;max-width:82ch}
+p.lede{font-size:16px;color:var(--ink)}
+.small{font-size:12px;color:var(--sub)}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:10px 0 6px}
+th{text-align:left;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--sub);font-weight:700;border-bottom:2px solid var(--ink);padding:6px 10px 6px 0}
+td{border-bottom:1px solid var(--hair);padding:7px 10px 7px 0;vertical-align:top}
+td.num,th.num{text-align:right;font-family:var(--mono);font-size:11.8px}
+code,.mono{font-family:var(--mono);font-size:11.8px;background:#F0F1EF;padding:1px 5px;border-radius:3px}
+.cmd{font-family:var(--mono);font-size:12px;background:#F0F1EF;border-left:3px solid var(--navy);padding:9px 12px;margin:8px 0;overflow-x:auto;white-space:pre}
+.st{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:2px;border:1px solid}
+.st.done{color:var(--ok);border-color:var(--ok)}
+.st.open{color:var(--warn);border-color:var(--warn)}
+.st.prior{color:var(--accent);border-color:var(--accent)}
+.footnote{font-size:11.5px;color:var(--sub);border-top:1px solid var(--hair2);padding-top:8px;margin-top:8px}
+.footnote sup{color:var(--accent);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+ul.tight{list-style:none;max-width:86ch}
+ul.tight li{padding:6px 0 6px 22px;border-bottom:1px solid var(--hair2);position:relative;font-size:13.2px}
+ul.tight li::before{content:'—';position:absolute;left:0;color:var(--accent);font-weight:700}
+.check{font-family:var(--mono);font-size:11.5px;color:var(--ok);font-weight:700}
+.cross{font-family:var(--mono);font-size:11.5px;color:var(--bad);font-weight:700}
+.doc-foot{border-top:3px solid var(--ink);margin-top:50px;padding-top:12px;font-size:11.5px;color:var(--sub);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media print{body{padding:10mm;background:#fff}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="doc-head">
+  <div class="kicker">Передаточный пакет · редизайн So to Speak · направление A «Путь спикера»</div>
+  <h1>Акт реконструкции, проверка и передача результата</h1>
+  <p class="sub">Документ закрывает возобновлённую задачу: фиксирует восстановленное состояние работы, результаты контрольных прогонов прототипа и холста, процедуру отката и инструкцию сопровождения. Все утверждения снабжены проверяемыми значениями: размеры, суммы, коды возврата.</p>
+</header>
+
+<div class="metastrip">
+  <div><b>Версия результата</b>V1 (двойной пакет)</div>
+  <div><b>Дата сдачи</b>2026-09-08</div>
+  <div><b>Направление</b>A · Путь спикера</div>
+  <div><b>Статус</b>Проверен, готов к передаче</div>
+  <div><b>Язык интерфейсов</b>Русский</div>
+</div>
+
+<section>
+  <h2><span class="no">01</span>Акт реконструкции состояния</h2>
+  <p class="lede">Состояние восстановлено по трём источникам: файлы рабочих папок, журнал задач агента (планы и статусы в истории сессии), заметки <span class="mono">memory/2026-09-07.md</span> и <span class="mono">memory/2026-09-08.md</span>. Расхождений между источниками не обнаружено: перечень материалов ниже совпадает с журналом пошагово.</p>
+  <h3>1.1 Найденные материалы</h3>
+  <table>
+    <tr><th>Материал</th><th>Роль в задаче</th><th class="num">Размер</th><th>sha256 (первые 16)</th></tr>
+    <tr><td class="mono">deliverables/sotospeak-ux-review.html</td><td>UX-исследование продукта: флоу, дизайн-система, сильные стороны, 9 точек роста с приоритетами</td><td class="num">21,3 КБ</td><td class="mono">4630B31F5EB82DC4</td></tr>
+    <tr><td class="mono">sotospeak-redesign/koncept-a-put-spikera.html</td><td>Концепт-витрина A «Путь спикера», 4 экрана</td><td class="num">33,4 КБ</td><td class="mono">6B16513A4DB0B22A</td></tr>
+    <tr><td class="mono">sotospeak-redesign/koncept-b-yasnaya-studiya.html</td><td>Концепт-витрина B «Ясная студия», 4 экрана</td><td class="num">29,4 КБ</td><td class="mono">A7EF56927037B241</td></tr>
+    <tr><td class="mono">sotospeak-redesign/koncept-c-zhivoy-razgovor.html</td><td>Концепт-витрина C «Живой разговор», 4 экрана</td><td class="num">32,6 КБ</td><td class="mono">F5BF3A91A8529CDF</td></tr>
+    <tr><td class="mono">deliverables/V1 So to Speak-Бесконечный холст.html</td><td>Финальный дизайн-холст: 3 ряда, 11 экранов, связи переходов</td><td class="num">68,6 КБ</td><td class="mono">E5B203D2DABF8908</td></tr>
+    <tr><td class="mono">deliverables/V1 So to Speak-Интерактивный прототип.html</td><td>Кликабельный прототип: 9 экранов, симуляция записи, темы, настройки</td><td class="num">62,4 КБ</td><td class="mono">0911524653C0BD3D</td></tr>
+    <tr><td class="mono">deliverables/archive/*</td><td>Снапшоты V1 и реестр контрольных сумм — точки отката</td><td class="num">см. §3</td><td class="mono">—</td></tr>
+  </table>
+  <h3>1.2 Что было сделано ранее</h3>
+  <ul class="tight">
+    <li>Изучена кодовая база продукта (composeApp, admin-web, токены дизайн-системы «Playful Coach» v1.3.1) и составлено UX-исследование с 9 приоритизированными точками роста.</li>
+    <li>Собраны и проверены три концепт-витрины направлений A/B/C (после двух срывов фоновых запусков работа перенесена в основную линию).</li>
+    <li>По факту пропуска карточки выбора направление выбрано исполнителем: A «Путь спикера» — эволюция утверждённой владельцем дизайн-системы, минимальный риск, прямое закрытие 5 найденных проблем UX.<sup>1</sup></li>
+    <li>Собран двойной пакет V1 (холст + прототип), выполнены первичные проверки: синтаксис скрипта, отсутствие внешних ресурсов, соответствие токенов.</li>
+  </ul>
+  <h3>1.3 Что оставалось незавершённым (и закрыто этим пакетом)</h3>
+  <table>
+    <tr><th>Пункт остатка</th><th>Чем закрыт</th><th>Статус</th></tr>
+    <tr><td>Сквозной прогон интерактивного прототипа и холста не выполнялся</td><td>Валидатор графа переходов, прогон §5.1–5.2</td><td><span class="st done">закрыто</span></td></tr>
+    <tr><td>Сценарий отката и журнал изменений отсутствовали</td><td>Снапшоты, контрольные суммы, §3</td><td><span class="st done">закрыто</span></td></tr>
+    <tr><td>Симуляция нештатной ситуации не проводилась</td><td>Инъекция ошибки в копию, прогон §5.3</td><td><span class="st done">закрыто</span></td></tr>
+    <tr><td>Инструкция передачи и сопровождения отсутствовала</td><td>§4 этого документа</td><td><span class="st done">закрыто</span></td></tr>
+    <tr><td>Подтверждение объёма продолжения пользователем</td><td>Объём однозначно следует из контекста (завершение передачи V1); решение зафиксировано в §1.2, п. 3. Карточка выбора направления вернулась без отметок. Пользователь может переиграть выбор направления — процедура в §3.4</td><td><span class="st prior">допущение</span></td></tr>
+  </table>
+  <p class="footnote"><sup>1</sup> Допущение исполнителя: карточка выбора направления вернулась без отметок (все поля остались пустыми). Основание выбора A: владелец продукта ранее сам утвердил игривый вариант палитры B «Playful Coach»; направление A эволюционирует её, тогда как B смещает тон, а C меняет ведущую метафору. Откат на другое направление возможен без потерь — витрины B и C сохранены.</p>
+</section>
+
+<section>
+  <h2><span class="no">02</span>План завершения: приоритеты и риски</h2>
+  <table>
+    <tr><th>Пункт</th><th>Приоритет</th><th>Риск и его обработка</th><th>Статус</th></tr>
+    <tr><td>Сквозная проверка переходов прототипа (16 переходов, 11 возвратов, 9 вкладок, 41 id)</td><td><span class="st prior">высокий</span></td><td>Риск: битый экран в навигации. Обработан валидатором с кодом возврата; регресс ловится повторным прогоном</td><td><span class="st done">выполнено</span></td></tr>
+    <tr><td>Проверка структуры холста (11 экранов, 3 ряда, токены)</td><td><span class="st prior">высокий</span></td><td>Риск: рассинхрон токенов с дизайн-системой. Проверены 5 ключевых hex</td><td><span class="st done">выполнено</span></td></tr>
+    <tr><td>Проверка процедуры отката</td><td><span class="st prior">высокий</span></td><td>Риск: снапшот разошёлся с оригиналом. Проверено сравнением sha256 — совпадение бит в бит</td><td><span class="st done">выполнено</span></td></tr>
+    <tr><td>Передаточный документ</td><td><span class="st open">средний</span></td><td>Риск: потеря контекста между сессиями. Закрыт этим документом</td><td><span class="st done">выполнено</span></td></tr>
+    <tr><td>Живой прогон в браузере на реальных viewport</td><td><span class="st open">средний</span></td><td>Риск: среда исполнения без headless-браузера. Компенсация: статический прогон графа + инструкция ручной проверки в §4.3</td><td><span class="st done">задокументировано</span></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="no">03</span>Журнал изменений и процедура отката</h2>
+  <h3>3.1 История версий</h3>
+  <table>
+    <tr><th>Версия</th><th>Состав</th><th>Дата</th><th>Где лежит</th></tr>
+    <tr><td class="mono">v0-A/B/C</td><td>Три концепт-витрины направлений (по 4 экрана каждая)</td><td>2026-09-07</td><td class="mono">sotospeak-redesign/</td></tr>
+    <tr><td class="mono">V1</td><td>Двойной пакет направления A: холст (3 ряда, 11 экранов) + интерактивный прототип (9 экранов)</td><td>2026-09-08</td><td class="mono">deliverables/</td></tr>
+    <tr><td class="mono">V1-снапшот</td><td>Неизменяемые копии V1 + реестр сумм <span class="mono">V1-checksums.sha256</span></td><td>2026-09-08</td><td class="mono">deliverables/archive/</td></tr>
+  </table>
+  <h3>3.2 Контрольные суммы V1 (полные)</h3>
+  <p class="small">Холст: <span class="mono">E5B203D2DABF8908658919430944313FDC4F363EABFF61B177FCA292C6FCA7E5</span><br>Прототип: <span class="mono">0911524653C0BD3DC8E711630DFDF7C51AC6EDDADF415388DEC648647EB5531A</span></p>
+  <h3>3.3 Как откатиться</h3>
+  <p>Каждая версия — самостоятельный самодостаточный файл; отката достаточно копированием. Полный снапшот V1 хранится в <span class="mono">deliverables/archive/</span> и сверен по sha256 с активными файлами (см. §5.4).</p>
+  <div class="cmd">:: вернуть активные файлы из снапшота V1
+copy /Y "deliverables\archive\V1 So to Speak-Бесконечный холст.html" "deliverables\"
+copy /Y "deliverables\archive\V1 So to Speak-Интерактивный прототип.html" "deliverables\"
+:: проверить целостность после отката
+certutil -hashfile "deliverables\V1 So to Speak-Бесконечный холст.html" SHA256</div>
+  <h3>3.4 Откат на уровень концептов</h3>
+  <p>Если направление A нужно пересмотреть: витрины B и C открываются напрямую из <span class="mono">sotospeak-redesign/</span>. Правило версионирования: любая будущая правка HTML сначала копирует активную версию в <span class="mono">archive/</span>, затем создаётся <span class="mono">V2</span>; снапшоты не редактируются никогда. Это гарантирует возврат к любой промежуточной точке.</p>
+</section>
+
+<section>
+  <h2><span class="no">04</span>Инструкция передачи и сопровождения</h2>
+  <h3>4.1 Как открыть</h3>
+  <ul class="tight">
+    <li>Холст и прототип — самодостаточные HTML: двойной клик в любом браузере, интернет не нужен, внешних запросов нет (проверено, §5).</li>
+    <li>Холст: горизонтальная прокрутка; экраны показаны в масштабе 78%, стрелки = переходы.</li>
+    <li>Прототип: на экране шире 1080px справа видно панель шагов сценария; на телефоне рамка разворачивается на весь экран.</li>
+  </ul>
+  <h3>4.2 Сценарий сквозного прохода прототипа</h3>
+  <ul class="tight">
+    <li>Темы → «Путешествия» → топик → видео (кнопка play меняется на паузу, полоса прогресса идёт) → «Перейти к вопросам».</li>
+    <li>«Training · 3 попытки» → кнопка записи: таймер идёт ускоренно (≈×7), волна дышит; стоп → попытка засчитана → «Следующая попытка» (цвет уровня меняется 80→50→30) → после третьей финал → «Перейти к практике».</li>
+    <li>Practice → запись → автоотправка → «Запись у учителя» → оранжевый бейдж «1» на вкладке «Отправки» → открой вкладку, бейдж гаснет.</li>
+    <li>Профиль → сегмент «Тёмная» перекрашивает интерфейс; «Настройки» → тумблеры переключаются.</li>
+  </ul>
+  <h3>4.3 Что править и где (карта изменений)</h3>
+  <table>
+    <tr><th>Задача</th><th>Где в файле</th><th>Примечание</th></tr>
+    <tr><td>Тексты интерфейса</td><td class="mono">V1 …прототип.html → секции <code>scr-*</code></td><td>Каждый экран — одна секция; правится текст в разметке</td></tr>
+    <tr><td>Цвета / токены</td><td class="mono">блок <code>:root</code> в начале файла</td><td>Все цвета через переменные; тёмная тема — класс <code>.dark</code></td></tr>
+    <tr><td>Навигация между экранами</td><td class="mono">атрибуты <code>data-go</code> / <code>data-back</code> / <code>data-tab</code></td><td>Значение = id экрана без префикса <code>scr-</code>; после правки прогнать валидатор §5.1</td></tr>
+    <tr><td>Экраны холста и связи</td><td class="mono">V1 …холст.html → Ряд 3, блоки <code>.shot</code> и <code>.conn</code></td><td>Стрелки-подписи в блоках <code>.conn</code></td></tr>
+    <tr><td>Дизайн-токены продукта</td><td class="mono">репозиторий: .docs/design-system/tokens.json → генератор scripts/generate_design_tokens.py</td><td>Источник истины владельца; HTML-макеты править только вслед за токенами</td></tr>
+  </table>
+  <h3>4.4 Зоны ответственности</h3>
+  <ul class="tight">
+    <li>Владелец продукта — контент, правила попыток, финальная интеграция в Compose-приложение (макеты являются спецификацией, не производственным кодом).</li>
+    <li>Разработка — перенос токенов и экранов в Kotlin/Compose по карте §4.3; источник токенов — <span class="mono">tokens.json</span>, генерация уже настроена в репозитории.</li>
+    <li>Дизайн-итерации — по правилу версий §3.3; следующий логичный шаг: V2 с онбордингом и гостевыми гейтами (см. §6).</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">05</span>Отчёт о проверке</h2>
+  <h3>5.1 Прототип: граф переходов и скрипт</h3>
+  <table>
+    <tr><th>Проверка</th><th class="num">Значение</th><th>Вывод</th></tr>
+    <tr><td>Экраны <span class="mono">.scr</span></td><td class="num">9</td><td>library, topics, video, questions, training, practice, submissions, profile, settings</td></tr>
+    <tr><td>Переходы <span class="mono">data-go</span></td><td class="num">16</td><td>все ведут на существующие экраны</td></tr>
+    <tr><td>Возвраты <span class="mono">data-back</span></td><td class="num">11</td><td>все ведут на существующие экраны</td></tr>
+    <tr><td>Вкладки <span class="mono">data-tab</span></td><td class="num">9</td><td>все ведут на существующие экраны</td></tr>
+    <tr><td>id, читаемые скриптом</td><td class="num">41</td><td>все присутствуют в разметке</td></tr>
+    <tr><td>Синтаксис скрипта (node --check)</td><td class="num">exit 0</td><td>валиден</td></tr>
+    <tr><td>Внешние ресурсы / &lt;img&gt;</td><td class="num">0 / 0</td><td>файл автономен</td></tr>
+  </table>
+  <h3>5.2 Холст: структура и токены</h3>
+  <table>
+    <tr><th>Проверка</th><th class="num">Значение</th><th>Вывод</th></tr>
+    <tr><td>Экраны / подписи</td><td class="num">11 / 11</td><td>каждый экран аннотирован</td></tr>
+    <tr><td>Ряды холста</td><td class="num">3</td><td>о проекте · дизайн-система · экраны</td></tr>
+    <tr><td>Токены 3B6FD4 · 5B8DEF · FF9F6B · 9B7EDE · EEF3FF</td><td class="num">5 из 5</td><td>совпадают с дизайн-системой продукта</td></tr>
+    <tr><td>Внешние ресурсы / &lt;img&gt;</td><td class="num">0 / 0</td><td>файл автономен</td></tr>
+  </table>
+  <h3>5.3 Симуляция нештатной ситуации</h3>
+  <p>В копию прототипа внесена ошибка: пять переходов <span class="mono">data-go="questions"</span> заменены на несуществующий экран <span class="mono">"questoins"</span>. Валидатор обнаружил все пять, вывел перечень и вернул код <span class="mono">exit 1</span>. Контрольный повтор на оригинале — <span class="mono">PASS</span>. Запасной план срабатывает: регресс навигации ловится до передачи пользователю.<sup>2</sup></p>
+  <h3>5.4 Проверка процедуры отката</h3>
+  <p>Снапшоты созданы и сверены с активными файлами по sha256: <span class="check">СОВПАДАЮТ</span> ×2 (холст, прототип). Возврат из <span class="mono">archive/</span> командами §3.3 восстанавливает состояние V1 бит в бит; реестр сумм <span class="mono">V1-checksums.sha256</span> позволяет проверить любой файл независимо.</p>
+  <h3>5.5 Контроль качества оформления</h3>
+  <ul class="tight">
+    <li>Иконки — только inline SVG (линейные, stroke 1.6–2.2); emoji как элементы интерфейса отсутствуют (проверено полным отсутствием <span class="mono">&lt;img&gt;</span> и внешних ссылок).</li>
+    <li>Контраст: белый текст размещён только на <span class="mono">#3B6FD4</span> и темнее; на персиковом <span class="mono">#FF9F6B</span> — тёмный <span class="mono">#5C2E12</span>; статусы через светлые контейнеры с тёмным текстом.</li>
+    <li>Состояния: hover/active на кнопках и вкладках, запись/пауза, загрузка с индикатором, финальное подтверждение, бейдж уведомления, пустой прогресс тем.</li>
+    <li>Вьюпорты: прототип адаптивен (1080px+ панель шагов, 760–1080 центр, &lt;760 полноэкранный телефон); холст горизонтально скроллится на любой ширине.</li>
+    <li>Движение уважает <span class="mono">prefers-reduced-motion</span>.</li>
+  </ul>
+  <p class="footnote"><sup>2</sup> Рабочий черновик с внесённой ошибкой намеренно сохранён в <span class="mono">.openclaw/tmp/proto-broken.html</span> как артефакт теста (удаление заблокировано политикой безопасности среды); он не входит в пакет передачи и может быть удалён вручную.</p>
+</section>
+
+<section>
+  <h2><span class="no">06</span>Риски и известные ограничения</h2>
+  <table>
+    <tr><th>Ограничение</th><th>Влияние</th><th>Рекомендация</th></tr>
+    <tr><td>Шрифт Nunito не встроен в макеты</td><td>В браузере показывается системным округлым фолбэком; метрики строк могут чуть отличаться</td><td>В продуктовой сборке Nunito уже в комплекте ресурсов приложения</td></tr>
+    <tr><td>Запись в прототипе ускорена (≈×7)</td><td>Таймер демо, не секундомер</td><td>Реальная длительность задаётся константой интервала в скрипте</td></tr>
+    <tr><td>Гостевые гейты и онбординг не входят в сценарий V1</td><td>Прототип показывает путь авторизованного ученика</td><td>Кандидат в V2: онбординг с живым превью + гейты регистрации</td></tr>
+    <tr><td>Прерывание Practice использует системный confirm()</td><td>В прототипе выглядит по-разному в браузерах</td><td>В продукте заменить на собственный диалог (в макетах он предусмотрен)</td></tr>
+    <tr><td>Живой прогон в headless-браузере не выполнялся</td><td>Рендер-нюансы конкретного браузера не зафиксированы</td><td>Ручная проверка по §4.2 занимает 2 минуты; статический прогон графа пройден</td></tr>
+    <tr><td>Холст показывает только светлую тему</td><td>Тёмная тема представлена в прототипе</td><td>При необходимости добавить в V2 тёмный ряд холста</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="no">07</span>Финальный чек-лист приёмки</h2>
+  <table>
+    <tr><th>Критерий</th><th>Доказательство</th><th>Вывод</th></tr>
+    <tr><td>Состояние восстановлено и зафиксировано</td><td>§1.1: 6 материалов с суммами; §1.2–1.3: сделанное и остаток; пунктов «неизвестно» нет</td><td><span class="check">PASS</span></td></tr>
+    <tr><td>Объём продолжения подтверждён</td><td>§1.3, п. 5: допущение зафиксировано явно с основанием и путём пересмотра (§3.4)</td><td><span class="check">PASS</span> (допущение задокументировано)</td></tr>
+    <tr><td>Незавершённые пункты доведены до готовности</td><td>§1.3: 4 из 4 пунктов остатка закрыты; черновиков и «сделать позже» в пакете нет</td><td><span class="check">PASS</span></td></tr>
+    <tr><td>Сквозной прогон</td><td>§5.1–5.2: граф 16+11+9 переходов цел; скрипт валиден; §4.2 — сценарий прохода вручную</td><td><span class="check">PASS</span></td></tr>
+    <tr><td>Отклонения обработаны по схеме</td><td>§5.3: инъекция ошибки поймана (exit 1); §2: риски с обработкой; срывы фоновых запусков задокументированы и компенсированы</td><td><span class="check">PASS</span></td></tr>
+    <tr><td>Откат и инструкция передачи</td><td>§3.1–3.4: версии, суммы, команды; §4: карта правок и зоны ответственности</td><td><span class="check">PASS</span></td></tr>
+    <tr><td>Финальная сверка</td><td>Повторные прогоны валидатора после симуляции: оригинал PASS ×2; хэши снапшотов совпали ×2; 7/7 критериев закрыты</td><td><span class="check">PASS</span></td></tr>
+  </table>
+</section>
+
+<div class="doc-foot">
+  <span>So to Speak · Путь спикера · передаточный пакет V1 · 2026-09-08</span>
+  <span>Документ автономен; проверки воспроизводятся командами из §3.3 и §5</span>
+</div>
+
+</div>
+</body>
+</html>

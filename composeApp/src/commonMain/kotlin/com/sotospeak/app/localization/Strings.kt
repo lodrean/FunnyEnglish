@@ -63,6 +63,12 @@ interface AppStrings {
     /** Плюрализация: «1 топик», «3 топика», «6 топиков» / "1 topic", "3 topics". */
     fun topicsCount(count: Int): String
 
+    // LibraryScreen: continue-карточка (редизайн V1)
+    val continuePathEyebrow: String  // «ПРОДОЛЖИТЬ ПУТЬ»
+    val continueAttemptsMetaTemplate: String  // «Попытка {0} из 3 · {1}» → следующая попытка
+    fun continueAttemptsMeta(attemptsDone: Int): String = continueAttemptsMetaTemplate
+        .replace("{0}", (attemptsDone + 1).toString())
+
     // TopicsScreen
     val topicsTitle: String
     val topicsSubtitleTemplate: String  // "{0} · выбери и начни говорить"
@@ -226,6 +232,8 @@ object RussianStrings : AppStrings {
     // LibraryScreen
     override val libraryTitle = "Библиотека тем"
     override val librarySubtitle = "Выбери тему и начни говорить"
+    override val continuePathEyebrow = "ПРОДОЛЖИТЬ ПУТЬ"
+    override val continueAttemptsMetaTemplate = "Попытка {0} из 3 · запись остаётся на устройстве"
     override val libraryEmptyTitle = "Пока нет доступных тем"
     override val libraryEmptySubtitle = "Загляни позже — темы появятся скоро"
     override val ctaRefresh = "Обновить"
@@ -308,7 +316,7 @@ object RussianStrings : AppStrings {
     override val attemptAcceptedDesc = "Принята"
     override val playbackStopDesc = "Стоп"
     override val playbackListenDesc = "Прослушать"
-    override val allAttemptsDone = "Все 3 попытки готовы! 🎉"
+    override val allAttemptsDone = "Все 3 попытки готовы!"
     override val goToPractice = "Перейти к практике"
     override val backToLibrary = "Вернуться в библиотеку"
     override val restartFromAttempt1 = "Начать заново с попытки 1"
@@ -395,6 +403,8 @@ object EnglishStrings : AppStrings {
     // LibraryScreen
     override val libraryTitle = "Topic Library"
     override val librarySubtitle = "Pick a topic and start speaking"
+    override val continuePathEyebrow = "CONTINUE YOUR PATH"
+    override val continueAttemptsMetaTemplate = "Attempt {0} of 3 · recording stays on device"
     override val libraryEmptyTitle = "No topics available yet"
     override val libraryEmptySubtitle = "Check back later — new topics are coming soon"
     override val ctaRefresh = "Refresh"
@@ -459,7 +469,7 @@ object EnglishStrings : AppStrings {
     override val attemptAcceptedDesc = "Accepted"
     override val playbackStopDesc = "Stop"
     override val playbackListenDesc = "Listen"
-    override val allAttemptsDone = "All 3 attempts are done! 🎉"
+    override val allAttemptsDone = "All 3 attempts are done!"
     override val goToPractice = "Go to practice"
     override val backToLibrary = "Back to library"
     override val restartFromAttempt1 = "Start over from attempt 1"

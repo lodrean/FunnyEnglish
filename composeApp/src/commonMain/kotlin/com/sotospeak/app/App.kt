@@ -22,6 +22,7 @@ import com.sotospeak.app.screens.SplashScreen
 import com.sotospeak.app.viewmodel.AppThemeMode
 import com.sotospeak.app.viewmodel.AuthViewModel
 import com.sotospeak.app.viewmodel.SettingsViewModel
+import com.sotospeak.app.viewmodel.SubmissionsBadgeViewModel
 import com.sotospeak.app.components.MergeProgressDialog
 import com.sotospeak.designsystem.theme.ApplySystemBarStyle
 import com.sotospeak.designsystem.theme.FunnyTheme
@@ -230,11 +231,22 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                     }
                 }
                 AuthMode.GUEST, AuthMode.AUTHENTICATED -> {
+                    // Бейдж «Отправки» (редизайн V1): счётчик живёт на уровне App,
+                    // переживает переходы между вкладками
+                    val badgeViewModel: SubmissionsBadgeViewModel = koinViewModel()
                     AppScaffold(
                         currentScreen = screen,
                         authMode = authState.mode,
                         settingsViewModel = settingsViewModel,
-                        onNavigate = { backStack.push(it) },
+                        submissionsBadgeCount = badgeViewModel.badgeCount.collectAsState().value,
+                        onSubmissionsOpened = {
+                            badgeViewModel.markSeen()
+                        },
+                        onNavigate = {
+                            backStack.push(it)
+                            // возврат на вкладки — повод пересчитать новые оценки
+                            badgeViewModel.refresh()
+                        },
                         onBack = { backStack.pop() },
                         onLogout = {
                             authViewModel.logout()

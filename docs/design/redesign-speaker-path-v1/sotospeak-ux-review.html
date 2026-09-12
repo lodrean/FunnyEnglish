@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX-обзор So to Speak — перед редизайном</title>
+<style>
+  :root{
+    --bg:#EEF3FF; --surface:#FFFFFF; --surface-2:#F6F8FF; --surface-3:#E9EFFE;
+    --ink:#2D3561; --ink-muted:#58609A; --outline:#B9C7EE; --outline-soft:#D4DDF5;
+    --primary:#5B8DEF; --primary-strong:#3B6FD4; --primary-deep:#1A2F5E;
+    --primary-container:#DDE8FD; --violet:#9B7EDE; --violet-deep:#5B3FA8; --violet-container:#E5DCFF;
+    --peach:#FF9F6B; --peach-shadow:rgba(217,114,56,.55);
+    --success:#43A047; --success-container:#E3F3E4; --warning:#FB8C00; --warning-container:#FFF0DE;
+    --danger:#E53935; --radius-card:22px; --radius-chip:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Nunito','Segoe UI Rounded','Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; font-size:16px;
+    padding:32px 20px 80px;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  header.hero{
+    background:var(--surface); border-radius:var(--radius-card); padding:36px;
+    box-shadow:0 2px 12px rgba(45,53,97,.08); margin-bottom:24px;
+    border-top:6px solid var(--primary);
+  }
+  .eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-strong)}
+  h1{font-size:32px;font-weight:800;line-height:1.25;margin:6px 0 10px}
+  .lede{color:var(--ink-muted);font-size:17px;max-width:70ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700}
+  .chip.blue{background:var(--primary-container);color:var(--primary-deep)}
+  .chip.violet{background:var(--violet-container);color:var(--violet-deep)}
+  .chip.peach{background:#FFE4D4;color:#8A4A22}
+  h2{font-size:24px;font-weight:800;margin:40px 0 6px}
+  h2 .num{color:var(--primary);margin-right:8px}
+  .section-sub{color:var(--ink-muted);margin-bottom:16px;max-width:75ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g2{grid-template-columns:1fr}}
+  .card{
+    background:var(--surface);border-radius:var(--radius-card);padding:22px;
+    box-shadow:0 2px 10px rgba(45,53,97,.07);
+  }
+  .card h3{font-size:17px;font-weight:800;margin-bottom:8px}
+  .card p{font-size:14.5px;color:var(--ink-muted)}
+  .kpi{font-size:34px;font-weight:800;color:var(--primary-strong);line-height:1.1}
+  .kpi-label{font-size:13px;font-weight:700;color:var(--ink-muted)}
+  /* Timeline */
+  .timeline{position:relative;margin:20px 0 8px;padding-left:34px}
+  .timeline::before{content:'';position:absolute;left:11px;top:6px;bottom:6px;width:3px;border-radius:3px;
+    background:linear-gradient(180deg,var(--primary) 0%,var(--violet) 55%,var(--peach) 100%)}
+  .step{position:relative;margin-bottom:18px}
+  .step::before{content:'';position:absolute;left:-30px;top:6px;width:15px;height:15px;border-radius:50%;
+    background:var(--surface);border:3.5px solid var(--primary)}
+  .step:nth-child(n+5)::before{border-color:var(--violet)}
+  .step:nth-child(n+7)::before{border-color:var(--peach)}
+  .step-title{font-weight:800;font-size:16px}
+  .step-text{font-size:14.5px;color:var(--ink-muted);max-width:78ch}
+  .tag{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    padding:2px 10px;border-radius:999px;margin-left:8px;vertical-align:2px}
+  .tag.core{background:var(--primary-container);color:var(--primary-deep)}
+  .tag.mode{background:var(--warning-container);color:#8A5200}
+  .tag.gate{background:#F3E1E1;color:#8C2F2C}
+  /* Swatches */
+  .swatches{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .swatch{width:112px;border-radius:14px;overflow:hidden;border:1px solid var(--outline-soft);background:var(--surface)}
+  .swatch .c{height:52px}
+  .swatch .n{padding:6px 10px;font-size:11.5px;font-weight:700;color:var(--ink-muted)}
+  .swatch .n b{display:block;color:var(--ink);font-size:12px}
+  /* Strengths / weaknesses */
+  .plus h3::before{content:'✓ ';color:var(--success)}
+  .prio{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;margin-right:8px;vertical-align:2px}
+  .prio.high{background:#FAD9D7;color:#8C1D18}
+  .prio.mid{background:var(--warning-container);color:#8A5200}
+  .prio.low{background:var(--primary-container);color:var(--primary-deep)}
+  .weak li{margin-bottom:14px}
+  .weak ul{list-style:none}
+  /* Preserve / change */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:820px){.compare{grid-template-columns:1fr}}
+  .panel{border-radius:var(--radius-card);padding:22px}
+  .panel.keep{background:var(--success-container)}
+  .panel.change{background:var(--violet-container)}
+  .panel h3{font-size:16px;font-weight:800;margin-bottom:10px}
+  .panel ul{padding-left:20px;font-size:14.5px}
+  .panel li{margin-bottom:7px}
+  footer{margin-top:44px;color:var(--ink-muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Исследование перед редизайном</div>
+  <h1>So to Speak — текущий пользовательский опыт</h1>
+  <p class="lede">Кроссплатформенный тренажёр устной английской речи: ученик смотрит видео по теме, отвечает голосом, учитель проверяет записи и оценивает по рубрике. Ниже — разбор флоу, экранов, визуального языка, сильных сторон и точек роста, обнаруженных при чтении кода продукта.</p>
+  <div class="meta-row">
+    <span class="chip blue">Compose Multiplatform · Android / Desktop / WASM</span>
+    <span class="chip blue">Admin: React 18 + MUI</span>
+    <span class="chip violet">Дизайн-система «Playful Coach» v1.1</span>
+    <span class="chip peach">Guest-first</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="num">01</span>Продукт в цифрах</h2>
+  <p class="section-sub">Объём студенческого приложения по состоянию кода на сегодня.</p>
+  <div class="grid g3">
+    <div class="card"><div class="kpi">15</div><div class="kpi-label">экранов в студенческом приложении</div></div>
+    <div class="card"><div class="kpi">3</div><div class="kpi-label">вкладки нижней навигации: Темы · Отправки · Профиль</div></div>
+    <div class="card"><div class="kpi">2</div><div class="kpi-label">режима тренировки: Training (3 попытки) и Practice (30 сек)</div></div>
+    <div class="card"><div class="kpi">4×10</div><div class="kpi-label">рубрика оценки учителя + комментарий</div></div>
+    <div class="card"><div class="kpi">2</div><div class="kpi-label">темы оформления: светлая и тёмная</div></div>
+    <div class="card"><div class="kpi">12</div><div class="kpi-label">экранов в админ-панели учителя</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>Флоу ученика — как он устроен сейчас</h2>
+  <p class="section-sub">Сквозной путь от первого запуска до получения оценки. Ядро продукта — двойной режим ответа голосом.</p>
+  <div class="card">
+    <div class="timeline">
+      <div class="step"><div class="step-title">Вход и онбординг</div><div class="step-text">Splash → 3 статичных слайда ценности (видео / тренировка вслух / отправка учителю). Регистрации на входе нет — гость сразу попадает в библиотеку.</div></div>
+      <div class="step"><div class="step-title">Библиотека тем <span class="tag core">вкладка</span></div><div class="step-text">Список ElevatedCard: градиентный тайл 64dp с инициалами, бейдж «N ПРОЙДЕНО» / «НОВАЯ», прогресс-бар темы, chevron. Заголовок + подзаголовок сверху.</div></div>
+      <div class="step"><div class="step-title">Топики темы</div><div class="step-text">Список топиков выбранной темы, переход к видео или сразу к вопросам.</div></div>
+      <div class="step"><div class="step-title">Видео</div><div class="step-text">Плеер (Media3 на Android), переключатель «С субтитрами / Без», полный транскрипт под плеером с пословной подсветкой, полноэкранный режим, CTA «Перейти к вопросам» — доступен всегда.</div></div>
+      <div class="step"><div class="step-title">Вопросы</div><div class="step-text">Hero-карточка активного вопроса («Вопрос 1 из N») + компактные строки остальных. Ниже — выбор режима: Training для всех, Practice за гейтом для гостя.</div></div>
+      <div class="step"><div class="step-title">Training <span class="tag mode">3 попытки</span></div><div class="step-text">Одна запись на все вопросы. Таймер-кольцо с эскалацией 80с → 50с → 30с и цветом уровня. Прослушивание без удаления, авто-✅ с анимацией. После 3-й попытки — CTA «Перейти к практике / В библиотеку / Заново».</div></div>
+      <div class="step"><div class="step-title">Practice <span class="tag mode">30 сек</span></div><div class="step-text">Одна запись на все вопросы, без прослушивания. Автостоп → автоматическая отправка учителю. Выход во время записи — с диалогом подтверждения.</div></div>
+      <div class="step"><div class="step-title">Отправки <span class="tag core">вкладка</span></div><div class="step-text">Карточки со статусом NEW / REVIEWED, чип итогового балла, разбор по рубрике: грамматика, лексика, произношение, беглость (1–10) + комментарий. Повтор отправки при оффлайне.</div></div>
+      <div class="step"><div class="step-title">Профиль <span class="tag core">вкладка</span></div><div class="step-text">Аватар-инициалы, три стат-карточки (отправки / темы пройдено / дней с записью), переключатель темы оформления, выход. Для гостя — заглушка с CTA регистрации.</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Визуальный язык «Playful Coach»</h2>
+  <p class="section-sub">Дизайн-система живёт в токенах (W3C DTCG) и генерируется сразу в Kotlin для приложения и в TS/CSS для админки — HEX совпадают 1:1. Выбранный владельцем вариант B из трёх презентованных направлений.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Характер системы</h3>
+      <p>Округлый дружелюбный шрифт Nunito (400–800), шкала Major Third, минимум 14sp, межстрочный 1.5 для читаемости. Пастельная игровая палитра без «стиков и гемов». Карточки без рамок, радиус 22, мягкие тени с индиго-подтоном. Таймер — моноширинные tabular-цифры в кольце прогресса.</p>
+      <div class="swatches">
+        <div class="swatch"><div class="c" style="background:#5B8DEF"></div><div class="n"><b>#5B8DEF</b>primary</div></div>
+        <div class="swatch"><div class="c" style="background:#3B6FD4"></div><div class="n"><b>#3B6FD4</b>primary strong</div></div>
+        <div class="swatch"><div class="c" style="background:#9B7EDE"></div><div class="n"><b>#9B7EDE</b>secondary</div></div>
+        <div class="swatch"><div class="c" style="background:#FF9F6B"></div><div class="n"><b>#FF9F6B</b>record</div></div>
+        <div class="swatch"><div class="c" style="background:#2D3561"></div><div class="n"><b>#2D3561</b>текст</div></div>
+        <div class="swatch"><div class="c" style="background:#EEF3FF"></div><div class="n"><b>#EEF3FF</b>фон</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Характерные решения</h3>
+      <p>• Кнопка записи — не круг, а squircle 22dp с «жёсткой» оттопыренной тенью, при нажатии схлопывается.<br>
+      • Запись — дружелюбный персиковый, а не тревожный красный: красный закреплён за ошибками.<br>
+      • Уровни таймера 80/50/30 кодируются цветом: синий → фиолетовый → персиковый.<br>
+      • Игровой overshoot- easing на подтверждении попытки; обязательная поддержка reduce-motion.<br>
+      • Задокументированные WCAG-исправления контраста (в т.ч. в тёмной теме).<br>
+      • Адаптивность: нижняя панель на компактных экранах, rail — на широких; ограничение ширины контента.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Сильные стороны текущего UX</h2>
+  <div class="grid g3">
+    <div class="card plus"><h3>Единый источник правды</h3><p>Токены собираются из одного JSON в код приложения и админки — бренд не расползается между платформами.</p></div>
+    <div class="card plus"><h3>Guest-first без тупиков</h3><p>Видео и Training доступны без регистрации; закрытые зоны оформлены гейтами с понятным CTA, а не заглушками-ошибками.</p></div>
+    <div class="card plus"><h3>Эмпатичная запись голоса</h3><p>Персиковая кнопка, уровни таймера, waveform, честное обещание «записи не покидают устройство» в Training.</p></div>
+    <div class="card plus"><h3>Покрытие состояний</h3><p>Скелетоны загрузки, empty-state с CTA, ошибки с повтором, рационал разрешения микрофона, оффлайн-retry отправок.</p></div>
+    <div class="card plus"><h3>Дисциплина доступности</h3><p>Контрастные пары исправлены и задокументированы, reduce-motion, tabular-nums,语义-разметка тестов.</p></div>
+    <div class="card plus"><h3>Адаптивный каркас</h3><p>Bottom bar / NavigationRail по ширине окна, ограничение ширины контента, полноэкранное видео с учётом вырезов.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>Точки роста — что ограничивает опыт</h2>
+  <p class="section-sub">Приоритеты выставлены по влиянию на ценностную петлю продукта и частоте контакта пользователя с проблемой.</p>
+  <div class="card weak">
+    <ul>
+      <li><span class="prio high">Высокий</span><b>Разрыв петли обратной связи.</b> Оценка учителя — ключевая ценность, но о новой оценке пользователь узнаёт, только если сам откроет вкладку «Отправки». Экран «Сообщения» существует в коде, но в навигацию не ведёт ни один путь; там же «висит» недостижимый экран настроек.</li>
+      <li><span class="prio high">Высокий</span><b>Навигация «назад» только системная.</b> На всех флоу-экранах стрелки в аппбаре убраны — на телефоне жест приемлем, на desktop/WASM возврат менее очевиден; новому пользователю трудно сориентироваться в глубине флоу.</li>
+      <li><span class="prio mid">Средний</span><b>Однородная библиотека.</b> Все темы выглядят одинаково: градиентный тайл + инициалы. Нет обложек и иллюстраций, слабая эмоциональная дифференциация — а это первый экран продукта.</li>
+      <li><span class="prio mid">Средний</span><b>Мотивационный слой не раскрыт.</b> Статистика профиля — три числа без динамики; игровой потенциал дизайн-системы (кольца, уровни, стрики) в интерфейсе почти не задействован.</li>
+      <li><span class="prio mid">Средний</span><b>Статичный онбординг.</b> Три слайда с иконками не показывают сам продукт — ни видео, ни демо записи голоса, ни того, как выглядит оценка.</li>
+      <li><span class="prio low">Низкий</span><b>Мелкие противоречия.</b> Emoji-иконка 📬 в гостевом гейте вопреки собственной дисциплине дизайн-системы; CTA к вопросам доступен до просмотра видео без мягкой подсказки; нет признака прогресса по отдельным вопросам внутри одной записи.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span>Учительская сторона (admin-web)</h2>
+  <p class="section-sub">React 18 + MUI v6, те же токены. Функционально полно: дашборд, CRUD контента Speaking, грейдинг, пользователи, аналитика, клиентские логи.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Контент</h3><p>Библиотеки → темы → топики: списки и редакторы видео, субтитров, вопросов.</p></div>
+    <div class="card"><h3>Grading</h3><p>Inbox записей → детальная оценка: 4 слайдера рубрики 1–10, итоговый балл, комментарий.</p></div>
+    <div class="card"><h3>Наблюдение</h3><p>Дашборд, аналитика, пользователи, клиентские логи для отладки.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span>Что это значит для редизайна</h2>
+  <p class="section-sub">Первичный вывод о границах изменений — до выбора направления.</p>
+  <div class="compare">
+    <div class="panel keep">
+      <h3>Сохранить — это работает</h3>
+      <ul>
+        <li>Двойной режим Training / Practice и правила попыток</li>
+        <li>Guest-first и механику гейтов</li>
+        <li>Токены, палитру и шрифт как основу (эволюция, а не смена)</li>
+        <li>Покрытие состояний и a11y-дисциплину</li>
+        <li>Статусную модель отправок и рубрику оценки</li>
+      </ul>
+    </div>
+    <div class="panel change">
+      <h3>Зона улучшений</h3>
+      <ul>
+        <li>Довести петлю ценности: уведомление об оценке, живой разбор</li>
+        <li>Эмоциональный первый экран: обложки тем, витрина библиотеки</li>
+        <li>Мотивационный слой: прогресс, стрик, уровни</li>
+        <li>Онбординг с живым превью продукта</li>
+        <li>Ориентация в флоу: понятный возврат назад, настройки в UI</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>UX-обзор подготовлен перед редизайном So to Speak · по результатам чтения кодовой базы composeApp и admin-web · сентябрь 2026</footer>
+
+</div>
+</body>
+</html>

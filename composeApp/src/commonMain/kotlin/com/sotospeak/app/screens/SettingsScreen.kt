@@ -1,8 +1,9 @@
 package com.sotospeak.app.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,34 +12,21 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,14 +34,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sotospeak.app.components.SpeakingAppBar
 import com.sotospeak.app.viewmodel.AppLanguage
 import com.sotospeak.app.viewmodel.AppThemeMode
 import com.sotospeak.app.viewmodel.SettingsState
+import com.sotospeak.designsystem.icons.SpeakingIcons
+import com.sotospeak.designsystem.theme.LocalSpeakingColors
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Экран настроек по V1-макету «Путь спикера» (DS v3.2.0 B13 setrow, bd d1e.5):
+ * строки — иконка в квадратике primaryContainer r11 + заголовок/подзаголовок +
+ * Switch/chevron; аппбар с back-кнопкой. Экран ранее не имел входа в UI —
+ * вход добавлен из профиля (OpenSpec app-navigation).
+ */
 @Composable
 fun SettingsScreen(
     state: SettingsState,
@@ -68,25 +67,15 @@ fun SettingsScreen(
 ) {
     var languageExpanded by remember { mutableStateOf(false) }
     var themeExpanded by remember { mutableStateOf(false) }
+    val speaking = LocalSpeakingColors.current
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = speaking.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Настройки",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+            SpeakingAppBar(
+                title = "Настройки",
+                subtitle = "Профиль",
+                onBack = onBack
             )
         }
     ) { padding ->
@@ -96,277 +85,271 @@ fun SettingsScreen(
                 .padding(padding)
                 .consumeWindowInsets(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             item {
-                SettingsSection(title = "Общие") {
-                    ThemeRow(
-                        themeMode = state.themeMode,
-                        expanded = themeExpanded,
-                        onExpandedChange = { themeExpanded = it },
-                        onThemeSelected = onThemeSelected
+                SettingsToggleRow(
+                    icon = SpeakingIcons.Bell,
+                    title = "Уведомления",
+                    subtitle = "Новая оценка, напоминания",
+                    checked = state.notificationsEnabled,
+                    onCheckedChange = onToggleNotifications,
+                    testTag = "settings_notifications"
+                )
+            }
+            item {
+                SettingsToggleRow(
+                    icon = SpeakingIcons.Volume,
+                    title = "Звук",
+                    subtitle = "Эффекты и подтверждения",
+                    checked = state.soundEnabled,
+                    onCheckedChange = onToggleSound,
+                    testTag = "settings_sound"
+                )
+            }
+            item {
+                SettingsToggleRow(
+                    icon = SpeakingIcons.Vibrate,
+                    title = "Вибрация",
+                    subtitle = "Отклик кнопки записи",
+                    checked = state.hapticsEnabled,
+                    onCheckedChange = onToggleHaptics,
+                    testTag = "settings_haptics"
+                )
+            }
+            item {
+                SettingsToggleRow(
+                    icon = SpeakingIcons.Play,
+                    title = "Автопроигрывание аудио",
+                    subtitle = "Воспроизводить звук без нажатия",
+                    checked = state.autoPlayAudio,
+                    onCheckedChange = onToggleAutoPlay,
+                    testTag = "settings_autoplay"
+                )
+            }
+            item {
+                Box {
+                    SettingsChevronRow(
+                        icon = SpeakingIcons.Globe,
+                        title = "Язык интерфейса",
+                        subtitle = languageLabel(state.language),
+                        onClick = { languageExpanded = true },
+                        testTag = "settings_language"
                     )
-                    HorizontalDivider()
-                    LanguageRow(
-                        language = state.language,
+                    DropdownMenu(
                         expanded = languageExpanded,
-                        onExpandedChange = { languageExpanded = it },
-                        onLanguageSelected = onLanguageSelected
-                    )
-                }
-            }
-
-            item {
-                SettingsSection(title = "Уведомления") {
-                    SettingsToggleRow(
-                        title = "Push-уведомления",
-                        subtitle = "Напоминания о тренировках",
-                        checked = state.notificationsEnabled,
-                        onCheckedChange = onToggleNotifications,
-                        icon = Icons.Default.Notifications
-                    )
-                }
-            }
-
-            item {
-                SettingsSection(title = "Звук и вибрация") {
-                    SettingsToggleRow(
-                        title = "Звуковые эффекты",
-                        subtitle = "Звук в упражнениях и интерфейсе",
-                        checked = state.soundEnabled,
-                        onCheckedChange = onToggleSound,
-                        icon = Icons.Default.MusicNote
-                    )
-                    HorizontalDivider()
-                    SettingsToggleRow(
-                        title = "Вибрация",
-                        subtitle = "Тактильная отдача при ответах",
-                        checked = state.hapticsEnabled,
-                        onCheckedChange = onToggleHaptics,
-                        icon = Icons.Default.TouchApp
-                    )
-                    HorizontalDivider()
-                    SettingsToggleRow(
-                        title = "Автопроигрывание аудио",
-                        subtitle = "Воспроизводить звук без нажатия",
-                        checked = state.autoPlayAudio,
-                        onCheckedChange = onToggleAutoPlay,
-                        icon = Icons.Default.PlayArrow
-                    )
-                }
-            }
-
-            item {
-                SettingsSection(title = "О приложении") {
-                    ListItem(
-                        headlineContent = {
-                            Text(text = "Версия")
-                        },
-                        supportingContent = {
-                            Text(text = "1.0.0")
-                        }
-                    )
-                }
-            }
-
-            item {
-                // M3 (A13): shape large(22) по DSM-5 §2
-                Card(
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        onDismissRequest = { languageExpanded = false }
                     ) {
-                        Button(
-                            onClick = onLogout,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Logout,
-                                contentDescription = null
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Выйти")
-                        }
+                        DropdownMenuItem(
+                            text = { Text("Русский") },
+                            onClick = {
+                                onLanguageSelected(AppLanguage.RU)
+                                languageExpanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("English") },
+                            onClick = {
+                                onLanguageSelected(AppLanguage.EN)
+                                languageExpanded = false
+                            }
+                        )
                     }
                 }
             }
+            item {
+                Box {
+                    SettingsChevronRow(
+                        icon = SpeakingIcons.Moon,
+                        title = "Оформление",
+                        subtitle = themeLabel(state.themeMode),
+                        onClick = { themeExpanded = true },
+                        testTag = "settings_theme"
+                    )
+                    DropdownMenu(
+                        expanded = themeExpanded,
+                        onDismissRequest = { themeExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Системная") },
+                            onClick = {
+                                onThemeSelected(AppThemeMode.SYSTEM)
+                                themeExpanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Светлая") },
+                            onClick = {
+                                onThemeSelected(AppThemeMode.LIGHT)
+                                themeExpanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Тёмная") },
+                            onClick = {
+                                onThemeSelected(AppThemeMode.DARK)
+                                themeExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                // V1 .logout: прозрачная кнопка с красной рамкой (1.5dp)
+                OutlinedButton(
+                    onClick = onLogout,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .testTag("settings_logout"),
+                    shape = MaterialTheme.shapes.medium,
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.error
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(text = "Выйти", fontWeight = FontWeight.ExtraBold)
+                }
+                Text(
+                    text = "So to speak · v1.4",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = speaking.textMuted,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .testTag("settings_version")
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun SettingsSection(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Card(shape = MaterialTheme.shapes.large) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = title,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            content()
-        }
-    }
+private fun languageLabel(language: AppLanguage): String = when (language) {
+    AppLanguage.RU -> "Русский"
+    AppLanguage.EN -> "English"
 }
 
 @Composable
-private fun SettingsToggleRow(
+private fun themeLabel(themeMode: AppThemeMode): String = when (themeMode) {
+    AppThemeMode.SYSTEM -> "Системная"
+    AppThemeMode.LIGHT -> "Светлая"
+    AppThemeMode.DARK -> "Тёмная"
+}
+
+/** Строка-переключатель (DS v3.2.0 B13 setrow). */
+@Composable
+internal fun SettingsToggleRow(
+    icon: ImageVector,
     title: String,
     subtitle: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    icon: androidx.compose.ui.graphics.vector.ImageVector
+    testTag: String
 ) {
-    ListItem(
-        headlineContent = { Text(text = title) },
-        supportingContent = { Text(text = subtitle) },
-        leadingContent = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null
+    val speaking = LocalSpeakingColors.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 4.dp, vertical = 8.dp)
+            .testTag(testTag),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SettingsRowIcon(icon = icon)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = speaking.text
             )
-        },
-        trailingContent = {
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
+            Text(
+                text = subtitle,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = speaking.textMuted
             )
         }
-    )
-}
-
-@Composable
-private fun LanguageRow(
-    language: AppLanguage,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onLanguageSelected: (AppLanguage) -> Unit
-) {
-    val label = when (language) {
-        AppLanguage.RU -> "Русский"
-        AppLanguage.EN -> "English"
-    }
-
-    Column {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpandedChange(true) }
-        ) {
-            ListItem(
-                headlineContent = { Text(text = "Язык") },
-                supportingContent = { Text(text = "Язык интерфейса") },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Language,
-                        contentDescription = null
-                    )
-                },
-                trailingContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = label)
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null
-                        )
-                    }
-                }
-            )
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { onExpandedChange(false) }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Русский") },
-                    onClick = {
-                        onLanguageSelected(AppLanguage.RU)
-                        onExpandedChange(false)
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("English") },
-                    onClick = {
-                        onLanguageSelected(AppLanguage.EN)
-                        onExpandedChange(false)
-                    }
-                )
-            }
-        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = speaking.primaryStrong,
+                uncheckedTrackColor = speaking.textMuted
+            ),
+            modifier = Modifier.testTag("${testTag}_switch")
+        )
     }
 }
 
+/** Строка-переход (DS v3.2.0 B13 setrow): иконка + заголовок/подзаголовок + chevron. */
 @Composable
-private fun ThemeRow(
-    themeMode: AppThemeMode,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onThemeSelected: (AppThemeMode) -> Unit
+internal fun SettingsChevronRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    testTag: String
 ) {
-    val label = when (themeMode) {
-        AppThemeMode.SYSTEM -> "Системная"
-        AppThemeMode.LIGHT -> "Светлая"
-        AppThemeMode.DARK -> "Темная"
-    }
-
-    Column {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpandedChange(true) }
-        ) {
-            ListItem(
-                headlineContent = { Text(text = "Тема") },
-                supportingContent = { Text(text = "Светлая, тёмная или системная") },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Brightness4,
-                        contentDescription = null
-                    )
-                },
-                trailingContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = label)
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null
-                        )
-                    }
-                }
+    val speaking = LocalSpeakingColors.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 8.dp)
+            .testTag(testTag),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SettingsRowIcon(icon = icon)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = speaking.text
             )
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { onExpandedChange(false) }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Системная") },
-                    onClick = {
-                        onThemeSelected(AppThemeMode.SYSTEM)
-                        onExpandedChange(false)
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Светлая") },
-                    onClick = {
-                        onThemeSelected(AppThemeMode.LIGHT)
-                        onExpandedChange(false)
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Темная") },
-                    onClick = {
-                        onThemeSelected(AppThemeMode.DARK)
-                        onExpandedChange(false)
-                    }
-                )
-            }
+            Text(
+                text = subtitle,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = speaking.textMuted
+            )
         }
+        Icon(
+            imageVector = SpeakingIcons.ChevronRight,
+            contentDescription = null,
+            tint = speaking.textMuted,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+/** Иконка строки в квадратике 34dp primaryContainer r11 (V1 .sico). */
+@Composable
+private fun SettingsRowIcon(icon: ImageVector) {
+    val speaking = LocalSpeakingColors.current
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .clip(RoundedCornerShape(11.dp))
+            .background(speaking.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = speaking.onPrimaryContainer,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }

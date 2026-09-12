@@ -4,15 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,19 +42,20 @@ fun TopicsScreen(
     val speaking = LocalSpeakingColors.current
     val strings = LocalAppStrings.current
 
-    // Стрелки в аппбаре нет (мокап) — системная кнопка/жест «назад»
+    // Back-кнопка аппбара (V1) и системная кнопка/жест ведут одинаково на onBack
     com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            // Мокап frame-topics: h1 — название темы, sub — «N топиков · выбери и начни говорить»,
-            // БЕЗ стрелки «назад» (назад — системная кнопка/жест)
+            // V1-макет: h1 — название темы, sub — «N топиков · выбери и начни говорить»,
+            // back-кнопка в аппбаре
             SpeakingAppBar(
                 title = libraryTitle.ifBlank { state.libraryTitle }.ifBlank { strings.topicsTitle },
                 subtitle = if (state.topics.isNotEmpty()) {
                     strings.topicsSubtitle(state.topics.size)
-                } else null
+                } else null,
+                onBack = onBack
             )
         },
         modifier = modifier.testTag("topics_screen")
@@ -136,14 +134,14 @@ private fun TopicsList(
                 shape = SpeakingShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = speaking.surface)
             ) {
-                // M3 ListItem (A6) по мокапу frame-topics (.li): leading — play,
-                // headline — название (fade вместо ellipsis), supporting — «N вопросов · видео m:ss»,
-                // trailing — чип статуса + chevron
+                // V1-макет toprow (редизайн «Путь спикера»): leading — thumb 48dp
+                // (primaryContainer + play), headline — название (fade вместо ellipsis),
+                // supporting — «N вопросов · видео m:ss», trailing — чип статуса + chevron
                 ListItem(
                     headlineContent = {
                         com.sotospeak.app.components.FadingEdgeText(
                             text = topic.title,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                             color = speaking.text,
                             maxLines = 3,
                             fadeColor = speaking.surface
@@ -157,12 +155,20 @@ private fun TopicsList(
                         )
                     },
                     leadingContent = {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            tint = speaking.primary,
-                            modifier = Modifier.size(36.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(13.dp))
+                                .background(speaking.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = SpeakingIcons.Play,
+                                contentDescription = null,
+                                tint = speaking.onPrimaryContainer,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {

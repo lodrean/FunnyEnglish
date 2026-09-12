@@ -6,9 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,20 +46,21 @@ fun QuestionsScreen(
     val speaking = LocalSpeakingColors.current
     val strings = LocalAppStrings.current
 
-    // Стрелки в аппбаре нет (мокап frame-questions) — системная кнопка/жест «назад»
+    // Back-кнопка аппбара (V1) и системная кнопка/жест ведут одинаково на onBack
     com.sotospeak.app.components.PlatformBackHandler(onBack = onBack)
 
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            // Мокап frame-questions: h1 «Вопросы», sub — «Тема · Топик · N вопросов», без стрелки
+            // V1-макет: h1 «Вопросы», sub — «Тема · Топик · N вопросов», back-кнопка
             SpeakingAppBar(
                 title = strings.questionsTitle,
                 subtitle = listOfNotNull(
                     libraryTitle.ifBlank { null },
                     state.topicTitle.ifBlank { null },
                     if (state.questions.isNotEmpty()) strings.questionsCount(state.questions.size) else null
-                ).joinToString(" · ").ifBlank { null }
+                ).joinToString(" · ").ifBlank { null },
+                onBack = onBack
             )
         },
         modifier = modifier.testTag("questions_screen")
@@ -207,7 +205,7 @@ private fun QuestionsContent(
                     interactionSource = practiceIsrc
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Mic,
+                        imageVector = SpeakingIcons.Mic,
                         contentDescription = null,
                         tint = speaking.secondary,
                         modifier = Modifier.size(18.dp)
@@ -256,11 +254,12 @@ private fun ActiveQuestionCard(
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)) {
             Text(
+                // V1-макет: eyebrow «ВОПРОС N ИЗ M» — оранжевый (warning)
                 text = strings.questionOfUpper(index + 1, total),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 0.08.em,
-                color = speaking.primary
+                color = speaking.statusNew
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(

@@ -1,12 +1,19 @@
 package com.sotospeak.app.navigation
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.sotospeak.app.components.LockedFeature
 import com.sotospeak.app.screens.DebugMenuScreen
+import com.sotospeak.app.screens.showcase.DesignShowcaseScreen
 import com.sotospeak.app.screens.LibraryScreen
 import com.sotospeak.app.screens.MessagesScreen
 import com.sotospeak.app.screens.MySubmissionsScreen
@@ -24,7 +31,6 @@ import com.sotospeak.app.viewmodel.LibraryEvent
 import com.sotospeak.app.viewmodel.LibraryViewModel
 import com.sotospeak.app.viewmodel.MessagesViewModel
 import com.sotospeak.app.viewmodel.MySubmissionsAction
-import com.sotospeak.app.viewmodel.SubmissionsFilter
 import com.sotospeak.app.viewmodel.MySubmissionsEvent
 import com.sotospeak.app.viewmodel.MySubmissionsViewModel
 import com.sotospeak.app.viewmodel.ProfileViewModel
@@ -86,6 +92,7 @@ fun MainNavHost(
                     onLoginClick = if (isGuest) {
                         { onNavigate(AppScreen.Login) }
                     } else null,
+                    onOpenSettings = { onNavigate(AppScreen.Settings) },
                     versionLabel = if (appConfig.debugToolsEnabled) {
                         "So to speak v${appConfig.appVersion}"
                     } else null,
@@ -98,8 +105,27 @@ fun MainNavHost(
                 DebugMenuScreen(
                     appConfig = appConfig,
                     logUploader = logUploader,
+                    onShowcaseOpen = { onNavigate(AppScreen.DesignShowcase) },
                     onBack = onBack
                 )
+            }
+            is AppScreen.DesignShowcase -> {
+                val appConfig: com.sotospeak.app.di.AppConfig = koinInject()
+                if (appConfig.debugToolsEnabled) {
+                    DesignShowcaseScreen(onBack = onBack)
+                } else {
+                    // Защитный гейт: маршрут достижим только из Debug-меню (debug/qa);
+                    // при выключенном флаге шоукейс не рендерим
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Шоукейс доступен только в debug/qa-сборках",
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
             }
             is AppScreen.Messages -> {
                 val messagesViewModel: MessagesViewModel = routeViewModel(screen)
@@ -132,12 +158,17 @@ fun MainNavHost(
                     when (event) {
                         is LibraryEvent.NavigateToTopics ->
                             onNavigate(AppScreen.Topics(event.libraryId, event.libraryTitle))
+                        is LibraryEvent.NavigateToQuestions ->
+                            onNavigate(
+                                AppScreen.Questions(event.topicId, event.libraryId, event.libraryTitle)
+                            )
                     }
                 }
                 LibraryScreen(
                     state = state,
                     onLoad = { vm.onAction(LibraryAction.OnRefresh) },
-                    onLibraryClick = { id -> vm.onAction(LibraryAction.OnLibraryClick(id)) }
+                    onLibraryClick = { id -> vm.onAction(LibraryAction.OnLibraryClick(id)) },
+                    onContinueClick = { vm.onAction(LibraryAction.OnContinueClick) }
                 )
             }
             is AppScreen.Topics -> {

@@ -27,6 +27,8 @@ fun AppScaffold(
     currentScreen: AppScreen,
     authMode: AuthMode,
     settingsViewModel: SettingsViewModel,
+    submissionsBadgeCount: Int = 0,
+    onSubmissionsOpened: () -> Unit = {},
     onNavigate: (AppScreen) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit
@@ -34,6 +36,14 @@ fun AppScaffold(
     val showBottomNav = currentScreen is AppScreen.Library ||
         currentScreen is AppScreen.MySubmissions ||
         currentScreen is AppScreen.Profile
+
+    // Бейдж «Отправки» гаснет при открытии вкладки (OpenSpec app-navigation)
+    val navigateWithBadge: (AppScreen) -> Unit = { target ->
+        if (target is AppScreen.MySubmissions) {
+            onSubmissionsOpened()
+        }
+        onNavigate(target)
+    }
 
     // M3-адаптивность (спека §5, Q4): compact → NavigationBar, medium/expanded → NavigationRail
     BoxWithConstraints {
@@ -44,7 +54,8 @@ fun AppScaffold(
             if (useRail) {
                 SpeakingNavigationRail(
                     currentScreen = currentScreen,
-                    onNavigate = onNavigate
+                    onNavigate = navigateWithBadge,
+                    submissionsBadgeCount = submissionsBadgeCount
                 )
             }
             Scaffold(
@@ -52,7 +63,8 @@ fun AppScaffold(
                     if (showBottomNav && !useRail) {
                         BottomNavigationBar(
                             currentScreen = currentScreen,
-                            onNavigate = onNavigate
+                            onNavigate = navigateWithBadge,
+                            submissionsBadgeCount = submissionsBadgeCount
                         )
                     }
                 }

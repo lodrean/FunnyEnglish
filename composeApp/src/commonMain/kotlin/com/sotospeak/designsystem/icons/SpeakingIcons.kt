@@ -536,6 +536,280 @@ object SpeakingIcons {
             }
         }.build()
 
+    // ==================== CHEVRON LEFT ====================
+
+    /**
+     * Chevron left icon (i-chevron-left) - stroke variant.
+     * Back button in flow-screen app bars (redesign "Путь спикера" V1).
+     */
+    val ChevronLeft: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingChevronLeft",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // polyline 15 5 8 12 15 19
+                moveTo(15f, 5f)
+                lineTo(8f, 12f)
+                lineTo(15f, 19f)
+            }
+        }.build()
+
+    // ==================== GEAR ====================
+
+    /**
+     * Gear/settings icon (i-gear) - stroke variant (feather "settings").
+     * Used for settings rows and the profile settings entry.
+     */
+    val Gear: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingGear",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // circle cx=12 cy=12 r=3
+                moveTo(15f, 12f)
+                arcTo(3f, 3f, 0f, false, true, 12f, 15f)
+                arcTo(3f, 3f, 0f, false, true, 9f, 12f)
+                arcTo(3f, 3f, 0f, false, true, 12f, 9f)
+                arcTo(3f, 3f, 0f, false, true, 15f, 12f)
+                close()
+                // gear body path (feather settings), starting at M19.4 15
+                moveTo(19.4f, 15f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 19.74f, 16.87f)
+                lineTo(19.8f, 16.93f)
+                arcTo(2f, 2f, 0f, true, true, 16.97f, 19.76f)
+                lineTo(16.91f, 19.7f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 15.04f, 19.36f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 14.01f, 20.92f)
+                lineTo(14.01f, 21f)
+                arcTo(2f, 2f, 0f, true, true, 10.01f, 21f)
+                lineTo(10.01f, 20.91f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 8.9f, 19.35f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 7.03f, 19.69f)
+                lineTo(6.97f, 19.75f)
+                arcTo(2f, 2f, 0f, true, true, 4.14f, 16.92f)
+                lineTo(4.2f, 16.86f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 4.54f, 14.99f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 2.98f, 13.96f)
+                lineTo(3f, 14f)
+                arcTo(2f, 2f, 0f, true, true, 3f, 10f)
+                lineTo(3.09f, 10f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 4.65f, 8.89f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 4.31f, 7.02f)
+                lineTo(4.25f, 6.96f)
+                arcTo(2f, 2f, 0f, true, true, 7.08f, 4.13f)
+                lineTo(7.14f, 4.19f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 9.01f, 4.53f)
+                lineTo(9.09f, 4.53f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 10.12f, 2.97f)
+                lineTo(10.12f, 3f)
+                arcTo(2f, 2f, 0f, true, true, 14.12f, 3f)
+                lineTo(14.12f, 3.09f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 15.15f, 4.65f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 17.02f, 4.31f)
+                lineTo(17.08f, 4.25f)
+                arcTo(2f, 2f, 0f, true, true, 19.91f, 7.08f)
+                lineTo(19.85f, 7.14f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 19.51f, 9.01f)
+                lineTo(19.51f, 9.09f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 21.07f, 10.12f)
+                lineTo(21f, 10f)
+                arcTo(2f, 2f, 0f, true, true, 21f, 14f)
+                lineTo(20.91f, 14f)
+                arcTo(1.7f, 1.7f, 0f, false, false, 19.4f, 15f)
+                close()
+            }
+        }.build()
+
+    // ==================== BELL ====================
+
+    /** Bell/notifications icon (i-bell) - stroke variant (feather "bell"). */
+    val Bell: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingBell",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9
+                moveTo(18f, 8f)
+                arcTo(6f, 6f, 0f, false, false, 12f, 2f)
+                arcTo(6f, 6f, 0f, false, false, 6f, 8f)
+                curveToRelative(0f, 7f, -3f, 9f, -3f, 9f)
+                horizontalLineTo(21f)
+                reflectiveCurveToRelative(-3f, -2f, -3f, -9f)
+                close()
+                // M13.7 21a2 2 0 0 1-3.4 0
+                moveTo(13.7f, 21f)
+                arcTo(2f, 2f, 0f, false, true, 10.3f, 21f)
+            }
+        }.build()
+
+    // ==================== VOLUME ====================
+
+    /** Volume/sound icon (i-volume) - stroke variant (feather "volume-2"). */
+    val Volume: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingVolume",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // polygon 11 5 6 9 2 9 2 15 6 15 11 19 11 5
+                moveTo(11f, 5f)
+                lineTo(6f, 9f)
+                lineTo(2f, 9f)
+                lineTo(2f, 15f)
+                lineTo(6f, 15f)
+                lineTo(11f, 19f)
+                close()
+                // M15.5 8.5a5 5 0 0 1 0 7
+                moveTo(15.5f, 8.5f)
+                arcTo(5f, 5f, 0f, false, true, 15.5f, 15.5f)
+                // M19 5a9 9 0 0 1 0 14
+                moveTo(19f, 5f)
+                arcTo(9f, 9f, 0f, false, true, 19f, 19f)
+            }
+        }.build()
+
+    // ==================== VIBRATE ====================
+
+    /** Vibration icon (i-vibrate) - stroke variant: phone body + side waves. */
+    val Vibrate: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingVibrate",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // rect x=9 y=4 w=6 h=16 rx=1.5
+                moveTo(10.5f, 4f)
+                lineTo(13.5f, 4f)
+                arcTo(1.5f, 1.5f, 0f, false, true, 15f, 5.5f)
+                lineTo(15f, 18.5f)
+                arcTo(1.5f, 1.5f, 0f, false, true, 13.5f, 20f)
+                lineTo(10.5f, 20f)
+                arcTo(1.5f, 1.5f, 0f, false, true, 9f, 18.5f)
+                lineTo(9f, 5.5f)
+                arcTo(1.5f, 1.5f, 0f, false, true, 10.5f, 4f)
+                close()
+                // side waves
+                moveTo(5f, 9f)
+                lineTo(5f, 15f)
+                moveTo(2.5f, 10.5f)
+                lineTo(2.5f, 13.5f)
+                moveTo(19f, 9f)
+                lineTo(19f, 15f)
+                moveTo(21.5f, 10.5f)
+                lineTo(21.5f, 13.5f)
+            }
+        }.build()
+
+    // ==================== GLOBE ====================
+
+    /** Globe/language icon (i-globe) - stroke variant (feather "globe"). */
+    val Globe: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingGlobe",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // circle cx=12 cy=12 r=9.5
+                moveTo(21.5f, 12f)
+                arcTo(9.5f, 9.5f, 0f, false, true, 12f, 21.5f)
+                arcTo(9.5f, 9.5f, 0f, false, true, 2.5f, 12f)
+                arcTo(9.5f, 9.5f, 0f, false, true, 12f, 2.5f)
+                arcTo(9.5f, 9.5f, 0f, false, true, 21.5f, 12f)
+                close()
+                // line 2.5 12 -> 21.5 12
+                moveTo(2.5f, 12f)
+                lineTo(21.5f, 12f)
+                // M12 2.5a15 15 0 0 1 0 19 15 15 0 0 1 0-19z
+                moveTo(12f, 2.5f)
+                arcTo(15f, 15f, 0f, false, true, 12f, 21.5f)
+                arcTo(15f, 15f, 0f, false, true, 12f, 2.5f)
+                close()
+            }
+        }.build()
+
+    // ==================== MOON ====================
+
+    /** Moon/appearance icon (i-moon) - stroke variant (feather "moon"). */
+    val Moon: ImageVector
+        get() = ImageVector.Builder(
+            name = "SpeakingMoon",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                pathFillType = PathFillType.NonZero
+            ) {
+                // M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z
+                moveTo(21f, 12.8f)
+                arcTo(9f, 9f, 0f, true, true, 11.2f, 3f)
+                arcTo(7f, 7f, 0f, false, false, 21f, 12.8f)
+                close()
+            }
+        }.build()
+
     // ==================== SHIELD ====================
 
     /**

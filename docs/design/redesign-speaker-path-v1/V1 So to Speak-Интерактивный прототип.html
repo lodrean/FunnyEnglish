@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>So to Speak · V1 · Интерактивный прототип · Путь спикера</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --page:#F4F6FC; --bg:#EEF3FF; --card:#FFFFFF; --card2:#F6F8FF; --navbg:#E9EFFE; --navactive:#DDE8FD;
+  --ink:#2D3561; --muted:#58609A; --faint:#9AA0C4; --line:#E7EBF7; --outline:#D4DDF5;
+  --primary:#5B8DEF; --pstrong:#3B6FD4; --pc:#DDE8FD; --deep:#1A2F5E;
+  --violet:#9B7EDE; --vc:#E5DCFF; --vdeep:#5B3FA8;
+  --peach:#FF9F6B; --pink:#FFE4D4; --peachink:#5C2E12;
+  --green:#43A047; --greendeep:#1B5E20; --greenc:#E3F3E4;
+  --orange:#FB8C00; --orangedeep:#8A5200; --orangec:#FFF0DE;
+  --track:#E2E9FB;
+}
+.dark{ --bg:#161A2E; --card:#1F2440; --card2:#181D36; --navbg:#1F2440; --navactive:#2E3E6E;
+  --ink:#E8EAF6; --muted:#9AA0C4; --faint:#6C7295; --line:#2E3556; --outline:#3D4568;
+  --pc:#2E3E6E; --vc:#46366F; --track:#2B3152; --pink:#46366F; --greenc:#1E3A26; --orangec:#3E3222; }
+body{font-family:'Nunito','Nunito Sans','Segoe UI Rounded','Segoe UI',system-ui,sans-serif;background:var(--page);color:var(--ink);min-height:100vh}
+.stage{min-height:100vh;display:flex;align-items:center;justify-content:center;gap:44px;padding:34px 20px}
+.side{width:300px;display:none}
+@media(min-width:1080px){.side{display:block}}
+.side h2{font-size:17px;font-weight:800;margin-bottom:4px}
+.side .sh{font-size:12.5px;line-height:1.55;color:#58609A;margin-bottom:14px}
+.steps{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.stepi{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #D4DDF5;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;color:#58609A}
+.stepi .num{width:22px;height:22px;border-radius:50%;background:#DDE8FD;color:#1A2F5E;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+.stepi.on{border-color:#5B8DEF;box-shadow:0 0 0 1px #5B8DEF;color:#2D3561}
+.hints{background:#fff;border:1px solid #D4DDF5;border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.6;color:#58609A}
+.hints b{color:#2D3561}
+.phone{width:390px;height:844px;border-radius:46px;border:11px solid #1A1D2E;background:var(--bg);overflow:hidden;position:relative;box-shadow:0 30px 60px rgba(26,47,94,.2);display:flex;flex-direction:column;transition:background .25s}
+@media(max-width:760px){.stage{padding:0}.phone{width:100vw;height:100dvh;border-radius:0;border:none}.side{display:none}}
+.statusbar{height:38px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:13.5px;font-weight:800;flex:none}
+.statusbar svg{display:block}
+.screen{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.scr.on{display:flex}
+.scroll{flex:1;overflow-y:auto;padding:0 16px;display:flex;flex-direction:column;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.bottomnav{flex:none;height:78px;background:var(--navbg);display:flex;justify-content:space-around;align-items:center;padding:0 8px 6px}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:800;color:var(--muted);position:relative;padding:5px 16px;border-radius:999px;cursor:pointer;border:none;background:none;font-family:inherit;transition:background .18s cubic-bezier(.16,1,.3,1)}
+.navitem:active{transform:scale(.96)}
+.navitem.active{background:var(--navactive);color:var(--deep)}
+.badge{position:absolute;top:-3px;right:2px;min-width:18px;height:18px;border-radius:999px;background:var(--orange);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--navbg)}
+.badge.hide{display:none}
+.appbar{padding:6px 16px 12px;display:flex;align-items:center;gap:12px;flex:none}
+.backbtn{width:40px;height:40px;border-radius:999px;background:var(--card);border:1px solid var(--outline);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+.backbtn:active{transform:scale(.94)}
+.appbar-title{font-size:19px;font-weight:800;line-height:1.2;color:var(--ink)}
+.appbar-sub{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.chip.done{background:var(--greenc);color:var(--greendeep)}
+.chip.new{background:var(--orangec);color:var(--orangedeep)}
+.chip.proc{background:var(--vc);color:var(--vdeep)}
+.chev{color:var(--faint);flex:none}
+.mini-ring{width:40px;height:40px;flex:none}
+/* buttons */
+.btnfull{width:100%;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .15s}
+.btn-blue{background:var(--pstrong);color:#fff}
+.btn-blue:hover{background:#3565C4}
+.btn-blue:active{transform:scale(.97)}
+.btn-peach{background:var(--peach);color:var(--peachink);box-shadow:0 4px 0 rgba(217,114,56,.55)}
+.btn-peach:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(217,114,56,.55)}
+.btntext{background:none;border:none;font-size:13.5px;font-weight:800;color:var(--pstrong);font-family:inherit;padding:9px;cursor:pointer}
+.btntext:active{opacity:.6}
+/* library */
+.lib-head{padding:8px 4px 14px;flex:none}
+.lib-head h2{font-size:26px;font-weight:800;color:var(--ink)}
+.lib-head p{font-size:13.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.continue{background:var(--pstrong);border-radius:22px;padding:15px;display:flex;align-items:center;gap:13px;margin-bottom:14px;cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit;flex:none;transition:transform .18s cubic-bezier(.16,1,.3,1)}
+.continue:active{transform:scale(.98)}
+.continue .c-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:rgba(255,255,255,.72)}
+.continue h3{font-size:19px;font-weight:800;color:#fff;margin:3px 0 4px}
+.continue p{font-size:12px;font-weight:600;color:rgba(255,255,255,.85)}
+.continue .ring{width:52px;height:52px;border-radius:50%;background:conic-gradient(#fff 0 62%,rgba(255,255,255,.25) 62% 100%);display:flex;align-items:center;justify-content:center;flex:none}
+.continue .ring i{width:40px;height:40px;background:var(--pstrong);border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800;color:#fff}
+.trail{position:relative;padding-left:24px;display:flex;flex-direction:column;gap:9px}
+.trail::before{content:'';position:absolute;left:8px;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--outline)}
+.trail .node{position:relative}
+.trail .node::before{content:'';position:absolute;left:-22px;top:20px;width:13px;height:13px;border-radius:50%;background:var(--card);border:4px solid var(--primary)}
+.trail .node.done::before{border-color:var(--green)}
+.trail .node.fresh::before{border-color:var(--peach)}
+.tcard{background:var(--card);border-radius:20px;padding:11px;display:flex;align-items:center;gap:11px;cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit;transition:transform .18s cubic-bezier(.16,1,.3,1)}
+.tcard:active{transform:scale(.98)}
+.cover{width:54px;height:54px;border-radius:17px;overflow:hidden;flex:none}
+.cover svg{display:block;width:100%;height:100%}
+.t-title{font-size:15px;font-weight:800;color:var(--ink)}
+.t-meta{font-size:11.5px;font-weight:700;color:var(--muted);margin:2px 0 6px;display:flex;align-items:center;gap:6px}
+.pbar-sm{height:4px;border-radius:99px;background:var(--track);overflow:hidden}
+.pbar-sm i{display:block;height:100%;border-radius:99px;background:var(--primary)}
+/* topics */
+.toprow{background:var(--card);border-radius:18px;padding:11px 12px;display:flex;align-items:center;gap:11px;margin-bottom:8px;cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit;transition:transform .18s cubic-bezier(.16,1,.3,1)}
+.toprow:active{transform:scale(.98)}
+.thumb{width:48px;height:48px;border-radius:13px;background:var(--pc);display:flex;align-items:center;justify-content:center;flex:none}
+.tr-t{font-size:14px;font-weight:800;color:var(--ink)}
+.tr-m{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px}
+/* video */
+.player{background:var(--deep);border-radius:20px;height:172px;position:relative;overflow:hidden;flex:none}
+.player .pg{position:absolute;left:14px;right:14px;bottom:12px;height:4px;border-radius:99px;background:rgba(255,255,255,.25)}
+.player .pg i{display:block;width:32%;height:100%;border-radius:99px;background:var(--peach);transition:width .3s linear}
+.player.playing .pg i{animation:pgrow 24s linear forwards}
+@keyframes pgrow{to{width:96%}}
+.player .tm{position:absolute;right:14px;bottom:22px;font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;color:rgba(255,255,255,.85)}
+.player .cc{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.16);color:#fff;font-size:9.5px;font-weight:800;border-radius:6px;padding:3px 7px;letter-spacing:.08em}
+.playbtn{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.3);transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+.playbtn:active{transform:translate(-50%,-50%) scale(.9)}
+.modechips{display:flex;gap:8px;margin:12px 0 10px}
+.modechip{border-radius:999px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid transparent;font-family:inherit}
+.modechip.on{background:var(--pc);color:var(--deep)}
+.modechip.off{background:var(--card);color:var(--muted);border-color:var(--outline)}
+.transcript{background:var(--card);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.tline{font-size:12.5px;line-height:1.5;color:var(--faint);font-weight:600}
+.tline.on{color:var(--ink)}
+.tline mark{background:var(--pink);color:var(--peachink);border-radius:6px;padding:0 4px;font-weight:800}
+/* questions */
+.heroq{background:var(--card);border-radius:22px;padding:16px;margin-bottom:12px;flex:none}
+.heroq .ey{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--orange)}
+.heroq h3{font-size:19px;font-weight:800;line-height:1.35;margin-top:6px;color:var(--ink)}
+.qcompact{background:var(--card);border-radius:14px;padding:10px 12px;display:flex;gap:10px;margin-bottom:7px}
+.qcompact .n{font-size:12px;font-weight:800;color:var(--pstrong)}
+.qcompact .tx{font-size:12.5px;font-weight:600;color:var(--muted)}
+.qcta{margin-top:auto;display:flex;flex-direction:column;gap:9px;padding:12px 0;flex:none}
+.qnote{font-size:11px;font-weight:600;color:var(--faint);text-align:center}
+/* training */
+.level-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 14px;background:rgba(155,126,222,.14);color:var(--vdeep);font-size:13px;font-weight:800;align-self:center;flex:none}
+.dark .level-chip{background:var(--vc)}
+.timerwrap{display:flex;flex-direction:column;align-items:center;margin:12px 0 4px;flex:none}
+.timerbox{position:relative;width:180px;height:180px}
+.timerbox svg{transform:rotate(-90deg)}
+.timertext{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.timertext .t{font-family:ui-monospace,Menlo,monospace;font-feature-settings:'tnum';font-size:40px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.timertext .c{font-size:11px;font-weight:700;color:var(--muted);margin-top:-2px}
+.dots{display:flex;gap:8px;margin-top:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--track)}
+.dot.done{background:var(--green)}
+.dot.cur{background:var(--violet);box-shadow:0 0 0 4px rgba(155,126,222,.22)}
+.qlist{display:flex;flex-direction:column;gap:6px;margin-top:11px}
+.qrow{background:var(--card);border-radius:13px;padding:8px 11px;display:flex;gap:9px}
+.qrow .n{font-size:12px;font-weight:800;color:var(--pstrong)}
+.qrow .tx{font-size:12.5px;line-height:1.4;font-weight:600;color:var(--ink)}
+.reczone{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:9px;padding:10px 0 12px;flex:none}
+.recchip{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--peachink);background:var(--pink);border-radius:999px;padding:4px 12px}
+.recchip i{width:7px;height:7px;border-radius:50%;background:var(--peach);animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.dark .recchip{background:var(--pink);color:var(--peachink)}
+.reccap{font-size:11.5px;font-weight:700;color:var(--muted)}
+.btnrecord{width:84px;height:84px;border-radius:25px;background:var(--peach);box-shadow:0 5px 0 rgba(217,114,56,.55);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btnrecord:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(217,114,56,.55)}
+.miniw{display:flex;align-items:center;gap:4px;height:26px}
+.miniw i{width:4px;border-radius:99px;background:var(--peach);animation:wob 1s ease-in-out infinite}
+.miniw i:nth-child(2n){background:var(--violet);animation-duration:.85s}
+.miniw i:nth-child(3n){animation-duration:1.2s}
+@keyframes wob{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+@media(prefers-reduced-motion:reduce){.miniw i,.recchip i{animation:none}.player.playing .pg i{animation:none}}
+/* result & finale */
+.result{background:var(--card);border-radius:20px;padding:14px;margin-top:12px;flex:none}
+.res-top{display:flex;align-items:center;gap:11px}
+.resplay{width:44px;height:44px;border-radius:50%;background:var(--pc);display:flex;align-items:center;justify-content:center;flex:none;border:none;cursor:pointer}
+.resplay:active{transform:scale(.92)}
+.reswave{flex:1;display:flex;align-items:center;gap:3px;height:34px}
+.reswave i{width:4px;border-radius:99px;background:var(--primary);display:block}
+.reswave.play i{animation:wob .9s ease-in-out infinite}
+.res-dur{font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:800;color:var(--muted)}
+.autock{display:flex;align-items:center;gap:8px;margin-top:11px;background:var(--greenc);border-radius:12px;padding:9px 12px}
+.autock span{font-size:12px;font-weight:800;color:var(--greendeep)}
+.finale{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin-top:20px;padding:0 8px;flex:none}
+.finale .fck{width:76px;height:76px;border-radius:50%;background:var(--greenc);display:flex;align-items:center;justify-content:center}
+.finale h3{font-size:20px;font-weight:800;color:var(--ink)}
+.finale p{font-size:12.5px;font-weight:600;color:var(--muted)}
+.finbtns{margin-top:auto;display:flex;flex-direction:column;gap:9px;padding-bottom:14px;width:100%;flex:none}
+/* practice */
+.pnote{background:var(--pink);border-radius:14px;padding:11px 13px;font-size:12px;line-height:1.5;font-weight:700;color:var(--peachink);margin-bottom:10px;flex:none}
+.upl{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:34px;text-align:center}
+.spin{width:46px;height:46px;border-radius:50%;border:4px solid var(--track);border-top-color:var(--primary);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.upl h3{font-size:17px;font-weight:800;color:var(--ink)}
+.upl p{font-size:12.5px;font-weight:600;color:var(--muted)}
+.bigck{width:72px;height:72px;border-radius:50%;background:var(--greenc);display:flex;align-items:center;justify-content:center}
+/* submissions */
+.sub-head{padding:10px 4px 11px;flex:none}
+.sub-head h2{font-size:23px;font-weight:800;color:var(--ink)}
+.sub-head p{font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.celebrate{background:var(--greenc);border-radius:20px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;flex:none}
+.celebrate h3{font-size:15px;font-weight:800;color:var(--greendeep)}
+.celebrate p{font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.gradecard{background:var(--card);border-radius:20px;padding:15px;margin-bottom:11px;flex:none}
+.gradetop{display:flex;align-items:baseline;gap:7px;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:11px}
+.gradetop .score{font-size:36px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.gradetop .of{font-size:12.5px;font-weight:700;color:var(--muted)}
+.gradetop .topic{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--pstrong)}
+.crit{margin-bottom:9px}
+.crit .cr-top{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.crit .cr-top span:last-child{color:var(--muted)}
+.bar{height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--primary)}
+.comment{display:flex;gap:9px;background:var(--card2);border-radius:14px;padding:11px;margin-top:11px}
+.ava{width:34px;height:34px;border-radius:50%;background:var(--vc);color:var(--vdeep);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.comment .who{font-size:11.5px;font-weight:800;color:var(--ink)}
+.comment .tx{font-size:12px;line-height:1.5;color:var(--muted);margin-top:2px}
+.hist-row{background:var(--card);border-radius:16px;padding:10px 13px;display:flex;align-items:center;gap:10px;margin-bottom:7px;flex:none}
+.hist-row .h-t{font-size:13px;font-weight:800;color:var(--ink)}
+.hist-row .h-m{font-size:11px;font-weight:600;color:var(--muted);margin-top:1px}
+.h-chip{margin-left:auto;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;flex:none}
+.h-chip.green{background:var(--greenc);color:var(--greendeep)}
+.h-chip.violet{background:var(--vc);color:var(--vdeep)}
+.h-chip.orange{background:var(--orangec);color:var(--orangedeep)}
+/* profile */
+.prof-head{display:flex;flex-direction:column;align-items:center;padding:12px 0 8px;flex:none}
+.prof-ava{width:80px;height:80px;border-radius:50%;background:var(--vc);color:var(--vdeep);font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.prof-head h2{font-size:19px;font-weight:800;margin-top:9px;color:var(--ink)}
+.prof-head p{font-size:12px;font-weight:600;color:var(--muted)}
+.act-row{display:flex;gap:11px;margin-bottom:11px;flex:none}
+.act-card{flex:1;background:var(--card);border-radius:20px;padding:13px;display:flex;align-items:center;gap:11px}
+.act-card .big{font-size:20px;font-weight:800;color:var(--ink)}
+.act-card .lbl{font-size:11px;font-weight:700;color:var(--muted);margin-top:1px}
+.week-ring{width:54px;height:54px;border-radius:50%;background:conic-gradient(var(--green) 0 71%,var(--track) 71% 100%);display:flex;align-items:center;justify-content:center;flex:none}
+.week-ring i{width:41px;height:41px;background:var(--card);border-radius:50%;font-style:normal;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--greendeep)}
+.levels{background:var(--card);border-radius:20px;padding:13px 15px;margin-bottom:11px;flex:none}
+.levels .lv-title{font-size:12.5px;font-weight:800;margin-bottom:9px;color:var(--ink)}
+.lv-path{display:flex;align-items:center;gap:5px}
+.lv{flex:1;text-align:center;border-radius:12px;padding:7px 0;font-size:12.5px;font-weight:800}
+.lv.done{background:var(--greenc);color:var(--greendeep)}
+.lv.cur{background:var(--pc);color:var(--deep);box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--primary)}
+.lv.next{background:var(--card2);color:var(--faint)}
+.lv-line{width:11px;height:2px;background:var(--outline);flex:none}
+.lv-note{font-size:11px;font-weight:600;color:var(--muted);margin-top:8px}
+.setrow{background:var(--card);border-radius:16px;padding:12px 13px;display:flex;align-items:center;gap:10px;margin-bottom:7px;flex:none}
+.setrow.click{cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit;transition:transform .18s cubic-bezier(.16,1,.3,1)}
+.setrow.click:active{transform:scale(.98)}
+.setrow .s-t{font-size:13.5px;font-weight:700;color:var(--ink);flex:1}
+.setrow .s-m{font-size:11px;font-weight:600;color:var(--muted);margin-top:1px}
+.sico{width:34px;height:34px;border-radius:11px;background:var(--pc);color:var(--deep);display:flex;align-items:center;justify-content:center;flex:none}
+.seg{display:flex;background:var(--navbg);border-radius:14px;padding:4px;margin-bottom:12px;flex:none}
+.seg div{flex:1;text-align:center;font-size:12.5px;font-weight:800;color:var(--muted);padding:8px 0;border-radius:10px;cursor:pointer}
+.seg .on{background:var(--card);color:var(--deep);box-shadow:0 1px 4px rgba(45,53,97,.14)}
+.logout{width:100%;border:1.5px solid #E53935;color:#C62828;background:transparent;border-radius:15px;padding:11px;font-size:13.5px;font-weight:800;font-family:inherit;margin-top:auto;margin-bottom:4px;cursor:pointer}
+.dark .logout{color:#FF897D;border-color:#5A3A3C}
+/* settings */
+.switch{width:38px;height:22px;border-radius:99px;background:var(--pstrong);position:relative;flex:none;cursor:pointer;transition:background .2s}
+.switch i{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:right .2s cubic-bezier(.16,1,.3,1),left .2s cubic-bezier(.16,1,.3,1)}
+.switch.off{background:var(--faint)}
+.switch.off i{right:auto;left:3px}
+.vrow{font-size:11px;font-weight:700;color:var(--faint);text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="stage">
+
+<div class="side">
+  <h2>Интерактивный прототип</h2>
+  <p class="sh">Кликабельный сценарий «Путь спикера»: от библиотеки до оценки учителя. Запись в прототипе ускорена, чтобы флоу было пройти целиком.</p>
+  <div class="steps" id="steps">
+    <div class="stepi" data-s="library"><span class="num">1</span>Библиотека: выбрать тему</div>
+    <div class="stepi" data-s="topics"><span class="num">2</span>Топики: открыть видео</div>
+    <div class="stepi" data-s="video"><span class="num">3</span>Видео с субтитрами</div>
+    <div class="stepi" data-s="questions"><span class="num">4</span>Вопросы: выбор режима</div>
+    <div class="stepi" data-s="training"><span class="num">5</span>Training: 3 попытки</div>
+    <div class="stepi" data-s="practice"><span class="num">6</span>Practice: 30 секунд</div>
+    <div class="stepi" data-s="submissions"><span class="num">7</span>Отправки: оценка учителя</div>
+    <div class="stepi" data-s="profile"><span class="num">8</span>Профиль и настройки</div>
+  </div>
+  <div class="hints">
+    <b>Что можно потрогать:</b> запись голоса (кнопка старт/стоп), переключатель светлой и тёмной темы в профиле, тумблеры настроек, бейдж новой оценки, проигрывание записи, чипы субтитров.
+  </div>
+</div>
+
+<div class="phone" id="phone">
+  <div class="statusbar"><span>21:30</span><span style="display:flex;gap:6px"><svg width="15" height="12" viewBox="0 0 15 12" fill="none"><path d="M1 4.5C4.7 1 10.3 1 14 4.5M3.2 7C5.8 4.7 9.2 4.7 11.8 7M5.6 9.4C6.9 8.4 8.1 8.4 9.4 9.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7.5" cy="11" r="1" fill="currentColor"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".5" y=".5" width="18" height="10" rx="3" stroke="currentColor"/><rect x="2" y="2" width="13" height="7" rx="1.6" fill="currentColor"/><path d="M20.5 3.5v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span></div>
+
+  <!-- ===== БИБЛИОТЕКА ===== -->
+  <section class="scr on" id="scr-library" data-nav="1">
+    <div class="screen"><div class="scroll">
+      <div class="lib-head"><h2>Темы</h2><p>Выбери, о чём поговорим</p></div>
+      <button class="continue" data-go="questions">
+        <div style="flex:1"><div class="c-eyebrow">ПРОДОЛЖИТЬ ПУТЬ</div><h3>My best friend</h3><p>Знакомство · осталось 3 вопроса</p></div>
+        <div class="ring"><i>62%</i></div>
+      </button>
+      <div class="trail">
+        <div class="node done"><button class="tcard" data-go="topics">
+          <div class="cover"><svg viewBox="0 0 54 54" fill="none"><rect width="54" height="54" fill="#DDE8FD"/><ellipse cx="13" cy="15" rx="8" ry="5" fill="#fff"/><path d="M9 36 L38 25 L49 19 L44 28 L47 32 L36 32 L13 40 Z" fill="#3B6FD4"/><path d="M17 44c6 2 15 2 20 0" stroke="#9B7EDE" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+          <div style="flex:1"><div class="t-title">Путешествия</div><div class="t-meta"><span>8 топиков · 3 из 8</span></div><div class="pbar-sm"><i style="width:38%"></i></div></div>
+          <svg class="mini-ring" viewBox="0 0 40 40" style="transform:rotate(-90deg)"><circle cx="20" cy="20" r="16" stroke="var(--track)" stroke-width="5.5" fill="none"/><circle cx="20" cy="20" r="16" stroke="#5B8DEF" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-dasharray="39 101"/></svg>
+        </button></div>
+        <div class="node"><button class="tcard" data-go="topics">
+          <div class="cover"><svg viewBox="0 0 54 54" fill="none"><rect width="54" height="54" fill="#FFE4D4"/><path d="M15 19h19v13a7.5 7.5 0 0 1-7.5 7.5h-4A7.5 7.5 0 0 1 15 32V19Z" fill="#fff"/><path d="M34 22h3.6a4.6 4.6 0 0 1 0 9.2H34" stroke="#fff" stroke-width="3.2"/><ellipse cx="24.5" cy="43" rx="13" ry="3.2" fill="#F3B98F"/><path d="M21 12c-1.5-2.2 1.5-3.4 0-5.6M28.5 12c-1.5-2.2 1.5-3.4 0-5.6" stroke="#C9702F" stroke-width="2.2" stroke-linecap="round" opacity=".7"/></svg></div>
+          <div style="flex:1"><div class="t-title">Еда и вкусы</div><div class="t-meta"><span>5 топиков · 2 из 5</span></div><div class="pbar-sm"><i style="width:40%"></i></div></div>
+          <svg class="mini-ring" viewBox="0 0 40 40" style="transform:rotate(-90deg)"><circle cx="20" cy="20" r="16" stroke="var(--track)" stroke-width="5.5" fill="none"/><circle cx="20" cy="20" r="16" stroke="#5B8DEF" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-dasharray="40 101"/></svg>
+        </button></div>
+        <div class="node"><button class="tcard" data-go="topics">
+          <div class="cover"><svg viewBox="0 0 54 54" fill="none"><rect width="54" height="54" fill="#E5DCFF"/><rect x="11" y="21" width="32" height="19" rx="4" fill="#9B7EDE"/><path d="M11 22.8 L43 14.5 L44.8 21 L12.8 29.3 Z" fill="#1A2F5E"/><path d="M17 19.4l4.6 5.5M25.4 17.1l4.6 5.5M33.8 14.8l4.6 5.5" stroke="#E5DCFF" stroke-width="2.4"/><circle cx="19" cy="30.5" r="2.2" fill="#FF9F6B"/></svg></div>
+          <div style="flex:1"><div class="t-title">Кино и сериалы</div><div class="t-meta"><span>6 топиков</span><span class="chip new">Новая</span></div><div class="pbar-sm"></div></div>
+        </button></div>
+        <div class="node fresh"><button class="tcard" data-go="topics">
+          <div class="cover"><svg viewBox="0 0 54 54" fill="none"><rect width="54" height="54" fill="#D8E2FA"/><rect x="13" y="21" width="28" height="19" rx="4.5" fill="#3B6FD4"/><path d="M20.5 21v-3.6a6.5 6.5 0 0 1 13 0V21" stroke="#3B6FD4" stroke-width="3.4"/><rect x="24" y="28.5" width="6" height="4.6" rx="1.5" fill="#FF9F6B"/><path d="M13 27.5h28" stroke="#2F4F96" stroke-width="2"/></svg></div>
+          <div style="flex:1"><div class="t-title">Работа и карьера</div><div class="t-meta"><span>4 топика</span><span class="chip new">Новая</span></div><div class="pbar-sm"></div></div>
+        </button></div>
+      </div>
+    </div>
+    <div class="bottomnav">
+      <button class="navitem active" data-tab="library"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19v-8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20.5v-6h5v6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Темы</button>
+      <button class="navitem" data-tab="submissions"><span class="badge" id="navbadge">1</span><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M20.5 3.5 3.8 9.9c-.8.3-.8 1.5.1 1.7l6 1.6 1.7 6c.2.9 1.4.9 1.7.1l6.3-16.6c.3-.8-.5-1.5-1.1-1.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20.5 3.5 9.9 13.2" stroke="currentColor" stroke-width="1.8"/></svg>Отправки</button>
+      <button class="navitem" data-tab="profile"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 20c1.2-3.4 4-5 7.2-5s6 1.6 7.2 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Профиль</button>
+    </div>
+    </div>
+  </section>
+
+  <!-- ===== ТОПИКИ ===== -->
+  <section class="scr" id="scr-topics" data-back="library">
+    <div class="screen">
+      <div class="appbar"><button class="backbtn" data-back="library"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div class="appbar-title">Путешествия</div><div class="appbar-sub">8 топиков · 3 из 8 пройдено</div></div></div>
+      <div class="scroll">
+        <button class="toprow" data-go="video"><div class="thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></div><div style="flex:1"><div class="tr-t">Airport check-in</div><div class="tr-m">видео 2:55 · 4 вопроса</div></div><span class="chip proc">В процессе</span></button>
+        <button class="toprow" data-go="video"><div class="thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></div><div style="flex:1"><div class="tr-t">Booking a hotel</div><div class="tr-m">видео 3:40 · 4 вопроса</div></div><span class="chip new">Новый</span></button>
+        <button class="toprow" data-go="questions"><div class="thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></div><div style="flex:1"><div class="tr-t">Food on the road</div><div class="tr-m">видео 3:10 · сразу к вопросам</div></div><span class="chip new">Новый</span></button>
+        <button class="toprow" data-go="video"><div class="thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></div><div style="flex:1"><div class="tr-t">Buying souvenirs</div><div class="tr-m">видео 2:40 · 4 вопроса</div></div><span class="chip new">Новый</span></button>
+        <button class="toprow" data-go="questions"><div class="thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></div><div style="flex:1"><div class="tr-t">My last trip</div><div class="tr-m">видео 3:05 · оценено: 8.4</div></div><span class="chip done">Проверено</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ВИДЕО ===== -->
+  <section class="scr" id="scr-video" data-back="topics">
+    <div class="screen">
+      <div class="appbar"><button class="backbtn" data-back="topics"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div class="appbar-title">Booking a hotel</div><div class="appbar-sub">Путешествия · видео 3:40</div></div></div>
+      <div class="scroll">
+        <div class="player" id="player">
+          <span class="cc">CC</span>
+          <button class="playbtn" id="playbtn"><svg id="playico" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M8.5 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></button>
+          <div class="pg"><i></i></div><span class="tm" id="ptm">1:07 / 3:40</span>
+        </div>
+        <div class="modechips">
+          <button class="modechip on" id="chipSub">С субтитрами</button>
+          <button class="modechip off" id="chipNoSub">Без субтитров</button>
+        </div>
+        <div class="transcript" id="transcript">
+          <div class="tline on">Good afternoon! I'd like to <mark>check in</mark>, please. I have a reservation under the name Smith.</div>
+          <div class="tline">Certainly, Mr. Smith. Could I see your passport?</div>
+          <div class="tline">Here you are. I booked a double room with a sea view.</div>
+        </div>
+        <div class="qcta"><button class="btnfull btn-blue" data-go="questions">Перейти к вопросам</button><span class="qnote">Вопросы всегда доступны, даже если видео ещё не просмотрено</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ВОПРОСЫ ===== -->
+  <section class="scr" id="scr-questions" data-back="topics">
+    <div class="screen">
+      <div class="appbar"><button class="backbtn" data-back="topics"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div class="appbar-title">Вопросы</div><div class="appbar-sub">Booking a hotel · 4 вопроса</div></div></div>
+      <div class="scroll">
+        <div class="heroq"><span class="ey">ВОПРОС 1 ИЗ 4</span><h3>What was the best trip you have ever taken?</h3></div>
+        <div class="qcompact"><span class="n">2</span><span class="tx">Where did you go and who did you travel with?</span></div>
+        <div class="qcompact"><span class="n">3</span><span class="tx">What did you enjoy most about the place?</span></div>
+        <div class="qcompact"><span class="n">4</span><span class="tx">Would you recommend it to a friend? Why?</span></div>
+        <div class="qcta">
+          <button class="btnfull btn-blue" id="startTraining">Training · 3 попытки</button>
+          <button class="btnfull btn-peach" id="startPractice">Practice · 30 секунд</button>
+          <span class="qnote">Training остаётся на устройстве · Practice отправится учителю</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRAINING ===== -->
+  <section class="scr" id="scr-training" data-back="questions">
+    <div class="screen">
+      <div class="appbar"><button class="backbtn" data-back="questions"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div class="appbar-title">Тренировка</div><div class="appbar-sub">Booking a hotel</div></div></div>
+      <div class="scroll" id="trIdle" style="padding-top:4px">
+        <span class="level-chip" id="trChip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#5B3FA8" stroke-width="1.8"/><path d="M12 7v5l3.2 2" stroke="#5B3FA8" stroke-width="1.8" stroke-linecap="round"/></svg>Попытка 1 из 3 · 80 секунд</span>
+        <div class="timerwrap"><div class="timerbox">
+          <svg width="180" height="180" viewBox="0 0 180 180"><circle cx="90" cy="90" r="78" stroke="var(--vc)" stroke-width="12" fill="none"/><circle cx="90" cy="90" r="78" stroke="#9B7EDE" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="490 490" id="trRing" transform="rotate(-90 90 90)"/></svg>
+          <div class="timertext"><span class="t" id="trTime">01:20</span><span class="c">говори на все вопросы</span></div>
+        </div>
+        <div class="dots"><span class="dot" id="d1"></span><span class="dot" id="d2"></span><span class="dot" id="d3"></span></div></div>
+        <div class="qlist">
+          <div class="qrow"><span class="n">1</span><span class="tx">What was the best trip you have ever taken?</span></div>
+          <div class="qrow"><span class="n">2</span><span class="tx">Where did you go and who did you travel with?</span></div>
+          <div class="qrow"><span class="n">3</span><span class="tx">What did you enjoy most about the place?</span></div>
+          <div class="qrow"><span class="n">4</span><span class="tx">Would you recommend it to a friend? Why?</span></div>
+        </div>
+        <div class="reczone" id="trRecZone">
+          <span class="recchip" id="trRecChip" style="visibility:hidden"><i></i>ЗАПИСЬ</span>
+          <button class="btnrecord" id="trRecBtn"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" fill="#5C2E12"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#5C2E12" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.4" stroke="#5C2E12" stroke-width="2" stroke-linecap="round"/></svg></button>
+          <div class="miniw" id="trWave" style="visibility:hidden"><i style="height:10px"></i><i style="height:20px"></i><i style="height:13px"></i><i style="height:24px"></i><i style="height:11px"></i><i style="height:19px"></i><i style="height:14px"></i><i style="height:22px"></i></div>
+          <div class="reccap" id="trRecCap">Нажми, чтобы начать попытку</div>
+        </div>
+      </div>
+      <div class="scroll" id="trResult" style="display:none">
+        <span class="level-chip" id="trChip2">Попытка 1 из 3 · готово</span>
+        <div class="result">
+          <div class="res-top">
+            <button class="resplay" id="resPlay"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8.5 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/></svg></button>
+            <div class="reswave" id="resWave"><i style="height:10px"></i><i style="height:22px"></i><i style="height:15px"></i><i style="height:30px"></i><i style="height:12px"></i><i style="height:26px"></i><i style="height:18px"></i><i style="height:32px"></i><i style="height:14px"></i><i style="height:24px"></i><i style="height:9px"></i><i style="height:20px"></i><i style="height:28px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:23px"></i></div>
+            <span class="res-dur" id="resDur">01:20</span>
+          </div>
+          <div class="autock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#43A047"/><path d="M7.5 12.2l3 3 6-6.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Попытка засчитана · записи остаются на устройстве</span></div>
+        </div>
+        <div class="qcta" style="margin-top:auto">
+          <button class="btnfull btn-blue" id="nextAttempt">Следующая попытка · 50 секунд</button>
+          <button class="btntext" data-go="questions">К вопросам</button>
+        </div>
+      </div>
+      <div class="scroll" id="trFinal" style="display:none">
+        <div class="finale">
+          <div class="fck"><svg width="38" height="38" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#43A047" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Все 3 попытки готовы!</h3>
+          <p>Записи остались на устройстве: их можно послушать в любое время. Готов показать себя учителю?</p>
+        </div>
+        <div class="finbtns">
+          <button class="btnfull btn-peach" id="goPractice">Перейти к практике</button>
+          <button class="btntext" id="restartTraining">Заново с попытки 1</button>
+          <button class="btntext" style="color:var(--muted)" data-go="library">В библиотеку</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRACTICE ===== -->
+  <section class="scr" id="scr-practice" data-back="questions">
+    <div class="screen">
+      <div class="appbar"><button class="backbtn" id="prBack"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div class="appbar-title">Practice</div><div class="appbar-sub">Booking a hotel</div></div></div>
+      <div class="scroll" id="prIdle">
+        <div class="pnote">Одна запись на все вопросы. Без прослушивания: запись автоматически отправится учителю.</div>
+        <div class="timerwrap"><div class="timerbox">
+          <svg width="180" height="180" viewBox="0 0 180 180"><circle cx="90" cy="90" r="78" stroke="var(--pink)" stroke-width="12" fill="none"/><circle cx="90" cy="90" r="78" stroke="#FF9F6B" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="490 490" id="prRing" transform="rotate(-90 90 90)"/></svg>
+          <div class="timertext"><span class="t" id="prTime">00:30</span><span class="c">одна попытка</span></div>
+        </div></div>
+        <div class="qlist">
+          <div class="qrow"><span class="n">1</span><span class="tx">What was the best trip you have ever taken?</span></div>
+          <div class="qrow"><span class="n">2</span><span class="tx">Where did you go and who did you travel with?</span></div>
+          <div class="qrow"><span class="n">3</span><span class="tx">What did you enjoy most about the place?</span></div>
+          <div class="qrow"><span class="n">4</span><span class="tx">Would you recommend it to a friend? Why?</span></div>
+        </div>
+        <div class="reczone">
+          <span class="recchip" id="prRecChip" style="visibility:hidden"><i></i>ЗАПИСЬ</span>
+          <button class="btnrecord" id="prRecBtn"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" fill="#5C2E12"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#5C2E12" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.4" stroke="#5C2E12" stroke-width="2" stroke-linecap="round"/></svg></button>
+          <div class="miniw" id="prWave" style="visibility:hidden"><i style="height:11px"></i><i style="height:21px"></i><i style="height:14px"></i><i style="height:25px"></i><i style="height:12px"></i><i style="height:20px"></i><i style="height:15px"></i><i style="height:23px"></i></div>
+          <div class="reccap" id="prRecCap">Начать запись</div>
+        </div>
+      </div>
+      <div class="scroll" id="prUpload" style="display:none">
+        <div class="upl"><div class="spin"></div><h3>Отправляем учителю</h3><p>Это займёт несколько секунд. Запись не пропадёт даже без сети.</p></div>
+      </div>
+      <div class="scroll" id="prSent" style="display:none">
+        <div class="upl"><div class="bigck"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#43A047" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Запись у учителя!</h3><p>Обычно проверка занимает день. Загляни во вкладку «Отправки».</p></div>
+        <div class="finbtns">
+          <button class="btnfull btn-blue" data-go="submissions">К отправкам</button>
+          <button class="btntext" data-go="library">В библиотеку</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ОТПРАВКИ ===== -->
+  <section class="scr" id="scr-submissions" data-nav="1">
+    <div class="screen"><div class="scroll" style="padding-top:10px">
+      <div class="sub-head"><h2>Отправки</h2><p>2 из 3 проверено</p></div>
+      <div class="celebrate">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex:none"><circle cx="12" cy="12" r="10" fill="#43A047"/><path d="M7.5 12.2l3 3 6-6.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><h3>Учитель проверил запись!</h3><p>Топик «My last trip» · сегодня в 21:10</p></div>
+      </div>
+      <div class="gradecard">
+        <div class="gradetop"><span class="score">8.4</span><span class="of">из 10</span><span class="topic">Practice · 30 сек</span></div>
+        <div class="crit"><div class="cr-top"><span>Грамматика</span><span>8</span></div><div class="bar"><i style="width:80%"></i></div></div>
+        <div class="crit"><div class="cr-top"><span>Лексика</span><span>9</span></div><div class="bar"><i style="width:90%"></i></div></div>
+        <div class="crit"><div class="cr-top"><span>Произношение</span><span>8</span></div><div class="bar"><i style="width:80%"></i></div></div>
+        <div class="crit" style="margin-bottom:0"><div class="cr-top"><span>Беглость</span><span>9</span></div><div class="bar"><i style="width:90%"></i></div></div>
+        <div class="comment"><div class="ava">ЕМ</div><div><div class="who">Елена М. · учитель</div><div class="tx">Отличный рассказ о поездке. Добавь больше прилагательных, чтобы картина была ярче.</div></div></div>
+      </div>
+      <div class="hist-row"><div style="flex:1"><div class="h-t">Booking a hotel</div><div class="h-m">Practice · сегодня</div></div><span class="h-chip violet">На проверке</span></div>
+      <div class="hist-row"><div style="flex:1"><div class="h-t">Food and tastes</div><div class="h-m">Training · попытка 3 из 3</div></div><span class="h-chip violet">На проверке</span></div>
+      <div class="hist-row" style="margin-bottom:0"><div style="flex:1"><div class="h-t">Weekend plans</div><div class="h-m">Practice · не отправлено</div></div><span class="h-chip orange">Черновик</span></div>
+    </div>
+    <div class="bottomnav">
+      <button class="navitem" data-tab="library"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19v-8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20.5v-6h5v6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Темы</button>
+      <button class="navitem active" data-tab="submissions"><span class="badge" id="navbadge2">1</span><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M20.5 3.5 3.8 9.9c-.8.3-.8 1.5.1 1.7l6 1.6 1.7 6c.2.9 1.4.9 1.7.1l6.3-16.6c.3-.8-.5-1.5-1.1-1.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20.5 3.5 9.9 13.2" stroke="currentColor" stroke-width="1.8"/></svg>Отправки</button>
+      <button class="navitem" data-tab="profile"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 20c1.2-3.4 4-5 7.2-5s6 1.6 7.2 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Профиль</button>
+    </div>
+    </div>
+  </section>
+
+  <!-- ===== ПРОФИЛЬ ===== -->
+  <section class="scr" id="scr-profile" data-nav="1">
+    <div class="screen"><div class="scroll" style="padding-top:8px">
+      <div class="prof-head"><div class="prof-ava">АК</div><h2>Анна К.</h2><p>anna.k@example.com</p></div>
+      <div class="act-row">
+        <div class="act-card"><div class="week-ring"><i>5 из 7</i></div><div><div class="big">Активность</div><div class="lbl">дней с записью за неделю</div></div></div>
+        <div class="act-card" style="flex-direction:column;align-items:flex-start;gap:2px"><div style="display:flex;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2.5c1 3-2 4.4-2 7a3.4 3.4 0 0 0 6.8.3c1.6 1.4 2.7 3.2 2.7 5.2A7.5 7.5 0 0 1 4.5 15c0-4.6 4.4-6.4 7.5-12.5Z" stroke="#C9702F" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="big">6</span></div><div class="lbl">дней подряд</div></div>
+      </div>
+      <div class="levels">
+        <div class="lv-title">Уровень A2 · путь к B1</div>
+        <div class="lv-path"><div class="lv done">A1</div><div class="lv-line"></div><div class="lv cur">A2</div><div class="lv-line"></div><div class="lv next">B1</div><div class="lv-line"></div><div class="lv next">B2</div></div>
+        <div class="lv-note">До уровня B1 осталось пройти 9 тем</div>
+      </div>
+      <div class="act-row" style="margin-bottom:12px"><div class="act-card" style="flex-direction:column;align-items:flex-start;gap:2px;padding:11px 13px"><span class="big">12</span><span class="lbl">записей отправлено</span></div><div class="act-card" style="flex-direction:column;align-items:flex-start;gap:2px;padding:11px 13px"><span class="big">4</span><span class="lbl">темы пройдено</span></div></div>
+      <div class="seg" id="themeSeg">
+        <div data-th="light">Светлая</div><div data-th="system" class="on">Системная</div><div data-th="dark">Тёмная</div>
+      </div>
+      <button class="setrow click" data-go="settings"><div class="sico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5v2.4M12 18.1v2.4M3.5 12h2.4M18.1 12h2.4M6 6l1.7 1.7M16.3 16.3 18 18M18 6l-1.7 1.7M7.7 16.3 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div style="flex:1"><div class="s-t">Настройки</div><div class="s-m">Уведомления, звук, вибрация</div></div><svg class="chev" width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="logout">Выйти</button>
+    </div>
+    <div class="bottomnav">
+      <button class="navitem" data-tab="library"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19v-8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20.5v-6h5v6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Темы</button>
+      <button class="navitem" data-tab="submissions"><span class="badge" id="navbadge3">1</span><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M20.5 3.5 3.8 9.9c-.8.3-.8 1.5.1 1.7l6 1.6 1.7 6c.2.9 1.4.9 1.7.1l6.3-16.6c.3-.8-.5-1.5-1.1-1.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20.5 3.5 9.9 13.2" stroke="currentColor" stroke-width="1.8"/></svg>Отправки</button>
+      <button class="navitem active" data-tab="profile"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 20c1.2-3.4 4-5 7.2-5s6 1.6 7.2 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Профиль</button>
+    </div>
+    </div>
+  </section>
+
+  <!-- ===== НАСТРОЙКИ ===== -->
+  <section class="scr" id="scr-settings" data-back="profile">
+    <div class="screen">
+      <div class="appbar"><button class="backbtn" data-back="profile"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div class="appbar-title">Настройки</div><div class="appbar-sub">Профиль</div></div></div>
+      <div class="scroll" style="padding-top:6px">
+        <div class="setrow"><div class="sico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-2.5 8-2.5 8h17S18 15 18 8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10.3 20a2 2 0 0 0 3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div style="flex:1"><div class="s-t">Уведомления</div><div class="s-m">Новая оценка, напоминания</div></div><span class="switch" data-sw><i></i></span></div>
+        <div class="setrow"><div class="sico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M11 5 6.5 8.5H3v7h3.5L11 19V5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div style="flex:1"><div class="s-t">Звук</div><div class="s-m">Эффекты и подтверждения</div></div><span class="switch" data-sw><i></i></span></div>
+        <div class="setrow"><div class="sico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="7" y="7" width="10" height="10" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg></div><div style="flex:1"><div class="s-t">Вибрация</div><div class="s-m">Отклик кнопки записи</div></div><span class="switch off" data-sw><i></i></span></div>
+        <div class="setrow"><div style="flex:1"><div class="s-t">Язык интерфейса</div><div class="s-m">Русский</div></div><svg class="chev" width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="setrow"><div style="flex:1"><div class="s-t">Оформление</div><div class="s-m">Светлая · тёмная · системная</div></div><svg class="chev" width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="vrow">So to speak · v1.4 · прототип направления «Путь спикера»</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var phone=document.getElementById('phone');
+  var screens={library:1,topics:1,video:1,questions:1,training:1,practice:1,submissions:1,profile:1,settings:1};
+  var cur='library';
+  function fmt(s){var m=Math.floor(s/60),ss=Math.round(s%60);return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss;}
+  function go(id){
+    if(!screens[id])return;
+    document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on')});
+    document.getElementById('scr-'+id).classList.add('on');
+    cur=id;
+    document.querySelectorAll('[data-tab]').forEach(function(b){
+      b.classList.toggle('active',b.getAttribute('data-tab')===id);
+    });
+    document.querySelectorAll('.stepi').forEach(function(st){
+      st.classList.toggle('on',st.getAttribute('data-s')===id);
+    });
+    if(id==='submissions'){['navbadge','navbadge2','navbadge3'].forEach(function(i){var e=document.getElementById(i);if(e)e.classList.add('hide')});}
+    var sc=document.querySelector('#scr-'+id+' .scroll');if(sc)sc.scrollTop=0;
+  }
+  document.querySelectorAll('[data-go]').forEach(function(el){
+    el.addEventListener('click',function(){go(el.getAttribute('data-go'))});
+  });
+  document.querySelectorAll('[data-back]').forEach(function(el){
+    el.addEventListener('click',function(){go(el.getAttribute('data-back'))});
+  });
+  document.querySelectorAll('[data-tab]').forEach(function(el){
+    el.addEventListener('click',function(){go(el.getAttribute('data-tab'))});
+  });
+  /* video */
+  var player=document.getElementById('player'),playbtn=document.getElementById('playbtn'),playico=document.getElementById('playico'),ptm=document.getElementById('ptm');
+  var playing=false,psec=67,ptimer=null;
+  playbtn.addEventListener('click',function(){
+    playing=!playing;
+    player.classList.toggle('playing',playing);
+    playico.innerHTML=playing?'<rect x="7" y="5" width="3.6" height="14" rx="1.4" fill="#3B6FD4"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.4" fill="#3B6FD4"/>':'<path d="M8.5 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/>';
+    if(playing){ptimer=setInterval(function(){psec++;if(psec>=220){psec=220;playing=false;player.classList.remove('playing');playico.innerHTML='<path d="M8.5 5.5v13l11-6.5-11-6.5Z" fill="#3B6FD4"/>';clearInterval(ptimer);}ptm.textContent=fmt(psec)+' / 3:40';},600);}
+    else clearInterval(ptimer);
+  });
+  var chipSub=document.getElementById('chipSub'),chipNoSub=document.getElementById('chipNoSub'),transcript=document.getElementById('transcript');
+  chipSub.addEventListener('click',function(){chipSub.className='modechip on';chipNoSub.className='modechip off';transcript.style.display='flex';});
+  chipNoSub.addEventListener('click',function(){chipNoSub.className='modechip on';chipSub.className='modechip off';transcript.style.display='none';});
+  /* training */
+  var attempt=1,limits=[80,50,30],remaining=limits[0],trTimer=null,trRecording=false;
+  var CIRC=490;
+  var trIdle=document.getElementById('trIdle'),trResult=document.getElementById('trResult'),trFinal=document.getElementById('trFinal');
+  var trChip=document.getElementById('trChip'),trChip2=document.getElementById('trChip2'),trTime=document.getElementById('trTime'),trRing=document.getElementById('trRing');
+  var trRecBtn=document.getElementById('trRecBtn'),trRecChip=document.getElementById('trRecChip'),trWave=document.getElementById('trWave'),trRecCap=document.getElementById('trRecCap');
+  function trColors(){return attempt===1?['#5B8DEF','80 секунд']:attempt===2?['#9B7EDE','50 секунд']:['#FF9F6B','30 секунд'];}
+  function trDraw(){
+    var c=trColors();
+    trTime.textContent=fmt(remaining);
+    trRing.setAttribute('stroke-dasharray',(remaining/limits[attempt-1]*CIRC)+' '+CIRC);
+    trRing.setAttribute('stroke',c[0]);
+    trChip.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#5B3FA8" stroke-width="1.8"/><path d="M12 7v5l3.2 2" stroke="#5B3FA8" stroke-width="1.8" stroke-linecap="round"/></svg>Попытка '+attempt+' из 3 · '+c[1];
+    trChip2.textContent='Попытка '+attempt+' из 3 · готово';
+    document.getElementById('d1').className='dot'+(attempt>1?' done':'');
+    document.getElementById('d2').className='dot'+(attempt>2?' done':attempt===2?' cur':'');
+    document.getElementById('d3').className='dot'+(attempt>=3?' cur':'');
+  }
+  function trShow(panel){trIdle.style.display=panel==='idle'?'flex':'none';trResult.style.display=panel==='result'?'flex':'none';trFinal.style.display=panel==='final'?'flex':'none';}
+  trRecBtn.addEventListener('click',function(){
+    if(trTimer)return;
+    trRecording=true;
+    trRecChip.style.visibility='visible';trWave.style.visibility='visible';
+    trRecCap.textContent='Нажми, чтобы закончить попытку';
+    trTimer=setInterval(function(){
+      remaining--;
+      if(remaining<=0){finishAttempt();return;}
+      trDraw();
+    },140);
+  });
+  function finishAttempt(){
+    clearInterval(trTimer);trTimer=null;trRecording=false;
+    trRecChip.style.visibility='hidden';trWave.style.visibility='hidden';
+    trRecCap.textContent='Нажми, чтобы начать попытку';
+    if(attempt>=3){trShow('final');}
+    else{
+      document.getElementById('resDur').textContent=fmt(limits[attempt-1]-remaining+remaining);
+      document.getElementById('resDur').textContent=fmt(limits[attempt-1]);
+      document.getElementById('nextAttempt').textContent='Следующая попытка · '+limits[attempt]+' секунд';
+      trShow('result');
+    }
+  }
+  document.getElementById('nextAttempt').addEventListener('click',function(){
+    attempt++;remaining=limits[attempt-1];trDraw();trShow('idle');
+  });
+  document.getElementById('restartTraining').addEventListener('click',function(){
+    attempt=1;remaining=limits[0];trDraw();trShow('idle');
+  });
+  document.getElementById('startTraining').addEventListener('click',function(){
+    attempt=1;remaining=limits[0];trDraw();trShow('idle');go('training');
+  });
+  document.getElementById('goPractice').addEventListener('click',function(){resetPractice();go('practice');});
+  var resPlay=document.getElementById('resPlay'),resWave=document.getElementById('resWave');
+  resPlay.addEventListener('click',function(){resWave.classList.toggle('play');});
+  trDraw();
+  /* practice */
+  var prIdle=document.getElementById('prIdle'),prUpload=document.getElementById('prUpload'),prSent=document.getElementById('prSent');
+  var prTime=document.getElementById('prTime'),prRing=document.getElementById('prRing');
+  var prRecBtn=document.getElementById('prRecBtn'),prRecChip=document.getElementById('prRecChip'),prWave=document.getElementById('prWave'),prRecCap=document.getElementById('prRecCap'),prBack=document.getElementById('prBack');
+  var prRemaining=30,prTimer=null,prUpTimer=null;
+  function resetPractice(){clearInterval(prTimer);clearTimeout(prUpTimer);prRemaining=30;prTime.textContent='00:30';prRing.setAttribute('stroke-dasharray',CIRC+' '+CIRC);prRecChip.style.visibility='hidden';prWave.style.visibility='hidden';prRecCap.textContent='Начать запись';prIdle.style.display='flex';prUpload.style.display='none';prSent.style.display='none';}
+  prRecBtn.addEventListener('click',function(){
+    if(prTimer)return;
+    prRecChip.style.visibility='visible';prWave.style.visibility='visible';
+    prRecCap.textContent='Говори на все вопросы!';
+    prTimer=setInterval(function(){
+      prRemaining--;
+      if(prRemaining<=0){prSend();return;}
+      prTime.textContent=fmt(prRemaining);
+      prRing.setAttribute('stroke-dasharray',(prRemaining/30*CIRC)+' '+CIRC);
+    },140);
+  });
+  function prSend(){
+    clearInterval(prTimer);prTimer=null;
+    prIdle.style.display='none';prUpload.style.display='flex';
+    prUpTimer=setTimeout(function(){
+      prUpload.style.display='none';prSent.style.display='flex';
+      ['navbadge','navbadge2','navbadge3'].forEach(function(i){var e=document.getElementById(i);if(e)e.classList.remove('hide')});
+    },1700);
+  }
+  prBack.addEventListener('click',function(){
+    if(prTimer||prUpload.style.display==='flex'){if(confirm('Прервать? Запись будет потеряна.')){resetPractice();go('questions');}}
+    else go('questions');
+  });
+  document.getElementById('startPractice').addEventListener('click',function(){resetPractice();go('practice');});
+  /* theme */
+  var seg=document.getElementById('themeSeg');
+  seg.querySelectorAll('div').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      seg.querySelectorAll('div').forEach(function(o){o.classList.remove('on')});
+      opt.classList.add('on');
+      var th=opt.getAttribute('data-th');
+      if(th==='dark')phone.classList.add('dark');
+      else if(th==='light')phone.classList.remove('dark');
+      else phone.classList.toggle('dark',window.matchMedia('(prefers-color-scheme: dark)').matches);
+    });
+  });
+  /* settings switches */
+  document.querySelectorAll('[data-sw]').forEach(function(sw){
+    sw.addEventListener('click',function(){sw.classList.toggle('off')});
+  });
+})();
+</script>
+</div>
+</body>
+</html>

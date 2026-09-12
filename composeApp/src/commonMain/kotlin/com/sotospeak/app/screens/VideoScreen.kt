@@ -4,8 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -95,7 +94,7 @@ fun VideoScreen(
     Scaffold(
         containerColor = speaking.background,
         topBar = {
-            // Мокап frame-video: h1 — название топика, sub — «Тема · видео m:ss», БЕЗ стрелки назад;
+            // V1-макет: h1 — название топика, sub — «Тема · видео m:ss», back-кнопка;
             // в fullscreen аппбар скрывается
             if (!isFullscreen) {
                 val durationSec = state.topic?.video?.durationSeconds
@@ -104,7 +103,8 @@ fun VideoScreen(
                     subtitle = listOfNotNull(
                         libraryTitle.ifBlank { null },
                         durationSec?.let { "${strings.videoLabel} ${formatTimer(it)}" }
-                    ).joinToString(" · ").ifBlank { null }
+                    ).joinToString(" · ").ifBlank { null },
+                    onBack = onBack
                 )
             }
         },
@@ -653,14 +653,16 @@ private fun ControlBarContent(
             .testTag("vc_seek"),
         colors = SliderDefaults.colors(
             thumbColor = contentColor,
-            activeTrackColor = contentColor,
+            // V1-макет: заполнение прогресса — персиковый (record), трек полупрозрачный
+            activeTrackColor = LocalSpeakingColors.current.record,
             inactiveTrackColor = contentColor.copy(alpha = 0.3f)
         )
     )
     Text(
         "${formatTimer((playerState.positionMs / 1000).toInt())} / ${formatTimer((playerState.durationMs / 1000).toInt())}",
         color = contentColor,
-        style = MaterialTheme.typography.labelSmall,
+        // V1-макет: таймер моноширинным с tnum-цифрами
+        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
         modifier = Modifier.testTag("vc_time")
     )
     // CC (mockups .vc-btn.cc.on — подсветка #FFD666 снизу)

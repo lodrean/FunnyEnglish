@@ -6,6 +6,7 @@ import com.sotospeak.app.data.SpeakingRepository
 import com.sotospeak.app.error.UiText
 import com.sotospeak.app.error.toUiText
 import com.sotospeak.app.storage.OfflineCache
+import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.shared.contracts.SpeakingLibrary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,19 +24,36 @@ data class LibraryState(
     val libraries: List<SpeakingLibrary> = emptyList(),
     /** libraryId → число топиков с training-записями (DC-2: бейдж «N пройдено», прогресс-бар) */
     val completedTopics: Map<String, Int> = emptyMap(),
+    /** «Продолжить путь» (редизайн V1): последний активный топик; null — карточка скрыта */
+    val continueTopic: ContinueTopic? = null,
     val error: UiText? = null,
     /** bd h3l.8: сеть недоступна, показан офлайн-кэш */
     val offlineData: Boolean = false
 )
 
+/** Активный топик для continue-карточки библиотеки (редизайн V1). */
+data class ContinueTopic(
+    val topicId: String,
+    val libraryId: String,
+    val libraryTitle: String,
+    val topicTitle: String,
+    val attemptsDone: Int
+)
+
 sealed interface LibraryAction {
     data object OnRefresh : LibraryAction
     data class OnLibraryClick(val libraryId: String) : LibraryAction
+    data object OnContinueClick : LibraryAction
     data object OnClearError : LibraryAction
 }
 
 sealed interface LibraryEvent {
     data class NavigateToTopics(val libraryId: String, val libraryTitle: String) : LibraryEvent
+    data class NavigateToQuestions(
+        val topicId: String,
+        val libraryId: String,
+        val libraryTitle: String
+    ) : LibraryEvent
 }
 
 class LibraryViewModel(
@@ -56,7 +74,14 @@ class LibraryViewModel(
                 val title = _state.value.libraries.firstOrNull { it.id == action.libraryId }?.title.orEmpty()
                 _events.trySend(LibraryEvent.NavigateToTopics(action.libraryId, title))
             }
-            is LibraryAction.OnClearError ->
+            LibraryAction.OnContinueClick -> {
+                _state.value.continueTopic?.let { topic ->
+                    _events.trySend(
+                        LibraryEvent.NavigateToQuestions(topic.topicId, topic.libraryId, topic.libraryTitle)
+                    )
+                }
+            }
+            LibraryAction.OnClearError ->
                 _state.value = _state.value.copy(error = null)
         }
     }
@@ -118,7 +143,40 @@ class LibraryViewModel(
                     }
                 }.awaitAll().toMap()
             }
-            _state.value = _state.value.copy(completedTopics = completed)
+            _state.value = _state.value.copy(
+                completedTopics = completed,
+                continueTopic = findContinueTopic(libraries)
+            )
         }
+    }
+
+    /**
+     * «Продолжить путь» (редизайн V1): последний активный топик — TRAINING-записи
+     * есть, но все 3 попытки ещё не исчерпаны. Без данных (гость без тренировок)
+     * карточка не показывается.
+     */
+    private suspend fun findContinueTopic(libraries: List<SpeakingLibrary>): ContinueTopic? {
+        val trainings = repository.listRecordings().filter { it.kind == RecordingKind.TRAINING }
+        if (trainings.isEmpty()) return null
+        val attemptsByTopic = trainings.groupBy { it.topicId }
+            .mapValues { (_, metas) -> metas.maxOf { it.attemptNumber } }
+            .filter { (_, attempts) -> attempts < TRAINING_ATTEMPTS_LIMIT }
+        if (attemptsByTopic.isEmpty()) return null
+        val recentTopicId = trainings
+            .filter { it.topicId in attemptsByTopic }
+            .maxByOrNull { it.createdAtEpochMs }
+            ?.topicId ?: return null
+        val detail = repository.getTopicDetail(recentTopicId).getOrNull() ?: return null
+        return ContinueTopic(
+            topicId = recentTopicId,
+            libraryId = detail.libraryId,
+            libraryTitle = libraries.firstOrNull { it.id == detail.libraryId }?.title.orEmpty(),
+            topicTitle = detail.title,
+            attemptsDone = attemptsByTopic[recentTopicId] ?: 0
+        )
+    }
+
+    private companion object {
+        const val TRAINING_ATTEMPTS_LIMIT = 3
     }
 }

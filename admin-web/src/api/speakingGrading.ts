@@ -1,4 +1,5 @@
 import api from './client';
+import { gradingAnalyticsSchema, parseApi } from './schemas';
 
 /**
  * Grading-аналитика (bd h3l.4, PROJECT-REVIEW §4.2.1).
@@ -31,7 +32,7 @@ export interface GradingAnalytics {
 
 export const getGradingAnalytics = async (): Promise<GradingAnalytics> => {
   const response = await api.get<GradingAnalytics>('/admin/speaking/grading/analytics');
-  return response.data;
+  return parseApi<GradingAnalytics>(gradingAnalyticsSchema, response.data, 'admin/speaking/grading/analytics');
 };
 
 /** Скачивает CSV-экспорт оценённых записей (blob с авторизацией → файл в Download). */

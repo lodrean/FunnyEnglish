@@ -14,6 +14,17 @@
  *  - Grade: totalScore ← total, gradedAt ← createdAt, есть reviewerName;
  *  - нет GET submissions/{id} и reorder-endpoint — см. useSpeaking.ts.
  */
+import { z } from 'zod';
+import {
+  backendGradeSchema,
+  backendLibrarySchema,
+  backendSubmissionSchema,
+  backendTopicSchema,
+  gradeAuditEntrySchema,
+  parseApi,
+  speakingQuestionSchema,
+  springPageSchema,
+} from './schemas';
 import api from './client';
 
 // ==================== Speaking Libraries ====================
@@ -285,7 +296,7 @@ const mapSubmission = (raw: BackendSubmission): SpeakingSubmission => ({
 
 export const getSpeakingLibraries = async (): Promise<SpeakingLibrary[]> => {
   const response = await api.get<BackendLibrary[]>('/admin/speaking/libraries');
-  return response.data.map(mapLibrary);
+  return parseApi<BackendLibrary[]>(z.array(backendLibrarySchema), response.data, 'admin/speaking/libraries').map(mapLibrary);
 };
 
 export const createSpeakingLibrary = async (data: CreateLibraryRequest): Promise<SpeakingLibrary> => {
@@ -296,7 +307,7 @@ export const createSpeakingLibrary = async (data: CreateLibraryRequest): Promise
     displayOrder: data.displayOrder,
     isPublished: data.isPublished,
   });
-  return mapLibrary(response.data);
+  return mapLibrary(parseApi<BackendLibrary>(backendLibrarySchema, response.data, 'admin/speaking/libraries (create)'));
 };
 
 export const updateSpeakingLibrary = async (id: string, data: UpdateLibraryRequest): Promise<SpeakingLibrary> => {
@@ -307,7 +318,7 @@ export const updateSpeakingLibrary = async (id: string, data: UpdateLibraryReque
     ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
     ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
   });
-  return mapLibrary(response.data);
+  return mapLibrary(parseApi<BackendLibrary>(backendLibrarySchema, response.data, `admin/speaking/libraries/${id}`));
 };
 
 export const deleteSpeakingLibrary = async (id: string): Promise<void> => {
@@ -317,7 +328,7 @@ export const deleteSpeakingLibrary = async (id: string): Promise<void> => {
 /** Отдельного publish-endpoint'а нет — publish через PUT {isPublished} */
 export const publishSpeakingLibrary = async (id: string, isPublished: boolean): Promise<SpeakingLibrary> => {
   const response = await api.put<BackendLibrary>(`/admin/speaking/libraries/${id}`, { isPublished });
-  return mapLibrary(response.data);
+  return mapLibrary(parseApi<BackendLibrary>(backendLibrarySchema, response.data, `admin/speaking/libraries/${id}`));
 };
 
 // ==================== Topics (admin CRUD) ====================
@@ -327,7 +338,7 @@ export const getSpeakingTopics = async (libraryId: string): Promise<SpeakingTopi
   const response = await api.get<BackendTopic[]>('/admin/speaking/topics', {
     params: { libraryId },
   });
-  return response.data.map((t) => mapTopic(t));
+  return parseApi<BackendTopic[]>(z.array(backendTopicSchema), response.data, 'admin/speaking/topics').map((t) => mapTopic(t));
 };
 
 /** Все топики всех тем (агрегация по libraries — обязательный libraryId на backend) */
@@ -350,7 +361,7 @@ export const createSpeakingTopic = async (data: CreateTopicRequest): Promise<Spe
     displayOrder: data.displayOrder,
     isPublished: data.isPublished,
   });
-  return mapTopic(response.data);
+  return mapTopic(parseApi<BackendTopic>(backendTopicSchema, response.data, 'admin/speaking/topics (create)'));
 };
 
 export const updateSpeakingTopic = async (id: string, data: UpdateTopicRequest): Promise<SpeakingTopic> => {
@@ -360,7 +371,7 @@ export const updateSpeakingTopic = async (id: string, data: UpdateTopicRequest):
     ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
     ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
   });
-  return mapTopic(response.data);
+  return mapTopic(parseApi<BackendTopic>(backendTopicSchema, response.data, `admin/speaking/topics/${id}`));
 };
 
 /** Видео/субтитры — отдельный upsert (videoUrl/subtitleUrl/durationSeconds) */
@@ -370,7 +381,7 @@ export const upsertTopicVideo = async (id: string, data: UpsertTopicVideoRequest
     subtitleUrl: data.subtitlesUrl,
     durationSeconds: data.durationSeconds,
   });
-  return mapTopic(response.data);
+  return mapTopic(parseApi<BackendTopic>(backendTopicSchema, response.data, `admin/speaking/topics/${id}/video`));
 };
 
 export const deleteSpeakingTopic = async (id: string): Promise<void> => {
@@ -380,7 +391,7 @@ export const deleteSpeakingTopic = async (id: string): Promise<void> => {
 
 export const publishSpeakingTopic = async (id: string, isPublished: boolean): Promise<SpeakingTopic> => {
   const response = await api.put<BackendTopic>(`/admin/speaking/topics/${id}`, { isPublished });
-  return mapTopic(response.data);
+  return mapTopic(parseApi<BackendTopic>(backendTopicSchema, response.data, `admin/speaking/topics/${id}`));
 };
 
 // ==================== Questions ====================
@@ -399,12 +410,12 @@ export const getTopicQuestions = async (topicId: string): Promise<SpeakingQuesti
 
 export const createTopicQuestion = async (topicId: string, data: CreateSpeakingQuestionRequest): Promise<SpeakingQuestion> => {
   const response = await api.post<SpeakingQuestion>(`/admin/speaking/topics/${topicId}/questions`, data);
-  return response.data;
+  return parseApi<SpeakingQuestion>(speakingQuestionSchema, response.data, `admin/speaking/topics/${topicId}/questions`);
 };
 
 export const updateTopicQuestion = async (id: string, data: CreateSpeakingQuestionRequest): Promise<SpeakingQuestion> => {
   const response = await api.put<SpeakingQuestion>(`/admin/speaking/questions/${id}`, data);
-  return response.data;
+  return parseApi<SpeakingQuestion>(speakingQuestionSchema, response.data, `admin/speaking/questions/${id}`);
 };
 
 export const deleteTopicQuestion = async (id: string): Promise<void> => {
@@ -441,7 +452,11 @@ export const getSubmissions = async (filters: SubmissionFilters = {}): Promise<P
       size: filters.size ?? 20,
     },
   });
-  const page = response.data;
+  const page = parseApi<SpringPage<BackendSubmission>>(
+    springPageSchema(backendSubmissionSchema),
+    response.data,
+    'admin/speaking/submissions'
+  );
   return {
     content: page.content.map(mapSubmission),
     totalElements: page.totalElements,
@@ -453,12 +468,12 @@ export const getSubmissions = async (filters: SubmissionFilters = {}): Promise<P
 
 export const createGrade = async (submissionId: string, data: GradeRequest): Promise<Grade> => {
   const response = await api.post<BackendGrade>(`/admin/speaking/submissions/${submissionId}/grade`, data);
-  return mapGrade(response.data);
+  return mapGrade(parseApi<BackendGrade>(backendGradeSchema, response.data, `admin/speaking/submissions/${submissionId}/grade`));
 };
 
 export const updateGrade = async (submissionId: string, data: GradeRequest): Promise<Grade> => {
   const response = await api.put<BackendGrade>(`/admin/speaking/submissions/${submissionId}/grade`, data);
-  return mapGrade(response.data);
+  return mapGrade(parseApi<BackendGrade>(backendGradeSchema, response.data, `admin/speaking/submissions/${submissionId}/grade`));
 };
 
 // ==================== Аудит-лог оценок (bd h3l.10) ====================
@@ -481,5 +496,9 @@ export const getGradeHistory = async (submissionId: string): Promise<GradeAuditE
   const response = await api.get<GradeAuditEntry[]>(
     `/admin/speaking/submissions/${submissionId}/grade/history`,
   );
-  return response.data;
+  return parseApi<GradeAuditEntry[]>(
+    z.array(gradeAuditEntrySchema),
+    response.data,
+    `admin/speaking/submissions/${submissionId}/grade/history`
+  );
 };

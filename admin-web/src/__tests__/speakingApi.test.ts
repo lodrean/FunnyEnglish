@@ -72,7 +72,7 @@ const backendGrade = {
   vocabulary: 7,
   pronunciation: 9,
   fluency: 6,
-  total: '7.5',
+  total: 7.5, // BigDecimal в JSON — число (Spring default)
   comment: 'ok',
   reviewerName: 'Admin',
   createdAt: '2026-07-30T15:00:00Z',
@@ -195,7 +195,7 @@ describe('speakingApi — submissions', () => {
 
 describe('speakingApi — reorder', () => {
   it('reorderTopicQuestions: PUT каждого вопроса с displayOrder = позиция', async () => {
-    putMock.mockResolvedValue({ data: {} });
+    putMock.mockResolvedValue({ data: { id: 'q-x', text: 'T', displayOrder: 0 } });
     const ordered = [
       { id: 'q-2', text: 'B', displayOrder: 0 },
       { id: 'q-1', text: 'A', displayOrder: 1 },

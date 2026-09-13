@@ -1,4 +1,26 @@
 import axios from 'axios';
+import { z } from 'zod';
+import {
+  adminAnalyticsSchema,
+  adminMessageSchema,
+  adminSettingsSchema,
+  adminUserDetailSchema,
+  adminUserPageSchema,
+  authResponseSchema,
+  clientLogsPageSchema,
+  groupDetailSchema,
+  groupProgressSummarySchema,
+  joinRequestSchema,
+  dailyActivitySchema,
+  guestAnalyticsSchema,
+  levelDistributionSchema,
+  popularTestSchema,
+  recentActivityItemSchema,
+  parseApi,
+  prdMetricsSchema,
+  studentGroupSchema,
+  userSchema,
+} from './schemas';
 import { logger } from '../utils/logger';
 import type {
   AuthResponse,
@@ -68,12 +90,12 @@ api.interceptors.response.use(
 // Auth
 export const login = async (data: LoginRequest): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>('/auth/login', data);
-  return response.data;
+  return parseApi(authResponseSchema, response.data, 'auth/login');
 };
 
 export const getCurrentUser = async (): Promise<User> => {
   const response = await api.get<User>('/users/me');
-  return response.data;
+  return parseApi(userSchema, response.data, 'users/me');
 };
 
 // Users - Admin (bd wy7.6: серверная пагинация — Spring Page-контракт)
@@ -99,12 +121,12 @@ export const getAdminUsers = async (options: {
       size: options.size,
     },
   });
-  return response.data;
+  return parseApi(adminUserPageSchema, response.data, 'admin/users');
 };
 
 export const getAdminUser = async (id: string): Promise<AdminUserDetail> => {
   const response = await api.get<AdminUserDetail>(`/admin/users/${id}`);
-  return response.data;
+  return parseApi(adminUserDetailSchema, response.data, `admin/users/${id}`);
 };
 
 // Messages - Admin (сообщения/комментарии ученику)
@@ -131,25 +153,25 @@ export const sendMessageToUser = async (
   payload: SendMessagePayload
 ): Promise<AdminMessage> => {
   const response = await api.post<AdminMessage>(`/admin/users/${userId}/messages`, payload);
-  return response.data;
+  return parseApi(adminMessageSchema, response.data, 'admin/users/:id/messages');
 };
 
 export const getUserMessages = async (userId: string): Promise<AdminMessage[]> => {
   const response = await api.get<AdminMessage[]>(`/admin/users/${userId}/messages`);
-  return response.data;
+  return parseApi(z.array(adminMessageSchema), response.data, 'admin/users/:id/messages');
 };
 
 // Analytics - Admin
 export const getAdminAnalytics = async (): Promise<AdminAnalytics> => {
   const response = await api.get<AdminAnalytics>('/admin/analytics');
-  return response.data;
+  return parseApi(adminAnalyticsSchema, response.data, 'admin/analytics');
 };
 
 export const getAdminDailyActivity = async (days: number = 7): Promise<DailyActivity[]> => {
   const response = await api.get<DailyActivity[]>('/admin/analytics/daily-activity', {
     params: { days },
   });
-  return response.data;
+  return parseApi(z.array(dailyActivitySchema), response.data, 'admin/analytics/daily-activity');
 };
 
 // Guest (anonymous) analytics — обезличенные пользователи гостевого режима
@@ -163,7 +185,7 @@ export interface GuestAnalytics {
 
 export const getGuestAnalytics = async (): Promise<GuestAnalytics> => {
   const response = await api.get<GuestAnalytics>('/admin/analytics/guests');
-  return response.data;
+  return parseApi(guestAnalyticsSchema, response.data, 'admin/analytics/guests');
 };
 
 // Метрики PRD (Speaking Trainer §Metrics, bd FunnyEnglish-h3l.3) — реальные агрегаты backend
@@ -181,7 +203,7 @@ export interface PrdMetrics {
 
 export const getPrdMetrics = async (): Promise<PrdMetrics> => {
   const response = await api.get<PrdMetrics>('/admin/analytics/prd-metrics');
-  return response.data;
+  return parseApi(prdMetricsSchema, response.data, 'admin/analytics/prd-metrics');
 };
 
 // ==================== Client Logs (OpenSpec add-client-logging) ====================
@@ -220,32 +242,32 @@ export interface ClientLogsParams {
 
 export const getClientLogs = async (params: ClientLogsParams = {}): Promise<ClientLogsPage> => {
   const response = await api.get<ClientLogsPage>('/admin/logs', { params });
-  return response.data;
+  return parseApi(clientLogsPageSchema, response.data, 'admin/logs');
 };
 
 export const getAdminLevelDistribution = async (): Promise<LevelDistribution[]> => {
   const response = await api.get<LevelDistribution[]>('/admin/analytics/levels');
-  return response.data;
+  return parseApi(z.array(levelDistributionSchema), response.data, 'admin/analytics/levels');
 };
 
 export const getPopularTests = async (limit: number = 5): Promise<PopularTest[]> => {
   const response = await api.get<PopularTest[]>('/admin/analytics/popular-tests', {
     params: { limit },
   });
-  return response.data;
+  return parseApi(z.array(popularTestSchema), response.data, 'admin/analytics/popular-tests');
 };
 
 export const getRecentActivity = async (limit: number = 10): Promise<RecentActivityItem[]> => {
   const response = await api.get<RecentActivityItem[]>('/admin/analytics/recent-activity', {
     params: { limit },
   });
-  return response.data;
+  return parseApi(z.array(recentActivityItemSchema), response.data, 'admin/analytics/recent-activity');
 };
 
 // Settings - Admin
 export const getAdminSettings = async (): Promise<AdminSettings> => {
   const response = await api.get<AdminSettings>('/admin/settings');
-  return response.data;
+  return parseApi(adminSettingsSchema, response.data, 'admin/settings');
 };
 
 // Media upload
@@ -270,22 +292,22 @@ export const deleteMedia = async (url: string): Promise<void> => {
 
 export const getTeacherGroups = async (): Promise<StudentGroup[]> => {
   const response = await api.get<StudentGroup[]>('/groups/teacher/my-groups');
-  return response.data;
+  return parseApi(z.array(studentGroupSchema), response.data, 'groups/teacher/my-groups');
 };
 
 export const getGroupDetail = async (groupId: string): Promise<GroupDetail> => {
   const response = await api.get<GroupDetail>(`/groups/${groupId}/detail`);
-  return response.data;
+  return parseApi(groupDetailSchema, response.data, 'groups/:id/detail');
 };
 
 export const createGroup = async (data: CreateGroupRequest): Promise<StudentGroup> => {
   const response = await api.post<StudentGroup>('/groups', data);
-  return response.data;
+  return parseApi(studentGroupSchema, response.data, 'groups (create)');
 };
 
 export const updateGroup = async (groupId: string, data: UpdateGroupRequest): Promise<StudentGroup> => {
   const response = await api.put<StudentGroup>(`/groups/${groupId}`, data);
-  return response.data;
+  return parseApi(studentGroupSchema, response.data, 'groups/:id (update)');
 };
 
 export const deleteGroup = async (groupId: string): Promise<void> => {
@@ -298,7 +320,7 @@ export const removeStudentFromGroup = async (groupId: string, studentId: string)
 
 export const getPendingRequests = async (groupId: string): Promise<JoinRequest[]> => {
   const response = await api.get<JoinRequest[]>(`/groups/${groupId}/join-requests`);
-  return response.data;
+  return parseApi(z.array(joinRequestSchema), response.data, 'groups/:id/join-requests');
 };
 
 export const processJoinRequest = async (
@@ -311,7 +333,7 @@ export const processJoinRequest = async (
 
 export const getGroupProgress = async (groupId: string): Promise<GroupProgressSummary> => {
   const response = await api.get<GroupProgressSummary>(`/groups/${groupId}/progress`);
-  return response.data;
+  return parseApi(groupProgressSummarySchema, response.data, 'groups/:id/progress');
 };
 
 export const apiClient = api;

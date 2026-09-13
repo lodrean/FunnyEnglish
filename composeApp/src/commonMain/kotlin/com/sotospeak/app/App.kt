@@ -121,6 +121,8 @@ private fun resolveSplashTarget(
 private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boolean) {
     val authViewModel: AuthViewModel = koinViewModel()
     val authState by authViewModel.state.collectAsState()
+    // debug/qa-флаг (тестовые аккаунты на логине и debug-меню)
+    val appConfig: com.sotospeak.app.di.AppConfig = koinInject()
 
     // Онбординг первого запуска
     val appSettings = koinInject<Settings>()
@@ -183,6 +185,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
             }
             LoginScreen(
                 state = authState,
+                debugToolsEnabled = appConfig.debugToolsEnabled,
                 onLogin = { email, password -> authViewModel.login(email, password) },
                 onNavigateToRegister = { backStack.push(AppScreen.Register) },
                 onClearError = { authViewModel.clearError() },
@@ -220,6 +223,7 @@ private fun AppContent(settingsViewModel: SettingsViewModel, useDarkTheme: Boole
                     } else {
                         LoginScreen(
                             state = authState,
+                            debugToolsEnabled = appConfig.debugToolsEnabled,
                             onLogin = { email, password -> authViewModel.login(email, password) },
                             onNavigateToRegister = { backStack.push(AppScreen.Register) },
                             onClearError = { authViewModel.clearError() },

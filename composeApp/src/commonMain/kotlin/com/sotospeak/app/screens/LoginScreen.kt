@@ -1,6 +1,7 @@
 package com.sotospeak.app.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -56,7 +57,9 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onClearError: () -> Unit,
     onContinueAsGuest: (() -> Unit)? = null,
-    onResendVerification: (String) -> Unit = {}
+    onResendVerification: (String) -> Unit = {},
+    /** debug/qa-сборки: секция «Тестовые аккаунты» с автозаполнением формы */
+    debugToolsEnabled: Boolean = false
 ) {
     val speaking = LocalSpeakingColors.current
     var email by remember { mutableStateOf("") }
@@ -200,6 +203,19 @@ fun LoginScreen(
             Text(if (state.isLoading) "Входим…" else "Войти")
         }
 
+        // Тестовые аккаунты — только debug/qa-сборки (как debug-меню/шоукейс)
+        if (debugToolsEnabled) {
+            Spacer(modifier = Modifier.height(24.dp))
+            TestAccountsCard(
+                enabled = !state.isLoading,
+                onPick = { pickedEmail, pickedPassword ->
+                    if (state.error != null) onClearError()
+                    email = pickedEmail
+                    password = pickedPassword
+                }
+            )
+        }
+
         // weight в scrollable Column запрещён — фиксированный отступ вместо margin-top:auto
         Spacer(modifier = Modifier.height(48.dp))
 
@@ -243,6 +259,69 @@ fun LoginScreen(
                 ) {
                     Text("Продолжить как гость")
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Тестовые аккаунты dev-стека (debug/qa-сборки, bd: «выведи тестовые аккаунты на экран»):
+ * тап по строке заполняет форму. Пары соответствуют AdminUserInitializer /
+ * application.yml (dev: DEMO_USER_ENABLED=true, ADMIN_PASSWORD=admin123).
+ */
+@Composable
+private fun TestAccountsCard(
+    enabled: Boolean,
+    onPick: (String, String) -> Unit
+) {
+    val speaking = LocalSpeakingColors.current
+    val accounts = listOf(
+        "Ученик" to ("demo@sotospeak.app" to "demo123"),
+        "Админ (dev)" to ("admin@sotospeak.com" to "admin123")
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest, MaterialTheme.shapes.medium)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .testTag("login_test_accounts")
+    ) {
+        Text(
+            text = "Тестовые аккаунты (dev)",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = speaking.textMuted
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        accounts.forEachIndexed { index, (role, creds) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 44.dp)
+                    .clickable(enabled = enabled) { onPick(creds.first, creds.second) }
+                    .testTag("login_test_account_$index"),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = role,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = speaking.text
+                    )
+                    Text(
+                        text = "${creds.first} · ${creds.second}",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = speaking.textMuted
+                    )
+                }
+                Text(
+                    text = "Заполнить",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

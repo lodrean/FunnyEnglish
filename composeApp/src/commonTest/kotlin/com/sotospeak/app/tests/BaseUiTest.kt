@@ -78,6 +78,16 @@ abstract class BaseUiTest : KoinTest {
             // Моки подключаются здесь при необходимости
             // bd h3l.13: WordBook для карточки слова в VideoScreen
             single { com.sotospeak.app.storage.WordBook(com.sotospeak.shared.platform.Settings("test_wordbook")) }
+            // AppConfig нужен экранам напрямую (логин: тестовые аккаунты в debugToolsEnabled);
+            // в тестах секция скрыта — флаг false
+            single {
+                com.sotospeak.app.di.AppConfig(
+                    baseUrlProvider = { "http://localhost:8080" },
+                    enableNetworkLogs = false,
+                    appVersion = "test",
+                    debugToolsEnabled = false
+                )
+            }
         }
 
         /**

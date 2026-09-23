@@ -75,7 +75,7 @@ const transformActivity = (item: RecentActivityItem): Activity => {
   return {
     id: `${item.timestamp}-${item.userName}`,
     type: typeMap[item.type] || 'test_completed',
-    description: item.details || `${item.type} by ${item.userName}`,
+    description: item.details || `${item.userName}: ${item.type}`,
     timestamp: item.timestamp,
     user: item.userName,
   };
@@ -113,7 +113,7 @@ const fetchDashboardData = async (): Promise<{ stats: DashboardStats; activities
       pendingReview: newSubmissions.totalElements,
       reviewedCount: reviewedSubmissions.totalElements,
       submissionsPerDay: days.map((day, i) => ({
-        date: new Date(day).toLocaleDateString('en-US', { weekday: 'short' }),
+        date: new Date(day).toLocaleDateString('ru-RU', { weekday: 'short' }),
         submissions: dailyCounts[i].totalElements,
       })),
     },
@@ -146,11 +146,11 @@ const ActivityIcon: React.FC<{ type: Activity['type'] }> = ({ type }) => {
 // Activity Type Label
 const getActivityTypeLabel = (type: Activity['type']): string => {
   const labels: Record<Activity['type'], string> = {
-    user_registered: 'User',
-    test_completed: 'Completion',
-    test_created: 'Created',
-    test_edited: 'Edited',
-    test_deleted: 'Deleted',
+    user_registered: 'Пользователь',
+    test_completed: 'Завершение',
+    test_created: 'Создание',
+    test_edited: 'Изменение',
+    test_deleted: 'Удаление',
   };
   return labels[type];
 };
@@ -173,10 +173,10 @@ const Dashboard: React.FC = () => {
     return (
       <Box p={3}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load dashboard data. Please try again later.
+          Не удалось загрузить данные дашборда. Попробуйте позже.
         </Alert>
         <Button variant="contained" onClick={() => window.location.reload()}>
-          Retry
+          Повторить
         </Button>
       </Box>
     );
@@ -194,7 +194,7 @@ const Dashboard: React.FC = () => {
         gap={2}
       >
         <Typography variant="h4" fontWeight="bold" color="text.primary" data-testid="page-title">
-          Dashboard
+          Дашборд
         </Typography>
         <Box display="flex" gap={1} flexWrap="wrap">
           <Button
@@ -203,7 +203,7 @@ const Dashboard: React.FC = () => {
             onClick={() => navigate('/speaking/libraries/new')}
             data-testid="dashboard-new-library-button"
           >
-            Add Library
+            Добавить тему
           </Button>
           <Button
             variant="outlined"
@@ -211,7 +211,7 @@ const Dashboard: React.FC = () => {
             onClick={() => navigate('/users')}
             data-testid="dashboard-new-user-button"
           >
-            Add User
+            Добавить пользователя
           </Button>
         </Box>
       </Box>
@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
       <Grid container spacing={3} mb={3}>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Total Students"
+            title="Всего учеников"
             value={(stats?.totalStudents ?? 0).toLocaleString()}
             icon={PeopleIcon}
             variant="primary"
@@ -229,7 +229,7 @@ const Dashboard: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Active Students (7d)"
+            title="Активные ученики (7 дн.)"
             value={(stats?.activeStudents7d ?? 0).toLocaleString()}
             icon={TrendingUpIcon}
             variant="success"
@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Practice Submissions"
+            title="Отправки практики"
             value={(stats?.totalSubmissions ?? 0).toLocaleString()}
             icon={MicIcon}
             variant="info"
@@ -247,7 +247,7 @@ const Dashboard: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Pending Review"
+            title="Ожидают проверки"
             value={(stats?.pendingReview ?? 0).toLocaleString()}
             icon={AccessTimeIcon}
             variant="warning"
@@ -261,16 +261,16 @@ const Dashboard: React.FC = () => {
         <Grid xs={12} lg={8}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Submissions per Day (last 7 days)
+              Отправки по дням (последние 7 дней)
             </Typography>
             {isLoading ? (
               <Box height={320} display="flex" alignItems="center" justifyContent="center">
-                <Typography color="text.secondary">Loading chart...</Typography>
+                <Typography color="text.secondary">Загрузка графика...</Typography>
               </Box>
             ) : !stats || stats.totalSubmissions === 0 ? (
               <Box height={320} display="flex" alignItems="center" justifyContent="center">
                 <Typography color="text.secondary">
-                  No practice submissions yet — chart will appear after the first student submission
+                  Практики ещё нет — график появится после первой записи ученика
                 </Typography>
               </Box>
             ) : (
@@ -298,7 +298,7 @@ const Dashboard: React.FC = () => {
                   <Bar
                     dataKey="submissions"
                     fill={theme.palette.primary.main}
-                    name="Submissions"
+                    name="Отправки"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -309,22 +309,22 @@ const Dashboard: React.FC = () => {
         <Grid xs={12} lg={4}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Grading Status
+              Статус проверки
             </Typography>
             {isLoading ? (
               <Box height={320} display="flex" alignItems="center" justifyContent="center">
-                <Typography color="text.secondary">Loading chart...</Typography>
+                <Typography color="text.secondary">Загрузка графика...</Typography>
               </Box>
             ) : !stats || stats.totalSubmissions === 0 ? (
               <Box height={320} display="flex" alignItems="center" justifyContent="center">
-                <Typography color="text.secondary">No submissions to grade yet</Typography>
+                <Typography color="text.secondary">Нет отправок на проверку</Typography>
               </Box>
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart
                   data={[
-                    { name: 'Pending', count: stats.pendingReview },
-                    { name: 'Reviewed', count: stats.reviewedCount },
+                    { name: 'Ожидают', count: stats.pendingReview },
+                    { name: 'Проверены', count: stats.reviewedCount },
                   ]}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
@@ -346,7 +346,7 @@ const Dashboard: React.FC = () => {
                       boxShadow: theme.shadows[4],
                     }}
                   />
-                  <Bar dataKey="count" name="Submissions" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name="Отправки" radius={[4, 4, 0, 0]}>
                     <Cell fill={theme.palette.warning.main} />
                     <Cell fill={theme.palette.success.main} />
                   </Bar>
@@ -360,15 +360,15 @@ const Dashboard: React.FC = () => {
       {/* Recent Activity */}
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" fontWeight="bold" mb={2}>
-          Recent Activity
+          Последняя активность
         </Typography>
         {isLoading ? (
           <Box py={4} textAlign="center">
-            <Typography color="text.secondary">Loading activity...</Typography>
+            <Typography color="text.secondary">Загрузка активности...</Typography>
           </Box>
         ) : activities.length === 0 ? (
           <Box py={4} textAlign="center">
-            <Typography color="text.secondary">No recent activity</Typography>
+            <Typography color="text.secondary">Нет недавней активности</Typography>
           </Box>
         ) : (
           <List sx={{ maxHeight: 400, overflow: 'auto' }}>

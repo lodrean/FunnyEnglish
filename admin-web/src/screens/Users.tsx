@@ -150,6 +150,24 @@ const getStatusVariant = (status: UserListItem['status']) => {
   }
 };
 
+// RU-подписи ролей/статусов (bd b85.6 — RU-унификация)
+const ROLE_LABELS: Record<UserListItem['role'], string> = {
+  admin: 'Админ',
+  instructor: 'Инструктор',
+  student: 'Ученик',
+};
+
+const STATUS_LABELS: Record<UserListItem['status'], string> = {
+  active: 'Активен',
+  inactive: 'Неактивен',
+  suspended: 'Заблокирован',
+};
+
+const MESSAGE_TYPE_LABELS: Record<'MESSAGE' | 'COMMENT', string> = {
+  MESSAGE: 'Сообщение',
+  COMMENT: 'Комментарий',
+};
+
 // Score variant
 const getScoreVariant = (score: number) => {
   if (score >= 80) return 'success';
@@ -162,9 +180,9 @@ const formatTime = (minutes: number): string => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   if (hours > 0) {
-    return `${hours}h ${mins}m`;
+    return `${hours} ч ${mins} мин`;
   }
-  return `${mins}m`;
+  return `${mins} мин`;
 };
 
 
@@ -251,7 +269,7 @@ const Users: React.FC = () => {
 
   const handleExportCSV = () => {
     const csv = [
-      ['ID', 'Email', 'First Name', 'Last Name', 'Role', 'Status', 'Tests Completed', 'Avg Score'].join(','),
+      ['ID', 'Email', 'Имя', 'Фамилия', 'Роль', 'Статус', 'Тестов', 'Средний балл'].join(','),
       ...filteredUsers.map((u) =>
         [u.id, u.email, u.firstName, u.lastName, u.role, u.status, u.testsCompleted, u.avgScore].join(',')
       ),
@@ -270,7 +288,7 @@ const Users: React.FC = () => {
   const columns: Column<UserListItem>[] = [
     {
       key: 'user',
-      header: 'User',
+      header: 'Пользователь',
       accessor: (user: UserListItem) => (
         <Box display="flex" alignItems="center" gap={1.5}>
           <Avatar
@@ -299,11 +317,11 @@ const Users: React.FC = () => {
     },
     {
       key: 'role',
-      header: 'Role',
+      header: 'Роль',
       accessor: (user: UserListItem) => (
         <StatusBadge
           status={getRoleVariant(user.role) as any}
-          label={user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+          label={ROLE_LABELS[user.role]}
           size="small"
         />
       ),
@@ -312,11 +330,11 @@ const Users: React.FC = () => {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: 'Статус',
       accessor: (user: UserListItem) => (
         <StatusBadge
           status={getStatusVariant(user.status) as any}
-          label={user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+          label={STATUS_LABELS[user.status]}
           size="small"
         />
       ),
@@ -325,14 +343,14 @@ const Users: React.FC = () => {
     },
     {
       key: 'testsCompleted',
-      header: 'Tests',
+      header: 'Тесты',
       accessor: (user: UserListItem) => user.testsCompleted,
       align: 'center',
       width: '10%',
     },
     {
       key: 'avgScore',
-      header: 'Avg Score',
+      header: 'Средний балл',
       accessor: (user: UserListItem) =>
         user.avgScore > 0 ? (
           <StatusBadge
@@ -348,20 +366,20 @@ const Users: React.FC = () => {
     },
     {
       key: 'totalTimeSpent',
-      header: 'Time Spent',
+      header: 'Время',
       accessor: (user: UserListItem) => formatTime(user.totalTimeSpent),
       align: 'center',
       width: '12%',
     },
     {
       key: 'lastActive',
-      header: 'Last Active',
+      header: 'Был активен',
       accessor: (user: UserListItem) => formatRelativeTime(user.lastActive),
       width: '15%',
     },
     {
       key: 'message',
-      header: 'Message',
+      header: 'Сообщение',
       accessor: (user: UserListItem) => (
         <IconButton
           size="small"
@@ -383,7 +401,7 @@ const Users: React.FC = () => {
   if (error) {
     return (
       <Box p={3}>
-        <Alert severity="error">Failed to load users. Please try again.</Alert>
+        <Alert severity="error">Не удалось загрузить пользователей. Попробуйте ещё раз.</Alert>
       </Box>
     );
   }
@@ -393,7 +411,7 @@ const Users: React.FC = () => {
       {/* Header */}
       <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} mb={3} gap={2}>
         <Typography variant="h4" fontWeight="bold" color={theme.palette.text.primary} data-testid="page-title">
-          Users
+          Пользователи
         </Typography>
         <Box display="flex" gap={1}>
           <Button
@@ -401,7 +419,7 @@ const Users: React.FC = () => {
             startIcon={<DownloadIcon />}
             onClick={handleExportCSV}
           >
-            Export CSV
+            Экспорт CSV
           </Button>
         </Box>
       </Box>
@@ -410,7 +428,7 @@ const Users: React.FC = () => {
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'center' }}>
           <TextField
-            placeholder="Search users..."
+            placeholder="Поиск пользователей..."
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
             size="small"
@@ -425,29 +443,29 @@ const Users: React.FC = () => {
             }}
           />
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Role</InputLabel>
+            <InputLabel>Роль</InputLabel>
             <Select
               value={filters.role}
-              label="Role"
+              label="Роль"
               onChange={(e) => setFilters({ ...filters, role: e.target.value })}
             >
-              <MenuItem value="">All Roles</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="instructor">Instructor</MenuItem>
-              <MenuItem value="student">Student</MenuItem>
+              <MenuItem value="">Все роли</MenuItem>
+              <MenuItem value="admin">Админ</MenuItem>
+              <MenuItem value="instructor">Инструктор</MenuItem>
+              <MenuItem value="student">Ученик</MenuItem>
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Status</InputLabel>
+            <InputLabel>Статус</InputLabel>
             <Select
               value={filters.status}
-              label="Status"
+              label="Статус"
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
-              <MenuItem value="">All Status</MenuItem>
-              <MenuItem value="active">Active</MenuItem>
-              <MenuItem value="inactive">Inactive</MenuItem>
-              <MenuItem value="suspended">Suspended</MenuItem>
+              <MenuItem value="">Все статусы</MenuItem>
+              <MenuItem value="active">Активен</MenuItem>
+              <MenuItem value="inactive">Неактивен</MenuItem>
+              <MenuItem value="suspended">Заблокирован</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -460,7 +478,7 @@ const Users: React.FC = () => {
         keyExtractor={(user) => user.id}
         loading={isLoading}
         onRowClick={(user) => handleOpenDrawer(user)}
-        emptyState={<Typography color="text.secondary">No users found</Typography>}
+        emptyState={<Typography color="text.secondary">Пользователи не найдены</Typography>}
         stickyHeader
         pagination={{
           page,
@@ -485,7 +503,7 @@ const Users: React.FC = () => {
           <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
               <Typography variant="h6" data-testid="user-details-title">
-                User Details
+                Данные пользователя
               </Typography>
               <IconButton onClick={handleCloseDrawer}>
                 <CloseIcon />
@@ -501,41 +519,41 @@ const Users: React.FC = () => {
                 disabled
               />
               <TextField
-                label="First Name"
+                label="Имя"
                 fullWidth
                 margin="normal"
                 value={viewingUser.firstName}
                 disabled
               />
               <TextField
-                label="Last Name"
+                label="Фамилия"
                 fullWidth
                 margin="normal"
                 value={viewingUser.lastName}
                 disabled
               />
               <TextField
-                label="Role"
+                label="Роль"
                 fullWidth
                 margin="normal"
-                value={viewingUser.role.charAt(0).toUpperCase() + viewingUser.role.slice(1)}
+                value={ROLE_LABELS[viewingUser.role]}
                 disabled
               />
               <TextField
-                label="Status"
+                label="Статус"
                 fullWidth
                 margin="normal"
-                value={viewingUser.status.charAt(0).toUpperCase() + viewingUser.status.slice(1)}
+                value={STATUS_LABELS[viewingUser.status]}
                 disabled
               />
               <Alert severity="info" sx={{ mt: 2 }}>
-                Editing users is not supported by the API yet.
+                Редактирование пользователей API пока не поддерживает.
               </Alert>
             </Box>
 
             <Box display="flex" gap={1} mt={2}>
               <Button variant="outlined" fullWidth onClick={handleCloseDrawer}>
-                Close
+                Закрыть
               </Button>
             </Box>
           </Box>
@@ -551,12 +569,12 @@ const Users: React.FC = () => {
         data-testid="message-dialog"
       >
         <DialogTitle>
-          Message to {messageDialogUser?.displayName}
+          Сообщение для {messageDialogUser?.displayName}
         </DialogTitle>
         <DialogContent>
           {/* Результаты тестов ученика */}
           <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-            Test Results
+            Результаты тестов
           </Typography>
           {messageUserDetail?.progress?.length ? (
             <Box sx={{ maxHeight: 160, overflow: 'auto', mb: 2 }} data-testid="user-progress-list">
@@ -577,30 +595,30 @@ const Users: React.FC = () => {
             </Box>
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              No completed tests yet
+              Завершённых тестов пока нет
             </Typography>
           )}
 
           {/* Форма сообщения */}
           <Box display="flex" gap={1} mb={1}>
             <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Type</InputLabel>
+              <InputLabel>Тип</InputLabel>
               <Select
                 value={messageType}
-                label="Type"
+                label="Тип"
                 data-testid="message-type-select"
                 onChange={(e) => setMessageType(e.target.value as 'MESSAGE' | 'COMMENT')}
               >
-                <MenuItem value="MESSAGE">Message</MenuItem>
-                <MenuItem value="COMMENT">Comment to result</MenuItem>
+                <MenuItem value="MESSAGE">Сообщение</MenuItem>
+                <MenuItem value="COMMENT">Комментарий к результату</MenuItem>
               </Select>
             </FormControl>
             {messageType === 'COMMENT' && (
               <FormControl size="small" sx={{ flex: 1 }}>
-                <InputLabel>Test</InputLabel>
+                <InputLabel>Тест</InputLabel>
                 <Select
                   value={messageTestId}
-                  label="Test"
+                  label="Тест"
                   data-testid="message-test-select"
                   onChange={(e) => setMessageTestId(e.target.value)}
                 >
@@ -614,7 +632,7 @@ const Users: React.FC = () => {
             )}
           </Box>
           <TextField
-            label="Message text"
+            label="Текст сообщения"
             fullWidth
             multiline
             rows={3}
@@ -624,12 +642,12 @@ const Users: React.FC = () => {
           />
           {sendMessageMutation.isSuccess && (
             <Alert severity="success" sx={{ mt: 1 }} data-testid="message-sent-alert">
-              Message sent!
+              Сообщение отправлено!
             </Alert>
           )}
           {sendMessageMutation.isError && (
             <Alert severity="error" sx={{ mt: 1 }}>
-              Failed to send message
+              Не удалось отправить сообщение
             </Alert>
           )}
 
@@ -637,15 +655,15 @@ const Users: React.FC = () => {
           {userMessages.length > 0 && (
             <>
               <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
-                Sent messages
+                Отправленные сообщения
               </Typography>
               <Box sx={{ maxHeight: 140, overflow: 'auto' }} data-testid="messages-history">
                 {userMessages.map((m) => (
                   <Box key={m.id} sx={{ py: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="body2">{m.text}</Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {m.type} · {new Date(m.createdAt).toLocaleString()} ·{' '}
-                      {m.readAt ? 'read' : 'unread'}
+                      {MESSAGE_TYPE_LABELS[m.type]} · {new Date(m.createdAt).toLocaleString()} ·{' '}
+                      {m.readAt ? 'прочитано' : 'не прочитано'}
                     </Typography>
                   </Box>
                 ))}
@@ -654,14 +672,14 @@ const Users: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseMessageDialog}>Close</Button>
+          <Button onClick={handleCloseMessageDialog}>Закрыть</Button>
           <Button
             variant="contained"
             data-testid="send-message-button"
             disabled={!messageText.trim() || sendMessageMutation.isPending}
             onClick={() => sendMessageMutation.mutate()}
           >
-            {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
+            {sendMessageMutation.isPending ? 'Отправка...' : 'Отправить'}
           </Button>
         </DialogActions>
       </Dialog>

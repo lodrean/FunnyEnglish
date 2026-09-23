@@ -40,7 +40,7 @@ export const Login: React.FC = () => {
     setError(null);
     
     if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password');
+      setError('Введите email и пароль');
       return;
     }
 
@@ -51,7 +51,7 @@ export const Login: React.FC = () => {
       storeLogin(response.token, response.user);
       navigate('/');
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Invalid email or password';
+      const message = err.response?.data?.message || 'Неверный email или пароль';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -124,7 +124,7 @@ export const Login: React.FC = () => {
           
           <TextField
             fullWidth
-            label="Password"
+            label="Пароль"
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -168,7 +168,7 @@ export const Login: React.FC = () => {
             {isLoading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Sign In'
+              'Войти'
             )}
           </Button>
         </Box>
@@ -177,13 +177,13 @@ export const Login: React.FC = () => {
         {import.meta.env.DEV && (
         <Box sx={{ mt: 3, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
           <Typography variant="caption" color="text.secondary" display="block">
-            <strong>Demo credentials:</strong>
+            <strong>Демо-доступ:</strong>
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block">
             Email: admin@sotospeak.com
           </Typography>
           <Typography variant="caption" color="text.secondary" display="block">
-            Password: admin123
+            Пароль: admin123
           </Typography>
         </Box>
         )}

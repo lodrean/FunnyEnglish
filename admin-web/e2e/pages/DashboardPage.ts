@@ -52,7 +52,7 @@ export class DashboardPage {
    * Проверка загрузки страницы
    */
   async expectPageLoaded() {
-    await expect(this.pageTitle).toContainText('Dashboard', { timeout: 10000 });
+    await expect(this.pageTitle).toContainText('Дашборд', { timeout: 10000 });
   }
 
   /**

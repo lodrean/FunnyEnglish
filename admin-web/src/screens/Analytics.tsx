@@ -186,9 +186,9 @@ const formatDateLabel = (iso: string): string =>
 const formatTimestamp = (iso: string): string => new Date(iso).toLocaleString();
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
-  NEW_USER: 'New user',
-  TEST_COMPLETED: 'Test completed',
-  ACHIEVEMENT: 'Achievement',
+  NEW_USER: 'Новый пользователь',
+  TEST_COMPLETED: 'Завершён тест',
+  ACHIEVEMENT: 'Достижение',
 };
 
 const activityTypeColor = (type: string): string => {
@@ -248,23 +248,23 @@ const Analytics: React.FC = () => {
   const handleExportCsv = () => {
     if (!data) return;
     const lines: string[] = [];
-    lines.push('Metric,Value');
+    lines.push('Метрика,Значение');
     lines.push(`Total Users,${data.metrics.totalUsers}`);
     lines.push(`Tests Completed,${data.metrics.totalCompletions}`);
     lines.push(`Published Tests,${data.metrics.publishedTests}`);
     lines.push(`Total Tests,${data.metrics.totalTests}`);
     lines.push('');
-    lines.push('Date,New Users,Tests Completed,Achievements Earned');
+    lines.push('Дата,Новые пользователи,Завершённые тесты,Достижения');
     filteredActivity.forEach((d) => {
       lines.push([d.date, d.newUsers, d.testsCompleted, d.achievementsEarned].map(csvEscape).join(','));
     });
     lines.push('');
-    lines.push('Popular Test,Category,Completions');
+    lines.push('Тест,Категория,Завершений');
     data.popularTests.forEach((t) => {
       lines.push([t.name, t.category, t.completions].map(csvEscape).join(','));
     });
     lines.push('');
-    lines.push('Level,Users');
+    lines.push('Уровень,Пользователи');
     data.levels.forEach((l) => {
       lines.push([`Level ${l.level}`, l.users].map(csvEscape).join(','));
     });
@@ -282,7 +282,7 @@ const Analytics: React.FC = () => {
   if (error) {
     return (
       <Box p={3}>
-        <Alert severity="error">Failed to load analytics data. Please try again.</Alert>
+        <Alert severity="error">Не удалось загрузить аналитику. Попробуйте ещё раз.</Alert>
       </Box>
     );
   }
@@ -292,12 +292,12 @@ const Analytics: React.FC = () => {
       {/* Header */}
       <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} mb={3} gap={3}>
         <Typography variant="h4" fontWeight="bold" color={theme.palette.text.primary}>
-          Analytics
+          Аналитика
         </Typography>
         <Box display="flex" gap={1} flexWrap="wrap">
           <TextField
             type="date"
-            label="Start Date"
+            label="С даты"
             size="small"
             value={dateRange.start}
             onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
@@ -305,7 +305,7 @@ const Analytics: React.FC = () => {
           />
           <TextField
             type="date"
-            label="End Date"
+            label="По дату"
             size="small"
             value={dateRange.end}
             onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
@@ -317,7 +317,7 @@ const Analytics: React.FC = () => {
             onClick={(e) => setExportMenuAnchor(e.currentTarget)}
             disabled={!data}
           >
-            Export
+            Экспорт
           </Button>
           <Menu
             anchorEl={exportMenuAnchor}
@@ -326,7 +326,7 @@ const Analytics: React.FC = () => {
           >
             <MenuItem onClick={handleExportCsv}>
               <CsvIcon fontSize="small" sx={{ mr: 1 }} />
-              Export as CSV
+              Экспорт в CSV
             </MenuItem>
           </Menu>
         </Box>
@@ -336,9 +336,9 @@ const Analytics: React.FC = () => {
       <Grid container spacing={3} mb={3}>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Total Users"
+            title="Всего пользователей"
             value={data?.metrics.totalUsers.toLocaleString() || 0}
-            subtitle="registered users"
+            subtitle="зарегистрировано"
             icon={<PeopleIcon />}
             color={theme.palette.primary.main}
             loading={isLoading}
@@ -346,9 +346,9 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Tests Completed"
+            title="Завершено тестов"
             value={data?.metrics.totalCompletions.toLocaleString() || 0}
-            subtitle="all time"
+            subtitle="за всё время"
             icon={<CompletionIcon />}
             color={theme.palette.success.main}
             loading={isLoading}
@@ -356,9 +356,9 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Published Tests"
+            title="Опубликованных тестов"
             value={data?.metrics.publishedTests.toLocaleString() || 0}
-            subtitle={`${data?.metrics.totalTests ?? 0} total`}
+            subtitle={`всего ${data?.metrics.totalTests ?? 0}`}
             icon={<TrendingUpIcon />}
             color={theme.palette.info.main}
             loading={isLoading}
@@ -376,7 +376,7 @@ const Analytics: React.FC = () => {
       <Grid container spacing={3} mb={3} data-testid="prd-metrics-section">
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Practice / Student / Week"
+            title="Практик / ученик / неделю"
             value={(prdData?.practicePerStudentPerWeek ?? 0).toFixed(1)}
             subtitle={`${prdData?.practiceSubmissionsLast7d ?? 0} отправок · ${prdData?.activeStudentsLast7d ?? 0} учеников за 7 дней`}
             icon={<PracticeIcon />}
@@ -386,7 +386,7 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="REVIEWED within 48h"
+            title="Проверено за 48 ч"
             value={`${Math.round((prdData?.reviewedWithin48hShare ?? 0) * 100)}%`}
             subtitle={`${prdData?.reviewedWithin48h ?? 0} из ${prdData?.reviewedTotal ?? 0} оценённых`}
             icon={<ReviewIcon />}
@@ -396,7 +396,7 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={4}>
           <MetricCard
-            title="Guest → Registration"
+            title="Гость → Регистрация"
             value={`${Math.round((prdData?.guestConversionRate ?? 0) * 100)}%`}
             subtitle={`${prdData?.convertedGuests ?? 0} из ${prdData?.totalGuests ?? 0} гостей`}
             icon={<ConversionIcon />}
@@ -419,7 +419,7 @@ const Analytics: React.FC = () => {
       <Grid container spacing={3} mb={3} data-testid="guest-analytics-section">
         <Grid xs={12} sm={6} lg={3}>
           <MetricCard
-            title="Total Guests"
+            title="Всего гостей"
             value={guestData?.totalGuests.toLocaleString() || 0}
             subtitle="уникальных устройств"
             icon={<GuestIcon />}
@@ -429,7 +429,7 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <MetricCard
-            title="Active (7d)"
+            title="Активные (7 дн.)"
             value={guestData?.activeGuests7d.toLocaleString() || 0}
             subtitle="активных за неделю"
             icon={<ActiveIcon />}
@@ -439,7 +439,7 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <MetricCard
-            title="Tests Completed"
+            title="Завершено тестов"
             value={guestData?.guestTestCompletions.toLocaleString() || 0}
             subtitle="прохождений гостями"
             icon={<CompletionIcon />}
@@ -449,7 +449,7 @@ const Analytics: React.FC = () => {
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <MetricCard
-            title="Conversion"
+            title="Конверсия"
             value={`${Math.round((guestData?.conversionRate || 0) * 100)}%`}
             subtitle={`${guestData?.convertedGuests || 0} зарегистрировались`}
             icon={<ConversionIcon />}
@@ -469,7 +469,7 @@ const Analytics: React.FC = () => {
             {isLoading ? (
               <Skeleton variant="rectangular" height={320} />
             ) : filteredActivity.length === 0 ? (
-              <EmptyState message="No activity data for the selected period" />
+              <EmptyState message="Нет данных об активности за выбранный период" />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={filteredActivity}>
@@ -501,7 +501,7 @@ const Analytics: React.FC = () => {
                     stroke={theme.palette.primary.main}
                     fillOpacity={1}
                     fill="url(#colorNewUsers)"
-                    name="New Users"
+                    name="Новые пользователи"
                   />
                   <Area
                     type="monotone"
@@ -509,7 +509,7 @@ const Analytics: React.FC = () => {
                     stroke={theme.palette.success.main}
                     fillOpacity={1}
                     fill="url(#colorCompleted)"
-                    name="Tests Completed"
+                    name="Завершённые тесты"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -519,12 +519,12 @@ const Analytics: React.FC = () => {
         <Grid xs={12} lg={4}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              User Level Distribution
+              Распределение по уровням
             </Typography>
             {isLoading ? (
               <Skeleton variant="rectangular" height={320} />
             ) : !data || data.levels.length === 0 ? (
-              <EmptyState message="No user level data yet" />
+              <EmptyState message="Данных об уровнях пока нет" />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
@@ -556,12 +556,12 @@ const Analytics: React.FC = () => {
         <Grid xs={12}>
           <Paper sx={{ p: 4, height: 420 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Popular Tests
+              Популярные тесты
             </Typography>
             {isLoading ? (
               <Skeleton variant="rectangular" height={320} />
             ) : !data || data.popularTests.length === 0 ? (
-              <EmptyState message="No completed tests yet" />
+              <EmptyState message="Завершённых тестов пока нет" />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={data.popularTests}>
@@ -576,7 +576,7 @@ const Analytics: React.FC = () => {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="completions" fill={theme.palette.primary.main} name="Completions" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="completions" fill={theme.palette.primary.main} name="Завершения" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -596,9 +596,9 @@ const Analytics: React.FC = () => {
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'action.hover' }}>
-                    <TableCell>Test Name</TableCell>
-                    <TableCell>Category</TableCell>
-                    <TableCell align="center">Completions</TableCell>
+                    <TableCell>Тест</TableCell>
+                    <TableCell>Категория</TableCell>
+                    <TableCell align="center">Завершения</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -645,16 +645,16 @@ const Analytics: React.FC = () => {
         <Grid xs={12} lg={6}>
           <Paper sx={{ p: 4 }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              Recent Activity
+              Последняя активность
             </Typography>
             <TableContainer>
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'action.hover' }}>
-                    <TableCell>User</TableCell>
-                    <TableCell align="center">Type</TableCell>
-                    <TableCell>Details</TableCell>
-                    <TableCell align="right">When</TableCell>
+                    <TableCell>Пользователь</TableCell>
+                    <TableCell align="center">Тип</TableCell>
+                    <TableCell>Детали</TableCell>
+                    <TableCell align="right">Когда</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

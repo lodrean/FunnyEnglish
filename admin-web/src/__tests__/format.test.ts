@@ -74,17 +74,17 @@ describe('formatRelativeTime (bd b85.3 — единая реализация)', 
   const minsAgo = (m: number) => new Date(now - m * 60000).toISOString();
   const daysAgo = (d: number) => new Date(now - d * 86400000).toISOString();
 
-  it('только что — «Just now»', () => {
-    expect(formatRelativeTime(new Date(now - 30000).toISOString())).toBe('Just now');
+  it('только что — «Только что»', () => {
+    expect(formatRelativeTime(new Date(now - 30000).toISOString())).toBe('Только что');
   });
-  it('минуты — «5m ago»', () => {
-    expect(formatRelativeTime(minsAgo(5))).toBe('5m ago');
+  it('минуты — «5 мин назад»', () => {
+    expect(formatRelativeTime(minsAgo(5))).toBe('5 мин назад');
   });
-  it('часы — «3h ago»', () => {
-    expect(formatRelativeTime(minsAgo(180))).toBe('3h ago');
+  it('часы — «3 ч назад»', () => {
+    expect(formatRelativeTime(minsAgo(180))).toBe('3 ч назад');
   });
-  it('дни (<7) — «2d ago»', () => {
-    expect(formatRelativeTime(daysAgo(2))).toBe('2d ago');
+  it('дни (<7) — «2 дн. назад»', () => {
+    expect(formatRelativeTime(daysAgo(2))).toBe('2 дн. назад');
   });
   it('старше недели — локализованная дата', () => {
     const out = formatRelativeTime(daysAgo(30));

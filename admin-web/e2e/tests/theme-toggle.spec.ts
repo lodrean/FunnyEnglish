@@ -7,7 +7,7 @@ import { test, expect } from '@chromatic-com/playwright';
 test.describe('theme toggle', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page.locator('[data-testid="page-title"], h1')).toContainText('Dashboard', { timeout: 15000 });
+    await expect(page.locator('[data-testid="page-title"], h1')).toContainText('Дашборд', { timeout: 15000 });
   });
 
   test('toggles light/dark mode and persists to localStorage', async ({ page }) => {

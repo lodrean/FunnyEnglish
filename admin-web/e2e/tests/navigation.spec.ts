@@ -27,7 +27,7 @@ test.describe('Navigation', () => {
         
         // Verify we're on the right page
         if (section.url === '/') {
-          await expect(page.locator('[data-testid="page-title"]')).toContainText('Dashboard');
+          await expect(page.locator('[data-testid="page-title"]')).toContainText('Дашборд');
         } else {
           await expect(page).toHaveURL(new RegExp(section.url.replace(/\//g, '\\/')));
         }

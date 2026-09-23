@@ -14,11 +14,11 @@ test.describe('Direct URL Access', () => {
     // Логинимся через UI
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Sign In')).toBeVisible();
+    await expect(page.locator('text=Войти')).toBeVisible();
     
     await page.getByLabel('Email').fill(process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com');
-    await page.getByLabel('Password').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel('Пароль').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
+    await page.getByRole('button', { name: 'Войти' }).click();
     
     // Ждем редиректа на дашборд
     await expect(page).toHaveURL('/', { timeout: 10000 });
@@ -41,8 +41,8 @@ test.describe('Direct URL Access', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel('Email').fill(process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com');
-    await page.getByLabel('Password').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel('Пароль').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
+    await page.getByRole('button', { name: 'Войти' }).click();
     await expect(page).toHaveURL('/', { timeout: 10000 });
     
     // Переходим на Speaking topics
@@ -65,8 +65,8 @@ test.describe('Direct URL Access', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel('Email').fill(process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com');
-    await page.getByLabel('Password').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel('Пароль').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
+    await page.getByRole('button', { name: 'Войти' }).click();
     await expect(page).toHaveURL('/', { timeout: 10000 });
     
     const routes = ['/speaking/topics', '/speaking/libraries', '/users'];
@@ -91,8 +91,8 @@ test.describe('Direct URL Access', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel('Email').fill(process.env.TEST_ADMIN_EMAIL || 'admin@sotospeak.com');
-    await page.getByLabel('Password').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel('Пароль').fill(process.env.TEST_ADMIN_PASSWORD || 'admin123');
+    await page.getByRole('button', { name: 'Войти' }).click();
     await expect(page).toHaveURL('/', { timeout: 10000 });
     
     // Переходим на Speaking topics

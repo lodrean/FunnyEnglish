@@ -31,7 +31,7 @@ export class UsersPage {
    */
   async expectPageLoaded() {
     await expect(this.page).toHaveURL(/.*users.*/, { timeout: 10000 });
-    await expect(this.pageTitle).toContainText('Users', { timeout: 10000 });
+    await expect(this.pageTitle).toContainText('Пользователи', { timeout: 10000 });
   }
 
   /**

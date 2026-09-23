@@ -35,8 +35,9 @@ export const formatFileSize = (bytes: number): string => {
 };
 
 /**
- * Относительное время («Just now», «5m ago», «3h ago», «2d ago», дата).
+ * Относительное время («Только что», «5 мин назад», «3 ч назад», «2 дн. назад», дата).
  * Единая реализация для Dashboard и Users (bd b85.3 — была копия в двух экранах).
+ * Локаль RU — bd b85.6 (RU-унификация).
  */
 export const formatRelativeTime = (timestamp: string): string => {
   const date = new Date(timestamp);
@@ -46,9 +47,9 @@ export const formatRelativeTime = (timestamp: string): string => {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  if (diffMins < 1) return 'Только что';
+  if (diffMins < 60) return `${diffMins} мин назад`;
+  if (diffHours < 24) return `${diffHours} ч назад`;
+  if (diffDays < 7) return `${diffDays} дн. назад`;
+  return date.toLocaleDateString('ru-RU');
 };

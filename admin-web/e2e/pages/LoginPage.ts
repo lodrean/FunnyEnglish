@@ -22,7 +22,7 @@ export class LoginPage {
     // Используем разные стратегии поиска для надежности
     this.emailInput = page.locator('input[type="email"], input[name="email"], input[inputmode="email"]').first();
     this.passwordInput = page.locator('input[type="password"], input[name="password"]').first();
-    this.submitButton = page.locator('button[type="submit"], button:has-text("Sign In"), button:has-text("Login")').first();
+    this.submitButton = page.locator('button[type="submit"], button:has-text("Войти"), button:has-text("Sign In"), button:has-text("Login")').first();
     this.errorMessage = page.locator('.MuiAlert-root, .error, [role="alert"]').first();
   }
 

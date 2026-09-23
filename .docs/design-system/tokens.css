@@ -1,6 +1,6 @@
 /* FunnyEnglish Speaking Trainer — Design Tokens (Playful Coach, Variant B)
    Источник: tokens.json (W3C DTCG draft). Одна палитра — два таргета (Compose + MUI).
-   GENERATED FILE v1.3.1 — не редактировать вручную; генератор: scripts/generate_design_tokens.py.
+   GENERATED FILE v1.3.2 — не редактировать вручную; генератор: scripts/generate_design_tokens.py.
    v1.2.0 · 2026-08-01: аудит WCAG — primaryStrong, textMuted/timer затемнены, recordContainer.
    v1.3.0 · 2026-08-07: DSM-2 — M3-роли (surfaceContainer*, outlineVariant, inverse*, scrim,
    surfaceTint, state layers, elevation levels, M3-easing). Цвета v1.2.0 не изменены.
@@ -45,6 +45,29 @@
   --color-status-new-container: #FFE0B2;
   --color-status-reviewed: #43A047;
   --color-status-reviewed-container: #C8E6C9;
+
+  /* Status pairs v1.3.2 (remediation StatusBadge, bd ku2) */
+  --color-status-error-container: #FFEBEE;
+  --color-status-info: #3B6FD4;
+  --color-status-info-container: #DDE8FD;
+  --color-status-secondary: #5B3FA8;
+  --color-status-secondary-container: #E5DCFF;
+  --color-status-neutral: #58609A;
+  --color-status-neutral-container: #E9EFFE;
+  --color-status-archived: #58609A;
+  --color-status-archived-container: #D4DDF5;
+
+  /* Video accents + Library tile gradients (v1.3.2, bd ku2 — были хардкодом) */
+  --color-video-player-bg: #1A2E42;
+  --color-video-accent: #FFD666;
+  --color-gradient-blue: #4A90D9;
+  --color-gradient-blue-deep: #2E6BB0;
+  --color-gradient-green: #006C4C;
+  --color-gradient-green-deep: #2E8B6A;
+  --color-gradient-indigo: #5C6BC0;
+  --color-gradient-indigo-deep: #3F51B5;
+  --color-gradient-orange: #FB8C00;
+  --color-gradient-orange-deep: #E65100;
 
   /* Neutral (light periwinkle) */
   --color-background: #EEF3FF;

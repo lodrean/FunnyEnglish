@@ -451,7 +451,14 @@ private fun ThemeCard(
 /** Тайл 54×54 (редизайн V1) с градиентом (хеш по id темы) и инициалами названия. */
 @Composable
 private fun ThemeCover(title: String, seed: String, modifier: Modifier = Modifier) {
-    val gradient = THEME_GRADIENTS[abs(seed.hashCode()) % THEME_GRADIENTS.size]
+    val speaking = LocalSpeakingColors.current
+    val gradients = listOf(
+        listOf(speaking.gradientBlue, speaking.gradientBlueDeep),
+        listOf(speaking.gradientGreen, speaking.gradientGreenDeep),
+        listOf(speaking.gradientIndigo, speaking.gradientIndigoDeep),
+        listOf(speaking.gradientOrange, speaking.gradientOrangeDeep)
+    )
+    val gradient = gradients[abs(seed.hashCode()) % gradients.size]
     Box(
         modifier = modifier
             .size(54.dp)
@@ -527,12 +534,4 @@ internal fun themeInitials(title: String): String {
 
 /** Плюрализация: «1 топик», «3 топика», «6 топиков». */
 internal fun topicsCountText(count: Int): String = RussianStrings.topicsCount(count)
-
-/** Градиенты тайлов из мокапа frame-library. */
-private val THEME_GRADIENTS = listOf(
-    listOf(Color(0xFF4A90D9), Color(0xFF2E6BB0)),
-    listOf(Color(0xFF006C4C), Color(0xFF2E8B6A)),
-    listOf(Color(0xFF5C6BC0), Color(0xFF3F51B5)),
-    listOf(Color(0xFFFB8C00), Color(0xFFE65100))
-)
 

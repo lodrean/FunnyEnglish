@@ -14,6 +14,7 @@ import {
   Typography,
   Fade,
   Backdrop,
+  useTheme,
 } from '@mui/material';
 
 /** Props for PageLoader component */
@@ -89,6 +90,7 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
   fullscreen = true,
   customSpinner,
 }) => {
+  const theme = useTheme();
   const content = (
     <Box
       sx={{
@@ -117,7 +119,7 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
           thickness={thickness}
           color={color}
           sx={{
-            color: color === 'primary' ? '#4A90D9' : undefined,
+            color: color === 'primary' ? theme.palette.primary.main : undefined,
           }}
           aria-label="Loading"
         />
@@ -129,7 +131,7 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
           variant="body1"
           sx={{
             mt: 3,
-            color: '#616161',
+            color: 'text.secondary',
             fontWeight: 500,
             textAlign: 'center',
           }}

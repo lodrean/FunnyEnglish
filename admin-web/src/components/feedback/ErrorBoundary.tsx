@@ -18,6 +18,8 @@ import {
   IconButton,
   Alert,
   AlertTitle,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import {
   Error as ErrorIcon,
@@ -177,193 +179,231 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return fallback;
     }
 
-    // Determine if we're in development mode
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const shouldShowDetails = showDetails && isDevelopment;
-
     return (
-      <Box
+      <ErrorBoundaryView
+        error={error}
+        errorInfo={errorInfo}
+        detailsExpanded={detailsExpanded}
+        errorTimestamp={errorTimestamp}
+        showDetails={showDetails}
+        errorMessage={errorMessage}
+        retryText={retryText}
+        onRetryClick={this.handleRetry}
+        onToggleDetails={this.toggleDetails}
+      />
+    );
+  }
+}
+
+/** Props для тематизированного фолбэка (класс не может использовать хуки темы) */
+interface ErrorBoundaryViewProps {
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+  detailsExpanded: boolean;
+  errorTimestamp: number | null;
+  showDetails: boolean;
+  errorMessage: string;
+  retryText: string;
+  onRetryClick: () => void;
+  onToggleDetails: () => void;
+}
+
+/**
+ * ErrorBoundaryView — рендер фолбэка; цвета только из темы
+ * (bd ku2: ранее хардкоды #4A90D9/#357ABD/MUI-grey/Material-легаси).
+ */
+const ErrorBoundaryView: React.FC<ErrorBoundaryViewProps> = ({
+  error,
+  errorInfo,
+  detailsExpanded,
+  errorTimestamp,
+  showDetails,
+  errorMessage,
+  retryText,
+  onRetryClick,
+  onToggleDetails,
+}) => {
+  const theme = useTheme();
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const shouldShowDetails = showDetails && isDevelopment;
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        p: 3,
+        backgroundColor: 'background.default',
+      }}
+    >
+      <Paper
+        elevation={3}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          p: 3,
-          backgroundColor: '#F5F5F5',
+          maxWidth: 600,
+          width: '100%',
+          p: 4,
+          borderRadius: 3,
+          textAlign: 'center',
         }}
       >
-        <Paper
-          elevation={3}
+        {/* Error Icon */}
+        <Box
           sx={{
-            maxWidth: 600,
-            width: '100%',
-            p: 4,
-            borderRadius: 3,
-            textAlign: 'center',
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 3,
           }}
         >
-          {/* Error Icon */}
           <Box
             sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              backgroundColor: alpha(theme.palette.error.main, 0.1),
               display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
-              mb: 3,
             }}
           >
-            <Box
+            <ErrorIcon sx={{ fontSize: 40, color: 'error.main' }} />
+          </Box>
+        </Box>
+
+        {/* Error Title */}
+        <Typography
+          variant="h5"
+          component="h1"
+          sx={{
+            fontWeight: 600,
+            color: 'text.primary',
+            mb: 2,
+          }}
+        >
+          Oops! Something Went Wrong
+        </Typography>
+
+        {/* Error Message */}
+        <Typography
+          variant="body1"
+          sx={{
+            color: 'text.secondary',
+            mb: 3,
+            lineHeight: 1.6,
+          }}
+        >
+          {errorMessage}
+        </Typography>
+
+        {/* Retry Button (containedPrimary: primaryStrong + hover state layer из темы) */}
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          startIcon={<RefreshIcon />}
+          onClick={onRetryClick}
+          sx={{
+            mb: 3,
+            textTransform: 'none',
+            fontWeight: 600,
+          }}
+        >
+          {retryText}
+        </Button>
+
+        {/* Error Details (Development Only) */}
+        {shouldShowDetails && error && (
+          <Box sx={{ mt: 2, textAlign: 'left' }}>
+            <Alert
+              severity="error"
+              icon={<BugReportIcon />}
+              action={
+                <IconButton
+                  size="small"
+                  onClick={onToggleDetails}
+                  aria-label={detailsExpanded ? 'Hide details' : 'Show details'}
+                >
+                  {detailsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              }
               sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                backgroundColor: 'rgba(229, 57, 53, 0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                backgroundColor: alpha(theme.palette.error.main, 0.08),
+                '& .MuiAlert-icon': {
+                  color: 'error.main',
+                },
               }}
             >
-              <ErrorIcon sx={{ fontSize: 40, color: '#E53935' }} />
-            </Box>
-          </Box>
+              <AlertTitle>Development Error Details</AlertTitle>
+              <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-word' }}>
+                <strong>Error:</strong> {error.name}: {error.message}
+              </Typography>
+              {errorTimestamp && (
+                <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                  Occurred at: {new Date(errorTimestamp).toLocaleString()}
+                </Typography>
+              )}
+            </Alert>
 
-          {/* Error Title */}
-          <Typography
-            variant="h5"
-            component="h1"
-            sx={{
-              fontWeight: 600,
-              color: '#212121',
-              mb: 2,
-            }}
-          >
-            Oops! Something Went Wrong
-          </Typography>
-
-          {/* Error Message */}
-          <Typography
-            variant="body1"
-            sx={{
-              color: '#616161',
-              mb: 3,
-              lineHeight: 1.6,
-            }}
-          >
-            {errorMessage}
-          </Typography>
-
-          {/* Retry Button */}
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<RefreshIcon />}
-            onClick={this.handleRetry}
-            sx={{
-              mb: 3,
-              textTransform: 'none',
-              fontWeight: 600,
-              backgroundColor: '#4A90D9',
-              '&:hover': {
-                backgroundColor: '#357ABD',
-              },
-            }}
-          >
-            {retryText}
-          </Button>
-
-          {/* Error Details (Development Only) */}
-          {shouldShowDetails && error && (
-            <Box sx={{ mt: 2, textAlign: 'left' }}>
-              <Alert
-                severity="error"
-                icon={<BugReportIcon />}
-                action={
-                  <IconButton
-                    size="small"
-                    onClick={this.toggleDetails}
-                    aria-label={detailsExpanded ? 'Hide details' : 'Show details'}
-                  >
-                    {detailsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                  </IconButton>
-                }
+            <Collapse in={detailsExpanded}>
+              <Box
                 sx={{
-                  backgroundColor: 'rgba(229, 57, 53, 0.08)',
-                  '& .MuiAlert-icon': {
-                    color: '#E53935',
-                  },
+                  mt: 2,
+                  p: 2,
+                  backgroundColor: 'text.primary',
+                  borderRadius: 1,
+                  overflow: 'auto',
                 }}
               >
-                <AlertTitle>Development Error Details</AlertTitle>
-                <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-word' }}>
-                  <strong>Error:</strong> {error.name}: {error.message}
-                </Typography>
-                {errorTimestamp && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#757575' }}>
-                    Occurred at: {new Date(errorTimestamp).toLocaleString()}
-                  </Typography>
-                )}
-              </Alert>
-
-              <Collapse in={detailsExpanded}>
-                <Box
+                <Typography
+                  variant="caption"
+                  component="pre"
                   sx={{
-                    mt: 2,
-                    p: 2,
-                    backgroundColor: '#263238',
-                    borderRadius: 1,
-                    overflow: 'auto',
+                    color: 'background.paper',
+                    fontFamily: 'monospace',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    margin: 0,
                   }}
                 >
+                  {error.stack}
+                </Typography>
+                {errorInfo && (
                   <Typography
                     variant="caption"
                     component="pre"
                     sx={{
-                      color: '#FFCDD2',
+                      color: 'background.default',
                       fontFamily: 'monospace',
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
                       margin: 0,
+                      mt: 2,
                     }}
                   >
-                    {error.stack}
+                    {errorInfo.componentStack}
                   </Typography>
-                  {errorInfo && (
-                    <>
-                      <Typography
-                        variant="caption"
-                        component="pre"
-                        sx={{
-                          color: '#B0BEC5',
-                          fontFamily: 'monospace',
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
-                          margin: 0,
-                          mt: 2,
-                        }}
-                      >
-                        {errorInfo.componentStack}
-                      </Typography>
-                    </>
-                  )}
-                </Box>
-              </Collapse>
-            </Box>
-          )}
+                )}
+              </Box>
+            </Collapse>
+          </Box>
+        )}
 
-          {/* Support Message */}
-          <Typography
-            variant="caption"
-            sx={{
-              display: 'block',
-              mt: 3,
-              color: '#9E9E9E',
-            }}
-          >
-            If the problem persists, please contact support.
-          </Typography>
-        </Paper>
-      </Box>
-    );
-  }
-}
+        {/* Support Message */}
+        <Typography
+          variant="caption"
+          sx={{
+            display: 'block',
+            mt: 3,
+            color: 'text.disabled',
+          }}
+        >
+          If the problem persists, please contact support.
+        </Typography>
+      </Paper>
+    </Box>
+  );
+};
 
 /**
  * ErrorFallback Component
@@ -402,11 +442,11 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         textAlign: 'center',
       }}
     >
-      <ErrorIcon sx={{ fontSize: 48, color: '#E53935', mb: 2 }} />
-      <Typography variant="h6" sx={{ color: '#212121', mb: 1 }}>
+      <ErrorIcon sx={{ fontSize: 48, color: 'error.main', mb: 2 }} />
+      <Typography variant="h6" sx={{ color: 'text.primary', mb: 1 }}>
         Error
       </Typography>
-      <Typography variant="body2" sx={{ color: '#616161', mb: 3 }}>
+      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
         {errorMessage}
       </Typography>
       {onRetry && (
@@ -425,9 +465,9 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           sx={{
             mt: 2,
             p: 2,
-            backgroundColor: '#FFEBEE',
+            backgroundColor: (theme) => alpha(theme.palette.error.main, 0.08),
             borderRadius: 1,
-            color: '#C62828',
+            color: 'error.dark',
             fontFamily: 'monospace',
             textAlign: 'left',
             maxWidth: '100%',

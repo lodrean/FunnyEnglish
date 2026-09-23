@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StatusBadge, PublishedBadge, DraftBadge, ActiveBadge, InactiveBadge } from '../StatusBadge';
-import { ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider } from '@mui/material';
+import { createAppTheme } from '../../../theme/Theme';
 
-const theme = createTheme();
+// Грабля №47: компонент читает theme.palette.speaking — обязателен app ThemeProvider
+const theme = createAppTheme('light');
 
 const renderWithTheme = (component: React.ReactNode) => {
   return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);

@@ -1,15 +1,15 @@
 // GENERATED FILE — не редактировать вручную.
 // Источник: .docs/design-system/tokens.json; генератор: scripts/generate_design_tokens.py.
 /**
- * So to speak Admin Web — Design System "Playful Coach" v1.3.1
- * Источник HEX: .docs/design-system/tokens.json v1.3.1 (вариант B, утверждён владельцем 2026-07-31)
+ * So to speak Admin Web — Design System "Playful Coach" v1.3.2
+ * Источник HEX: .docs/design-system/tokens.json v1.3.2 (вариант B, утверждён владельцем 2026-07-31)
  * Full light/dark theme support with MUI v6
  */
 
 import { createTheme, ThemeOptions, alpha, PaletteMode } from '@mui/material/styles';
 
 // =============================================================================
-// DESIGN TOKENS (tokens.json v1.3.1 — HEX 1:1)
+// DESIGN TOKENS (tokens.json v1.3.2 — HEX 1:1)
 // Значения без пути в tokens.json (производные оттенки шкал, dark-статусы) —
 // литералы, кандидаты на расширение tokens.json (решение владельца).
 // =============================================================================
@@ -73,6 +73,10 @@ const speakingLight = {
   onRecordContainer: '#8A3B0E',
   onRecord: '#2D3561', // тёмный на record (5.81:1 AA)
   primaryStrong: '#3B6FD4', // кнопки/активные чипы/nav с белым текстом
+  secondaryContainer: '#E5DCFF', // v1.3.2: чипы/подложки (RubricForm — уход от hex)
+  onSecondaryContainer: '#5B3FA8', // v1.3.2
+  tertiary: '#006C4C', // v1.3.2: аватар student-row (GradingDetail — уход от hex)
+  onTertiary: '#FFFFFF',
   waveformPlayback: '#5B8DEF',
   timer: {
     level80: '#4A7FE8', // затемнены ≥3:1 (аудит 2026-08-01)
@@ -84,6 +88,16 @@ const speakingLight = {
     newContainer: '#FFE0B2',
     reviewed: '#43A047',
     reviewedContainer: '#C8E6C9',
+    error: '#E53935', // v1.3.2: контейнерные пары StatusBadge (bd ku2)
+    errorContainer: '#FFEBEE',
+    info: '#3B6FD4',
+    infoContainer: '#DDE8FD',
+    secondary: '#5B3FA8',
+    secondaryContainer: '#E5DCFF',
+    neutral: '#58609A',
+    neutralContainer: '#E9EFFE',
+    archived: '#58609A',
+    archivedContainer: '#D4DDF5',
   },
 };
 
@@ -100,7 +114,8 @@ const speakingDark = {
   secondaryContainer: '#46366F',
   onSecondaryContainer: '#E5DCFF',
   status: {
-    new: '#FFB74D', // нет в tokens.json: dark-статусы, кандидат на расширение
+    ...speakingLight.status, // v1.3.2: пары error/info/secondary/neutral/archived — общие (тёмный текст на светлом контейнере)
+    new: '#FFB74D', // v1.3.2: dark-статусы перенесены в tokens.json
     newContainer: '#3D2A0A',
     reviewed: '#81C784',
     reviewedContainer: '#1B4D1F',
@@ -910,6 +925,11 @@ declare module '@mui/material/styles' {
     recordActive: string;
     recordShadow: string;
     waveformPlayback: string;
+    primaryStrong: string;
+    secondaryContainer: string;
+    onSecondaryContainer: string;
+    tertiary: string;
+    onTertiary: string;
     timer: {
       level80: string;
       level50: string;
@@ -920,6 +940,16 @@ declare module '@mui/material/styles' {
       newContainer: string;
       reviewed: string;
       reviewedContainer: string;
+      error: string;
+      errorContainer: string;
+      info: string;
+      infoContainer: string;
+      secondary: string;
+      secondaryContainer: string;
+      neutral: string;
+      neutralContainer: string;
+      archived: string;
+      archivedContainer: string;
     };
   }
   interface Palette {

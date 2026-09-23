@@ -7,17 +7,10 @@ import {
   TablePagination,
   styled,
   Box,
+  alpha,
 } from '@mui/material';
 
-// Design System Colors
-const COLORS = {
-  primary: '#4A90D9',
-  background: '#F5F5F5',
-  card: '#FFFFFF',
-  textPrimary: '#212121',
-  textSecondary: '#757575',
-  border: '#E0E0E0',
-};
+// Цвета — из темы (bd ku2: уход от хардкодов #4A90D9/MUI-grey)
 
 // Type Definitions
 export interface PaginationProps {
@@ -43,41 +36,41 @@ const PaginationContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'flex-end',
   alignItems: 'center',
   padding: theme.spacing(1.5, 2),
-  backgroundColor: COLORS.card,
-  borderTop: `1px solid ${COLORS.border}`,
+  backgroundColor: theme.palette.background.paper,
+  borderTop: `1px solid ${theme.palette.divider}`,
   borderRadius: `0 0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px`,
 }));
 
-const StyledTablePagination = styled(TablePagination)({
+const StyledTablePagination = styled(TablePagination)(({ theme }) => ({
   '.MuiTablePagination-selectLabel': {
-    color: COLORS.textSecondary,
+    color: theme.palette.text.secondary,
     fontSize: '0.875rem',
   },
   '.MuiTablePagination-displayedRows': {
-    color: COLORS.textPrimary,
+    color: theme.palette.text.primary,
     fontSize: '0.875rem',
   },
   '.MuiTablePagination-select': {
-    color: COLORS.textPrimary,
+    color: theme.palette.text.primary,
     fontSize: '0.875rem',
     paddingRight: '24px',
   },
   '.MuiTablePagination-actions': {
     '& .MuiIconButton-root': {
-      color: COLORS.textSecondary,
+      color: theme.palette.text.secondary,
       '&:hover': {
-        backgroundColor: 'rgba(74, 144, 217, 0.08)',
-        color: COLORS.primary,
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+        color: theme.palette.primary.main,
       },
       '&.Mui-disabled': {
-        color: 'rgba(0, 0, 0, 0.26)',
+        color: alpha(theme.palette.text.primary, 0.26),
       },
     },
   },
   '.MuiSelect-icon': {
-    color: COLORS.textSecondary,
+    color: theme.palette.text.secondary,
   },
-});
+}));
 
 // Default label displayed rows function
 const defaultLabelDisplayedRows = ({

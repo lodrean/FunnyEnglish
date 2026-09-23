@@ -199,6 +199,29 @@ CSS_TEMPLATE = """/* FunnyEnglish Speaking Trainer — Design Tokens (Playful Co
   --color-status-reviewed: @raw:color.status.reviewed@;
   --color-status-reviewed-container: @raw:color.status.reviewedContainer@;
 
+  /* Status pairs v1.3.2 (remediation StatusBadge, bd ku2) */
+  --color-status-error-container: @raw:color.status.errorContainer@;
+  --color-status-info: @raw:color.status.info@;
+  --color-status-info-container: @raw:color.status.infoContainer@;
+  --color-status-secondary: @raw:color.status.secondary@;
+  --color-status-secondary-container: @raw:color.status.secondaryContainer@;
+  --color-status-neutral: @raw:color.status.neutral@;
+  --color-status-neutral-container: @raw:color.status.neutralContainer@;
+  --color-status-archived: @raw:color.status.archived@;
+  --color-status-archived-container: @raw:color.status.archivedContainer@;
+
+  /* Video accents + Library tile gradients (v1.3.2, bd ku2 — были хардкодом) */
+  --color-video-player-bg: @raw:color.video.playerBg@;
+  --color-video-accent: @raw:color.video.accent@;
+  --color-gradient-blue: @raw:color.gradient.blue@;
+  --color-gradient-blue-deep: @raw:color.gradient.blueDeep@;
+  --color-gradient-green: @raw:color.gradient.green@;
+  --color-gradient-green-deep: @raw:color.gradient.greenDeep@;
+  --color-gradient-indigo: @raw:color.gradient.indigo@;
+  --color-gradient-indigo-deep: @raw:color.gradient.indigoDeep@;
+  --color-gradient-orange: @raw:color.gradient.orange@;
+  --color-gradient-orange-deep: @raw:color.gradient.orangeDeep@;
+
   /* Neutral (light periwinkle) */
   --color-background: @raw:color.neutral.background@;
   --color-surface: @raw:color.neutral.surface@;
@@ -419,7 +442,17 @@ data class SpeakingColors(
     val error: Color,              // #E53935
     val errorText: Color,          // #B3261E — мелкий текст ошибок (WCAG AA 6.4:1, --color-error даёт только 4.29:1)
     val scrimSubtitle: Color,      // #000000B3 — подложка субтитров 70%
-    val scrimVideoControls: Color  // #00000080
+    val scrimVideoControls: Color, // #00000080
+    val videoPlayerBg: Color,      // v1.3.2 — тон-линии/иконки на плеере (был хардкод VideoScreen)
+    val videoAccent: Color,        // v1.3.2 — подсветка CC-кнопки (был хардкод VideoScreen)
+    val gradientBlue: Color,       // v1.3.2 — тайлы Library (был хардкод THEME_GRADIENTS)
+    val gradientBlueDeep: Color,
+    val gradientGreen: Color,      // = brand.tertiary
+    val gradientGreenDeep: Color,
+    val gradientIndigo: Color,
+    val gradientIndigoDeep: Color,
+    val gradientOrange: Color,     // = status.new
+    val gradientOrangeDeep: Color
 )
 
 val LightSpeakingColors = SpeakingColors(
@@ -456,7 +489,17 @@ val LightSpeakingColors = SpeakingColors(
     error = @kc:color.semantic.error@,
     errorText = Color(0xFFB3261E), // нет в tokens.json: M3 error text role, кандидат на расширение токенов
     scrimSubtitle = @kc:color.neutral.scrimSubtitle@,
-    scrimVideoControls = @kc:color.neutral.scrimVideoControls@
+    scrimVideoControls = @kc:color.neutral.scrimVideoControls@,
+    videoPlayerBg = @kc:color.video.playerBg@,
+    videoAccent = @kc:color.video.accent@,
+    gradientBlue = @kc:color.gradient.blue@,
+    gradientBlueDeep = @kc:color.gradient.blueDeep@,
+    gradientGreen = @kc:color.gradient.green@,
+    gradientGreenDeep = @kc:color.gradient.greenDeep@,
+    gradientIndigo = @kc:color.gradient.indigo@,
+    gradientIndigoDeep = @kc:color.gradient.indigoDeep@,
+    gradientOrange = @kc:color.gradient.orange@,
+    gradientOrangeDeep = @kc:color.gradient.orangeDeep@
 )
 
 val DarkSpeakingColors = LightSpeakingColors.copy(
@@ -479,10 +522,10 @@ val DarkSpeakingColors = LightSpeakingColors.copy(
     onRecord = @kc:color.dark.background@,
     recordContainer = @kc:color.dark.recordContainer@,      // v1.3.0 M3 dark (был #4A2A18)
     onRecordContainer = @kc:color.dark.onRecordContainer@,    // v1.3.0 M3 dark (был #FFCCAA)
-    statusNew = Color(0xFFFFB74D),           // нет в tokens.json: dark-статусы, кандидат на расширение
-    statusNewContainer = Color(0xFF3D2A0A),  // нет в tokens.json
-    statusReviewed = Color(0xFF81C784),      // нет в tokens.json
-    statusReviewedContainer = Color(0xFF1B4D1F), // нет в tokens.json
+    statusNew = @kc:color.darkStatus.new@,           // v1.3.2: dark-статусы перенесены в tokens.json
+    statusNewContainer = @kc:color.darkStatus.newContainer@,
+    statusReviewed = @kc:color.darkStatus.reviewed@,
+    statusReviewedContainer = @kc:color.darkStatus.reviewedContainer@,
     errorText = Color(0xFFF2B8B5)  // M3 dark error: на #161A2E читается по AA (нет в tokens.json)
 )
 
@@ -837,6 +880,10 @@ const speakingLight = {
   onRecordContainer: '@raw:color.semantic.onRecordContainer@',
   onRecord: '@raw:color.semantic.onRecord@', // тёмный на record (5.81:1 AA)
   primaryStrong: '@raw:color.brand.primaryStrong@', // кнопки/активные чипы/nav с белым текстом
+  secondaryContainer: '@raw:color.brand.secondaryContainer@', // v1.3.2: чипы/подложки (RubricForm — уход от hex)
+  onSecondaryContainer: '@raw:color.brand.onSecondaryContainer@', // v1.3.2
+  tertiary: '@raw:color.brand.tertiary@', // v1.3.2: аватар student-row (GradingDetail — уход от hex)
+  onTertiary: '@raw:color.brand.onTertiary@',
   waveformPlayback: '@raw:color.semantic.waveformPlayback@',
   timer: {
     level80: '@raw:color.timer.level80@', // затемнены ≥3:1 (аудит 2026-08-01)
@@ -848,6 +895,16 @@ const speakingLight = {
     newContainer: '@raw:color.status.newContainer@',
     reviewed: '@raw:color.status.reviewed@',
     reviewedContainer: '@raw:color.status.reviewedContainer@',
+    error: '@raw:color.semantic.error@', // v1.3.2: контейнерные пары StatusBadge (bd ku2)
+    errorContainer: '@raw:color.status.errorContainer@',
+    info: '@raw:color.status.info@',
+    infoContainer: '@raw:color.status.infoContainer@',
+    secondary: '@raw:color.status.secondary@',
+    secondaryContainer: '@raw:color.status.secondaryContainer@',
+    neutral: '@raw:color.status.neutral@',
+    neutralContainer: '@raw:color.status.neutralContainer@',
+    archived: '@raw:color.status.archived@',
+    archivedContainer: '@raw:color.status.archivedContainer@',
   },
 };
 
@@ -864,10 +921,11 @@ const speakingDark = {
   secondaryContainer: '@raw:color.dark.secondaryContainer@',
   onSecondaryContainer: '@raw:color.dark.onSecondaryContainer@',
   status: {
-    new: '#FFB74D', // нет в tokens.json: dark-статусы, кандидат на расширение
-    newContainer: '#3D2A0A',
-    reviewed: '#81C784',
-    reviewedContainer: '#1B4D1F',
+    ...speakingLight.status, // v1.3.2: пары error/info/secondary/neutral/archived — общие (тёмный текст на светлом контейнере)
+    new: '@raw:color.darkStatus.new@', // v1.3.2: dark-статусы перенесены в tokens.json
+    newContainer: '@raw:color.darkStatus.newContainer@',
+    reviewed: '@raw:color.darkStatus.reviewed@',
+    reviewedContainer: '@raw:color.darkStatus.reviewedContainer@',
   },
 };
 
@@ -1680,6 +1738,11 @@ declare module '@mui/material/styles' {
     recordActive: string;
     recordShadow: string;
     waveformPlayback: string;
+    primaryStrong: string;
+    secondaryContainer: string;
+    onSecondaryContainer: string;
+    tertiary: string;
+    onTertiary: string;
     timer: {
       level80: string;
       level50: string;
@@ -1690,6 +1753,16 @@ declare module '@mui/material/styles' {
       newContainer: string;
       reviewed: string;
       reviewedContainer: string;
+      error: string;
+      errorContainer: string;
+      info: string;
+      infoContainer: string;
+      secondary: string;
+      secondaryContainer: string;
+      neutral: string;
+      neutralContainer: string;
+      archived: string;
+      archivedContainer: string;
     };
   }
   interface Palette {

@@ -47,7 +47,7 @@ fun ColorsSection(onBack: () -> Unit) {
                 )
             )
         }
-        DemoCard(title = "Speaking-токены (tokens v1.3.1)") {
+        DemoCard(title = "Speaking-токены (tokens v1.3.2)") {
             SwatchGrid(
                 listOf(
                     "primary" to speaking.primary,
@@ -74,7 +74,17 @@ fun ColorsSection(onBack: () -> Unit) {
                     "statusReviewedContainer" to speaking.statusReviewedContainer,
                     "success" to speaking.success,
                     "error" to speaking.error,
-                    "errorText" to speaking.errorText
+                    "errorText" to speaking.errorText,
+                    "videoPlayerBg" to speaking.videoPlayerBg,
+                    "videoAccent" to speaking.videoAccent,
+                    "gradientBlue" to speaking.gradientBlue,
+                    "gradientBlueDeep" to speaking.gradientBlueDeep,
+                    "gradientGreen" to speaking.gradientGreen,
+                    "gradientGreenDeep" to speaking.gradientGreenDeep,
+                    "gradientIndigo" to speaking.gradientIndigo,
+                    "gradientIndigoDeep" to speaking.gradientIndigoDeep,
+                    "gradientOrange" to speaking.gradientOrange,
+                    "gradientOrangeDeep" to speaking.gradientOrangeDeep
                 )
             )
         }

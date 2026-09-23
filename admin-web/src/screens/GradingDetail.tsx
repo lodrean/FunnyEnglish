@@ -151,8 +151,8 @@ export default function GradingDetail() {
             sx={{
               width: 48,
               height: 48,
-              // tokens.css --color-tertiary (student-row .avatar)
-              bgcolor: '#006C4C',
+              // tokens.css --color-tertiary (student-row .avatar) — bd ku2: speaking.tertiary
+              bgcolor: 'speaking.tertiary',
               color: '#fff',
               fontWeight: 800,
             }}

@@ -13,6 +13,8 @@ import {
   Typography,
   Fade,
   ClickAwayListener,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import {
   Search,
@@ -21,16 +23,7 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 
-// Design System Colors
-const colors = {
-  primary: '#4A90D9',
-  error: '#E53935',
-  textPrimary: '#212121',
-  textSecondary: '#757575',
-  background: '#F5F5F5',
-  card: '#FFFFFF',
-  border: '#E0E0E0',
-};
+// Цвета — из темы (bd ku2: уход от хардкодов #4A90D9/MUI-grey)
 
 // Search result item type
 export interface SearchResult {
@@ -129,6 +122,7 @@ export function SearchInput({
   autoFocus = false,
 }: SearchInputProps): React.ReactElement {
   
+  const theme = useTheme();
   const [inputValue, setInputValue] = useState(defaultValue);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -294,9 +288,9 @@ export function SearchInput({
             startAdornment: (
               <InputAdornment position="start">
                 {loading ? (
-                  <CircularProgress size={20} sx={{ color: colors.primary }} />
+                  <CircularProgress size={20} sx={{ color: theme.palette.primary.main }} />
                 ) : (
-                  <Search sx={{ color: colors.textSecondary }} />
+                  <Search sx={{ color: theme.palette.text.secondary }} />
                 )}
               </InputAdornment>
             ),
@@ -308,9 +302,9 @@ export function SearchInput({
                   edge="end"
                   aria-label="Clear search"
                   sx={{
-                    color: colors.textSecondary,
+                    color: theme.palette.text.secondary,
                     '&:hover': {
-                      color: colors.textPrimary,
+                      color: theme.palette.text.primary,
                     },
                   }}
                 >
@@ -322,13 +316,13 @@ export function SearchInput({
           sx={{
             '& .MuiOutlinedInput-root': {
               '& fieldset': {
-                borderColor: colors.border,
+                borderColor: theme.palette.divider,
               },
               '&:hover fieldset': {
-                borderColor: colors.primary,
+                borderColor: theme.palette.primary.main,
               },
               '&.Mui-focused fieldset': {
-                borderColor: colors.primary,
+                borderColor: theme.palette.primary.main,
               },
             },
           }}
@@ -353,11 +347,11 @@ export function SearchInput({
             {/* Recent Searches */}
             {showRecent && !value && recentSearches.length > 0 && (
               <>
-                <Box sx={{ px: 2, py: 1, backgroundColor: colors.background }}>
+                <Box sx={{ px: 2, py: 1, backgroundColor: theme.palette.background.default }}>
                   <Typography
                     variant="caption"
                     sx={{
-                      color: colors.textSecondary,
+                      color: theme.palette.text.secondary,
                       fontWeight: 500,
                       display: 'flex',
                       alignItems: 'center',
@@ -376,10 +370,10 @@ export function SearchInput({
                         onClick={() => handleSelectRecent(search)}
                         sx={{
                           '&:hover': {
-                            backgroundColor: 'rgba(74, 144, 217, 0.08)',
+                            backgroundColor: alpha(theme.palette.primary.main, 0.08),
                           },
                           '&.Mui-selected': {
-                            backgroundColor: 'rgba(74, 144, 217, 0.12)',
+                            backgroundColor: alpha(theme.palette.primary.main, 0.12),
                           },
                         }}
                       >
@@ -387,7 +381,7 @@ export function SearchInput({
                           primary={search}
                           primaryTypographyProps={{
                             variant: 'body2',
-                            color: colors.textPrimary,
+                            color: theme.palette.text.primary,
                           }}
                         />
                       </ListItemButton>
@@ -400,11 +394,11 @@ export function SearchInput({
             {/* Popular Searches */}
             {showPopular && !value && popularSearches.length > 0 && (
               <>
-                <Box sx={{ px: 2, py: 1, backgroundColor: colors.background }}>
+                <Box sx={{ px: 2, py: 1, backgroundColor: theme.palette.background.default }}>
                   <Typography
                     variant="caption"
                     sx={{
-                      color: colors.textSecondary,
+                      color: theme.palette.text.secondary,
                       fontWeight: 500,
                       display: 'flex',
                       alignItems: 'center',
@@ -426,10 +420,10 @@ export function SearchInput({
                         onClick={() => handleSelectRecent(search)}
                         sx={{
                           '&:hover': {
-                            backgroundColor: 'rgba(74, 144, 217, 0.08)',
+                            backgroundColor: alpha(theme.palette.primary.main, 0.08),
                           },
                           '&.Mui-selected': {
-                            backgroundColor: 'rgba(74, 144, 217, 0.12)',
+                            backgroundColor: alpha(theme.palette.primary.main, 0.12),
                           },
                         }}
                       >
@@ -437,7 +431,7 @@ export function SearchInput({
                           primary={search}
                           primaryTypographyProps={{
                             variant: 'body2',
-                            color: colors.textPrimary,
+                            color: theme.palette.text.primary,
                           }}
                         />
                       </ListItemButton>
@@ -459,15 +453,15 @@ export function SearchInput({
                           onClick={() => handleSelectResult(result)}
                           sx={{
                             '&:hover': {
-                              backgroundColor: 'rgba(74, 144, 217, 0.08)',
+                              backgroundColor: alpha(theme.palette.primary.main, 0.08),
                             },
                             '&.Mui-selected': {
-                              backgroundColor: 'rgba(74, 144, 217, 0.12)',
+                              backgroundColor: alpha(theme.palette.primary.main, 0.12),
                             },
                           }}
                         >
                           {result.icon && (
-                            <Box sx={{ mr: 1.5, color: colors.primary }}>
+                            <Box sx={{ mr: 1.5, color: theme.palette.primary.main }}>
                               {result.icon}
                             </Box>
                           )}
@@ -476,11 +470,11 @@ export function SearchInput({
                             secondary={result.subtitle}
                             primaryTypographyProps={{
                               variant: 'body2',
-                              color: colors.textPrimary,
+                              color: theme.palette.text.primary,
                             }}
                             secondaryTypographyProps={{
                               variant: 'caption',
-                              color: colors.textSecondary,
+                              color: theme.palette.text.secondary,
                             }}
                           />
                           {result.category && (
@@ -490,9 +484,9 @@ export function SearchInput({
                                 ml: 1,
                                 px: 1,
                                 py: 0.25,
-                                backgroundColor: colors.background,
+                                backgroundColor: theme.palette.background.default,
                                 borderRadius: 1,
-                                color: colors.textSecondary,
+                                color: theme.palette.text.secondary,
                               }}
                             >
                               {result.category}
@@ -504,7 +498,7 @@ export function SearchInput({
                   </List>
                 ) : !loading ? (
                   <Box sx={{ p: 3, textAlign: 'center' }}>
-                    <Typography variant="body2" color={colors.textSecondary}>
+                    <Typography variant="body2" color={theme.palette.text.secondary}>
                       {noResultsMessage}
                     </Typography>
                   </Box>

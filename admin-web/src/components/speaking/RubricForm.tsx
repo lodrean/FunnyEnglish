@@ -142,8 +142,8 @@ export default function RubricForm({ grade, isSaving, onSave, onSkip }: RubricFo
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          // secondaryContainer (v1.3.0): light #E5DCFF / dark #46366F
-          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#46366F' : '#E5DCFF'),
+          // secondaryContainer (v1.3.2, bd ku2): light #E5DCFF / dark #46366F — токены
+          bgcolor: 'speaking.secondaryContainer',
           borderRadius: 2,
           px: 2,
           py: 1.5,
@@ -156,8 +156,8 @@ export default function RubricForm({ grade, isSaving, onSave, onSkip }: RubricFo
         <Typography
           variant="h5"
           fontWeight={700}
-          // onSecondaryContainer на secondaryContainer (WCAG AA, tokens v1.3.0)
-          sx={{ color: (theme) => (theme.palette.mode === 'dark' ? '#E5DCFF' : '#5B3FA8') }}
+          // onSecondaryContainer на secondaryContainer (WCAG AA, tokens v1.3.2)
+          sx={{ color: 'speaking.onSecondaryContainer' }}
           data-testid="rubric-total"
         >
           {total.toFixed(1)}

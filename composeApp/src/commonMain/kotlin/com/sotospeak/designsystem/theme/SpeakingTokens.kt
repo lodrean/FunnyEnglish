@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.sotospeak.designsystem.tokens.NunitoFontFamily
 
 /**
- * Speaking Trainer — токены Playful Coach v1.3.1 (.docs/design-system/tokens.json).
+ * Speaking Trainer — токены Playful Coach v1.3.2 (.docs/design-system/tokens.json).
  *
  * Используются speaking-экранами (legacy-палитра FunnyColorScheme удалена, bd FunnyEnglish-2oz.6).
  * Доступ: `MaterialTheme.speakingColors` или `LocalSpeakingColors.current`.
@@ -61,7 +61,17 @@ data class SpeakingColors(
     val error: Color,              // #E53935
     val errorText: Color,          // #B3261E — мелкий текст ошибок (WCAG AA 6.4:1, --color-error даёт только 4.29:1)
     val scrimSubtitle: Color,      // #000000B3 — подложка субтитров 70%
-    val scrimVideoControls: Color  // #00000080
+    val scrimVideoControls: Color, // #00000080
+    val videoPlayerBg: Color,      // v1.3.2 — тон-линии/иконки на плеере (был хардкод VideoScreen)
+    val videoAccent: Color,        // v1.3.2 — подсветка CC-кнопки (был хардкод VideoScreen)
+    val gradientBlue: Color,       // v1.3.2 — тайлы Library (был хардкод THEME_GRADIENTS)
+    val gradientBlueDeep: Color,
+    val gradientGreen: Color,      // = brand.tertiary
+    val gradientGreenDeep: Color,
+    val gradientIndigo: Color,
+    val gradientIndigoDeep: Color,
+    val gradientOrange: Color,     // = status.new
+    val gradientOrangeDeep: Color
 )
 
 val LightSpeakingColors = SpeakingColors(
@@ -98,7 +108,17 @@ val LightSpeakingColors = SpeakingColors(
     error = Color(0xFFE53935),
     errorText = Color(0xFFB3261E), // нет в tokens.json: M3 error text role, кандидат на расширение токенов
     scrimSubtitle = Color(0xB3000000),
-    scrimVideoControls = Color(0x80000000)
+    scrimVideoControls = Color(0x80000000),
+    videoPlayerBg = Color(0xFF1A2E42),
+    videoAccent = Color(0xFFFFD666),
+    gradientBlue = Color(0xFF4A90D9),
+    gradientBlueDeep = Color(0xFF2E6BB0),
+    gradientGreen = Color(0xFF006C4C),
+    gradientGreenDeep = Color(0xFF2E8B6A),
+    gradientIndigo = Color(0xFF5C6BC0),
+    gradientIndigoDeep = Color(0xFF3F51B5),
+    gradientOrange = Color(0xFFFB8C00),
+    gradientOrangeDeep = Color(0xFFE65100)
 )
 
 val DarkSpeakingColors = LightSpeakingColors.copy(
@@ -121,10 +141,10 @@ val DarkSpeakingColors = LightSpeakingColors.copy(
     onRecord = Color(0xFF161A2E),
     recordContainer = Color(0xFF59311C),      // v1.3.0 M3 dark (был #4A2A18)
     onRecordContainer = Color(0xFFFFD9C2),    // v1.3.0 M3 dark (был #FFCCAA)
-    statusNew = Color(0xFFFFB74D),           // нет в tokens.json: dark-статусы, кандидат на расширение
-    statusNewContainer = Color(0xFF3D2A0A),  // нет в tokens.json
-    statusReviewed = Color(0xFF81C784),      // нет в tokens.json
-    statusReviewedContainer = Color(0xFF1B4D1F), // нет в tokens.json
+    statusNew = Color(0xFFFFB74D),           // v1.3.2: dark-статусы перенесены в tokens.json
+    statusNewContainer = Color(0xFF3D2A0A),
+    statusReviewed = Color(0xFF81C784),
+    statusReviewedContainer = Color(0xFF1B4D1F),
     errorText = Color(0xFFF2B8B5)  // M3 dark error: на #161A2E читается по AA (нет в tokens.json)
 )
 

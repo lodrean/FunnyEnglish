@@ -35,30 +35,31 @@ export interface StatusBadgeProps extends Omit<ChipProps, 'color' | 'variant'> {
 
 // =============================================================================
 // STATUS CONFIGURATION
+// Цвета — ТОЛЬКО theme.palette.speaking.status (bd ku2, tokens.json v1.3.2):
+// tone — основной ключ статуса, контейнер = `<tone>Container`.
 // =============================================================================
 
-const statusConfig: Record<
-  StatusVariant,
-  { label: string; color: string; lightColor: string }
-> = {
+type StatusTone = 'new' | 'reviewed' | 'error' | 'info' | 'secondary' | 'neutral' | 'archived';
+
+const statusConfig: Record<StatusVariant, { label: string; tone: StatusTone }> = {
   // Semantic statuses
-  success: { label: 'Success', color: '#43A047', lightColor: '#E8F5E9' },
-  error: { label: 'Error', color: '#E53935', lightColor: '#FFEBEE' },
-  warning: { label: 'Warning', color: '#FB8C00', lightColor: '#FFF3E0' },
-  info: { label: 'Info', color: '#2196F3', lightColor: '#E3F2FD' },
-  primary: { label: 'Primary', color: '#4A90D9', lightColor: '#E3F2FD' },
-  secondary: { label: 'Secondary', color: '#9C27B0', lightColor: '#F3E5F5' },
-  default: { label: 'Default', color: '#757575', lightColor: '#F5F5F5' },
+  success: { label: 'Success', tone: 'reviewed' },
+  error: { label: 'Error', tone: 'error' },
+  warning: { label: 'Warning', tone: 'new' },
+  info: { label: 'Info', tone: 'info' },
+  primary: { label: 'Primary', tone: 'info' },
+  secondary: { label: 'Secondary', tone: 'secondary' },
+  default: { label: 'Default', tone: 'neutral' },
 
   // Content statuses
-  draft: { label: 'Draft', color: '#757575', lightColor: '#F5F5F5' },
-  published: { label: 'Published', color: '#43A047', lightColor: '#E8F5E9' },
-  archived: { label: 'Archived', color: '#9E9E9E', lightColor: '#EEEEEE' },
+  draft: { label: 'Draft', tone: 'neutral' },
+  published: { label: 'Published', tone: 'reviewed' },
+  archived: { label: 'Archived', tone: 'archived' },
 
   // User statuses
-  active: { label: 'Active', color: '#43A047', lightColor: '#E8F5E9' },
-  inactive: { label: 'Inactive', color: '#757575', lightColor: '#F5F5F5' },
-  pending: { label: 'Pending', color: '#FB8C00', lightColor: '#FFF3E0' },
+  active: { label: 'Active', tone: 'reviewed' },
+  inactive: { label: 'Inactive', tone: 'neutral' },
+  pending: { label: 'Pending', tone: 'new' },
 };
 
 // =============================================================================
@@ -77,6 +78,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   const theme = useTheme();
   const config = statusConfig[status];
   const displayLabel = label || config.label;
+  const statusColors = theme.palette.speaking.status;
+  const color = statusColors[config.tone];
+  const containerColor = statusColors[`${config.tone}Container` as `${StatusTone}Container`];
 
   const getStyles = () => {
     const baseStyles = {
@@ -90,10 +94,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       case 'filled':
         return {
           ...baseStyles,
-          backgroundColor: config.color,
-          color: '#FFFFFF',
+          backgroundColor: color,
+          color: theme.palette.getContrastText(color),
           '&:hover': {
-            backgroundColor: config.color,
+            backgroundColor: color,
           },
         };
 
@@ -101,10 +105,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         return {
           ...baseStyles,
           backgroundColor: 'transparent',
-          color: config.color,
-          border: `1.5px solid ${config.color}`,
+          color,
+          border: `1.5px solid ${color}`,
           '&:hover': {
-            backgroundColor: alpha(config.color, 0.08),
+            backgroundColor: alpha(color, 0.08),
           },
         };
 
@@ -113,16 +117,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         return {
           ...baseStyles,
           backgroundColor:
-            theme.palette.mode === 'dark'
-              ? alpha(config.color, 0.2)
-              : config.lightColor,
-          color:
-            theme.palette.mode === 'dark' ? config.color : config.color,
+            theme.palette.mode === 'dark' ? alpha(color, 0.2) : containerColor,
+          color,
           '&:hover': {
             backgroundColor:
-              theme.palette.mode === 'dark'
-                ? alpha(config.color, 0.3)
-                : alpha(config.color, 0.15),
+              theme.palette.mode === 'dark' ? alpha(color, 0.3) : alpha(color, 0.15),
           },
         };
     }
@@ -134,7 +133,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         width: size === 'small' ? 6 : 8,
         height: size === 'small' ? 6 : 8,
         borderRadius: '50%',
-        backgroundColor: variant === 'filled' ? '#FFFFFF' : config.color,
+        backgroundColor: variant === 'filled' ? theme.palette.getContrastText(color) : color,
         display: 'inline-block',
         marginRight: 4,
       }}

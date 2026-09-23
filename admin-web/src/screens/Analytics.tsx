@@ -19,6 +19,7 @@ import {
   Alert,
   Menu,
   MenuItem,
+  useTheme,
 } from '@mui/material';
 import {
   Download as DownloadIcon,
@@ -33,6 +34,7 @@ import {
   RateReview as ReviewIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
+import { chartColors } from '../theme/Theme';
 import GradingAnalyticsSection from '../components/speaking/GradingAnalyticsSection';
 import {
   getAdminAnalytics,
@@ -60,20 +62,9 @@ import {
   Area,
 } from 'recharts';
 
-// Design System Colors
-const COLORS = {
-  primary: '#4A90D9',
-  success: '#43A047',
-  error: '#E53935',
-  warning: '#FB8C00',
-  info: '#2196F3',
-  background: '#F5F5F5',
-  card: '#FFFFFF',
-  textPrimary: '#212121',
-  textSecondary: '#757575',
-};
-
-const CHART_COLORS = [COLORS.primary, COLORS.success, COLORS.warning, COLORS.error, COLORS.info];
+// Цвета графиков — token-based статика из Theme (bd ku2: уход от хардкодов);
+// внутри компонента — theme.palette (useTheme).
+const CHART_COLORS = chartColors.slice(0, 5);
 
 // Types
 interface DateRange {
@@ -203,13 +194,13 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
 const activityTypeColor = (type: string): string => {
   switch (type) {
     case 'NEW_USER':
-      return COLORS.primary;
+      return CHART_COLORS[0];
     case 'TEST_COMPLETED':
-      return COLORS.success;
+      return CHART_COLORS[1];
     case 'ACHIEVEMENT':
-      return COLORS.warning;
+      return CHART_COLORS[2];
     default:
-      return COLORS.info;
+      return CHART_COLORS[4];
   }
 };
 
@@ -219,6 +210,7 @@ const csvEscape = (value: string | number): string => {
 };
 
 const Analytics: React.FC = () => {
+  const theme = useTheme();
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const now = Date.now();
     return { start: toIsoDate(new Date(now - 13 * DAY_MS)), end: toIsoDate(new Date(now)) };
@@ -299,7 +291,7 @@ const Analytics: React.FC = () => {
     <Box p={{ xs: 3, md: 4 }}>
       {/* Header */}
       <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} mb={3} gap={3}>
-        <Typography variant="h4" fontWeight="bold" color={COLORS.textPrimary}>
+        <Typography variant="h4" fontWeight="bold" color={theme.palette.text.primary}>
           Analytics
         </Typography>
         <Box display="flex" gap={1} flexWrap="wrap">
@@ -348,7 +340,7 @@ const Analytics: React.FC = () => {
             value={data?.metrics.totalUsers.toLocaleString() || 0}
             subtitle="registered users"
             icon={<PeopleIcon />}
-            color={COLORS.primary}
+            color={theme.palette.primary.main}
             loading={isLoading}
           />
         </Grid>
@@ -358,7 +350,7 @@ const Analytics: React.FC = () => {
             value={data?.metrics.totalCompletions.toLocaleString() || 0}
             subtitle="all time"
             icon={<CompletionIcon />}
-            color={COLORS.success}
+            color={theme.palette.success.main}
             loading={isLoading}
           />
         </Grid>
@@ -368,7 +360,7 @@ const Analytics: React.FC = () => {
             value={data?.metrics.publishedTests.toLocaleString() || 0}
             subtitle={`${data?.metrics.totalTests ?? 0} total`}
             icon={<TrendingUpIcon />}
-            color={COLORS.info}
+            color={theme.palette.info.main}
             loading={isLoading}
           />
         </Grid>
@@ -376,7 +368,7 @@ const Analytics: React.FC = () => {
 
       {/* Метрики PRD (Speaking Trainer) — реальные агрегаты (аудит F-1/F-D) */}
       <Box mb={1} display="flex" alignItems="center" gap={1}>
-        <Typography variant="h6" fontWeight="bold" color={COLORS.textPrimary} data-testid="prd-metrics-title">
+        <Typography variant="h6" fontWeight="bold" color={theme.palette.text.primary} data-testid="prd-metrics-title">
           PRD Metrics (Speaking Trainer)
         </Typography>
         <Chip size="small" label="реальные данные" variant="outlined" />
@@ -388,7 +380,7 @@ const Analytics: React.FC = () => {
             value={(prdData?.practicePerStudentPerWeek ?? 0).toFixed(1)}
             subtitle={`${prdData?.practiceSubmissionsLast7d ?? 0} отправок · ${prdData?.activeStudentsLast7d ?? 0} учеников за 7 дней`}
             icon={<PracticeIcon />}
-            color={COLORS.primary}
+            color={theme.palette.primary.main}
             loading={prdLoading}
           />
         </Grid>
@@ -398,7 +390,7 @@ const Analytics: React.FC = () => {
             value={`${Math.round((prdData?.reviewedWithin48hShare ?? 0) * 100)}%`}
             subtitle={`${prdData?.reviewedWithin48h ?? 0} из ${prdData?.reviewedTotal ?? 0} оценённых`}
             icon={<ReviewIcon />}
-            color={COLORS.success}
+            color={theme.palette.success.main}
             loading={prdLoading}
           />
         </Grid>
@@ -408,7 +400,7 @@ const Analytics: React.FC = () => {
             value={`${Math.round((prdData?.guestConversionRate ?? 0) * 100)}%`}
             subtitle={`${prdData?.convertedGuests ?? 0} из ${prdData?.totalGuests ?? 0} гостей`}
             icon={<ConversionIcon />}
-            color={COLORS.warning}
+            color={theme.palette.warning.main}
             loading={prdLoading}
           />
         </Grid>
@@ -416,12 +408,12 @@ const Analytics: React.FC = () => {
 
       {/* Guest (anonymous) analytics — обезличенные данные гостевого режима */}
       <Box mb={1} display="flex" alignItems="center" gap={1}>
-        <Typography variant="h6" fontWeight="bold" color={COLORS.textPrimary} data-testid="guest-analytics-title">
+        <Typography variant="h6" fontWeight="bold" color={theme.palette.text.primary} data-testid="guest-analytics-title">
           Guest Users (anonymous)
         </Typography>
         <Chip size="small" label="обезличенные данные" variant="outlined" />
       </Box>
-      <Typography variant="body2" color={COLORS.textSecondary} mb={2}>
+      <Typography variant="body2" color={theme.palette.text.secondary} mb={2}>
         Незарегистрированные пользователи. Собираются только анонимные события (без имён и email).
       </Typography>
       <Grid container spacing={3} mb={3} data-testid="guest-analytics-section">
@@ -431,7 +423,7 @@ const Analytics: React.FC = () => {
             value={guestData?.totalGuests.toLocaleString() || 0}
             subtitle="уникальных устройств"
             icon={<GuestIcon />}
-            color={COLORS.info}
+            color={theme.palette.info.main}
             loading={guestLoading}
           />
         </Grid>
@@ -441,7 +433,7 @@ const Analytics: React.FC = () => {
             value={guestData?.activeGuests7d.toLocaleString() || 0}
             subtitle="активных за неделю"
             icon={<ActiveIcon />}
-            color={COLORS.primary}
+            color={theme.palette.primary.main}
             loading={guestLoading}
           />
         </Grid>
@@ -451,7 +443,7 @@ const Analytics: React.FC = () => {
             value={guestData?.guestTestCompletions.toLocaleString() || 0}
             subtitle="прохождений гостями"
             icon={<CompletionIcon />}
-            color={COLORS.success}
+            color={theme.palette.success.main}
             loading={guestLoading}
           />
         </Grid>
@@ -461,7 +453,7 @@ const Analytics: React.FC = () => {
             value={`${Math.round((guestData?.conversionRate || 0) * 100)}%`}
             subtitle={`${guestData?.convertedGuests || 0} зарегистрировались`}
             icon={<ConversionIcon />}
-            color={COLORS.warning}
+            color={theme.palette.warning.main}
             loading={guestLoading}
           />
         </Grid>
@@ -483,22 +475,22 @@ const Analytics: React.FC = () => {
                 <AreaChart data={filteredActivity}>
                   <defs>
                     <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0} />
+                      <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={COLORS.success} stopOpacity={0} />
+                      <stop offset="5%" stopColor={theme.palette.success.main} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={theme.palette.success.main} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                  <XAxis dataKey="date" tickFormatter={formatDateLabel} stroke={COLORS.textSecondary} />
-                  <YAxis stroke={COLORS.textSecondary} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis dataKey="date" tickFormatter={formatDateLabel} stroke={theme.palette.text.secondary} />
+                  <YAxis stroke={theme.palette.text.secondary} allowDecimals={false} />
                   <Tooltip
                     labelFormatter={(label) => formatDateLabel(String(label))}
                     contentStyle={{
-                      backgroundColor: COLORS.card,
-                      border: `1px solid ${COLORS.primary}`,
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.primary.main}`,
                       borderRadius: 8,
                     }}
                   />
@@ -506,7 +498,7 @@ const Analytics: React.FC = () => {
                   <Area
                     type="monotone"
                     dataKey="newUsers"
-                    stroke={COLORS.primary}
+                    stroke={theme.palette.primary.main}
                     fillOpacity={1}
                     fill="url(#colorNewUsers)"
                     name="New Users"
@@ -514,7 +506,7 @@ const Analytics: React.FC = () => {
                   <Area
                     type="monotone"
                     dataKey="testsCompleted"
-                    stroke={COLORS.success}
+                    stroke={theme.palette.success.main}
                     fillOpacity={1}
                     fill="url(#colorCompleted)"
                     name="Tests Completed"
@@ -573,18 +565,18 @@ const Analytics: React.FC = () => {
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={data.popularTests}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                  <XAxis dataKey="name" stroke={COLORS.textSecondary} />
-                  <YAxis stroke={COLORS.textSecondary} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis dataKey="name" stroke={theme.palette.text.secondary} />
+                  <YAxis stroke={theme.palette.text.secondary} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: COLORS.card,
-                      border: `1px solid ${COLORS.primary}`,
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.primary.main}`,
                       borderRadius: 8,
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="completions" fill={COLORS.primary} name="Completions" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="completions" fill={theme.palette.primary.main} name="Completions" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -603,7 +595,7 @@ const Analytics: React.FC = () => {
             <TableContainer>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#FAFAFA' }}>
+                  <TableRow sx={{ backgroundColor: 'action.hover' }}>
                     <TableCell>Test Name</TableCell>
                     <TableCell>Category</TableCell>
                     <TableCell align="center">Completions</TableCell>
@@ -658,7 +650,7 @@ const Analytics: React.FC = () => {
             <TableContainer>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#FAFAFA' }}>
+                  <TableRow sx={{ backgroundColor: 'action.hover' }}>
                     <TableCell>User</TableCell>
                     <TableCell align="center">Type</TableCell>
                     <TableCell>Details</TableCell>

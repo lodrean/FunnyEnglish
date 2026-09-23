@@ -4,6 +4,7 @@ import {
   Button,
   CircularProgress,
   Divider,
+  alpha,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -14,16 +15,7 @@ import {
   ArrowBack,
 } from '@mui/icons-material';
 
-// Design System Colors
-const colors = {
-  primary: '#4A90D9',
-  success: '#43A047',
-  error: '#E53935',
-  textPrimary: '#212121',
-  textSecondary: '#757575',
-  background: '#F5F5F5',
-  card: '#FFFFFF',
-};
+// Цвета — из темы (bd ku2: уход от хардкодов #4A90D9/MUI-grey)
 
 // Form action button variants
 export type ActionVariant = 'save' | 'cancel' | 'submit' | 'reset' | 'back';
@@ -172,12 +164,12 @@ export function FormActions({
       startIcon={isSaving ? <CircularProgress size={18} color="inherit" /> : saveIcon}
       fullWidth={isMobile && fullWidthMobile}
       sx={{
-        backgroundColor: colors.primary,
+        backgroundColor: theme.palette.primary.main,
         '&:hover': {
-          backgroundColor: '#3A7BC8',
+          backgroundColor: theme.palette.primary.dark,
         },
         '&.Mui-disabled': {
-          backgroundColor: 'rgba(74, 144, 217, 0.5)',
+          backgroundColor: alpha(theme.palette.primary.main, 0.5),
           color: 'white',
         },
         minWidth: 100,
@@ -198,12 +190,12 @@ export function FormActions({
       startIcon={isCanceling ? <CircularProgress size={18} /> : cancelIcon}
       fullWidth={isMobile && fullWidthMobile}
       sx={{
-        borderColor: colors.textSecondary,
-        color: colors.textPrimary,
+        borderColor: theme.palette.text.secondary,
+        color: theme.palette.text.primary,
         '&:hover': {
-          borderColor: colors.primary,
-          color: colors.primary,
-          backgroundColor: 'rgba(74, 144, 217, 0.04)',
+          borderColor: theme.palette.primary.main,
+          color: theme.palette.primary.main,
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
         },
         minWidth: 100,
       }}
@@ -222,10 +214,10 @@ export function FormActions({
       startIcon={backIcon}
       fullWidth={isMobile && fullWidthMobile}
       sx={{
-        color: colors.textSecondary,
+        color: theme.palette.text.secondary,
         '&:hover': {
-          color: colors.primary,
-          backgroundColor: 'rgba(74, 144, 217, 0.04)',
+          color: theme.palette.primary.main,
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
         },
       }}
     >
@@ -236,9 +228,9 @@ export function FormActions({
   // Render custom action button
   const renderCustomButton = (action: ActionButton, index: number) => {
     const buttonColors: Record<string, string> = {
-      primary: colors.primary,
-      success: colors.success,
-      error: colors.error,
+      primary: theme.palette.primary.main,
+      success: theme.palette.success.main,
+      error: theme.palette.error.main,
     };
 
     return (

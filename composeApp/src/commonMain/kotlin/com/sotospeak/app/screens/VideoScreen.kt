@@ -521,6 +521,7 @@ private fun MockupBottomControls(
 /** Big-play 64dp по центру (мокап .big-play): круг, белый 92%, тень. */
 @Composable
 private fun BigPlayOverlay(onPlay: () -> Unit, modifier: Modifier = Modifier) {
+    val speaking = LocalSpeakingColors.current
     Surface(
         onClick = onPlay,
         shape = CircleShape,
@@ -534,7 +535,7 @@ private fun BigPlayOverlay(onPlay: () -> Unit, modifier: Modifier = Modifier) {
             Icon(
                 imageVector = SpeakingIcons.Play,
                 contentDescription = LocalAppStrings.current.watchVideoDesc,
-                tint = Color(0xFF1A2E42),
+                tint = speaking.videoPlayerBg, // tokens v1.3.2 (--color-video-player-bg)
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -544,6 +545,7 @@ private fun BigPlayOverlay(onPlay: () -> Unit, modifier: Modifier = Modifier) {
 /** «Начать заново» после окончания воспроизведения (мокап replay). */
 @Composable
 private fun ReplayOverlay(onReplay: () -> Unit, modifier: Modifier = Modifier) {
+    val speaking = LocalSpeakingColors.current
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -563,7 +565,7 @@ private fun ReplayOverlay(onReplay: () -> Unit, modifier: Modifier = Modifier) {
                 Icon(
                     imageVector = SpeakingIcons.Refresh,
                     contentDescription = strings.startOver,
-                    tint = Color(0xFF1A2E42),
+                    tint = speaking.videoPlayerBg, // tokens v1.3.2 (--color-video-player-bg)
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -628,6 +630,7 @@ private fun ControlBarContent(
     modifier: Modifier = Modifier
 ) {
     val strings = LocalAppStrings.current
+    val speaking = LocalSpeakingColors.current
     IconButton(
         onClick = onPlayPause,
         modifier = Modifier
@@ -691,7 +694,7 @@ private fun ControlBarContent(
                         .width(20.dp)
                         .height(3.dp)
                         .clip(SpeakingShapes.StatusPill)
-                        .background(Color(0xFFFFD666))
+                        .background(speaking.videoAccent) // tokens v1.3.2 (--color-video-accent)
                 )
             }
         }

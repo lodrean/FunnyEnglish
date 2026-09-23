@@ -69,7 +69,7 @@ test.describe('Authentication', () => {
     await loginPage.clickSubmit();
     
     // Проверяем наличие ошибки валидации (появляется в Alert)
-    await loginPage.expectError('Please enter both email and password');
+    await loginPage.expectError('Введите email и пароль');
   });
 
   test('должен выходить из системы', async () => {

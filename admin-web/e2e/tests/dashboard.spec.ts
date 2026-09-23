@@ -17,7 +17,7 @@ test.describe('Dashboard', () => {
     await dashboardPage.expectPageLoaded();
     
     const title = await dashboardPage.getPageTitle();
-    expect(title.toLowerCase()).toContain('dashboard');
+    expect(title.toLowerCase()).toContain('дашборд');
   });
 
   test('должен отображать боковое меню навигации', async () => {

@@ -54,7 +54,15 @@ class StorageService(
         validateFileType(extension, file.contentType)
         validateVideoUpload(extension, file)
 
-        val video = prepareVideoUpload(file, extension)
+        // Video-путь (probe/транскодинг, h3l.18) — ТОЛЬКО для видео-контейнеров;
+        // аудио/субтитры/изображения уходят как есть (bd FunnyEnglish-xxe: прогон
+        // vtt/m4a через prepareVideoUpload давал 400 «В файле нет видеопотока»,
+        // а валидные аудио перекодировались в audio-only .mp4).
+        val video = if (extension in allowedVideoExtensions) {
+            prepareVideoUpload(file, extension)
+        } else {
+            preparePassthroughUpload(file, extension)
+        }
 
         val key = buildString {
             append(normalizedFolder)
@@ -117,6 +125,18 @@ class StorageService(
         fun cleanup() {
             Files.deleteIfExists(path)
         }
+    }
+
+    /** Не-видео файлы: temp-копия оригинала без probe/транскодинга (bd FunnyEnglish-xxe). */
+    private fun preparePassthroughUpload(file: MultipartFile, extension: String): PreparedUpload {
+        val temp = kotlin.io.path.createTempFile(prefix = "upload_", suffix = ".$extension")
+        try {
+            file.transferTo(temp)
+        } catch (e: Exception) {
+            Files.deleteIfExists(temp)
+            throw e
+        }
+        return PreparedUpload(temp, file.size, file.contentType ?: "application/octet-stream", extension)
     }
 
     /**

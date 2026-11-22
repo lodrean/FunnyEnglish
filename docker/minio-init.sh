@@ -1,7 +1,7 @@
 #!/bin/sh
 # MinIO initialization script
 # Creates bucket and sets public access
-# Runs inside minio/mc container AFTER minio is healthy (compose depends_on),
+# Runs inside bitnamilegacy/minio-client container AFTER minio is healthy (compose depends_on),
 # so no wait-loop is needed. MinIO is reachable at http://minio:9000.
 
 set -e

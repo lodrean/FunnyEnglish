@@ -264,7 +264,7 @@ services:
           memory: 512M
 
   minio:
-    image: minio/minio:latest
+    image: bitnamilegacy/minio:2025.7.23-debian-12-r5
     container_name: sotospeak-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"

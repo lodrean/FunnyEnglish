@@ -289,7 +289,7 @@ admin:e2e:
   services:
     - name: postgres:16-alpine
       alias: postgres
-    - name: minio/minio
+    - name: minio
       alias: minio
       command: ["server", "/data"]
   script:

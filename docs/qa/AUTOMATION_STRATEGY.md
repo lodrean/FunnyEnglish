@@ -479,7 +479,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: test
       minio:
-        image: minio/minio
+        image: bitnamilegacy/minio:2025.7.23-debian-12-r5
     steps:
       - name: Run Integration Tests
         run: ./gradlew :backend:integrationTest

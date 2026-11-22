@@ -3,12 +3,14 @@ package com.sotospeak.app.tests
 import com.sotospeak.app.storage.RecordingFileStorage
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
+import com.sotospeak.app.storage.RecordingSelfScore
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.shared.platform.Settings
 import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -147,6 +149,50 @@ class RecordingStoreTest {
             "rec_t1_practice_123.m4a",
             store.fileNameFor("t1", RecordingKind.PRACTICE, 0, 123)
         )
+    }
+
+    @Test
+    fun updateSelfScorePersistsChecks() {
+        val store = newStore()
+        val m = meta(topicId = "t1", attempt = 1)
+        store.add(m)
+        assertNull(store.list().first { it.filePath == m.filePath }.selfScore)
+
+        val score = RecordingSelfScore(checks = listOf(true, false, true, false), scoredAtEpochMs = 1_700_000_050_000)
+        store.updateSelfScore(m.filePath, score)
+        assertEquals(score, store.list().first { it.filePath == m.filePath }.selfScore)
+    }
+
+    @Test
+    fun updateSelfScoreUnknownPathIsNoOp() {
+        val store = newStore()
+        store.add(meta(topicId = "t1"))
+
+        store.updateSelfScore(
+            "/unknown/path.m4a",
+            RecordingSelfScore(checks = listOf(true, true, true, true), scoredAtEpochMs = 1L)
+        )
+        assertEquals(1, store.list().size)
+        assertNull(store.list().first().selfScore)
+    }
+
+    @Test
+    fun updateSelfScoreOverwritesPrevious() {
+        val store = newStore()
+        val m = meta(topicId = "t1")
+        store.add(m)
+        store.updateSelfScore(
+            m.filePath,
+            RecordingSelfScore(checks = listOf(false, false, false, false), scoredAtEpochMs = 1L)
+        )
+        store.updateSelfScore(
+            m.filePath,
+            RecordingSelfScore(checks = listOf(true, true, true, true), scoredAtEpochMs = 2L)
+        )
+
+        val stored = store.list().first { it.filePath == m.filePath }.selfScore
+        assertEquals(listOf(true, true, true, true), stored?.checks)
+        assertEquals(2L, stored?.scoredAtEpochMs)
     }
 }
 

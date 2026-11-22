@@ -153,6 +153,23 @@ interface AppStrings {
     val startRecordingDesc: String
     val stopRecordingDesc: String
 
+    // Self-scoring карточка после попытки (спека Part 2 §5.4, bd h3l.5)
+    val selfScoreTitleTemplate: String  // "Оцени попытку {0}"
+    fun selfScoreTitle(attempt: Int): String =
+        selfScoreTitleTemplate.replace("{0}", attempt.toString())
+    val selfScoreReferenceTitle: String
+    val selfCheckGrammar: String         // 4 критерия по рубрике учителя
+    val selfCheckVocabulary: String
+    val selfCheckPronunciation: String
+    val selfCheckFluency: String
+    val selfScoreSave: String
+    val selfScoreSkip: String
+    val selfScoreSummaryTemplate: String  // "{0}/{1}" — сводка на карточке попытки
+    fun selfScoreSummary(done: Int, total: Int): String =
+        selfScoreSummaryTemplate
+            .replace("{0}", done.toString())
+            .replace("{1}", total.toString())
+
     // PracticeScreen
     val backConfirmTitle: String
     val backConfirmRecording: String
@@ -325,6 +342,15 @@ object RussianStrings : AppStrings {
     override val privacyNote = "Записи хранятся только на твоём устройстве"
     override val startRecordingDesc = "Начать запись"
     override val stopRecordingDesc = "Остановить запись"
+    override val selfScoreTitleTemplate = "Оцени попытку {0}"
+    override val selfScoreReferenceTitle = "Эталонный ответ — транскрипт видео"
+    override val selfCheckGrammar = "Грамматика — предложения построены правильно"
+    override val selfCheckVocabulary = "Словарь — слова и фразы уместны"
+    override val selfCheckPronunciation = "Произношение — слова звучат понятно"
+    override val selfCheckFluency = "Беглость — говорил без долгих пауз"
+    override val selfScoreSave = "Готово"
+    override val selfScoreSkip = "Пропустить"
+    override val selfScoreSummaryTemplate = "{0}/{1}"
 
     // PracticeScreen
     override val backConfirmTitle = "Прервать запись?"
@@ -478,6 +504,15 @@ object EnglishStrings : AppStrings {
     override val privacyNote = "Recordings are stored only on your device"
     override val startRecordingDesc = "Start recording"
     override val stopRecordingDesc = "Stop recording"
+    override val selfScoreTitleTemplate = "Rate attempt {0}"
+    override val selfScoreReferenceTitle = "Reference answer — video transcript"
+    override val selfCheckGrammar = "Grammar — sentences are well built"
+    override val selfCheckVocabulary = "Vocabulary — words fit the meaning"
+    override val selfCheckPronunciation = "Pronunciation — words sound clear"
+    override val selfCheckFluency = "Fluency — spoke without long pauses"
+    override val selfScoreSave = "Done"
+    override val selfScoreSkip = "Skip"
+    override val selfScoreSummaryTemplate = "{0}/{1}"
 
     // PracticeScreen
     override val backConfirmTitle = "Interrupt the recording?"

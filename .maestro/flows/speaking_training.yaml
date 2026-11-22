@@ -75,11 +75,40 @@ appId: com.sotospeak.app
     timeout: 15000
 - tapOn: "Остановить запись"
 
-# Попытка сохранена, ✅ автоматически; заголовок списка «Попытки · N из 3»
-- extendedWaitUntil:
-    visible: "Попытка 1"
+# Карточка самооценки (спека §5.4, bd h3l.5): появляется между rec-зоной и списком
+# попыток — эталон-транскрипт + чеклист 4 критерия по рубрике учителя
+- scrollUntilVisible:
+    element:
+      text: "Оцени попытку 1"
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*Эталонный ответ.*"
+# Чеклист ниже секции эталона (транскрипт до 180dp) — скроллим к критериям
+- scrollUntilVisible:
+    element:
+      text: ".*Грамматика.*"
+    direction: DOWN
+    timeout: 10000
+- assertVisible: ".*Грамматика.*"
+- scrollUntilVisible:
+    element:
+      text: ".*Беглость.*"
+    direction: DOWN
+    timeout: 10000
+- assertVisible: ".*Беглость.*"
+
+# Попытка сохранена, ✅ автоматически; заголовок списка «Попытки · N из 3» — ниже карточки
+- scrollUntilVisible:
+    element:
+      text: "Попытки · 1 из 3"
+    direction: DOWN
     timeout: 10000
 - assertVisible: "Попытки · 1 из 3"
 
-# Следующий уровень разблокирован
+# Следующий уровень разблокирован (level-chip вверху экрана)
+- scrollUntilVisible:
+    element:
+      text: "Уровень 2 · 50 сек"
+    direction: UP
+    timeout: 10000
 - assertVisible: "Уровень 2 · 50 сек"

@@ -21,7 +21,15 @@ data class RecordingMeta(
     val durationMs: Long,
     val timerLimitSeconds: Int,       // лимит, на котором сделана запись
     val createdAtEpochMs: Long,
-    val uploaded: Boolean = false     // для PRACTICE: offline-retry (спека §6.4)
+    val uploaded: Boolean = false,    // для PRACTICE: offline-retry (спека §6.4)
+    val selfScore: RecordingSelfScore? = null // самооценка TRAINING-попытки (спека §5.4, bd h3l.5)
+)
+
+/** Самооценка TRAINING-попытки (спека Part 2 §5.4): чеклист 4 критерия по рубрике учителя. */
+@Serializable
+data class RecordingSelfScore(
+    val checks: List<Boolean>,
+    val scoredAtEpochMs: Long
 )
 
 enum class RecordingKind { TRAINING, PRACTICE }
@@ -141,6 +149,11 @@ class RecordingStore(
 
     fun markUploaded(filePath: String) {
         saveAll(loadAll().map { if (it.filePath == filePath) it.copy(uploaded = true) else it })
+    }
+
+    /** Сохраняет самооценку TRAINING-попытки (спека §5.4); неизвестный path — no-op. */
+    fun updateSelfScore(filePath: String, selfScore: RecordingSelfScore) {
+        saveAll(loadAll().map { if (it.filePath == filePath) it.copy(selfScore = selfScore) else it })
     }
 
     fun pendingPractice(): List<RecordingMeta> =

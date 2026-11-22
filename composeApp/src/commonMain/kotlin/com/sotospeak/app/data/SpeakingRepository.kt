@@ -2,6 +2,7 @@ package com.sotospeak.app.data
 
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
+import com.sotospeak.app.storage.RecordingSelfScore
 import com.sotospeak.app.storage.RecordingStore
 import com.sotospeak.shared.api.SpeakingApi
 import com.sotospeak.shared.contracts.SpeakingLibrary
@@ -69,6 +70,10 @@ class SpeakingRepository(
     fun removeTrainingAttempts(topicId: String) = recordingStore.removeAllForTopic(topicId)
 
     fun markRecordingUploaded(filePath: String) = recordingStore.markUploaded(filePath)
+
+    /** Самооценка TRAINING-попытки (спека Part 2 §5.4, bd h3l.5). */
+    fun updateSelfScore(filePath: String, selfScore: RecordingSelfScore) =
+        recordingStore.updateSelfScore(filePath, selfScore)
 
     /** Неотправленные PRACTICE-записи (offline retry, спека §6.4). */
     fun pendingPracticeUploads(): List<RecordingMeta> = recordingStore.pendingPractice()

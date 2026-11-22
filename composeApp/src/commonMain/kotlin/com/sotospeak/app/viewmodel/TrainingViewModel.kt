@@ -9,6 +9,9 @@ import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.recorder.RecordingSessionController
 import com.sotospeak.app.storage.RecordingKind
 import com.sotospeak.app.storage.RecordingMeta
+import com.sotospeak.app.storage.RecordingSelfScore
+import com.sotospeak.app.subtitles.SubtitleCue
+import com.sotospeak.app.subtitles.WebVttParser
 import com.sotospeak.shared.contracts.SpeakingQuestion
 import com.sotospeak.shared.platform.AudioPlayer
 import kotlinx.coroutines.channels.Channel
@@ -22,6 +25,7 @@ import kotlinx.datetime.Clock
 /**
  * Спека Part 2 §2.5. Training: 3 попытки на топик (80/50/30), каждая попытка —
  * одна запись на ВСЕ вопросы; без удаления — только прослушивание, авто-✅.
+ * После каждой попытки — карточка самооценки (§5.4, bd h3l.5).
  */
 data class TrainingState(
     val isLoading: Boolean = false,
@@ -31,10 +35,21 @@ data class TrainingState(
     val recorder: RecorderUiState = RecorderUiState.Idle,
     val attemptNumber: Int = 1,                            // 1..3; лимит = timerLimitFor(attemptNumber)
     val remainingSeconds: Int = 0,                         // видимый обратный отсчёт
-    val isFinished: Boolean = false,                       // true после 3-й попытки → финальные CTA
+    val isFinished: Boolean = false,                       // true после 3-й попытки → финальный блок CTA
     val playingRecordingPath: String? = null,
+    // Эталон-транскрипт топика (§5.4); пуст — нет субтитров/ошибка загрузки (молча)
+    val subtitleCues: List<SubtitleCue> = emptyList(),
+    // Карточка самооценки открытой попытки (§5.4); null — закрыта
+    val selfScoring: SelfScoringState? = null,
     val micPermission: MicPermissionState = MicPermissionState.Unknown,
     val error: UiText? = null
+)
+
+/** Карточка самооценки (§5.4): открыта для попытки; чеклист 4 критерия по рубрике учителя. */
+data class SelfScoringState(
+    val filePath: String,
+    val attemptNumber: Int,
+    val checks: List<Boolean>        // размер = TrainingViewModel.SELF_CHECK_COUNT
 )
 
 
@@ -57,6 +72,14 @@ sealed interface TrainingAction {
     data class OnRecorderError(val message: String) : TrainingAction
     data class OnPlayRecording(val path: String) : TrainingAction
     data object OnStopPlayback : TrainingAction
+    // §5.4 self-scoring: карточка после попытки
+    data class OnToggleSelfCheck(val index: Int) : TrainingAction
+    // «Готово»: сохранить selfScore в RecordingMeta и закрыть карточку
+    data object OnSaveSelfScore : TrainingAction
+    // «Пропустить»: закрыть карточку без сохранения
+    data object OnSkipSelfScoring : TrainingAction
+    // Повторное открытие карточки попытки из списка
+    data class OnOpenSelfScoring(val path: String) : TrainingAction
     // удаления/перезаписи попыток НЕТ (дизайн v1.1): записи только прослушиваются, ✅ автоматически
     data object OnGoToPractice : TrainingAction                  // финальный CTA «Перейти к практике»
     data object OnRestartAttempts : TrainingAction               // «Начать заново с попытки 1»
@@ -141,6 +164,12 @@ class TrainingViewModel(
                 audioPlayer.stop()
                 _state.value = _state.value.copy(playingRecordingPath = null)
             }
+            is TrainingAction.OnToggleSelfCheck -> toggleSelfCheck(action.index)
+            is TrainingAction.OnSaveSelfScore -> saveSelfScore()
+            is TrainingAction.OnSkipSelfScoring -> {
+                _state.value = _state.value.copy(selfScoring = null)
+            }
+            is TrainingAction.OnOpenSelfScoring -> openSelfScoring(action.path)
             is TrainingAction.OnGoToPractice -> currentTopicId?.let {
                 _events.trySend(TrainingEvent.NavigateToPractice(it))
             }
@@ -150,7 +179,8 @@ class TrainingViewModel(
                     attempts = emptyList(),
                     attemptNumber = 1,
                     isFinished = false,
-                    recorder = RecorderUiState.Idle
+                    recorder = RecorderUiState.Idle,
+                    selfScoring = null                   // записи удалены вместе с самооценками (§5.4)
                 )
             }
             is TrainingAction.OnPermissionResult -> {
@@ -165,6 +195,47 @@ class TrainingViewModel(
             is TrainingAction.OnBackToLibrary -> _events.trySend(TrainingEvent.NavigateToLibrary)
             is TrainingAction.OnBack -> _events.trySend(TrainingEvent.NavigateBack)
         }
+    }
+
+    // ---- §5.4 self-scoring: обработчики карточки самооценки ----
+
+    private fun toggleSelfCheck(index: Int) {
+        val scoring = _state.value.selfScoring ?: return
+        if (index !in scoring.checks.indices) return
+        _state.value = _state.value.copy(
+            selfScoring = scoring.copy(
+                checks = scoring.checks.mapIndexed { i, checked ->
+                    if (i == index) !checked else checked
+                }
+            )
+        )
+    }
+
+    private fun saveSelfScore() {
+        val scoring = _state.value.selfScoring ?: return
+        val score = RecordingSelfScore(
+            checks = scoring.checks,
+            scoredAtEpochMs = Clock.System.now().toEpochMilliseconds()
+        )
+        repository.updateSelfScore(scoring.filePath, score)
+        _state.value = _state.value.copy(
+            attempts = _state.value.attempts.map {
+                if (it.filePath == scoring.filePath) it.copy(selfScore = score) else it
+            },
+            selfScoring = null
+        )
+        _events.trySend(TrainingEvent.ShowMessage("Самооценка сохранена"))
+    }
+
+    private fun openSelfScoring(path: String) {
+        val attempt = _state.value.attempts.firstOrNull { it.filePath == path } ?: return
+        _state.value = _state.value.copy(
+            selfScoring = SelfScoringState(
+                filePath = attempt.filePath,
+                attemptNumber = attempt.attemptNumber,
+                checks = attempt.selfScore?.checks ?: List(SELF_CHECK_COUNT) { false }
+            )
+        )
     }
 
     private fun load(topicId: String) {
@@ -193,12 +264,28 @@ class TrainingViewModel(
                         attemptNumber = (attempts.size + 1).coerceAtMost(MAX_ATTEMPTS),
                         isFinished = attempts.size >= MAX_ATTEMPTS
                     )
+                    // Эталон-транскрипт для карточки самооценки (§5.4): догружаем
+                    // асинхронно, тихий failure — карточка без секции эталона
+                    detail.video?.subtitleUrl?.let { loadReferenceTranscript(it) }
                 }
                 .onFailure { error ->
                     _state.value = _state.value.copy(
                         isLoading = false,
                         error = error.toUiText()
                     )
+                }
+        }
+    }
+
+    /** Эталон-транскрипт (§5.4): паттерн VideoViewModel.loadSubtitles — ошибка не блокирует экран. */
+    private fun loadReferenceTranscript(url: String) {
+        viewModelScope.launch {
+            repository.getTextResource(url)
+                .onSuccess { vtt ->
+                    val cues = WebVttParser.parse(vtt)
+                    if (cues.isNotEmpty()) {
+                        _state.value = _state.value.copy(subtitleCues = cues)
+                    }
                 }
         }
     }
@@ -232,7 +319,12 @@ class TrainingViewModel(
             attemptNumber = (attempts.size + 1).coerceAtMost(MAX_ATTEMPTS),
             isFinished = finished,
             recorder = RecorderUiState.Idle,
-            remainingSeconds = 0
+            remainingSeconds = 0,
+            selfScoring = SelfScoringState(                     // карточка самооценки после попытки (§5.4)
+                filePath = filePath,
+                attemptNumber = s.attemptNumber,
+                checks = List(SELF_CHECK_COUNT) { false }
+            )
         )
         _events.trySend(
             TrainingEvent.ShowMessage(
@@ -250,6 +342,9 @@ class TrainingViewModel(
 
     companion object {
         const val MAX_ATTEMPTS = 3
+
+        /** Критериев самооценки — 4, по рубрике учителя (§5.4, решение владельца 2026-11-22). */
+        const val SELF_CHECK_COUNT = 4
 
         /**
          * Лимит попытки (PRD Story 4, дизайн v1.1):

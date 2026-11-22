@@ -57,9 +57,11 @@ appId: com.sotospeak.app
     timeout: 15000
 - takeScreenshot: training-recording
 
-# Recorded-after-attempt state
+# Recorded-after-attempt state: карточка самооценки (§5.4) между rec-зоной и списком попыток
 - tapOn: "Остановить запись"
-- extendedWaitUntil:
-    visible: "Попытка 1"
-    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: "Оцени попытку 1"
+    direction: DOWN
+    timeout: 15000
 - takeScreenshot: training-recorded

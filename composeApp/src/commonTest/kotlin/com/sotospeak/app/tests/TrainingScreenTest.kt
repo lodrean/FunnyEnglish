@@ -12,7 +12,11 @@ import com.sotospeak.app.di.mockTrainingRecordingMetas
 import com.sotospeak.app.recorder.MicPermissionState
 import com.sotospeak.app.recorder.VoiceRecorderState
 import com.sotospeak.app.screens.TrainingScreen
+import com.sotospeak.app.storage.RecordingSelfScore
+import com.sotospeak.app.subtitles.SubtitleCue
+import com.sotospeak.app.subtitles.SubtitleWord
 import com.sotospeak.app.viewmodel.RecorderUiState
+import com.sotospeak.app.viewmodel.SelfScoringState
 import com.sotospeak.app.viewmodel.TrainingState
 import com.sotospeak.designsystem.theme.FunnyTheme
 import kotlin.test.Test
@@ -229,6 +233,122 @@ class TrainingScreenTest : BaseUiTest() {
         waitForIdle()
         assertTrue(TrainingClicks.restart, "onRestartAttempts должен быть вызван")
     }
+
+    // ============================================
+    // 6. Карточка самооценки после попытки (§5.4, bd h3l.5)
+    // ============================================
+
+    @Test
+    fun selfScoringCardShowsAfterAttempt() = runTest(
+        content = { TrainingScreenForTest(state = mockSelfScoringState()) }
+    ) {
+        try {
+            onNodeWithTag("self_scoring_card", useUnmergedTree = true).performScrollTo()
+        } catch (e: Throwable) { /* уже виден */ }
+        onNodeWithTag("self_scoring_card", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_scoring_title", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_score_play", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_score_reference_title", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_check_item_0", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_check_item_1", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_check_item_2", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_check_item_3", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_score_save", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_score_skip", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun selfScoringCardHiddenWhenClosed() = runTest(
+        content = { TrainingScreenForTest() }
+    ) {
+        onNodeWithTag("self_scoring_card", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun selfScoringCardHidesReferenceWhenNoSubtitles() = runTest(
+        content = {
+            TrainingScreenForTest(state = mockSelfScoringState(subtitleCues = emptyList()))
+        }
+    ) {
+        try {
+            onNodeWithTag("self_scoring_card", useUnmergedTree = true).performScrollTo()
+        } catch (e: Throwable) { /* уже виден */ }
+        // Деградация без субтитров (§5.4): секции эталона нет, чеклист доступен
+        onNodeWithTag("self_scoring_card", useUnmergedTree = true).assertExists()
+        onNodeWithTag("self_score_reference_title", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithTag("self_check_item_0", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun togglingChecklistItemCallsCallback() = runTest(
+        content = { TrainingScreenForTest(state = mockSelfScoringState()) }
+    ) {
+        try {
+            onNodeWithTag("self_check_item_1", useUnmergedTree = true).performScrollTo()
+        } catch (e: Throwable) { /* уже виден */ }
+        onNodeWithTag("self_check_item_1", useUnmergedTree = true).performClick()
+        waitForIdle()
+        assertTrue(TrainingClicks.lastToggledCheck == 1, "onToggleSelfCheck(1) должен быть вызван")
+    }
+
+    @Test
+    fun saveSelfScoreButtonCallsCallback() = runTest(
+        content = { TrainingScreenForTest(state = mockSelfScoringState()) }
+    ) {
+        try {
+            onNodeWithTag("self_score_save", useUnmergedTree = true).performScrollTo()
+        } catch (e: Throwable) { /* уже виден */ }
+        onNodeWithTag("self_score_save", useUnmergedTree = true).performClick()
+        waitForIdle()
+        assertTrue(TrainingClicks.saveSelfScore, "onSaveSelfScore должен быть вызван")
+    }
+
+    @Test
+    fun skipSelfScoringButtonCallsCallback() = runTest(
+        content = { TrainingScreenForTest(state = mockSelfScoringState()) }
+    ) {
+        try {
+            onNodeWithTag("self_score_skip", useUnmergedTree = true).performScrollTo()
+        } catch (e: Throwable) { /* уже виден */ }
+        onNodeWithTag("self_score_skip", useUnmergedTree = true).performClick()
+        waitForIdle()
+        assertTrue(TrainingClicks.skipSelfScoring, "onSkipSelfScoring должен быть вызван")
+    }
+
+    @Test
+    fun attemptShowsSelfScoreSummaryWhenSaved() = runTest(
+        content = {
+            TrainingScreenForTest(
+                state = mockTrainingState(
+                    attempts = listOf(
+                        mockTrainingRecordingMetas.first().copy(
+                            selfScore = RecordingSelfScore(
+                                checks = listOf(true, false, false, false),
+                                scoredAtEpochMs = 1_753_000_200_000
+                            )
+                        )
+                    )
+                )
+            )
+        }
+    ) {
+        try {
+            onNodeWithTag("attempt_self_score_0", useUnmergedTree = true).performScrollTo()
+        } catch (e: Throwable) { /* уже виден */ }
+        onNodeWithTag("attempt_self_score_0", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun attemptHasNoSelfScoreSummaryByDefault() = runTest(
+        content = {
+            TrainingScreenForTest(
+                state = mockTrainingState(attempts = mockTrainingRecordingMetas, attemptNumber = 3)
+            )
+        }
+    ) {
+        onNodeWithTag("attempt_self_score_0", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithTag("attempt_self_score_1", useUnmergedTree = true).assertDoesNotExist()
+    }
 }
 
 // ============================================
@@ -242,15 +362,22 @@ private object TrainingClicks {
     var goPractice = false
     var backLibrary = false
     var restart = false
+    var saveSelfScore = false
+    var skipSelfScoring = false
+    var lastToggledCheck = -1
 }
 
+// Тестовая фикстура: 8 опциональных параметров состояния читаемее одного бандла
+@Suppress("LongParameterList")
 private fun mockTrainingState(
     recorder: RecorderUiState = RecorderUiState.Idle,
     remainingSeconds: Int = 0,
     attempts: List<com.sotospeak.app.storage.RecordingMeta> = emptyList(),
     attemptNumber: Int = 1,
     isFinished: Boolean = false,
-    micPermission: MicPermissionState = MicPermissionState.Granted
+    micPermission: MicPermissionState = MicPermissionState.Granted,
+    subtitleCues: List<SubtitleCue> = emptyList(),
+    selfScoring: SelfScoringState? = null
 ) = TrainingState(
     topicTitle = "Приветствие",
     questions = mockSpeakingQuestions,
@@ -259,8 +386,47 @@ private fun mockTrainingState(
     attemptNumber = attemptNumber,
     remainingSeconds = remainingSeconds,
     isFinished = isFinished,
-    micPermission = micPermission
+    micPermission = micPermission,
+    subtitleCues = subtitleCues,
+    selfScoring = selfScoring
 )
+
+/** Эталон-транскрипт для карточки самооценки (§5.4). */
+private val mockSelfScoringCues = listOf(
+    SubtitleCue(
+        startMs = 0,
+        endMs = 3000,
+        text = "Hello brave world",
+        words = listOf(
+            SubtitleWord("Hello", 0, 1000),
+            SubtitleWord("brave", 1000, 2000),
+            SubtitleWord("world", 2000, 3000)
+        )
+    ),
+    SubtitleCue(
+        startMs = 3000,
+        endMs = 6000,
+        text = "Second cue line",
+        words = listOf(
+            SubtitleWord("Second", 3000, 4000),
+            SubtitleWord("cue", 4000, 5000),
+            SubtitleWord("line", 5000, 6000)
+        )
+    )
+)
+
+/** Открытая карточка самооценки первой попытки (после saveAttempt, §5.4). */
+private fun mockSelfScoringState(subtitleCues: List<SubtitleCue> = mockSelfScoringCues) =
+    mockTrainingState(
+        attempts = mockTrainingRecordingMetas.take(1),
+        attemptNumber = 2,
+        subtitleCues = subtitleCues,
+        selfScoring = SelfScoringState(
+            filePath = mockTrainingRecordingMetas.first().filePath,
+            attemptNumber = 1,
+            checks = listOf(false, false, false, false)
+        )
+    )
 
 /** 3 попытки сделаны → финальные CTA */
 private fun mockFinishedState() = mockTrainingState(
@@ -285,6 +451,10 @@ private fun TrainingScreenForTest(state: TrainingState = mockTrainingState()) {
             onStopRecording = { TrainingClicks.stopRecording = true },
             onPlayRecording = {},
             onStopPlayback = {},
+            onToggleSelfCheck = { index -> TrainingClicks.lastToggledCheck = index },
+            onSaveSelfScore = { TrainingClicks.saveSelfScore = true },
+            onSkipSelfScoring = { TrainingClicks.skipSelfScoring = true },
+            onOpenSelfScoring = {},
             onGoToPractice = { TrainingClicks.goPractice = true },
             onRestartAttempts = { TrainingClicks.restart = true },
             onBackToLibrary = { TrainingClicks.backLibrary = true },

@@ -2,8 +2,8 @@
 ## Клиент: composeApp (Android-first)
 
 **Feature ID:** SPEAKING-TRAINER-001
-**Version:** 1.9 (2026-09-08: редизайн «Путь спикера» V1 (`docs/design/redesign-speaker-path-v1/`, DESIGN_SYSTEM_SPEC v3.2.0, bd `FunnyEnglish-d1e`; OpenSpec `add-speaker-path-redesign`): §1 — back-кнопка в аппбаре флоу-экранов (семантика = существующий onBack, системный handler не меняется), бейдж новых оценок на «Отправках», вход в Settings из Profile, Library «путь» с continue-карточкой (tap → Questions активного топика), §2.1/§2.4 — layout по V1 (hero-вопрос + dual CTA); MVI-контракты, правила попыток и guest-гейты без изменений. v1.8 (2026-08-12: §2.3 — overlay-субтитры в fullscreen: активный cue поверх видео в нижней части экрана над control-bar (при субтитрах включены; WASM — невидим под DOM-video). По запросу владельца. v1.7 (2026-08-12: §2.3 — полноэкранный режим видео (кнопка `vc_fullscreen` в control-bar; Android: ландшафт + immersive; выход — кнопка/«назад»; плеер и позиция сохраняются); §3.1/§3.2 — Android-плеер мигрирован на media3-ui-compose/material3 1.11.0: `Player` (ContentFrame + слоты top/center/bottom) вместо AndroidView+PlayerView, кастомные контролы мокапа сохранены в слотах; MainActivity получил `configChanges`. Дифф утверждён владельцем (план `~/.kimi/plans/nebula-psylocke-atom.md`, bd `FunnyEnglish-did`, ADR-007). v1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
-**Date:** 2026-09-08
+**Version:** 1.10 (2026-11-22: self-scoring Training — новый §5.4 «Самооценка после попытки» (карточка после каждой попытки: прослушивание + эталон = транскрипт видео топика WebVTT + чеклист 4 критерия по рубрике учителя; персист `RecordingMeta.selfScore`); §2.5 — новые поля/действия MVI; §5.3 — позиция карточки. Решение владельца 2026-09-13 вариант A (DECISIONS_BATCH_2026-09-08 #3), критерии — решение владельца 2026-11-22; OpenSpec `add-training-self-scoring`, bd `FunnyEnglish-h3l.5`, дифф утверждён с планом сессии (ADR-007). v1.9 (2026-09-08: редизайн «Путь спикера» V1 (`docs/design/redesign-speaker-path-v1/`, DESIGN_SYSTEM_SPEC v3.2.0, bd `FunnyEnglish-d1e`; OpenSpec `add-speaker-path-redesign`): §1 — back-кнопка в аппбаре флоу-экранов (семантика = существующий onBack, системный handler не меняется), бейдж новых оценок на «Отправках», вход в Settings из Profile, Library «путь» с continue-карточкой (tap → Questions активного топика), §2.1/§2.4 — layout по V1 (hero-вопрос + dual CTA); MVI-контракты, правила попыток и guest-гейты без изменений. v1.8 (2026-08-12: §2.3 — overlay-субтитры в fullscreen: активный cue поверх видео в нижней части экрана над control-bar (при субтитрах включены; WASM — невидим под DOM-video). По запросу владельца. v1.7 (2026-08-12: §2.3 — полноэкранный режим видео (кнопка `vc_fullscreen` в control-bar; Android: ландшафт + immersive; выход — кнопка/«назад»; плеер и позиция сохраняются); §3.1/§3.2 — Android-плеер мигрирован на media3-ui-compose/material3 1.11.0: `Player` (ContentFrame + слоты top/center/bottom) вместо AndroidView+PlayerView, кастомные контролы мокапа сохранены в слотах; MainActivity получил `configChanges`. Дифф утверждён владельцем (план `~/.kimi/plans/nebula-psylocke-atom.md`, bd `FunnyEnglish-did`, ADR-007). v1.6 (2026-08-08: §3.2 WASM-стаб заменён на реальный HTML5-плеер (DOM `<video>` поверх canvas, control-bar под плеером, `supportsOverlayControls`); §3.4 SubtitlePanel заменена на TranscriptPanel — полный текст видео с пословной подсветкой (karaoke-таймкоды `<mm:ss.mmm>` или интерполяция по длине слова), отдельного транскрипта нет; §2.2–2.6 аппбары по мокапу — без стрелки «назад», с breadcrumb-подзаголовком, системный «назад» через PlatformBackHandler; список топиков по frame-topics («N вопросов · видео m:ss» + чип). Дифф утверждён владельцем (`docs/plan/SPEC_DIFFS_TRANSCRIPT_APPBAR.md`, ADR-007). v1.5 — онбординг-иллюстрации SpeakingIcons; v1.4 — guest-first; v1.3 — §8.2/§8.3 контракт; v1.2 — попытка Training = одна запись; v1.1 — Playful Coach)
+**Date:** 2026-11-22
 **Estimated Effort:** 8–12 дней
 **Связанные документы:**
 - PRD: `docs/prd/SPEAKING-TRAINER-001.prd.md`
@@ -312,6 +312,8 @@ data class TrainingState(
     val remainingSeconds: Int = 0,                            // видимый обратный отсчёт
     val isFinished: Boolean = false,                          // true после 3-й попытки → финальный блок CTA
     val playingRecordingPath: String? = null,
+    val subtitleCues: List<SubtitleCue> = emptyList(),     // эталон-транскрипт топика (§5.4); пуст при отсутствии субтитров/ошибке загрузки (молча)
+    val selfScoring: SelfScoringState? = null,             // карточка самооценки открытой попытки (§5.4); null — закрыта
     val micPermission: MicPermissionState = MicPermissionState.Unknown, // см. §4.3
     val error: String? = null
 )
@@ -324,12 +326,24 @@ sealed interface RecorderUiState {
     data class Error(val message: String) : RecorderUiState       // микрофон занят / нет места и т.п.
 }
 
+/** Карточка самооценки (§5.4): открыта для попытки filePath; чеклист 4 критерия по рубрике учителя */
+data class SelfScoringState(
+    val filePath: String,
+    val attemptNumber: Int,
+    val checks: List<Boolean>        // размер = SELF_CHECK_COUNT (4)
+)
+
 sealed interface TrainingAction {
     data class OnLoad(val topicId: String) : TrainingAction
     data object OnStartRecording : TrainingAction
     data object OnStopRecording : TrainingAction                 // досрочный стоп — попытка засчитывается
     data class OnPlayRecording(val path: String) : TrainingAction
     data object OnStopPlayback : TrainingAction
+    // §5.4 self-scoring: карточка после попытки
+    data class OnToggleSelfCheck(val index: Int) : TrainingAction   // переключить критерий чеклиста
+    data object OnSaveSelfScore : TrainingAction                    // «Готово»: сохранить selfScore в RecordingMeta и закрыть карточку
+    data object OnSkipSelfScoring : TrainingAction                  // «Пропустить»: закрыть карточку без сохранения
+    data class OnOpenSelfScoring(val path: String) : TrainingAction // повторное открытие карточки попытки из списка
     // удаления/перезаписи попыток НЕТ (дизайн-система v1.0): записи только прослушиваются, ✅ автоматически
     data object OnGoToPractice : TrainingAction                  // финальный CTA «Перейти к практике»
     data object OnRestartAttempts : TrainingAction               // «Начать заново с попытки 1»: удаляет записи топика, attemptNumber=1
@@ -747,7 +761,41 @@ Idle ───────────────────► Recording ─�
   └────── OnPermissionResult(denied) / RecorderUiState.Error ────── показать ошибку
 ```
 
-UI: **весь список вопросов топика на экране** (как в Practice, `testTag("training_questions_list")`, `question_item_<n>`) — ученик отвечает на все вопросы подряд одной записью. Видимый обратный отсчёт `remainingSeconds` крупно (`testTag("training_timer")`), прогресс-кольцо (guard от деления на 0 — грабля №17б memory.md: `progress = remaining / limit.toFloat()`, limit всегда > 0 по построению). Level-chip «Уровень N · X сек» + 3 индикатора-шага (`testTag("level_chip")`). Список попыток (максимум 3): только прослушать (`testTag("recording_item_<n>")`, `play_recording_<n>`), ✅ «принята» ставится автоматически (`attempt_check_<n>`); удаления нет. После 3-й попытки rec-zone скрывается, финальный блок (`final_cta`): «Перейти к практике» (`final_go_practice`), «Вернуться в библиотеку» (`final_back_library`), «Начать заново с попытки 1» (`final_restart`). Privacy-note: «Записи хранятся только на твоём устройстве».
+UI: **весь список вопросов топика на экране** (как в Practice, `testTag("training_questions_list")`, `question_item_<n>`) — ученик отвечает на все вопросы подряд одной записью. Видимый обратный отсчёт `remainingSeconds` крупно (`testTag("training_timer")`), прогресс-кольцо (guard от деления на 0 — грабля №17б memory.md: `progress = remaining / limit.toFloat()`, limit всегда > 0 по построению). Level-chip «Уровень N · X сек» + 3 индикатора-шага (`testTag("level_chip")`). Список попыток (максимум 3): только прослушать (`testTag("recording_item_<n>")`, `play_recording_<n>`), ✅ «принята» ставится автоматически (`attempt_check_<n>`); удаления нет. После каждой сохранённой попытки между rec-зоной и списком попыток показывается карточка самооценки (§5.4, `self_scoring_card`); на 3-й попытке она сосуществует с финальным блоком. После 3-й попытки rec-zone скрывается, финальный блок (`final_cta`): «Перейти к практике» (`final_go_practice`), «Вернуться в библиотеку» (`final_back_library`), «Начать заново с попытки 1» (`final_restart`). Privacy-note: «Записи хранятся только на твоём устройстве».
+
+### 5.4 Самооценка после попытки (self-scoring, v1.10)
+
+Даёт смысл 3 попыткам 80→50→30 (аудит 2026-08-29 F-E): ученик слушает себя рядом с эталоном и отмечает, что улучшить. Решение владельца 2026-09-13 (вариант A): эталон = транскрипт видео топика, backend-работы ноль; критерии чеклиста — по рубрике учителя (решение 2026-11-22).
+
+**Когда показывается.** После каждой сохранённой попытки (`saveAttempt`) VM открывает `state.selfScoring = SelfScoringState(filePath, attemptNumber, checks=false×4)`; карточка рендерится между rec-зоной и заголовком списка попыток (`testTag("self_scoring_card")`). На 3-й попытке сосуществует с `final_cta`. Повторное открытие — тап по попытке в списке (`OnOpenSelfScoring`); состояние чеклиста восстанавливается из сохранённого `selfScore`.
+
+**Состав карточки.**
+
+1. **Прослушивание своей записи** — существующий `AudioPlayer`/`playingRecordingPath` + `PlaybackWaveform` (паттерн `AttemptCard`).
+2. **«Эталонный ответ»** — полный текст транскрипта видео топика: `detail.video?.subtitleUrl` → `SpeakingRepository.getTextResource` → `WebVttParser.parse` (как `VideoViewModel.load`, тихий failure → пустые cues). Статичный текст для чтения — `TranscriptPanel(cues, positionMs = 0, onWordClick = null)` в `heightIn(max ≈ 180.dp)` (транскрипт — справочник, синхронизация с записью ученика невозможна: запись 30–80 с ≠ тайминги видео). Секция скрывается, если cues пусты (топик без субтитров) — карточка деградирует до прослушивания + чеклиста.
+3. **Чеклист самооценки** — 4 критерия по рубрике учителя (grammar/vocabulary/pronunciation/fluency): «Грамматика — предложения построены правильно», «Словарь — слова и фразы уместны», «Произношение — слова звучат понятно», «Беглость — говорил без долгих пауз». Кастомные check-строки (тап-тогл, тач-таргет 48dp, `SpeakingIcons.CheckCircle`, теги `self_check_item_<i>`).
+4. **CTA** — «Готово» (`self_score_save`) / «Пропустить» (`self_score_skip`).
+
+**Персист.** «Готово» → `RecordingStore.updateSelfScore(filePath, RecordingSelfScore(checks, scoredAtEpochMs))`:
+
+```kotlin
+// commonMain/app/storage/RecordingStore.kt
+@Serializable
+data class RecordingSelfScore(
+    val checks: List<Boolean>,        // 4 критерия по рубрике учителя (§5.4)
+    val scoredAtEpochMs: Long
+)
+
+@Serializable
+data class RecordingMeta(
+    // ...существующие поля (§5.1)...
+    val selfScore: RecordingSelfScore? = null   // v1.10; ignoreUnknownKeys — обратная совместимость
+)
+```
+
+В списке попыток на карточке с сохранённой самооценкой — сводка «N/4» (`attempt_self_score_<n>`).
+
+**Инварианты.** ✅ «попытка принята» остаётся автоматическим — чеклист ничего не гейтит (правила §5.3 не меняются); самооценка не покидает устройство (не отправляется, не влияет на оценки/гейты/стрик); живёт в рамках TTL записи 30 дней (§5.1 — удаляется вместе с метаданными); «Начать заново с попытки 1» удаляет записи вместе с самооценками и закрывает карточку.
 
 ---
 

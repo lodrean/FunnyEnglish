@@ -10,7 +10,7 @@ jobs:
   # 1. Unit Tests (Kotest)
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     
     steps:
     - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
   # 2. API Tests (Newman)
   api-tests:
     name: API Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit-tests
     
     services:
@@ -205,7 +205,7 @@ jobs:
   # 4. QA Agent (Visual Regression)
   visual-tests:
     name: Visual Regression Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit-tests
     if: false  # Disabled until baselines are established
     
@@ -248,7 +248,7 @@ jobs:
   # Summary Job
   qa-summary:
     name: QA Summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [unit-tests, api-tests]
     if: always()
     

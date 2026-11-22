@@ -68,7 +68,7 @@ jobs:
           - 5433:5432
       
       minio:
-        image: minio/minio:latest
+        image: bitnamilegacy/minio:2025.7.23-debian-12-r5
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
@@ -79,7 +79,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        command: server /data
     
     steps:
     - uses: actions/checkout@v4
